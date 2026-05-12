@@ -3,6 +3,7 @@
 
 <script lang="ts">
   import { invalidateAll } from "$app/navigation";
+  import { browser } from "$app/environment";
 
   let { data } = $props();
 
@@ -271,6 +272,23 @@
 
   // Word overlay toggle + interactions — on by default per request
   let showWordOverlayChirho = $state(true);
+
+  // Image-size preference (localStorage memoized). Lines panel is center stage;
+  // the page image is a smaller right-side aside with an enlarge toggle.
+  let pageImageSizeChirho = $state<"small-chirho" | "medium-chirho" | "large-chirho">("small-chirho");
+  const PAGE_IMAGE_SIZE_KEY_CHIRHO = "hottp-page-image-size-chirho";
+  if (browser) {
+    const storedChirho = localStorage.getItem(PAGE_IMAGE_SIZE_KEY_CHIRHO);
+    if (storedChirho === "small-chirho" || storedChirho === "medium-chirho" || storedChirho === "large-chirho") {
+      pageImageSizeChirho = storedChirho;
+    }
+  }
+  function cyclePageImageSizeChirho(): void {
+    pageImageSizeChirho = pageImageSizeChirho === "small-chirho"
+      ? "medium-chirho"
+      : pageImageSizeChirho === "medium-chirho" ? "large-chirho" : "small-chirho";
+    if (browser) localStorage.setItem(PAGE_IMAGE_SIZE_KEY_CHIRHO, pageImageSizeChirho);
+  }
   let hoveredWordChirho = $state<MergedWordChirho | null>(null);
 
   // Word edit modal
@@ -523,6 +541,73 @@
     await invalidateAll();
   }
 
+  // ============================================================
+  // Line render tokens: merge words + segments into one stream
+  // ============================================================
+  interface LineRenderTokenChirho {
+    kindChirho: "word-chirho" | "segment-chirho";
+    textChirho: string;
+    scriptChirho: string;
+    confirmedChirho: boolean;
+    flaggedChirho: boolean;
+    wordChirho?: MergedWordChirho;
+    segmentChirho?: any;
+    confidenceChirho?: string | null;
+    referenceChirho?: string | null;
+  }
+
+  function buildLineTokensChirho(slChirho: any, lineWordsChirho: MergedWordChirho[]): LineRenderTokenChirho[] {
+    const segmentsChirho = (slChirho.segmentsChirho ?? []) as any[];
+    if (segmentsChirho.length === 0) {
+      return lineWordsChirho.map((wChirho) => ({
+        kindChirho: "word-chirho",
+        textChirho: wChirho.displayTextChirho,
+        scriptChirho: wChirho.displayScriptChirho,
+        confirmedChirho: wChirho.displayConfirmedChirho,
+        flaggedChirho: wChirho.displayPendingScriptFlagChirho,
+        wordChirho: wChirho,
+      }));
+    }
+    const slXChirho = (slChirho.xMinChirho ?? 0) as number;
+    const segBboxChirho = segmentsChirho.map((sChirho) => ({
+      segChirho: sChirho,
+      absLeftChirho: slXChirho + ((sChirho.xMinChirho ?? 0) as number),
+      absRightChirho: slXChirho + ((sChirho.xMinChirho ?? 0) as number) + ((sChirho.widthChirho ?? 0) as number),
+    }));
+    const emittedChirho = new Set<number>();
+    const outChirho: LineRenderTokenChirho[] = [];
+    for (const wChirho of lineWordsChirho) {
+      const midXChirho = (wChirho.xMinChirho + wChirho.xMaxChirho) / 2;
+      const matchChirho = segBboxChirho.find((bbChirho) => midXChirho >= bbChirho.absLeftChirho && midXChirho <= bbChirho.absRightChirho);
+      if (matchChirho) {
+        const segIdChirho = matchChirho.segChirho.segmentIdChirho as number;
+        if (!emittedChirho.has(segIdChirho)) {
+          emittedChirho.add(segIdChirho);
+          outChirho.push({
+            kindChirho: "segment-chirho",
+            textChirho: (matchChirho.segChirho.acceptedTextChirho as string | null) ?? (matchChirho.segChirho.ocrTextChirho as string | null) ?? "",
+            scriptChirho: (matchChirho.segChirho.scriptTypeChirho as string | null) ?? "unknown-chirho",
+            confirmedChirho: false,
+            flaggedChirho: false,
+            segmentChirho: matchChirho.segChirho,
+            confidenceChirho: matchChirho.segChirho.canonicalChirho?.confidenceChirho ?? null,
+            referenceChirho: matchChirho.segChirho.canonicalChirho?.referenceChirho ?? null,
+          });
+        }
+      } else {
+        outChirho.push({
+          kindChirho: "word-chirho",
+          textChirho: wChirho.displayTextChirho,
+          scriptChirho: wChirho.displayScriptChirho,
+          confirmedChirho: wChirho.displayConfirmedChirho,
+          flaggedChirho: wChirho.displayPendingScriptFlagChirho,
+          wordChirho: wChirho,
+        });
+      }
+    }
+    return outChirho;
+  }
+
   async function wordContextMenuChirho(eChirho: MouseEvent, wChirho: MergedWordChirho): Promise<void> {
     eChirho.preventDefault();
     if (activePaintScriptChirho) {
@@ -604,9 +689,19 @@
     </div>
   {/if}
 
-  <div class="content-chirho">
-    <div class="page-image-panel-chirho">
-      <h2>Page image — hover or click overlays to edit</h2>
+  <div class="content-chirho" class:img-small-chirho={pageImageSizeChirho === 'small-chirho'} class:img-medium-chirho={pageImageSizeChirho === 'medium-chirho'} class:img-large-chirho={pageImageSizeChirho === 'large-chirho'}>
+    <aside class="page-image-panel-chirho">
+      <div class="image-aside-header-chirho">
+        <h2>Page</h2>
+        <button
+          type="button"
+          class="image-size-btn-chirho"
+          onclick={cyclePageImageSizeChirho}
+          title="Cycle size (saved locally): small → medium → large"
+        >
+          {pageImageSizeChirho === 'small-chirho' ? '↗ Enlarge' : pageImageSizeChirho === 'medium-chirho' ? '↗ Larger' : '↙ Shrink'}
+        </button>
+      </div>
       <div
         class="image-container-chirho"
         class:word-overlay-on-chirho={showWordOverlayChirho}
@@ -715,7 +810,7 @@
           ></div>
         {/if}
       </div>
-    </div>
+    </aside>
 
     <div class="lines-panel-chirho">
       <h2>Lines · image strip + editable transcription</h2>
@@ -774,22 +869,39 @@
               {/each}
             </svg>
             <div class="line-text-chirho" dir="auto">
-              {#each lineWordsChirho as wChirho (wChirho.wordIdChirho)}
-                {@const colChirho = SCRIPT_COLORS_CHIRHO[wChirho.displayScriptChirho] ?? '#c9a84c'}
-                {@const mismatchChirho = hasScriptMismatchChirho(wChirho)}
-                <button
-                  type="button"
-                  class="line-word-token-chirho"
-                  class:confirmed-chirho={wChirho.displayConfirmedChirho}
-                  class:flagged-chirho={wChirho.displayPendingScriptFlagChirho}
-                  class:mismatch-chirho={mismatchChirho}
-                  style="--word-color: {colChirho}"
-                  onclick={() => openWordEditChirho(wChirho)}
-                  oncontextmenu={(eChirho) => wordContextMenuChirho(eChirho, wChirho)}
-                  onmouseenter={() => (hoveredWordChirho = wChirho)}
-                  onmouseleave={() => { if (hoveredWordChirho?.wordIdChirho === wChirho.wordIdChirho) hoveredWordChirho = null; }}
-                  title={`${scriptLabelChirho(wChirho.displayScriptChirho)} · ${wChirho.displaySourceChirho.replace('-chirho','')}${wChirho.displayConfirmedChirho ? ' · ✓' : ''}${wChirho.displayPendingScriptFlagChirho ? ' · ⚠ flag' : ''}${mismatchChirho ? ' · ⚠ codepoint mismatch' : ''}`}
-                >{wChirho.displayTextChirho || '·'}{#if wChirho.displayConfirmedChirho}<span class="token-dot-chirho">●</span>{/if}{#if mismatchChirho}<span class="token-mismatch-chirho">⚠</span>{/if}</button>{' '}
+              {#each buildLineTokensChirho(slChirho, lineWordsChirho) as tokChirho, tIdxChirho}
+                {@const colChirho = SCRIPT_COLORS_CHIRHO[tokChirho.scriptChirho] ?? '#c9a84c'}
+                {#if tokChirho.kindChirho === 'word-chirho'}
+                  {@const wTokChirho = tokChirho.wordChirho!}
+                  {@const mismatchChirho = hasScriptMismatchChirho(wTokChirho)}
+                  <button
+                    type="button"
+                    class="line-word-token-chirho"
+                    class:confirmed-chirho={tokChirho.confirmedChirho}
+                    class:flagged-chirho={tokChirho.flaggedChirho}
+                    class:mismatch-chirho={mismatchChirho}
+                    style="--word-color: {colChirho}"
+                    onclick={() => openWordEditChirho(wTokChirho)}
+                    oncontextmenu={(eChirho) => wordContextMenuChirho(eChirho, wTokChirho)}
+                    onmouseenter={() => (hoveredWordChirho = wTokChirho)}
+                    onmouseleave={() => { if (hoveredWordChirho?.wordIdChirho === wTokChirho.wordIdChirho) hoveredWordChirho = null; }}
+                    title={`${scriptLabelChirho(tokChirho.scriptChirho)} · ${wTokChirho.displaySourceChirho.replace('-chirho','')}${tokChirho.confirmedChirho ? ' · ✓' : ''}${tokChirho.flaggedChirho ? ' · ⚠ flag' : ''}${mismatchChirho ? ' · ⚠ codepoint mismatch' : ''}`}
+                  >{tokChirho.textChirho || '·'}{#if tokChirho.confirmedChirho}<span class="token-dot-chirho">●</span>{/if}{#if mismatchChirho}<span class="token-mismatch-chirho">⚠</span>{/if}</button>
+                {:else}
+                  {@const segTokChirho = tokChirho.segmentChirho}
+                  <button
+                    type="button"
+                    class="line-segment-token-chirho"
+                    style="--word-color: {colChirho}"
+                    onclick={() => openEditChirho(segTokChirho as any)}
+                    title={`${scriptLabelChirho(tokChirho.scriptChirho)} segment${tokChirho.referenceChirho ? ' · ' + tokChirho.referenceChirho : ''}${tokChirho.confidenceChirho ? ' (' + tokChirho.confidenceChirho + ')' : ''}`}
+                  >
+                    {#if tokChirho.confidenceChirho === 'high'}<span class="conf-mini-chirho conf-high-chirho">✓</span>
+                    {:else if tokChirho.confidenceChirho === 'medium'}<span class="conf-mini-chirho conf-medium-chirho">◐</span>
+                    {:else if tokChirho.confidenceChirho === 'low'}<span class="conf-mini-chirho conf-low-chirho">?</span>{/if}
+                    <span class="seg-token-text-chirho" dir="auto">{tokChirho.textChirho || '·'}</span>
+                  </button>
+                {/if}{tIdxChirho < buildLineTokensChirho(slChirho, lineWordsChirho).length - 1 ? ' ' : ''}
               {/each}
             </div>
           </div>
@@ -808,6 +920,9 @@
 
 {#if editingWordChirho && snapshotParsedChirho}
   {@const wChirho = editingWordChirho}
+  {@const wPxChirho = wChirho.xMaxChirho - wChirho.xMinChirho}
+  {@const hPxChirho = wChirho.yMaxChirho - wChirho.yMinChirho}
+  {@const cropScaleChirho = hPxChirho > 0 ? 120 / hPxChirho : 1}
   <div class="modal-backdrop-chirho" onclick={closeWordEditChirho} role="presentation">
     <div class="modal-chirho word-modal-chirho" onclick={(eChirho) => eChirho.stopPropagation()} role="dialog" aria-modal="true">
       <header class="modal-header-chirho">
@@ -815,21 +930,17 @@
         <button class="close-btn-chirho" onclick={closeWordEditChirho} aria-label="Close">×</button>
       </header>
       <div class="modal-body-chirho">
-        <div class="word-crop-preview-chirho">
-          <svg
-            viewBox={wordCropViewBoxChirho(wChirho)}
-            preserveAspectRatio="xMidYMid meet"
-            class="word-crop-svg-chirho"
-          >
-            <image
-              href={imageUrlChirho(data.fullPageR2KeyChirho)}
-              x="0"
-              y="0"
-              width={imgNaturalWidthChirho}
-              height={imgNaturalHeightChirho}
-            />
-          </svg>
-        </div>
+        <div
+          class="word-crop-bg-chirho"
+          style="
+            background-image: url('{imageUrlChirho(data.fullPageR2KeyChirho)}');
+            background-size: {imgNaturalWidthChirho * cropScaleChirho}px {imgNaturalHeightChirho * cropScaleChirho}px;
+            background-position: -{wChirho.xMinChirho * cropScaleChirho}px -{wChirho.yMinChirho * cropScaleChirho}px;
+            width: {wPxChirho * cropScaleChirho}px;
+            height: {hPxChirho * cropScaleChirho}px;
+            max-width: 100%;
+          "
+        ></div>
         <div class="word-meta-chirho">
           <span class="meta-pill-chirho">OCR: <code dir="auto">{wChirho.originalOcrTextChirho ?? ""}</code></span>
           <span class="meta-pill-chirho">Source: {wChirho.displaySourceChirho.replace("-chirho", "")}</span>
@@ -919,7 +1030,43 @@
   .non-french-count-chirho { color: #888; font-size: 0.9rem; }
   .script-chips-chirho { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1rem; }
   .chip-chirho { padding: 0.2rem 0.6rem; background: rgba(255,255,255,0.04); border: 1px solid var(--chip-color); border-radius: 12px; color: var(--chip-color); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; }
-  .content-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start; }
+  /* Lines panel (interlinear) takes center stage; page image is the aside.
+     The grid-template-columns flips based on user's saved image-size pref. */
+  .content-chirho {
+    display: grid;
+    gap: 1.5rem;
+    align-items: start;
+  }
+  .content-chirho.img-small-chirho   { grid-template-columns: 1fr 25%; }
+  .content-chirho.img-medium-chirho  { grid-template-columns: 1fr 40%; }
+  .content-chirho.img-large-chirho   { grid-template-columns: 1fr 60%; }
+  .content-chirho > .page-image-panel-chirho { order: 2; }
+  .content-chirho > .lines-panel-chirho      { order: 1; }
+  .page-image-panel-chirho {
+    position: sticky; top: 4rem;
+    max-height: calc(100vh - 6rem);
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  .image-aside-header-chirho {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 0.5rem; margin-bottom: 0.5rem;
+  }
+  .image-aside-header-chirho h2 {
+    margin: 0; padding: 0; border: none;
+    font-size: 0.95rem;
+  }
+  .image-size-btn-chirho {
+    padding: 0.25rem 0.65rem;
+    background: #1a1a2e; border: 1px solid #2a2a4a;
+    color: #c9a84c; border-radius: 4px; cursor: pointer;
+    font-size: 0.75rem;
+  }
+  .image-size-btn-chirho:hover { background: #2a2a4a; }
+  .page-image-panel-chirho .image-container-chirho {
+    flex: 1 1 auto;
+    overflow: auto;
+  }
   .page-image-panel-chirho h2, .segments-panel-chirho h2 { font-size: 1rem; color: #ccc; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid #2a2a4a; }
   .image-container-chirho { position: relative; border: 1px solid #2a2a4a; border-radius: 6px; background: #fff; }
   .full-page-img-chirho { width: 100%; display: block; }
@@ -1121,14 +1268,15 @@
     margin-bottom: 0.75rem;
     display: flex;
     justify-content: center;
-    overflow: hidden;
+    overflow: auto;
   }
-  .word-crop-svg-chirho {
-    width: 100%;
-    height: 160px;
-    max-width: 32rem;
-    overflow: hidden;
+  .word-crop-bg-chirho {
     display: block;
+    background-repeat: no-repeat;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+    border-radius: 2px;
+    margin: auto;
   }
   .word-meta-chirho {
     display: flex; gap: 0.4rem; flex-wrap: wrap;
@@ -1268,7 +1416,7 @@
   .line-strip-svg-chirho {
     display: block;
     width: 100%;
-    height: auto;
+    height: 44px;            /* uniform line strip height — narrow lines letterbox to white */
     background: #fff;
     border: 1px solid #2a2a4a;
     border-radius: 3px;
@@ -1333,5 +1481,34 @@
     color: #fca5a5;
     font-size: 0.65rem;
     vertical-align: super;
+  }
+
+  /* Segment-merged tokens: Hebrew/Greek phrase chunks within a line */
+  .line-segment-token-chirho {
+    display: inline-block;
+    padding: 0.05rem 0.4rem;
+    margin: 0 0.15rem;
+    background: color-mix(in srgb, var(--word-color, #c9a84c) 18%, transparent);
+    border: 1px solid var(--word-color, #c9a84c);
+    border-radius: 4px;
+    color: #f5e7b8;
+    cursor: pointer;
+    font: inherit;
+    font-size: 1.05rem;
+    line-height: 1.4;
+  }
+  .line-segment-token-chirho:hover {
+    background: color-mix(in srgb, var(--word-color, #c9a84c) 35%, transparent);
+  }
+  .conf-mini-chirho {
+    display: inline-block;
+    padding: 0 0.2rem;
+    margin-right: 0.25rem;
+    border-radius: 2px;
+    font-size: 0.7rem;
+    vertical-align: middle;
+  }
+  .seg-token-text-chirho {
+    font-family: "SBL Hebrew", "SBL Greek", "Noto Serif", "Georgia", serif;
   }
 </style>
