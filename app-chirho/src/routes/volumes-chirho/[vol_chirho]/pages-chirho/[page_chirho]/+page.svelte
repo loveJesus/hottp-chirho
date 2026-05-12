@@ -313,6 +313,8 @@
   // Focus capture for keyboard-driven triage (autofocus on open, Enter saves, Esc closes).
   let wordInputElChirho = $state<HTMLInputElement | null>(null);
   let segmentTextareaElChirho = $state<HTMLTextAreaElement | null>(null);
+  // Surfaces save failures (network or D1 errors) — silent failure was masking lost edits.
+  let saveErrorChirho = $state<string | null>(null);
 
   function openWordEditChirho(wChirho: MergedWordChirho): void {
     editingWordChirho = wChirho;
@@ -327,7 +329,9 @@
   function onWordKeyChirho(eChirho: KeyboardEvent): void {
     if (eChirho.key === "Enter") {
       eChirho.preventDefault();
-      if (!wordSavingChirho) saveWordChirho();
+      if (wordSavingChirho) return;
+      if (eChirho.shiftKey) saveAndNextWordChirho();
+      else saveWordChirho();
     } else if (eChirho.key === "Escape") {
       eChirho.preventDefault();
       closeWordEditChirho();
@@ -339,57 +343,95 @@
     wordEditScriptChirho = "";
   }
 
-  async function postEventChirho(payloadChirho: Record<string, unknown>): Promise<void> {
-    await fetch("/api-chirho/events-chirho", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payloadChirho),
-    });
-    await invalidateAll();
+  async function postEventChirho(payloadChirho: Record<string, unknown>): Promise<boolean> {
+    try {
+      const resChirho = await fetch("/api-chirho/events-chirho", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payloadChirho),
+      });
+      if (!resChirho.ok) {
+        const txtChirho = (await resChirho.text()).slice(0, 200);
+        saveErrorChirho = `Save failed (HTTP ${resChirho.status}): ${txtChirho}`;
+        return false;
+      }
+      await invalidateAll();
+      return true;
+    } catch (errChirho) {
+      const msgChirho = errChirho instanceof Error ? errChirho.message : String(errChirho);
+      saveErrorChirho = `Network error: ${msgChirho}`;
+      return false;
+    }
   }
 
-  async function saveWordChirho(): Promise<void> {
-    if (!editingWordChirho) return;
+  async function saveWordChirho(): Promise<boolean> {
+    if (!editingWordChirho) return false;
     wordSavingChirho = true;
+    let okChirho = true;
     try {
       const newTextChirho = wordEditTextChirho.trim();
       const wordChirho = editingWordChirho;
       const pageIdChirho = (data as any).pageDataChirho.idChirho;
       // Only emit a text-corrected event if the text actually changed.
       if (newTextChirho !== (wordChirho.displayTextChirho ?? "").trim()) {
-        await postEventChirho({
+        okChirho = (await postEventChirho({
           pageIdChirho,
           scanlineIdChirho: wordChirho.scanlineIdChirho,
           wordIdChirho: wordChirho.wordIdChirho,
           aggregateTypeChirho: "word-chirho",
           eventTypeChirho: "word-text-corrected-chirho",
           payloadChirho: { oldTextChirho: wordChirho.displayTextChirho, newTextChirho },
-        });
+        })) && okChirho;
       } else if (!wordChirho.displayConfirmedChirho) {
         // No text change but user is saying "OCR was correct" — emit verified.
-        await postEventChirho({
+        okChirho = (await postEventChirho({
           pageIdChirho,
           scanlineIdChirho: wordChirho.scanlineIdChirho,
           wordIdChirho: wordChirho.wordIdChirho,
           aggregateTypeChirho: "word-chirho",
           eventTypeChirho: "word-verified-chirho",
           payloadChirho: { textChirho: wordChirho.displayTextChirho },
-        });
+        })) && okChirho;
       }
       if (wordEditScriptChirho !== wordChirho.displayScriptChirho) {
-        await postEventChirho({
+        okChirho = (await postEventChirho({
           pageIdChirho,
           scanlineIdChirho: wordChirho.scanlineIdChirho,
           wordIdChirho: wordChirho.wordIdChirho,
           aggregateTypeChirho: "word-chirho",
           eventTypeChirho: "word-script-set-chirho",
           payloadChirho: { oldScriptChirho: wordChirho.displayScriptChirho, newScriptChirho: wordEditScriptChirho },
-        });
+        })) && okChirho;
       }
-      closeWordEditChirho();
+      // Only close on full success — keep the user in the modal if anything failed
+      // so they can retry without losing their typed text.
+      if (okChirho) closeWordEditChirho();
     } finally {
       wordSavingChirho = false;
     }
+    return okChirho;
+  }
+
+  // Triage advance: save current, then open the next word that still needs human
+  // attention (script mismatch OR pending non-Latin flag). Confirmed and already-
+  // OK words are skipped. Forward-only — at end of page, modal just closes.
+  function findNextProblemWordChirho(fromWordIdChirho: number): MergedWordChirho | null {
+    const allChirho = mergedWordsChirho;
+    const idxChirho = allChirho.findIndex((wChirho) => wChirho.wordIdChirho === fromWordIdChirho);
+    if (idxChirho === -1) return null;
+    for (let iChirho = idxChirho + 1; iChirho < allChirho.length; iChirho++) {
+      const wChirho = allChirho[iChirho];
+      if (hasScriptMismatchChirho(wChirho) || wChirho.displayPendingScriptFlagChirho) return wChirho;
+    }
+    return null;
+  }
+  async function saveAndNextWordChirho(): Promise<void> {
+    if (!editingWordChirho) return;
+    const currentIdChirho = editingWordChirho.wordIdChirho;
+    const okChirho = await saveWordChirho();
+    if (!okChirho) return; // toast already surfaced; keep current modal open
+    const nextChirho = findNextProblemWordChirho(currentIdChirho);
+    if (nextChirho) openWordEditChirho(nextChirho);
   }
 
   async function markWordNonLatinChirho(wChirho: MergedWordChirho): Promise<void> {
@@ -651,8 +693,21 @@
         eventTypeChirho: "word-script-set-chirho",
         payloadChirho: { oldScriptChirho: wChirho.displayScriptChirho, newScriptChirho: activePaintScriptChirho, viaChirho: "right-click-chirho" },
       });
+    } else if (hasScriptMismatchChirho(wChirho)) {
+      // Codepoints disagree with declared script — one-click adopt the codepoint
+      // verdict. Common case: a Hebrew word currently tagged latin-chirho.
+      const detectedChirho = detectScriptFromCodepointsChirho(wChirho.displayTextChirho);
+      if (detectedChirho === wChirho.displayScriptChirho) return;
+      await postEventChirho({
+        pageIdChirho: (data as any).pageDataChirho.idChirho,
+        scanlineIdChirho: wChirho.scanlineIdChirho,
+        wordIdChirho: wChirho.wordIdChirho,
+        aggregateTypeChirho: "word-chirho",
+        eventTypeChirho: "word-script-set-chirho",
+        payloadChirho: { oldScriptChirho: wChirho.displayScriptChirho, newScriptChirho: detectedChirho, viaChirho: "codepoint-quick-fix-chirho" },
+      });
     } else {
-      // No active paint → legacy "needs vision" flag
+      // No active paint, no mismatch → legacy "needs vision" flag
       await markWordNonLatinChirho(wChirho);
     }
   }
@@ -1005,7 +1060,7 @@
             <option value="unknown-chirho">Unknown</option>
           </select>
         </label>
-        <p class="modal-hint-chirho"><kbd>Enter</kbd> saves · <kbd>Esc</kbd> closes. Saving emits a <code>word-text-corrected-chirho</code> event and marks the word confirmed.</p>
+        <p class="modal-hint-chirho"><kbd>Enter</kbd> saves · <kbd>Shift</kbd>+<kbd>Enter</kbd> save &amp; jump to next problem · <kbd>Esc</kbd> closes. Right-click a word with <span class="hint-warn-chirho">⚠</span> in the line text to auto-set its script to the detected codepoint.</p>
       </div>
       <footer class="modal-footer-chirho">
         <button class="btn-flag-chirho" onclick={() => markWordNonLatinChirho(wChirho)} disabled={wordSavingChirho}>
@@ -1015,8 +1070,19 @@
         <button class="btn-save-chirho" onclick={saveWordChirho} disabled={wordSavingChirho}>
           {wordSavingChirho ? "Saving…" : "Save"}
         </button>
+        <button class="btn-save-next-chirho" onclick={saveAndNextWordChirho} disabled={wordSavingChirho} title="Shift+Enter">
+          Save &amp; next →
+        </button>
       </footer>
     </div>
+  </div>
+{/if}
+
+{#if saveErrorChirho}
+  <div class="save-error-toast-chirho" role="alert">
+    <span class="toast-icon-chirho">⚠</span>
+    <span class="toast-msg-chirho">{saveErrorChirho}</span>
+    <button class="toast-close-chirho" onclick={() => (saveErrorChirho = null)} aria-label="Dismiss error">×</button>
   </div>
 {/if}
 
@@ -1366,6 +1432,38 @@
   .btn-flag-chirho:hover:not(:disabled) {
     background: #5e3a0a;
   }
+  .btn-save-next-chirho {
+    padding: 0.4rem 0.9rem;
+    background: #0f3060; border: 1px solid #2563eb;
+    color: #93c5fd;
+    border-radius: 4px; cursor: pointer;
+  }
+  .btn-save-next-chirho:hover:not(:disabled) { background: #163d7c; }
+  .hint-warn-chirho { color: #fca5a5; }
+
+  /* ===== Save error toast — bottom-right, sticky until dismissed ===== */
+  .save-error-toast-chirho {
+    position: fixed;
+    bottom: 1rem; right: 1rem;
+    z-index: 1000;
+    display: flex; align-items: center; gap: 0.6rem;
+    padding: 0.55rem 0.7rem 0.55rem 0.8rem;
+    background: #4a1010;
+    border: 1px solid #dc2626;
+    color: #fecaca;
+    border-radius: 6px;
+    max-width: min(34rem, calc(100vw - 2rem));
+    font-size: 0.85rem;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.55);
+  }
+  .toast-icon-chirho { font-size: 1.1rem; flex: 0 0 auto; }
+  .toast-msg-chirho { flex: 1 1 auto; word-break: break-word; }
+  .toast-close-chirho {
+    background: none; border: none;
+    color: #fecaca; font-size: 1.3rem; line-height: 1;
+    cursor: pointer; padding: 0 0.25rem;
+  }
+  .toast-close-chirho:hover { color: #fff; }
 
   /* ===== Sticky paintbrush palette ===== */
   .paintbrush-bar-chirho {
