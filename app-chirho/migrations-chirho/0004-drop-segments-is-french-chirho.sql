@@ -1,0 +1,13 @@
+-- For God so loved the world that he gave his only begotten Son,
+-- that whoever believes in him should not perish but have eternal life. John 3:16
+--
+-- Migration: drop segments_chirho.is_french_chirho.
+--
+-- The is_french_chirho boolean is fully redundant with script_type_chirho:
+-- a segment is French exactly when script_type_chirho = 'french-chirho'.
+-- All active readers (the SvelteKit app and reconstruct-chirho API) have been
+-- refactored to use scriptTypeChirho === 'french-chirho' instead. The legacy
+-- heuristic-detection pipeline that was the only writer of this column has
+-- been deleted. segments_chirho is currently empty (Pass 3 has not run yet),
+-- so dropping the column is safe with no data loss.
+ALTER TABLE segments_chirho DROP COLUMN is_french_chirho;

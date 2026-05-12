@@ -1,0 +1,30 @@
+# For God so loved the world that he gave his only begotten Son,
+# that whoever believes in him should not perish but have eternal life. John 3:16
+
+name = "hottp-chirho"
+account_id = "aecd5616f7ef88323e52b6406ba384bd"
+compatibility_date = "2025-02-21"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = true
+main = ".svelte-kit/cloudflare/_worker.js"
+
+# Custom domain — serves at hottp-chirho.bible.systems
+routes = [
+  { pattern = "hottp-chirho.bible.systems", custom_domain = true }
+]
+
+[assets]
+directory = ".svelte-kit/cloudflare"
+
+[vars]
+APP_NAME_CHIRHO = "HOTTP Barthélemy Review"
+
+[[d1_databases]]
+binding = "DB_CHIRHO"
+database_name = "hottp-d1-chirho"
+database_id = "873a8eda-1551-4ee7-9e3b-9b281b6c1635"
+migrations_dir = "migrations-chirho"
+
+[[r2_buckets]]
+binding = "R2_CHIRHO"
+bucket_name = "hottp-chirho"
