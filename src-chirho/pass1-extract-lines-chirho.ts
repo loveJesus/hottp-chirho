@@ -65,6 +65,21 @@ const PILOT_VOLS_CHIRHO = [1, 2, 3, 4, 5] as const;
 const PILOT_START_CHIRHO = 148;
 const PILOT_END_CHIRHO = 152;
 
+/**
+ * Tesseract data + language stack.
+ *
+ * `tessdata-best-chirho` is the downloaded LSTM-best tier (3-9MB per script).
+ * The page-0148 bake-off showed: best+multi recovers real Hebrew Unicode
+ * tokens that fra-only produces as control-character garbage, raises mean
+ * confidence 90.4 → 93.7, and drops <60-conf words from 22 → 3. See
+ * `workspace-chirho/tessdata-bakeoff-chirho/SUMMARY.md`.
+ *
+ * `fra+heb+grc+lat` is the language stack — tesseract picks per-region.
+ */
+const TESSDATA_BEST_DIR_CHIRHO =
+  "/Users/hallelujah/dev-chirho/friends-chirho/andrewbeth-chirho/hottp-chirho/workspace-chirho/tessdata-best-chirho";
+const TESSERACT_LANG_STACK_CHIRHO = "fra+heb+grc+lat";
+
 interface WordBboxChirho {
   textChirho: string;
   xMinChirho: number;
@@ -148,8 +163,10 @@ async function tesseractLineBboxesChirho(
     "tesseract",
     imagePathChirho,
     stemChirho,
+    "--tessdata-dir",
+    TESSDATA_BEST_DIR_CHIRHO,
     "-l",
-    "fra",
+    TESSERACT_LANG_STACK_CHIRHO,
     "--psm",
     "4",
     "-c",
@@ -325,6 +342,30 @@ async function pass1PageChirho(
     let pageIdChirho: number;
     if (existingChirho.length > 0) {
       pageIdChirho = existingChirho[0]!.idChirho;
+
+      // Safety: refuse to re-OCR a page that has any human-confirmed word — we
+      // would otherwise silently wipe the human's edits. Events also block
+      // deletion because of the words/scanlines FKs, so any non-zero event
+      // count is a hard stop.
+      const confirmedChirho = sqliteChirho
+        .query(
+          `SELECT COUNT(*) AS c_chirho FROM words_chirho
+             WHERE scanline_id_chirho IN
+               (SELECT id_chirho FROM scanlines_chirho WHERE page_id_chirho = ?)
+               AND is_human_confirmed_chirho = 1`
+        )
+        .get(pageIdChirho) as { c_chirho: number } | undefined;
+      const eventsChirho = sqliteChirho
+        .query(`SELECT COUNT(*) AS c_chirho FROM events_chirho WHERE page_id_chirho = ?`)
+        .get(pageIdChirho) as { c_chirho: number } | undefined;
+      if ((confirmedChirho?.c_chirho ?? 0) > 0 || (eventsChirho?.c_chirho ?? 0) > 0) {
+        throw new Error(
+          `Refusing to re-OCR vol ${volumeNumberChirho} p${pageNumberChirho}: ` +
+            `${confirmedChirho?.c_chirho ?? 0} human-confirmed word(s), ` +
+            `${eventsChirho?.c_chirho ?? 0} event(s). Reset by hand or pick a different page.`
+        );
+      }
+
       await dbChirho
         .update(pagesChirho)
         .set({
@@ -336,7 +377,25 @@ async function pass1PageChirho(
           updatedAtChirho: new Date().toISOString(),
         })
         .where(eq(pagesChirho.idChirho, pageIdChirho));
-      // Replace scanlines for a clean re-extract (no segments yet, so no FK conflict)
+      // Cascade-delete in FK order:
+      //   events → words → bhs/lxx matches → segments → scanlines.
+      // (events for this page are already zero by the guard above, but the
+      // explicit DELETE keeps the statement safe if the guard ever loosens.)
+      sqliteChirho.run(`DELETE FROM events_chirho WHERE page_id_chirho = ?`, [pageIdChirho]);
+      sqliteChirho.run(
+        `DELETE FROM words_chirho WHERE scanline_id_chirho IN
+           (SELECT id_chirho FROM scanlines_chirho WHERE page_id_chirho = ?)`,
+        [pageIdChirho]
+      );
+      const segIdSubqChirho = `(SELECT id_chirho FROM segments_chirho WHERE scanline_id_chirho IN
+           (SELECT id_chirho FROM scanlines_chirho WHERE page_id_chirho = ?))`;
+      sqliteChirho.run(`DELETE FROM bhs_matches_chirho WHERE segment_id_chirho IN ${segIdSubqChirho}`, [pageIdChirho]);
+      sqliteChirho.run(`DELETE FROM lxx_matches_chirho WHERE segment_id_chirho IN ${segIdSubqChirho}`, [pageIdChirho]);
+      sqliteChirho.run(
+        `DELETE FROM verse_context_chirho WHERE scanline_id_chirho IN
+           (SELECT id_chirho FROM scanlines_chirho WHERE page_id_chirho = ?)`,
+        [pageIdChirho]
+      );
       sqliteChirho.run(
         `DELETE FROM segments_chirho WHERE scanline_id_chirho IN
            (SELECT id_chirho FROM scanlines_chirho WHERE page_id_chirho = ?)`,
