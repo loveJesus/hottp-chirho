@@ -121,11 +121,25 @@
     editingSegmentChirho = segChirho;
     editTextChirho = segChirho.acceptedTextChirho ?? segChirho.ocrTextChirho ?? "";
     editScriptChirho = segChirho.scriptTypeChirho ?? "unknown-chirho";
+    queueMicrotask(() => {
+      segmentTextareaElChirho?.focus();
+      segmentTextareaElChirho?.select();
+    });
   }
   function closeEditChirho(): void {
     editingSegmentChirho = null;
     editTextChirho = "";
     editScriptChirho = "";
+  }
+  function onSegmentKeyChirho(eChirho: KeyboardEvent): void {
+    // Cmd/Ctrl+Enter saves (multi-line text — bare Enter must stay as newline).
+    if (eChirho.key === "Enter" && (eChirho.metaKey || eChirho.ctrlKey)) {
+      eChirho.preventDefault();
+      if (!savingChirho) saveEditChirho();
+    } else if (eChirho.key === "Escape") {
+      eChirho.preventDefault();
+      closeEditChirho();
+    }
   }
   async function saveEditChirho(): Promise<void> {
     if (!editingSegmentChirho) return;
@@ -296,12 +310,28 @@
   let wordEditTextChirho = $state("");
   let wordEditScriptChirho = $state("");
   let wordSavingChirho = $state(false);
+  // Focus capture for keyboard-driven triage (autofocus on open, Enter saves, Esc closes).
+  let wordInputElChirho = $state<HTMLInputElement | null>(null);
+  let segmentTextareaElChirho = $state<HTMLTextAreaElement | null>(null);
 
   function openWordEditChirho(wChirho: MergedWordChirho): void {
     editingWordChirho = wChirho;
     wordEditTextChirho = wChirho.displayTextChirho;
     wordEditScriptChirho = wChirho.displayScriptChirho;
     hoveredWordChirho = null;
+    queueMicrotask(() => {
+      wordInputElChirho?.focus();
+      wordInputElChirho?.select();
+    });
+  }
+  function onWordKeyChirho(eChirho: KeyboardEvent): void {
+    if (eChirho.key === "Enter") {
+      eChirho.preventDefault();
+      if (!wordSavingChirho) saveWordChirho();
+    } else if (eChirho.key === "Escape") {
+      eChirho.preventDefault();
+      closeWordEditChirho();
+    }
   }
   function closeWordEditChirho(): void {
     editingWordChirho = null;
@@ -820,6 +850,7 @@
         {#each snapshotParsedChirho.scanlinesChirho as slChirho (slChirho.scanlineIdChirho)}
           {@const lineWordsChirho = mergedWordsChirho.filter((wChirho) => wChirho.scanlineIdChirho === slChirho.scanlineIdChirho)}
           {@const isFlaggedChirho = linesNeedingAIChirho.has(slChirho.scanlineIdChirho)}
+          {@const lineTokensChirho = buildLineTokensChirho(slChirho, lineWordsChirho)}
           <div class="line-block-chirho" class:flagged-line-chirho={isFlaggedChirho}>
             <div class="line-header-chirho">
               <span class="line-num-chirho">Line {slChirho.lineIndexChirho}</span>
@@ -869,7 +900,7 @@
               {/each}
             </svg>
             <div class="line-text-chirho" dir="auto">
-              {#each buildLineTokensChirho(slChirho, lineWordsChirho) as tokChirho, tIdxChirho}
+              {#each lineTokensChirho as tokChirho, tIdxChirho}
                 {@const colChirho = SCRIPT_COLORS_CHIRHO[tokChirho.scriptChirho] ?? '#c9a84c'}
                 {#if tokChirho.kindChirho === 'word-chirho'}
                   {@const wTokChirho = tokChirho.wordChirho!}
@@ -901,7 +932,7 @@
                     {:else if tokChirho.confidenceChirho === 'low'}<span class="conf-mini-chirho conf-low-chirho">?</span>{/if}
                     <span class="seg-token-text-chirho" dir="auto">{tokChirho.textChirho || '·'}</span>
                   </button>
-                {/if}{tIdxChirho < buildLineTokensChirho(slChirho, lineWordsChirho).length - 1 ? ' ' : ''}
+                {/if}{tIdxChirho < lineTokensChirho.length - 1 ? ' ' : ''}
               {/each}
             </div>
           </div>
@@ -955,6 +986,8 @@
           <input
             type="text"
             bind:value={wordEditTextChirho}
+            bind:this={wordInputElChirho}
+            onkeydown={onWordKeyChirho}
             dir="auto"
             placeholder="Type the correct word…"
             class="word-edit-input-chirho"
@@ -972,7 +1005,7 @@
             <option value="unknown-chirho">Unknown</option>
           </select>
         </label>
-        <p class="modal-hint-chirho">Saving emits a <code>word-text-corrected-chirho</code> event and marks the word confirmed.</p>
+        <p class="modal-hint-chirho"><kbd>Enter</kbd> saves · <kbd>Esc</kbd> closes. Saving emits a <code>word-text-corrected-chirho</code> event and marks the word confirmed.</p>
       </div>
       <footer class="modal-footer-chirho">
         <button class="btn-flag-chirho" onclick={() => markWordNonLatinChirho(wChirho)} disabled={wordSavingChirho}>
@@ -1002,9 +1035,16 @@
           <span class="meta-pill-chirho">Currently: {statusLabelChirho(segChirho.statusChirho)}</span>
         </div>
         <label>Text
-          <textarea bind:value={editTextChirho} dir="auto" rows="4" placeholder="Edit the transcribed text…"></textarea>
+          <textarea
+            bind:value={editTextChirho}
+            bind:this={segmentTextareaElChirho}
+            onkeydown={onSegmentKeyChirho}
+            dir="auto"
+            rows="4"
+            placeholder="Edit the transcribed text…"
+          ></textarea>
         </label>
-        <p class="modal-hint-chirho">Saving marks this segment as <strong>Confirmed</strong>.</p>
+        <p class="modal-hint-chirho"><kbd>Cmd</kbd>/<kbd>Ctrl</kbd>+<kbd>Enter</kbd> saves · <kbd>Esc</kbd> closes. Saving marks this segment as <strong>Confirmed</strong>.</p>
       </div>
       <footer class="modal-footer-chirho">
         <button class="btn-cancel-chirho" onclick={closeEditChirho} disabled={savingChirho}>Cancel</button>
@@ -1155,6 +1195,18 @@
   .modal-body-chirho textarea { min-height: 5rem; resize: vertical; }
   .modal-hint-chirho { font-size: 0.75rem; color: #666; margin: 0; }
   .modal-hint-chirho code { color: #c9a84c; background: #111; padding: 0.05rem 0.3rem; border-radius: 3px; }
+  .modal-hint-chirho kbd {
+    display: inline-block;
+    padding: 0 0.3rem;
+    background: #1a1a2e;
+    border: 1px solid #2a2a4a;
+    border-bottom-width: 2px;
+    border-radius: 3px;
+    color: #c9a84c;
+    font-family: ui-monospace, "SF Mono", "Menlo", monospace;
+    font-size: 0.7rem;
+    line-height: 1.3;
+  }
   .modal-footer-chirho { display: flex; gap: 0.5rem; justify-content: flex-end; padding: 0.75rem 1rem; border-top: 1px solid #2a2a4a; background: #12121f; }
   .btn-save-chirho { padding: 0.4rem 1rem; background: #1b5e20; border: 1px solid #2e7d32; color: #a5d6a7; border-radius: 4px; cursor: pointer; }
   .btn-save-chirho:hover:not(:disabled) { background: #2e7d32; }
