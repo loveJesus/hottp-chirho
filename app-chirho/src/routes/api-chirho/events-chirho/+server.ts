@@ -33,6 +33,7 @@ interface EventBodyChirho {
     | "word-verified-chirho"
     | "word-vision-applied-chirho"
     | "scanline-needs-ai-review-chirho"
+    | "scanline-needs-ai-review-resolved-chirho"
     | "scanline-verified-chirho"
     | "page-completed-chirho";
   payloadChirho: Record<string, unknown>;
