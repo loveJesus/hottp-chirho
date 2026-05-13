@@ -954,18 +954,27 @@
                 ></rect>
               {/each}
             </svg>
-            <div class="line-text-chirho" dir="auto">
+            <!-- dir="ltr" on the container keeps French order intact when a
+                 Hebrew/Arabic token would otherwise flip the whole line via
+                 dir="auto"; each non-Latin token is dir="rtl" inside so its own
+                 glyphs read correctly. -->
+            <div class="line-text-chirho" dir="ltr">
               {#each lineTokensChirho as tokChirho, tIdxChirho}
                 {@const colChirho = SCRIPT_COLORS_CHIRHO[tokChirho.scriptChirho] ?? '#c9a84c'}
+                {@const isRtlChirho = tokChirho.scriptChirho === 'hebrew-chirho' || tokChirho.scriptChirho === 'arabic-chirho' || tokChirho.scriptChirho === 'syriac-chirho'}
+                {@const isNonLatinChirho = isRtlChirho || tokChirho.scriptChirho === 'greek-chirho' || tokChirho.scriptChirho === 'symbol-chirho'}
                 {#if tokChirho.kindChirho === 'word-chirho'}
                   {@const wTokChirho = tokChirho.wordChirho!}
                   {@const mismatchChirho = hasScriptMismatchChirho(wTokChirho)}
+                  {@const detectedRtlChirho = mismatchChirho && /[֐-׿؀-ۿ܀-ݏ]/.test(wTokChirho.displayTextChirho ?? '')}
                   <button
                     type="button"
                     class="line-word-token-chirho"
                     class:confirmed-chirho={tokChirho.confirmedChirho}
                     class:flagged-chirho={tokChirho.flaggedChirho}
                     class:mismatch-chirho={mismatchChirho}
+                    class:non-latin-chirho={isNonLatinChirho}
+                    dir={isRtlChirho || detectedRtlChirho ? 'rtl' : 'ltr'}
                     style="--word-color: {colChirho}"
                     onclick={() => openWordEditChirho(wTokChirho)}
                     oncontextmenu={(eChirho) => wordContextMenuChirho(eChirho, wTokChirho)}
@@ -978,6 +987,8 @@
                   <button
                     type="button"
                     class="line-segment-token-chirho"
+                    class:non-latin-chirho={isNonLatinChirho}
+                    dir={isRtlChirho ? 'rtl' : 'ltr'}
                     style="--word-color: {colChirho}"
                     onclick={() => openEditChirho(segTokChirho as any)}
                     title={`${scriptLabelChirho(tokChirho.scriptChirho)} segment${tokChirho.referenceChirho ? ' · ' + tokChirho.referenceChirho : ''}${tokChirho.confidenceChirho ? ' (' + tokChirho.confidenceChirho + ')' : ''}`}
@@ -985,7 +996,7 @@
                     {#if tokChirho.confidenceChirho === 'high'}<span class="conf-mini-chirho conf-high-chirho">✓</span>
                     {:else if tokChirho.confidenceChirho === 'medium'}<span class="conf-mini-chirho conf-medium-chirho">◐</span>
                     {:else if tokChirho.confidenceChirho === 'low'}<span class="conf-mini-chirho conf-low-chirho">?</span>{/if}
-                    <span class="seg-token-text-chirho" dir="auto">{tokChirho.textChirho || '·'}</span>
+                    <span class="seg-token-text-chirho" dir={isRtlChirho ? 'rtl' : 'ltr'}>{tokChirho.textChirho || '·'}</span>
                   </button>
                 {/if}{tIdxChirho < lineTokensChirho.length - 1 ? ' ' : ''}
               {/each}
@@ -1617,6 +1628,14 @@
   .line-word-token-chirho.mismatch-chirho {
     border-bottom-color: #dc2626;
     border-bottom-style: dotted;
+  }
+  /* Non-Latin tokens (Hebrew red, Greek green, Syriac purple, Arabic amber, ...)
+     are color-coded by script — the same hue used in SCRIPT_COLORS_CHIRHO and
+     on the page-image word-box overlays. Latin words stay default off-white. */
+  .line-word-token-chirho.non-latin-chirho,
+  .line-segment-token-chirho.non-latin-chirho .seg-token-text-chirho {
+    color: var(--word-color, #c9a84c);
+    font-weight: 600;
   }
   .token-dot-chirho {
     display: inline-block;
