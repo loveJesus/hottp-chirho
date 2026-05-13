@@ -289,6 +289,111 @@ function languageToScriptChirho(langChirho: string): string {
   return mapChirho[langChirho] ?? "unknown-chirho";
 }
 
+function detectScriptFromTextChirho(textChirho: string): string {
+  let hebChirho = 0, grkChirho = 0, syrChirho = 0, arbChirho = 0, latChirho = 0;
+  for (const chChirho of textChirho) {
+    const cChirho = chChirho.codePointAt(0)!;
+    if (cChirho >= 0x0590 && cChirho <= 0x05ff) hebChirho++;
+    else if ((cChirho >= 0x0370 && cChirho <= 0x03ff) || (cChirho >= 0x1f00 && cChirho <= 0x1fff)) grkChirho++;
+    else if (cChirho >= 0x0700 && cChirho <= 0x074f) syrChirho++;
+    else if (cChirho >= 0x0600 && cChirho <= 0x06ff) arbChirho++;
+    else if ((cChirho >= 0x0041 && cChirho <= 0x024f) || (cChirho >= 0x1e00 && cChirho <= 0x1eff)) latChirho++;
+  }
+  const totalChirho = hebChirho + grkChirho + syrChirho + arbChirho + latChirho;
+  if (totalChirho === 0) return "symbol-chirho";
+  if (hebChirho >= Math.max(grkChirho, syrChirho, arbChirho, latChirho)) return "hebrew-chirho";
+  if (grkChirho >= Math.max(syrChirho, arbChirho, latChirho)) return "greek-chirho";
+  if (syrChirho >= Math.max(arbChirho, latChirho)) return "syriac-chirho";
+  if (arbChirho >= latChirho) return "arabic-chirho";
+  return "latin-chirho";
+}
+
+/**
+ * Canonical-from-recon: for each scanline where tesseract's word count equals
+ * the reconstructed-text token count, emit text-corrected events from the
+ * canonical reconstruction (positionally aligned). This is the strongest
+ * signal we have — reconstruct-text-chirho.ts uses WLC/BHS lookup for the
+ * Hebrew, so its tokens are authoritatively correct when alignment holds.
+ *
+ * Word position alignment failure mode: tesseract and recon split differently
+ * on punctuation or merge differently around long runs. When counts disagree
+ * we fall through to Opus-vision logic instead.
+ */
+function applyCanonicalFromReconChirho(pageIdChirho: number): {
+  appliedChirho: number;
+  skippedLinesChirho: number;
+  alignedScanlineIdsChirho: Set<number>;
+} {
+  const reconRowChirho = sqliteChirho
+    .query("SELECT reconstructed_text_chirho FROM pages_chirho WHERE id_chirho = ?")
+    .get(pageIdChirho) as { reconstructed_text_chirho: string | null } | undefined;
+  const reconLinesChirho = (reconRowChirho?.reconstructed_text_chirho ?? "").split("\n");
+
+  const scanlinesChirho = sqliteChirho
+    .query("SELECT id_chirho, line_index_chirho FROM scanlines_chirho WHERE page_id_chirho = ? ORDER BY line_index_chirho")
+    .all(pageIdChirho) as Array<{ id_chirho: number; line_index_chirho: number }>;
+
+  let appliedChirho = 0;
+  let skippedLinesChirho = 0;
+  const alignedScanlineIdsChirho = new Set<number>();
+  for (const slChirho of scanlinesChirho) {
+    const reconBodyChirho = reconLinesChirho[slChirho.line_index_chirho] ?? "";
+    const reconTokensChirho = reconBodyChirho.split(/\s+/).filter((tChirho) => tChirho.length > 0);
+    const lineWordsChirho = sqliteChirho
+      .query(
+        `SELECT id_chirho, word_index_chirho, current_text_chirho, current_script_chirho, is_human_confirmed_chirho
+           FROM words_chirho WHERE scanline_id_chirho = ? ORDER BY word_index_chirho`
+      )
+      .all(slChirho.id_chirho) as Array<{
+        id_chirho: number;
+        word_index_chirho: number;
+        current_text_chirho: string | null;
+        current_script_chirho: string | null;
+        is_human_confirmed_chirho: number;
+      }>;
+    if (lineWordsChirho.length !== reconTokensChirho.length) {
+      skippedLinesChirho++;
+      continue;
+    }
+    alignedScanlineIdsChirho.add(slChirho.id_chirho);
+    for (let pChirho = 0; pChirho < lineWordsChirho.length; pChirho++) {
+      const wChirho = lineWordsChirho[pChirho]!;
+      if (wChirho.is_human_confirmed_chirho === 1) continue;
+      const reconTokChirho = reconTokensChirho[pChirho]!.normalize("NFC");
+      const curTextChirho = (wChirho.current_text_chirho ?? "").trim().normalize("NFC");
+      if (curTextChirho === reconTokChirho) continue;
+      const newScriptChirho = detectScriptFromTextChirho(reconTokChirho);
+      sqliteChirho.run(
+        `INSERT INTO events_chirho
+           (page_id_chirho, scanline_id_chirho, word_id_chirho, aggregate_type_chirho,
+            event_type_chirho, payload_json_chirho, reviewer_chirho)
+         VALUES (?, ?, ?, 'word-chirho', 'word-text-corrected-chirho', ?, 'canonical-recon-chirho')`,
+        [
+          pageIdChirho,
+          slChirho.id_chirho,
+          wChirho.id_chirho,
+          JSON.stringify({
+            oldTextChirho: wChirho.current_text_chirho,
+            newTextChirho: reconTokChirho,
+            newScriptChirho,
+            viaChirho: "canonical-recon-positional-chirho",
+          }),
+        ]
+      );
+      sqliteChirho.run(
+        `UPDATE words_chirho
+           SET current_text_chirho = ?, current_script_chirho = ?,
+               current_source_chirho = 'canonical-chirho',
+               pending_script_flag_chirho = 0
+           WHERE id_chirho = ? AND is_human_confirmed_chirho = 0`,
+        [reconTokChirho, newScriptChirho, wChirho.id_chirho]
+      );
+      appliedChirho++;
+    }
+  }
+  return { appliedChirho, skippedLinesChirho, alignedScanlineIdsChirho };
+}
+
 async function applyPhaseChirho(volChirho: number, pageNumChirho: number): Promise<void> {
   initDbChirho();
   const pageRowChirho = sqliteChirho
@@ -296,6 +401,16 @@ async function applyPhaseChirho(volChirho: number, pageNumChirho: number): Promi
     .get(volChirho, pageNumChirho) as { id_chirho: number } | undefined;
   if (!pageRowChirho) throw new Error(`vol ${volChirho} p${pageNumChirho}: not found`);
   const pageIdChirho = pageRowChirho.id_chirho;
+
+  // Canonical-from-recon first: positional alignment for lines where tess word
+  // count equals recon token count. This is the gold-standard correction for
+  // Hebrew quotations (WLC/BHS lookup) and takes precedence over Opus.
+  const canonChirho = applyCanonicalFromReconChirho(pageIdChirho);
+  logChirho(
+    MODULE_CHIRHO,
+    `canonical-from-recon: ${canonChirho.appliedChirho} text-corrected events; ${canonChirho.skippedLinesChirho} lines had count mismatch`
+  );
+  const alignedScanlineIdsChirho = canonChirho.alignedScanlineIdsChirho;
 
   const outRootChirho = batchesDirChirho(volChirho, pageNumChirho);
   if (!existsSync(outRootChirho)) throw new Error(`no batches dir: ${outRootChirho}`);
@@ -349,6 +464,15 @@ async function applyPhaseChirho(volChirho: number, pageNumChirho: number): Promi
     for (const wChirho of manifestChirho.wordsChirho) {
       const rChirho = resultsByIdxChirho.get(wChirho.batchIdxChirho);
       if (!rChirho) continue;
+      // Skip Opus's input on scanlines that the canonical-from-recon step
+      // already handled — recon positional alignment is authoritative and
+      // Opus's per-word guess (which lacks page context) would only add noise
+      // or, worse, the bag-of-tokens false positive that misplaced ברית onto
+      // mna. when the correct answer at that position was יהוה.
+      if (alignedScanlineIdsChirho.has(wChirho.scanlineIdChirho)) {
+        skippedMatchChirho++;
+        continue;
+      }
       const newScriptChirho = languageToScriptChirho(rChirho.language);
       const sameTextChirho = (rChirho.spelling ?? "").trim() === wChirho.tesseractTextChirho.trim();
       const sameScriptChirho = newScriptChirho === wChirho.declaredScriptChirho;
@@ -357,15 +481,10 @@ async function applyPhaseChirho(volChirho: number, pageNumChirho: number): Promi
         continue;
       }
       const certChirho = typeof rChirho.certainty === "number" ? rChirho.certainty : 0;
-      // Dual-signal promotion: if Opus's suggestion appears as a token in the
-      // canonical reconstructed line text, treat it as auto-apply regardless of
-      // Opus's self-rated certainty. The reconstructed text came from a wholly
-      // independent pipeline (line-level OCR + WLC/BHS lookup), so agreement
-      // here is much stronger than Opus's lone confidence.
-      const reconTokensChirho = lineTokensByLineIdxChirho.get(wChirho.lineIndexChirho);
-      const reconAgreesChirho =
-        reconTokensChirho?.has((rChirho.spelling ?? "").trim().normalize("NFC")) === true;
-      if (certChirho >= AUTO_APPLY_CERTAINTY_CHIRHO || reconAgreesChirho) {
+      // Non-aligned scanlines: no positional recon to cross-check, so use the
+      // strict certainty threshold only. Bag-of-tokens dual-signal was unsafe
+      // here (could match a different position's token in the same line).
+      if (certChirho >= AUTO_APPLY_CERTAINTY_CHIRHO) {
         // Single combined vision-applied event.
         sqliteChirho.run(
           `INSERT INTO events_chirho
