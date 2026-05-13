@@ -320,6 +320,32 @@ async function applyPhaseChirho(volChirho: number, pageNumChirho: number): Promi
     const resultsByIdxChirho = new Map<number, VisionResultChirho>();
     for (const rChirho of resultsRawChirho.results) resultsByIdxChirho.set(rChirho.idx, rChirho);
 
+    // Dual-signal: cross-check Opus suggestions against the page's canonical
+    // reconstructed text. Agreement promotes apply regardless of Opus cert.
+    //
+    // pages.reconstructed_text_chirho is built by reconstruct-text-chirho.ts —
+    // an independent pipeline that does line-level OCR plus WLC/BHS lookup for
+    // Hebrew quotations. Format: one canonical-text line per scanline, in
+    // line-index order (zero-indexed array position equals line_index_chirho).
+    //
+    // (scanlines.pdftotext_chirho is the raw per-line tesseract output and does
+    // NOT contain the corrected canonical text — that was the original
+    // mis-direction.)
+    const reconRowChirho = sqliteChirho
+      .query("SELECT reconstructed_text_chirho FROM pages_chirho WHERE id_chirho = ?")
+      .get(pageIdChirho) as { reconstructed_text_chirho: string | null } | undefined;
+    const reconLinesChirho = (reconRowChirho?.reconstructed_text_chirho ?? "").split("\n");
+    const lineTokensByLineIdxChirho = new Map<number, Set<string>>();
+    for (let lIdxChirho = 0; lIdxChirho < reconLinesChirho.length; lIdxChirho++) {
+      const bodyChirho = reconLinesChirho[lIdxChirho] ?? "";
+      const tokensChirho = new Set<string>();
+      for (const tokChirho of bodyChirho.split(/\s+/)) {
+        const trimmedChirho = tokChirho.replace(/[.,;:!?()\[\]"'‘’“”]/g, "").trim().normalize("NFC");
+        if (trimmedChirho.length > 0) tokensChirho.add(trimmedChirho);
+      }
+      lineTokensByLineIdxChirho.set(lIdxChirho, tokensChirho);
+    }
+
     for (const wChirho of manifestChirho.wordsChirho) {
       const rChirho = resultsByIdxChirho.get(wChirho.batchIdxChirho);
       if (!rChirho) continue;
@@ -331,7 +357,15 @@ async function applyPhaseChirho(volChirho: number, pageNumChirho: number): Promi
         continue;
       }
       const certChirho = typeof rChirho.certainty === "number" ? rChirho.certainty : 0;
-      if (certChirho >= AUTO_APPLY_CERTAINTY_CHIRHO) {
+      // Dual-signal promotion: if Opus's suggestion appears as a token in the
+      // canonical reconstructed line text, treat it as auto-apply regardless of
+      // Opus's self-rated certainty. The reconstructed text came from a wholly
+      // independent pipeline (line-level OCR + WLC/BHS lookup), so agreement
+      // here is much stronger than Opus's lone confidence.
+      const reconTokensChirho = lineTokensByLineIdxChirho.get(wChirho.lineIndexChirho);
+      const reconAgreesChirho =
+        reconTokensChirho?.has((rChirho.spelling ?? "").trim().normalize("NFC")) === true;
+      if (certChirho >= AUTO_APPLY_CERTAINTY_CHIRHO || reconAgreesChirho) {
         // Single combined vision-applied event.
         sqliteChirho.run(
           `INSERT INTO events_chirho

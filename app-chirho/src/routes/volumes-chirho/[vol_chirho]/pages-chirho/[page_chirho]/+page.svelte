@@ -206,6 +206,11 @@
     sourceChirho?: string;
     isHumanConfirmedChirho?: boolean;
     pendingScriptFlagChirho?: boolean;
+    // Pending vision suggestion from a flagged event — the user hasn't
+    // accepted yet but Opus believes the word is this:
+    visionSuggestionTextChirho?: string;
+    visionSuggestionScriptChirho?: string;
+    visionSuggestionCertaintyChirho?: number;
   }
   const wordOverridesChirho = $derived.by((): Map<number, WordOverrideChirho> => {
     const mapChirho = new Map<number, WordOverrideChirho>();
@@ -222,6 +227,27 @@
           break;
         case "word-script-flagged-chirho":
           curChirho.pendingScriptFlagChirho = true;
+          // Vision-suggested flags carry the model's correction in payload.
+          if (typeof payloadChirho.visionSpellingChirho === "string") {
+            curChirho.visionSuggestionTextChirho = payloadChirho.visionSpellingChirho as string;
+          }
+          if (typeof payloadChirho.visionLanguageChirho === "string") {
+            const langChirho = payloadChirho.visionLanguageChirho as string;
+            const langToScriptChirho: Record<string, string> = {
+              "hebrew": "hebrew-chirho",
+              "greek": "greek-chirho",
+              "syriac": "syriac-chirho",
+              "arabic": "arabic-chirho",
+              "latin-french": "latin-chirho",
+              "latin-non-french": "latin-non-french-chirho",
+              "symbol": "symbol-chirho",
+              "unknown": "unknown-chirho",
+            };
+            curChirho.visionSuggestionScriptChirho = langToScriptChirho[langChirho] ?? "unknown-chirho";
+          }
+          if (typeof payloadChirho.certaintyChirho === "number") {
+            curChirho.visionSuggestionCertaintyChirho = payloadChirho.certaintyChirho as number;
+          }
           break;
         case "word-script-set-chirho":
           if (typeof payloadChirho.newScriptChirho === "string") curChirho.scriptChirho = payloadChirho.newScriptChirho as string;
@@ -260,6 +286,10 @@
     displaySourceChirho: string;
     displayConfirmedChirho: boolean;
     displayPendingScriptFlagChirho: boolean;
+    // Pending vision suggestion (null if no flagged-with-suggestion event).
+    visionSuggestionTextChirho: string | null;
+    visionSuggestionScriptChirho: string | null;
+    visionSuggestionCertaintyChirho: number | null;
   }
   const mergedWordsChirho = $derived.by((): MergedWordChirho[] => {
     const snapChirho = snapshotParsedChirho;
@@ -278,6 +308,9 @@
           displaySourceChirho: oChirho.sourceChirho ?? wChirho.currentSourceChirho ?? "ocr-chirho",
           displayConfirmedChirho: oChirho.isHumanConfirmedChirho ?? wChirho.isHumanConfirmedChirho ?? false,
           displayPendingScriptFlagChirho: oChirho.pendingScriptFlagChirho ?? wChirho.pendingScriptFlagChirho ?? false,
+          visionSuggestionTextChirho: oChirho.visionSuggestionTextChirho ?? null,
+          visionSuggestionScriptChirho: oChirho.visionSuggestionScriptChirho ?? null,
+          visionSuggestionCertaintyChirho: oChirho.visionSuggestionCertaintyChirho ?? null,
         });
       }
     }
@@ -693,6 +726,39 @@
         eventTypeChirho: "word-script-set-chirho",
         payloadChirho: { oldScriptChirho: wChirho.displayScriptChirho, newScriptChirho: activePaintScriptChirho, viaChirho: "right-click-chirho" },
       });
+    } else if (wChirho.visionSuggestionTextChirho) {
+      // Vision flagged this with a specific suggestion — one-click accept it.
+      // Emits both text-corrected (if text changed) and script-set (if script changed),
+      // then projection logic on D1 marks the word confirmed.
+      const pageIdChirho = (data as any).pageDataChirho.idChirho;
+      if (wChirho.visionSuggestionTextChirho !== wChirho.displayTextChirho) {
+        await postEventChirho({
+          pageIdChirho,
+          scanlineIdChirho: wChirho.scanlineIdChirho,
+          wordIdChirho: wChirho.wordIdChirho,
+          aggregateTypeChirho: "word-chirho",
+          eventTypeChirho: "word-text-corrected-chirho",
+          payloadChirho: {
+            oldTextChirho: wChirho.displayTextChirho,
+            newTextChirho: wChirho.visionSuggestionTextChirho,
+            viaChirho: "vision-suggestion-accept-chirho",
+          },
+        });
+      }
+      if (wChirho.visionSuggestionScriptChirho && wChirho.visionSuggestionScriptChirho !== wChirho.displayScriptChirho) {
+        await postEventChirho({
+          pageIdChirho,
+          scanlineIdChirho: wChirho.scanlineIdChirho,
+          wordIdChirho: wChirho.wordIdChirho,
+          aggregateTypeChirho: "word-chirho",
+          eventTypeChirho: "word-script-set-chirho",
+          payloadChirho: {
+            oldScriptChirho: wChirho.displayScriptChirho,
+            newScriptChirho: wChirho.visionSuggestionScriptChirho,
+            viaChirho: "vision-suggestion-accept-chirho",
+          },
+        });
+      }
     } else if (hasScriptMismatchChirho(wChirho)) {
       // Codepoints disagree with declared script — one-click adopt the codepoint
       // verdict. Common case: a Hebrew word currently tagged latin-chirho.
@@ -967,6 +1033,9 @@
                   {@const wTokChirho = tokChirho.wordChirho!}
                   {@const mismatchChirho = hasScriptMismatchChirho(wTokChirho)}
                   {@const detectedRtlChirho = mismatchChirho && /[֐-׿؀-ۿ܀-ݏ]/.test(wTokChirho.displayTextChirho ?? '')}
+                  {@const hasSuggestionChirho = wTokChirho.visionSuggestionTextChirho != null}
+                  {@const suggestionRtlChirho = hasSuggestionChirho && /[֐-׿؀-ۿ܀-ݏ]/.test(wTokChirho.visionSuggestionTextChirho ?? '')}
+                  {@const suggestionColChirho = wTokChirho.visionSuggestionScriptChirho ? (SCRIPT_COLORS_CHIRHO[wTokChirho.visionSuggestionScriptChirho] ?? '#c9a84c') : colChirho}
                   <button
                     type="button"
                     class="line-word-token-chirho"
@@ -974,14 +1043,15 @@
                     class:flagged-chirho={tokChirho.flaggedChirho}
                     class:mismatch-chirho={mismatchChirho}
                     class:non-latin-chirho={isNonLatinChirho}
+                    class:has-suggestion-chirho={hasSuggestionChirho}
                     dir={isRtlChirho || detectedRtlChirho ? 'rtl' : 'ltr'}
                     style="--word-color: {colChirho}"
                     onclick={() => openWordEditChirho(wTokChirho)}
                     oncontextmenu={(eChirho) => wordContextMenuChirho(eChirho, wTokChirho)}
                     onmouseenter={() => (hoveredWordChirho = wTokChirho)}
                     onmouseleave={() => { if (hoveredWordChirho?.wordIdChirho === wTokChirho.wordIdChirho) hoveredWordChirho = null; }}
-                    title={`${scriptLabelChirho(tokChirho.scriptChirho)} · ${wTokChirho.displaySourceChirho.replace('-chirho','')}${tokChirho.confirmedChirho ? ' · ✓' : ''}${tokChirho.flaggedChirho ? ' · ⚠ flag' : ''}${mismatchChirho ? ' · ⚠ codepoint mismatch' : ''}`}
-                  >{tokChirho.textChirho || '·'}{#if tokChirho.confirmedChirho}<span class="token-dot-chirho">●</span>{/if}{#if mismatchChirho}<span class="token-mismatch-chirho">⚠</span>{/if}</button>
+                    title={`${scriptLabelChirho(tokChirho.scriptChirho)} · ${wTokChirho.displaySourceChirho.replace('-chirho','')}${tokChirho.confirmedChirho ? ' · ✓' : ''}${tokChirho.flaggedChirho ? ' · ⚠ flag' : ''}${mismatchChirho ? ' · ⚠ codepoint mismatch' : ''}${hasSuggestionChirho ? ' · vision suggests: ' + wTokChirho.visionSuggestionTextChirho + ' (right-click to accept)' : ''}`}
+                  >{tokChirho.textChirho || '·'}{#if tokChirho.confirmedChirho}<span class="token-dot-chirho">●</span>{/if}{#if mismatchChirho && !hasSuggestionChirho}<span class="token-mismatch-chirho">⚠</span>{/if}{#if hasSuggestionChirho}<span class="vision-suggestion-chirho" dir={suggestionRtlChirho ? 'rtl' : 'ltr'} style="--suggestion-color: {suggestionColChirho}">→{wTokChirho.visionSuggestionTextChirho}</span>{/if}</button>
                 {:else}
                   {@const segTokChirho = tokChirho.segmentChirho}
                   <button
@@ -1650,6 +1720,25 @@
     color: #fca5a5;
     font-size: 0.65rem;
     vertical-align: super;
+  }
+  /* Inline vision-flagged suggestion next to the OCR'd token. Right-click on
+     the parent token accepts the suggestion. Kept small but readable so it's
+     visible without opening the modal. */
+  .vision-suggestion-chirho {
+    display: inline-block;
+    margin-left: 0.35rem;
+    padding: 0 0.3rem;
+    color: var(--suggestion-color, #93c5fd);
+    background: color-mix(in srgb, var(--suggestion-color, #93c5fd) 12%, transparent);
+    border: 1px dashed var(--suggestion-color, #93c5fd);
+    border-radius: 3px;
+    font-size: 0.9em;
+    font-weight: 600;
+  }
+  .line-word-token-chirho.has-suggestion-chirho {
+    background: rgba(37, 99, 235, 0.05);
+    border-bottom-color: #2563eb;
+    border-bottom-style: solid;
   }
 
   /* Segment-merged tokens: Hebrew/Greek phrase chunks within a line */
