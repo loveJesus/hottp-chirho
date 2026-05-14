@@ -139,6 +139,15 @@ const indexHtmlChirho = String.raw`<!doctype html>
     .cell .codepoint-hint { font-size: 0.65rem; color: #888; }
     .cell.disagree { box-shadow: 0 0 0 2px #f59e0b inset; }
     .cell.reclassified { box-shadow: 0 0 0 2px #2563eb inset; }
+    /* Column header bulk-action buttons. Click one to set finalScript on every
+       item currently in that column to the chosen target. */
+    .col-bulk { display: flex; gap: 0.2rem; flex-wrap: wrap; margin: 0 0 0.45rem 0; padding-bottom: 0.35rem; border-bottom: 1px dashed #2a2a4a; }
+    .col-bulk .bulk-label { font-size: 0.65rem; color: #888; align-self: center; margin-right: 0.2rem; }
+    .col-bulk button { font-size: 0.65rem; padding: 0.12rem 0.4rem; border-radius: 3px; cursor: pointer; border: 1px solid #2a2a4a; }
+    .col-bulk button[data-target='latin-chirho']  { background: color-mix(in srgb, #c9a84c 30%, #1a1a2e); color: #c9a84c; border-color: #c9a84c; }
+    .col-bulk button[data-target='hebrew-chirho'] { background: color-mix(in srgb, #e34a4a 30%, #1a1a2e); color: #fca5a5; border-color: #e34a4a; }
+    .col-bulk button[data-target='greek-chirho']  { background: color-mix(in srgb, #4cc24c 30%, #1a1a2e); color: #4cc24c; border-color: #4cc24c; }
+    .col-bulk button[data-target='symbol-chirho'] { background: color-mix(in srgb, #ddc81e 30%, #1a1a2e); color: #ddc81e; border-color: #ddc81e; }
     /* Line context popup on hover — appears beside the cell when you hover */
     .line-popup {
       position: fixed; z-index: 1000;
@@ -212,6 +221,20 @@ const indexHtmlChirho = String.raw`<!doctype html>
       const correctCount = items.filter(s => !s.wrong).length;
       const h2 = el('h2', { text: scriptLabels[script] + ' · ' + correctCount + '/' + items.length, style: 'border-bottom-color:' + scriptColors[script] });
       colDiv.appendChild(h2);
+      // Bulk-action row: set every item in this column to a chosen target. Use
+      // when an entire column is mostly mis-classified (e.g. 49 of 50 'Symbol'
+      // predictions are actually Latin words/digits).
+      const bulk = el('div', { cls: 'col-bulk' });
+      bulk.appendChild(el('span', { cls: 'bulk-label', text: 'Set all →' }));
+      for (const tgt of columnsByScript) {
+        if (tgt === script) continue;
+        const b = el('button', {
+          text: scriptLabels[tgt],
+          attrs: { 'data-action': 'bulk-set', 'data-source-col': script, 'data-target': tgt },
+        });
+        bulk.appendChild(b);
+      }
+      colDiv.appendChild(bulk);
       for (const s of items) {
         // Highlight cells: amber if prediction disagrees with codepoints,
         // blue if user has re-classified away from the model's prediction.
@@ -285,6 +308,18 @@ const indexHtmlChirho = String.raw`<!doctype html>
   document.addEventListener('click', e => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
+    if (btn.dataset.action === 'bulk-set') {
+      // Move every item currently displayed in the source column to the target
+      // script. Useful when a whole column is mostly mis-classified.
+      const sourceCol = btn.dataset.sourceCol;
+      const target = btn.dataset.target;
+      let n = 0;
+      for (const s of state) {
+        if (s.finalScript === sourceCol) { s.finalScript = target; n++; }
+      }
+      if (n > 0) render();
+      return;
+    }
     const s = state.find(x => x.item.wordIdChirho == btn.dataset.id);
     if (!s) return;
     if (btn.dataset.action === 'toggle-wrong') {
