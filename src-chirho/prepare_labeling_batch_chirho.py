@@ -37,9 +37,38 @@ BATCHES_DIR_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "labeling-batche
 IMAGES_DIR_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "images-chirho"
 
 IMAGE_SIZE_CHIRHO = 32
-CROP_PAD_PX_CHIRHO = 4
+# Bumped from 4 to 8 — user reported single-letter crops were cutting off the
+# right edge of glyphs (e.g. the "T" on line 36). Tesseract bboxes are tight on
+# the ink; we need more pad room for ascenders/serifs at scan DPI.
+CROP_PAD_PX_CHIRHO = 8
 CLASS_NAMES_CHIRHO = ["latin", "hebrew", "greek", "symbol"]
 SCRIPT_KEY_BY_CLASS_CHIRHO = ["latin-chirho", "hebrew-chirho", "greek-chirho", "symbol-chirho"]
+
+
+def codepoint_class_chirho(text_chirho: str) -> int:
+    """Same script-from-codepoints rule the editor uses. Returns -1 for empty
+    or ambiguous text (no real script characters)."""
+    if not text_chirho:
+        return -1
+    heb_chirho = grk_chirho = sym_chirho = lat_chirho = 0
+    for ch_chirho in text_chirho:
+        c_chirho = ord(ch_chirho)
+        if 0x0590 <= c_chirho <= 0x05FF:
+            heb_chirho += 1
+        elif (0x0370 <= c_chirho <= 0x03FF) or (0x1F00 <= c_chirho <= 0x1FFF):
+            grk_chirho += 1
+        elif (0x0041 <= c_chirho <= 0x024F) or (0x1E00 <= c_chirho <= 0x1EFF):
+            lat_chirho += 1
+        elif c_chirho < 0x80:  # ascii punctuation/digits
+            sym_chirho += 1
+    total_real_chirho = heb_chirho + grk_chirho + lat_chirho
+    if total_real_chirho == 0:
+        return 3  # symbol (no letters, just punctuation/digits/control)
+    if heb_chirho >= max(grk_chirho, lat_chirho):
+        return 1
+    if grk_chirho >= lat_chirho:
+        return 2
+    return 0
 
 
 def preprocess_chirho(img_path_chirho: str) -> np.ndarray:
@@ -62,6 +91,12 @@ def main_chirho():
     parser_chirho.add_argument("--page", type=int, default=None)
     parser_chirho.add_argument("--unsure-only", action="store_true",
                                help="Only include words where top-1 confidence < 0.85 (most informative for labeling)")
+    parser_chirho.add_argument("--balanced", action="store_true",
+                               help="Sample count/4 per predicted class so every script is represented in the batch")
+    parser_chirho.add_argument("--exclude-latin", action="store_true",
+                               help="Skip Latin predictions; focus on Hebrew/Greek/Symbol where labels are scarcer")
+    parser_chirho.add_argument("--disagree-only", action="store_true",
+                               help="Only include words where the CNN prediction disagrees with codepoint-detected script. These are the highest-information labels — confirms reveal whether the model was right despite contradicting OCR text, and rejections reveal model mistakes.")
     args_chirho = parser_chirho.parse_args()
 
     if not os.path.exists(ONNX_PATH_CHIRHO):
@@ -109,9 +144,15 @@ def main_chirho():
     items_chirho = []
     processed_chirho = 0
     skipped_chirho = 0
+    # If --balanced, track per-class count so we can stop when a class hits its quota.
+    per_class_quota_chirho = args_chirho.count // 4 if args_chirho.balanced else None
+    per_class_count_chirho = {0: 0, 1: 0, 2: 0, 3: 0}
 
     for row_chirho in rows_chirho:
         if processed_chirho >= args_chirho.count:
+            break
+        # Balanced mode: stop once all four classes filled, never overshoot one class.
+        if args_chirho.balanced and all(per_class_count_chirho[c_chirho] >= per_class_quota_chirho for c_chirho in range(4)):
             break
         (w_id_chirho, sl_id_chirho, w_idx_chirho, x_min_chirho, y_min_chirho,
          x_max_chirho, y_max_chirho, orig_chirho, curr_chirho,
@@ -149,6 +190,23 @@ def main_chirho():
             os.remove(crop_path_chirho)
             skipped_chirho += 1
             continue
+        if args_chirho.exclude_latin and top_class_chirho == 0:
+            os.remove(crop_path_chirho)
+            skipped_chirho += 1
+            continue
+        if args_chirho.balanced and per_class_count_chirho[top_class_chirho] >= per_class_quota_chirho:
+            os.remove(crop_path_chirho)
+            skipped_chirho += 1
+            continue
+        # Codepoint-disagreement filter: high-info samples where the CNN and the
+        # OCR text disagree on script. Cases where they agree are usually
+        # already-obvious labels.
+        cp_class_chirho = codepoint_class_chirho(curr_chirho or orig_chirho or "")
+        if args_chirho.disagree_only and cp_class_chirho == top_class_chirho:
+            os.remove(crop_path_chirho)
+            skipped_chirho += 1
+            continue
+        per_class_count_chirho[top_class_chirho] += 1
 
         items_chirho.append({
             "wordIdChirho": w_id_chirho,
@@ -169,6 +227,8 @@ def main_chirho():
             "predictedClassChirho": CLASS_NAMES_CHIRHO[top_class_chirho],
             "predictedScriptChirho": SCRIPT_KEY_BY_CLASS_CHIRHO[top_class_chirho],
             "predictedConfidenceChirho": top_conf_chirho,
+            "codepointClassChirho": CLASS_NAMES_CHIRHO[cp_class_chirho] if cp_class_chirho >= 0 else "unknown",
+            "codepointDisagreesChirho": cp_class_chirho != top_class_chirho and cp_class_chirho >= 0,
             "allProbsChirho": {CLASS_NAMES_CHIRHO[i_chirho]: float(probs_chirho[i_chirho]) for i_chirho in range(4)},
         })
         processed_chirho += 1

@@ -120,10 +120,24 @@ const indexHtmlChirho = String.raw`<!doctype html>
     .cell .tess { color: #aaa; font-family: ui-monospace, "SF Mono", monospace; font-size: 0.8rem; }
     .cell .conf { background: #1a1a2e; padding: 0.05rem 0.3rem; border-radius: 3px; }
     .cell .actions { display: flex; gap: 0.25rem; flex-wrap: wrap; }
-    .cell button { font-size: 0.7rem; padding: 0.15rem 0.4rem; background: #1a1a2e; border: 1px solid #2a2a4a; color: #ccc; border-radius: 3px; cursor: pointer; }
+    .cell button { font-size: 0.7rem; padding: 0.15rem 0.4rem; background: #1a1a2e; border: 1px solid #2a2a4a; color: #ccc; border-radius: 3px; cursor: pointer; transition: opacity 0.1s; }
+    /* Color-coded script buttons. Inactive: faint tinted background. Active:
+       full saturation + light text. One click sets finalScript. */
+    .cell .script-btn { font-weight: 600; }
+    .cell .script-btn[data-script='latin-chirho']  { background: color-mix(in srgb, #c9a84c 20%, #1a1a2e); border-color: #c9a84c; color: #c9a84c; }
+    .cell .script-btn[data-script='hebrew-chirho'] { background: color-mix(in srgb, #e34a4a 20%, #1a1a2e); border-color: #e34a4a; color: #e34a4a; }
+    .cell .script-btn[data-script='greek-chirho']  { background: color-mix(in srgb, #4cc24c 20%, #1a1a2e); border-color: #4cc24c; color: #4cc24c; }
+    .cell .script-btn[data-script='symbol-chirho'] { background: color-mix(in srgb, #ddc81e 20%, #1a1a2e); border-color: #ddc81e; color: #ddc81e; }
+    .cell .script-btn.active[data-script='latin-chirho']  { background: #c9a84c; color: #1a1a2e; }
+    .cell .script-btn.active[data-script='hebrew-chirho'] { background: #e34a4a; color: white; }
+    .cell .script-btn.active[data-script='greek-chirho']  { background: #4cc24c; color: #1a1a2e; }
+    .cell .script-btn.active[data-script='symbol-chirho'] { background: #ddc81e; color: #1a1a2e; }
     .cell button.x-btn { background: #4a1010; border-color: #dc2626; color: #fca5a5; }
     .cell button.x-btn.active { background: #dc2626; color: white; }
-    .cell select { font-size: 0.7rem; padding: 0.1rem; background: #1a1a2e; border: 1px solid #2a2a4a; color: #ccc; border-radius: 3px; }
+    .cell button.bbox-btn { background: #3a2c08; border-color: #f59e0b; color: #fbbf24; }
+    .cell button.bbox-btn.active { background: #f59e0b; color: #1a1a2e; }
+    .cell .codepoint-hint { font-size: 0.65rem; color: #888; }
+    .cell.disagree { box-shadow: 0 0 0 2px #f59e0b inset; }
     .toolbar { position: sticky; top: 0; background: #0d0d18; padding: 0.75rem 1rem; border-bottom: 1px solid #2a2a4a; margin: -1rem -1rem 0 -1rem; z-index: 100; display: flex; gap: 1rem; align-items: center; }
     .toolbar button { padding: 0.4rem 1rem; background: #1b5e20; border: 1px solid #2e7d32; color: #a5d6a7; border-radius: 4px; cursor: pointer; font-weight: 600; }
     .toolbar button:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -152,6 +166,7 @@ const indexHtmlChirho = String.raw`<!doctype html>
     item: it,
     finalScript: it.predictedScriptChirho,
     wrong: false,
+    badBbox: false,
   }));
 
   function el(tag, opts, children) {
@@ -176,7 +191,11 @@ const indexHtmlChirho = String.raw`<!doctype html>
       const h2 = el('h2', { text: scriptLabels[script] + ' · ' + correctCount + '/' + items.length, style: 'border-bottom-color:' + scriptColors[script] });
       colDiv.appendChild(h2);
       for (const s of items) {
-        const cell = el('div', { cls: 'cell' + (s.wrong ? ' wrong' : '') });
+        // Highlight cells where the model disagrees with codepoint detection
+        // — those are the high-info cases worth a careful look.
+        const disagreeFlag = s.item.codepointDisagreesChirho ? ' disagree' : '';
+        const cellCls = 'cell' + (s.wrong ? ' wrong' : '') + disagreeFlag;
+        const cell = el('div', { cls: cellCls });
         const cropWrap = el('div', { cls: 'crop' });
         const img = el('img', { attrs: { src: '/crop/' + s.item.cropFileChirho, alt: '' } });
         cropWrap.appendChild(img);
@@ -191,21 +210,39 @@ const indexHtmlChirho = String.raw`<!doctype html>
         const meta2 = el('div', { cls: 'meta-row', text: 'vol ' + s.item.volChirho + ' p' + s.item.pageNumChirho + ' line ' + s.item.lineIdxChirho });
         cell.appendChild(meta2);
 
-        const actions = el('div', { cls: 'actions' });
+        // Show codepoint-detected script as a hint if it disagrees with model.
+        if (s.item.codepointDisagreesChirho) {
+          const hint = el('div', { cls: 'codepoint-hint', text: 'codepoints look ' + s.item.codepointClassChirho });
+          cell.appendChild(hint);
+        }
+
+        // Color-coded script buttons (one per class). Click sets finalScript.
+        const scriptBtns = el('div', { cls: 'actions' });
+        for (const c of columnsByScript) {
+          const btn = el('button', {
+            cls: 'script-btn' + (s.finalScript === c ? ' active' : ''),
+            text: scriptLabels[c],
+            attrs: { 'data-action': 'set-script', 'data-id': String(s.item.wordIdChirho), 'data-script': c },
+          });
+          scriptBtns.appendChild(btn);
+        }
+        cell.appendChild(scriptBtns);
+
+        // Secondary actions row: drop entirely, or flag bbox as bad.
+        const otherBtns = el('div', { cls: 'actions' });
         const xBtn = el('button', {
           cls: 'x-btn' + (s.wrong ? ' active' : ''),
-          text: s.wrong ? '↺ keep' : '✕ wrong',
+          text: s.wrong ? '↺ keep' : '✕ drop',
           attrs: { 'data-action': 'toggle-wrong', 'data-id': String(s.item.wordIdChirho) },
         });
-        actions.appendChild(xBtn);
-        const sel = el('select', { attrs: { 'data-action': 'reclassify', 'data-id': String(s.item.wordIdChirho) } });
-        for (const c of columnsByScript) {
-          const opt = el('option', { text: scriptLabels[c], attrs: { value: c } });
-          if (s.finalScript === c) opt.selected = true;
-          sel.appendChild(opt);
-        }
-        actions.appendChild(sel);
-        cell.appendChild(actions);
+        otherBtns.appendChild(xBtn);
+        const bboxBtn = el('button', {
+          cls: 'bbox-btn' + (s.badBbox ? ' active' : ''),
+          text: s.badBbox ? '↺ bbox ok' : '✂ bad bbox',
+          attrs: { 'data-action': 'toggle-bbox', 'data-id': String(s.item.wordIdChirho) },
+        });
+        otherBtns.appendChild(bboxBtn);
+        cell.appendChild(otherBtns);
 
         colDiv.appendChild(cell);
       }
@@ -217,16 +254,16 @@ const indexHtmlChirho = String.raw`<!doctype html>
   document.addEventListener('click', e => {
     const btn = e.target.closest('button[data-action]');
     if (!btn) return;
+    const s = state.find(x => x.item.wordIdChirho == btn.dataset.id);
+    if (!s) return;
     if (btn.dataset.action === 'toggle-wrong') {
-      const s = state.find(x => x.item.wordIdChirho == btn.dataset.id);
-      if (s) { s.wrong = !s.wrong; render(); }
+      s.wrong = !s.wrong;
+    } else if (btn.dataset.action === 'toggle-bbox') {
+      s.badBbox = !s.badBbox;
+    } else if (btn.dataset.action === 'set-script') {
+      s.finalScript = btn.dataset.script;
     }
-  });
-  document.addEventListener('change', e => {
-    if (e.target.tagName === 'SELECT' && e.target.dataset.action === 'reclassify') {
-      const s = state.find(x => x.item.wordIdChirho == e.target.dataset.id);
-      if (s) { s.finalScript = e.target.value; render(); }
-    }
+    render();
   });
 
   document.getElementById('submit-btn').addEventListener('click', async () => {
@@ -249,12 +286,13 @@ const indexHtmlChirho = String.raw`<!doctype html>
         scriptChirho: s.finalScript,
         modelPredictedScriptChirho: s.item.predictedScriptChirho,
         modelConfidenceChirho: s.item.predictedConfidenceChirho,
+        badBboxChirho: s.badBbox,
       }));
     try {
       const r = await fetch('/submit', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ runIdChirho: manifest.runIdChirho, labelsChirho: payload }) });
       const j = await r.json();
       if (j.okChirho) {
-        status.textContent = 'Saved ' + j.insertedChirho + ' labels, ' + j.skippedChirho + ' already-present';
+        status.textContent = 'Saved ' + j.insertedChirho + ' labels, ' + j.badBboxCountChirho + ' bad-bbox flags, ' + j.skippedChirho + ' already-present';
       } else {
         status.className = 'error';
         status.textContent = 'Error: ' + (j.errorChirho || 'unknown');
@@ -272,7 +310,10 @@ const indexHtmlChirho = String.raw`<!doctype html>
 </body>
 </html>`;
 
-const insertStmtChirho = dbChirho.prepare(
+// Two distinct insert paths: clean human labels go to source='human-chirho';
+// bad-bbox flags go to source='human-bad-bbox-chirho' so the re-segmentation
+// pipeline can query them later without polluting the training set.
+const insertHumanStmtChirho = dbChirho.prepare(
   `INSERT OR IGNORE INTO training_pairs_chirho
     (word_id_chirho, scanline_id_chirho, page_id_chirho, vol_chirho, page_num_chirho,
      line_idx_chirho, word_idx_chirho,
@@ -280,6 +321,15 @@ const insertStmtChirho = dbChirho.prepare(
      crop_path_chirho, text_chirho, script_chirho, source_chirho,
      certainty_chirho, tesseract_was_chirho)
    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'human-chirho', NULL, ?)`
+);
+const insertBadBboxStmtChirho = dbChirho.prepare(
+  `INSERT OR IGNORE INTO training_pairs_chirho
+    (word_id_chirho, scanline_id_chirho, page_id_chirho, vol_chirho, page_num_chirho,
+     line_idx_chirho, word_idx_chirho,
+     x_min_chirho, y_min_chirho, x_max_chirho, y_max_chirho,
+     crop_path_chirho, text_chirho, script_chirho, source_chirho,
+     certainty_chirho, tesseract_was_chirho)
+   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'human-bad-bbox-chirho', NULL, ?)`
 );
 
 Bun.serve({
@@ -313,13 +363,16 @@ Bun.serve({
             scriptChirho: string;
             modelPredictedScriptChirho: string;
             modelConfidenceChirho: number;
+            badBboxChirho: boolean;
           }>;
         };
         let insertedChirho = 0;
+        let badBboxCountChirho = 0;
         let skippedChirho = 0;
         for (const labelChirho of bodyChirho.labelsChirho) {
           const cropPathChirho = join(batchDirChirho, labelChirho.cropFileChirho);
-          const resChirho = insertStmtChirho.run(
+          const stmtChirho = labelChirho.badBboxChirho ? insertBadBboxStmtChirho : insertHumanStmtChirho;
+          const resChirho = stmtChirho.run(
             labelChirho.wordIdChirho,
             labelChirho.scanlineIdChirho,
             labelChirho.pageIdChirho,
@@ -337,9 +390,10 @@ Bun.serve({
             labelChirho.modelPredictedScriptChirho,
           );
           if (resChirho.changes === 0) skippedChirho++;
+          else if (labelChirho.badBboxChirho) badBboxCountChirho++;
           else insertedChirho++;
         }
-        return new Response(JSON.stringify({ okChirho: true, insertedChirho, skippedChirho }), {
+        return new Response(JSON.stringify({ okChirho: true, insertedChirho, badBboxCountChirho, skippedChirho }), {
           headers: { "Content-Type": "application/json" },
         });
       } catch (errChirho) {
