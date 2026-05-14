@@ -147,6 +147,10 @@ def main_chirho():
     # If --balanced, track per-class count so we can stop when a class hits its quota.
     per_class_quota_chirho = args_chirho.count // 4 if args_chirho.balanced else None
     per_class_count_chirho = {0: 0, 1: 0, 2: 0, 3: 0}
+    # Cache of already-generated line strip crops per scanline (avoid re-cropping
+    # the same line for every word on that line). Also tracks the line bbox so
+    # the UI can highlight which word within the line strip the cell refers to.
+    line_crop_cache_chirho: dict = {}
 
     for row_chirho in rows_chirho:
         if processed_chirho >= args_chirho.count:
@@ -162,6 +166,38 @@ def main_chirho():
         if not page_img_chirho.exists():
             skipped_chirho += 1
             continue
+
+        # Generate a line strip crop for this scanline (once, cached). Used by
+        # the labeling UI as a hover popup so the user can see context.
+        if sl_id_chirho not in line_crop_cache_chirho:
+            line_row_chirho = conn_chirho.execute(
+                "SELECT x_min_chirho, y_min_chirho, width_chirho, height_chirho FROM scanlines_chirho WHERE id_chirho = ?",
+                (sl_id_chirho,),
+            ).fetchone()
+            if line_row_chirho:
+                lx_chirho, ly_chirho, lw_chirho, lh_chirho = line_row_chirho
+                line_pad_chirho = 6
+                lx_crop_chirho = max(0, lx_chirho - line_pad_chirho)
+                ly_crop_chirho = max(0, ly_chirho - line_pad_chirho)
+                lw_crop_chirho = lw_chirho + line_pad_chirho * 2
+                lh_crop_chirho = lh_chirho + line_pad_chirho * 2
+                line_name_chirho = f"line-{sl_id_chirho}-chirho.png"
+                line_path_chirho = out_dir_chirho / line_name_chirho
+                subprocess.run([
+                    "magick", str(page_img_chirho),
+                    "-crop", f"{int(lw_crop_chirho)}x{int(lh_crop_chirho)}+{int(lx_crop_chirho)}+{int(ly_crop_chirho)}",
+                    "+repage", str(line_path_chirho),
+                ], check=True, capture_output=True)
+                line_crop_cache_chirho[sl_id_chirho] = {
+                    "fileChirho": line_name_chirho,
+                    "xMinChirho": lx_chirho,
+                    "yMinChirho": ly_chirho,
+                    "widthChirho": lw_chirho,
+                    "heightChirho": lh_chirho,
+                    "padChirho": line_pad_chirho,
+                }
+            else:
+                line_crop_cache_chirho[sl_id_chirho] = None
 
         crop_name_chirho = f"word-{w_id_chirho}-chirho.png"
         crop_path_chirho = out_dir_chirho / crop_name_chirho
@@ -230,6 +266,7 @@ def main_chirho():
             "codepointClassChirho": CLASS_NAMES_CHIRHO[cp_class_chirho] if cp_class_chirho >= 0 else "unknown",
             "codepointDisagreesChirho": cp_class_chirho != top_class_chirho and cp_class_chirho >= 0,
             "allProbsChirho": {CLASS_NAMES_CHIRHO[i_chirho]: float(probs_chirho[i_chirho]) for i_chirho in range(4)},
+            "lineCropChirho": line_crop_cache_chirho.get(sl_id_chirho),
         })
         processed_chirho += 1
         if (processed_chirho % 50) == 0:

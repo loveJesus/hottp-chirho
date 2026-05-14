@@ -138,6 +138,24 @@ const indexHtmlChirho = String.raw`<!doctype html>
     .cell button.bbox-btn.active { background: #f59e0b; color: #1a1a2e; }
     .cell .codepoint-hint { font-size: 0.65rem; color: #888; }
     .cell.disagree { box-shadow: 0 0 0 2px #f59e0b inset; }
+    .cell.reclassified { box-shadow: 0 0 0 2px #2563eb inset; }
+    /* Line context popup on hover — appears beside the cell when you hover */
+    .line-popup {
+      position: fixed; z-index: 1000;
+      background: white; border: 2px solid #c9a84c;
+      padding: 4px; border-radius: 4px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.7);
+      pointer-events: none;
+      max-width: 90vw;
+      display: none;
+    }
+    .line-popup img { display: block; max-width: 100%; max-height: 80px; image-rendering: -webkit-optimize-contrast; }
+    .line-popup .word-marker {
+      position: absolute; top: 4px; bottom: 4px;
+      border: 2px solid #dc2626; pointer-events: none;
+      background: rgba(220, 38, 38, 0.15);
+    }
+    .line-popup-wrap { position: relative; display: inline-block; }
     .toolbar { position: sticky; top: 0; background: #0d0d18; padding: 0.75rem 1rem; border-bottom: 1px solid #2a2a4a; margin: -1rem -1rem 0 -1rem; z-index: 100; display: flex; gap: 1rem; align-items: center; }
     .toolbar button { padding: 0.4rem 1rem; background: #1b5e20; border: 1px solid #2e7d32; color: #a5d6a7; border-radius: 4px; cursor: pointer; font-weight: 600; }
     .toolbar button:disabled { opacity: 0.5; cursor: not-allowed; }
@@ -155,6 +173,7 @@ const indexHtmlChirho = String.raw`<!doctype html>
   </div>
   <p class="meta" id="manifest-meta"></p>
   <div class="columns" id="columns"></div>
+  <div class="line-popup" id="line-popup"><div class="line-popup-wrap"><img id="line-popup-img" alt=""><div class="word-marker" id="line-popup-marker"></div></div></div>
 
   <script>
   const manifest = ${JSON.stringify(manifestChirho)};
@@ -186,16 +205,28 @@ const indexHtmlChirho = String.raw`<!doctype html>
     while (columns.firstChild) columns.removeChild(columns.firstChild);
     for (const script of columnsByScript) {
       const colDiv = el('div', { cls: 'column' });
-      const items = state.filter(s => s.item.predictedScriptChirho === script);
+      // Group by FINAL script — cells move to their corrected column as you
+      // re-label. Previously grouped by predictedScriptChirho which kept Greek
+      // misclassifications hidden in the Latin column.
+      const items = state.filter(s => s.finalScript === script);
       const correctCount = items.filter(s => !s.wrong).length;
       const h2 = el('h2', { text: scriptLabels[script] + ' · ' + correctCount + '/' + items.length, style: 'border-bottom-color:' + scriptColors[script] });
       colDiv.appendChild(h2);
       for (const s of items) {
-        // Highlight cells where the model disagrees with codepoint detection
-        // — those are the high-info cases worth a careful look.
+        // Highlight cells: amber if prediction disagrees with codepoints,
+        // blue if user has re-classified away from the model's prediction.
         const disagreeFlag = s.item.codepointDisagreesChirho ? ' disagree' : '';
-        const cellCls = 'cell' + (s.wrong ? ' wrong' : '') + disagreeFlag;
+        const reclassifiedFlag = s.finalScript !== s.item.predictedScriptChirho ? ' reclassified' : '';
+        const cellCls = 'cell' + (s.wrong ? ' wrong' : '') + disagreeFlag + reclassifiedFlag;
         const cell = el('div', { cls: cellCls });
+        if (s.item.lineCropChirho) {
+          cell.setAttribute('data-line-crop', s.item.lineCropChirho.fileChirho);
+          cell.setAttribute('data-line-x-min', String(s.item.lineCropChirho.xMinChirho));
+          cell.setAttribute('data-line-width', String(s.item.lineCropChirho.widthChirho));
+          cell.setAttribute('data-line-pad', String(s.item.lineCropChirho.padChirho));
+          cell.setAttribute('data-word-x-min', String(s.item.bboxChirho.xMinChirho));
+          cell.setAttribute('data-word-x-max', String(s.item.bboxChirho.xMaxChirho));
+        }
         const cropWrap = el('div', { cls: 'crop' });
         const img = el('img', { attrs: { src: '/crop/' + s.item.cropFileChirho, alt: '' } });
         cropWrap.appendChild(img);
@@ -264,6 +295,44 @@ const indexHtmlChirho = String.raw`<!doctype html>
       s.finalScript = btn.dataset.script;
     }
     render();
+  });
+
+  // Line context hover: show the cropped scanline strip in a fixed popup with
+  // a red marker over the word's position within the line.
+  const popup = document.getElementById('line-popup');
+  const popupImg = document.getElementById('line-popup-img');
+  const popupMarker = document.getElementById('line-popup-marker');
+  document.addEventListener('mouseover', e => {
+    const cell = e.target.closest('.cell[data-line-crop]');
+    if (!cell) return;
+    const file = cell.getAttribute('data-line-crop');
+    const lineXMin = parseFloat(cell.getAttribute('data-line-x-min') || '0');
+    const lineWidth = parseFloat(cell.getAttribute('data-line-width') || '1');
+    const linePad = parseFloat(cell.getAttribute('data-line-pad') || '0');
+    const wordXMin = parseFloat(cell.getAttribute('data-word-x-min') || '0');
+    const wordXMax = parseFloat(cell.getAttribute('data-word-x-max') || '0');
+    popupImg.src = '/crop/' + file;
+    popupImg.onload = () => {
+      // Compute marker position as a percentage of the rendered line image.
+      // The line crop spans (lineXMin - linePad) to (lineXMin + lineWidth + linePad)
+      // in page-pixel coords. Map word bbox into that range.
+      const lineSpan = lineWidth + linePad * 2;
+      const wordLeftInLine = (wordXMin - (lineXMin - linePad)) / lineSpan;
+      const wordWidthInLine = (wordXMax - wordXMin) / lineSpan;
+      const imgWidth = popupImg.offsetWidth || popupImg.naturalWidth;
+      popupMarker.style.left = (wordLeftInLine * imgWidth + 4) + 'px';
+      popupMarker.style.width = (wordWidthInLine * imgWidth) + 'px';
+    };
+    const rect = cell.getBoundingClientRect();
+    popup.style.left = Math.max(8, rect.left) + 'px';
+    popup.style.top = (rect.bottom + 6) + 'px';
+    popup.style.display = 'block';
+  });
+  document.addEventListener('mouseout', e => {
+    const cell = e.target.closest('.cell');
+    const related = e.relatedTarget;
+    if (cell && related && cell.contains(related)) return;
+    popup.style.display = 'none';
   });
 
   document.getElementById('submit-btn').addEventListener('click', async () => {
