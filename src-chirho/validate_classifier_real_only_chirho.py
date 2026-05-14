@@ -26,7 +26,7 @@ import numpy as np
 
 PROJECT_ROOT_CHIRHO = Path(__file__).resolve().parent.parent
 DB_PATH_CHIRHO = PROJECT_ROOT_CHIRHO / "spec-chirho" / "progress-chirho.sqlite"
-ONNX_PATH_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "models-chirho" / "script-classifier-v3-chirho.onnx"
+ONNX_PATH_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "models-chirho" / "script-classifier-v5-chirho.onnx"
 IMAGE_SIZE_CHIRHO = 32
 CLASS_NAMES_CHIRHO = ["latin", "hebrew", "greek", "symbol"]
 NUM_CLASSES_CHIRHO = 4

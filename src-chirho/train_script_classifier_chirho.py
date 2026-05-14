@@ -38,8 +38,8 @@ import numpy as np
 PROJECT_ROOT_CHIRHO = Path(__file__).resolve().parent.parent
 DB_PATH_CHIRHO = PROJECT_ROOT_CHIRHO / "spec-chirho" / "progress-chirho.sqlite"
 MODEL_OUT_DIR_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "models-chirho"
-ONNX_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v3-chirho.onnx"
-METRICS_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v3-chirho.metrics.json"
+ONNX_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v5-chirho.onnx"
+METRICS_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v5-chirho.metrics.json"
 
 IMAGE_SIZE_CHIRHO = 32
 NUM_CLASSES_CHIRHO = 4
@@ -141,8 +141,10 @@ def main_chirho():
 
     # ===== Load samples =====
     conn_chirho = sqlite3.connect(DB_PATH_CHIRHO)
+    # Exclude bad-bbox flagged rows from training — those are the user's
+    # explicit "the bbox is wrong, don't trust this crop" marker.
     cur_chirho = conn_chirho.execute(
-        "SELECT crop_path_chirho, script_chirho FROM training_pairs_chirho"
+        "SELECT crop_path_chirho, script_chirho FROM training_pairs_chirho WHERE source_chirho != 'human-bad-bbox-chirho'"
     )
     samples_chirho = []
     missing_chirho = 0
@@ -168,11 +170,21 @@ def main_chirho():
     )
     print(f"train={len(train_samples_chirho)}  test={len(test_samples_chirho)}")
 
+    # Aggressive augmentation: each training crop is effectively seen as ~8x
+    # different inputs across epochs (affine + erasing + jitter + noise +
+    # perspective). Helps the model generalize beyond the exact pixel patterns
+    # in any one training sample.
     train_tf_chirho = transforms.Compose([
         transforms.Resize((IMAGE_SIZE_CHIRHO, IMAGE_SIZE_CHIRHO)),
-        transforms.RandomAffine(degrees=4, translate=(0.05, 0.05), scale=(0.9, 1.1)),
+        transforms.RandomAffine(degrees=6, translate=(0.08, 0.08), scale=(0.85, 1.15), shear=4),
+        transforms.RandomPerspective(distortion_scale=0.08, p=0.3),
+        transforms.ColorJitter(brightness=0.25, contrast=0.25),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.5], std=[0.5]),
+        # RandomErasing on the tensor (after normalize). Acts as occlusion —
+        # forces the model to use distributed features instead of memorizing
+        # single key pixels.
+        transforms.RandomErasing(p=0.3, scale=(0.02, 0.12), ratio=(0.3, 3.3), value=0),
     ])
     test_tf_chirho = transforms.Compose([
         transforms.Resize((IMAGE_SIZE_CHIRHO, IMAGE_SIZE_CHIRHO)),
