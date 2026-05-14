@@ -554,9 +554,19 @@ async function mainChirho(): Promise<void> {
   const pageNumChirho = parseInt(argsChirho.find((aChirho) => aChirho.startsWith("--page="))?.split("=")[1] ?? "", 10);
   const doCropChirho = argsChirho.includes("--crop");
   const doApplyChirho = argsChirho.includes("--apply");
-  if (!volChirho || !pageNumChirho || (!doCropChirho && !doApplyChirho)) {
-    console.error("Usage: bun src-chirho/vision-word-batch-chirho.ts --vol=N --page=X (--crop | --apply)");
+  const doCanonicalOnlyChirho = argsChirho.includes("--canonical-only");
+  if (!volChirho || !pageNumChirho || (!doCropChirho && !doApplyChirho && !doCanonicalOnlyChirho)) {
+    console.error("Usage: bun src-chirho/vision-word-batch-chirho.ts --vol=N --page=X (--crop | --apply | --canonical-only)");
     process.exit(1);
+  }
+  if (doCanonicalOnlyChirho) {
+    initDbChirho();
+    const pageRowChirho = sqliteChirho
+      .query("SELECT id_chirho FROM pages_chirho WHERE volume_number_chirho = ? AND page_number_chirho = ?")
+      .get(volChirho, pageNumChirho) as { id_chirho: number } | undefined;
+    if (!pageRowChirho) throw new Error(`vol ${volChirho} p${pageNumChirho}: not found`);
+    const rChirho = applyCanonicalFromReconChirho(pageRowChirho.id_chirho);
+    logChirho(MODULE_CHIRHO, `canonical-only: ${rChirho.appliedChirho} corrected, ${rChirho.skippedLinesChirho} lines unaligned (need vision fallback)`);
   }
   if (doCropChirho) await cropPhaseChirho(volChirho, pageNumChirho);
   if (doApplyChirho) await applyPhaseChirho(volChirho, pageNumChirho);
