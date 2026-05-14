@@ -38,6 +38,12 @@ OUT_DIR_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "synthetic-chirho" /
 # font and is the best match for Barthélemy. The others provide visual
 # variability so the CNN doesn't latch onto a single font's quirks.
 HEBREW_FONT_CANDIDATES_CHIRHO = [
+    # Biblical-Hebrew style fonts downloaded for closer Barthélemy domain match.
+    # Frank Ruehl Libre + David Libre are classic blocky/square Hebrew prints
+    # that closely match 19th-century scholarly typesetting.
+    str(PROJECT_ROOT_CHIRHO / "workspace-chirho" / "synthetic-fonts-chirho" / "FrankRuhlLibre.ttf"),
+    str(PROJECT_ROOT_CHIRHO / "workspace-chirho" / "synthetic-fonts-chirho" / "DavidLibre-Regular.ttf"),
+    str(PROJECT_ROOT_CHIRHO / "workspace-chirho" / "synthetic-fonts-chirho" / "DavidLibre-Bold.ttf"),
     "/System/Library/Fonts/ArialHB.ttc",                # Arial Hebrew Scholar
     "/System/Library/Fonts/SFHebrew.ttf",               # SF Hebrew
     "/System/Library/Fonts/Supplemental/Raanana.ttc",   # Raanana

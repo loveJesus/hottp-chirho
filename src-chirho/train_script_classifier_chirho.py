@@ -38,18 +38,19 @@ import numpy as np
 PROJECT_ROOT_CHIRHO = Path(__file__).resolve().parent.parent
 DB_PATH_CHIRHO = PROJECT_ROOT_CHIRHO / "spec-chirho" / "progress-chirho.sqlite"
 MODEL_OUT_DIR_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "models-chirho"
-ONNX_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v1-chirho.onnx"
-METRICS_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v1-chirho.metrics.json"
+ONNX_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v3-chirho.onnx"
+METRICS_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v3-chirho.metrics.json"
 
 IMAGE_SIZE_CHIRHO = 32
-NUM_CLASSES_CHIRHO = 3
+NUM_CLASSES_CHIRHO = 4
 BATCH_SIZE_CHIRHO = 16
 NUM_EPOCHS_CHIRHO = 80
 LEARNING_RATE_CHIRHO = 1e-3
 TEST_FRACTION_CHIRHO = 0.2
 RANDOM_SEED_CHIRHO = 42
 
-CLASS_NAMES_CHIRHO = ["latin", "hebrew", "other"]
+# v3 splits Greek out of "other" now that we have synthetic Greek samples.
+CLASS_NAMES_CHIRHO = ["latin", "hebrew", "greek", "symbol"]
 
 
 def script_to_class_chirho(script_chirho: str) -> int:
@@ -57,7 +58,9 @@ def script_to_class_chirho(script_chirho: str) -> int:
         return 0
     if script_chirho == "hebrew-chirho":
         return 1
-    return 2  # greek / symbol / syriac / arabic / unknown all collapse to "other"
+    if script_chirho == "greek-chirho":
+        return 2
+    return 3  # symbol / syriac / arabic / unknown all collapse to "symbol"
 
 
 class WordCropDataset(Dataset):
