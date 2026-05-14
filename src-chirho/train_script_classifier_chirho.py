@@ -38,8 +38,8 @@ import numpy as np
 PROJECT_ROOT_CHIRHO = Path(__file__).resolve().parent.parent
 DB_PATH_CHIRHO = PROJECT_ROOT_CHIRHO / "spec-chirho" / "progress-chirho.sqlite"
 MODEL_OUT_DIR_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "models-chirho"
-ONNX_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v6-chirho.onnx"
-METRICS_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v6-chirho.metrics.json"
+ONNX_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v7-chirho.onnx"
+METRICS_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v7-chirho.metrics.json"
 
 IMAGE_SIZE_CHIRHO = 32
 NUM_CLASSES_CHIRHO = 4

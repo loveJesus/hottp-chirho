@@ -32,7 +32,7 @@ import numpy as np
 
 PROJECT_ROOT_CHIRHO = Path(__file__).resolve().parent.parent
 DB_PATH_CHIRHO = PROJECT_ROOT_CHIRHO / "spec-chirho" / "progress-chirho.sqlite"
-ONNX_PATH_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "models-chirho" / "script-classifier-v3-chirho.onnx"
+ONNX_PATH_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "models-chirho" / "script-classifier-v6-chirho.onnx"
 BATCHES_DIR_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "labeling-batches-chirho"
 IMAGES_DIR_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "images-chirho"
 
@@ -97,6 +97,12 @@ def main_chirho():
                                help="Skip Latin predictions; focus on Hebrew/Greek/Symbol where labels are scarcer")
     parser_chirho.add_argument("--disagree-only", action="store_true",
                                help="Only include words where the CNN prediction disagrees with codepoint-detected script. These are the highest-information labels — confirms reveal whether the model was right despite contradicting OCR text, and rejections reveal model mistakes.")
+    parser_chirho.add_argument("--only-script", type=str, default=None,
+                               help="Only include predictions of this script (e.g. 'hebrew-chirho'). Useful for binary-validate workflows.")
+    parser_chirho.add_argument("--script-min-prob", type=float, default=0.2,
+                               help="Looser version of --only-script: include any word where p(target_script) >= threshold, even when argmax differs. Catches plausible candidates the strict classifier was on the fence about.")
+    parser_chirho.add_argument("--model", type=str, default="script-classifier-v6-chirho",
+                               help="ONNX model basename under workspace-chirho/models-chirho/")
     args_chirho = parser_chirho.parse_args()
 
     if not os.path.exists(ONNX_PATH_CHIRHO):
@@ -230,6 +236,17 @@ def main_chirho():
             os.remove(crop_path_chirho)
             skipped_chirho += 1
             continue
+        if args_chirho.only_script:
+            target_class_chirho = -1
+            for ci_chirho, name_chirho in enumerate(SCRIPT_KEY_BY_CLASS_CHIRHO):
+                if name_chirho == args_chirho.only_script:
+                    target_class_chirho = ci_chirho
+                    break
+            target_prob_chirho = float(probs_chirho[target_class_chirho]) if target_class_chirho >= 0 else 0.0
+            if target_prob_chirho < args_chirho.script_min_prob:
+                os.remove(crop_path_chirho)
+                skipped_chirho += 1
+                continue
         if args_chirho.balanced and per_class_count_chirho[top_class_chirho] >= per_class_quota_chirho:
             os.remove(crop_path_chirho)
             skipped_chirho += 1
