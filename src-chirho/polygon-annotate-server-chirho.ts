@@ -22,6 +22,7 @@ import { existsSync, mkdirSync, readdirSync, writeFileSync } from "fs";
 import { join } from "path";
 import { Database } from "bun:sqlite";
 import { spawnSync } from "child_process";
+import { tmpdir } from "os";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
@@ -68,6 +69,52 @@ console.log(`Loaded ${manifestChirho.runIdChirho}: ${manifestChirho.itemsChirho.
 
 const dbChirho = new Database(DB_PATH_CHIRHO);
 mkdirSync(FONT_DIR_CHIRHO, { recursive: true });
+
+const lineContextStmtChirho = dbChirho.prepare(
+  `SELECT w.x_min_chirho AS w_x_min, w.x_max_chirho AS w_x_max,
+          s.x_min_chirho AS s_x_min, s.y_min_chirho AS s_y_min,
+          s.width_chirho AS s_w, s.height_chirho AS s_h,
+          p.volume_number_chirho AS vol, p.page_number_chirho AS page_num
+     FROM words_chirho w
+     JOIN scanlines_chirho s ON s.id_chirho = w.scanline_id_chirho
+     JOIN pages_chirho p ON p.id_chirho = s.page_id_chirho
+     WHERE w.id_chirho = ?`
+);
+
+function lookupLineContextChirho(wordIdChirho: number): {
+  pageImagePathChirho: string;
+  lineXMinChirho: number;
+  lineYMinChirho: number;
+  lineWidthChirho: number;
+  lineHeightChirho: number;
+  linePadChirho: number;
+  wordXMinChirho: number;
+  wordXMaxChirho: number;
+} | null {
+  const rowChirho = lineContextStmtChirho.get(wordIdChirho) as {
+    w_x_min: number; w_x_max: number;
+    s_x_min: number; s_y_min: number; s_w: number; s_h: number;
+    vol: number; page_num: number;
+  } | undefined;
+  if (!rowChirho) return null;
+  const pageImagePathChirho = join(
+    PROJECT_ROOT_CHIRHO,
+    "workspace-chirho",
+    "images-chirho",
+    `vol-${rowChirho.vol}-chirho`,
+    `page-${String(rowChirho.page_num).padStart(4, "0")}-chirho.png`
+  );
+  return {
+    pageImagePathChirho,
+    lineXMinChirho: rowChirho.s_x_min,
+    lineYMinChirho: rowChirho.s_y_min,
+    lineWidthChirho: rowChirho.s_w,
+    lineHeightChirho: rowChirho.s_h,
+    linePadChirho: 8,
+    wordXMinChirho: rowChirho.w_x_min,
+    wordXMaxChirho: rowChirho.w_x_max,
+  };
+}
 
 const HEBREW_LETTERS_CHIRHO = [
   ["א", "alef"], ["ב", "bet"], ["ג", "gimel"], ["ד", "dalet"], ["ה", "he"],
@@ -128,6 +175,11 @@ const indexHtmlChirho = String.raw`<!doctype html>
     <div class="canvas-wrap">
       <canvas id="canvas" width="900" height="200"></canvas>
       <div class="canvas-meta" id="canvas-meta"></div>
+      <h2 style="margin-top:0.6rem;font-size:0.8rem;color:#888">Line context (red box = this word)</h2>
+      <div id="line-context-wrap" style="position:relative;background:white;padding:4px;border-radius:4px;border:1px solid #2a2a4a;overflow:auto">
+        <img id="line-context-img" style="display:block;max-width:100%;image-rendering:-webkit-optimize-contrast" alt="">
+        <div id="line-context-marker" style="position:absolute;border:2px solid #dc2626;background:rgba(220,38,38,0.15);pointer-events:none"></div>
+      </div>
     </div>
     <div class="panel">
       <h2>Canonical word</h2>
@@ -188,6 +240,30 @@ const indexHtmlChirho = String.raw`<!doctype html>
     imageCache.src = '/crop/' + item.cropFileChirho + '?t=' + Date.now();
     renderLetterPick();
     renderPolygonsList();
+    loadLineContext(item.wordIdChirho);
+  }
+
+  function loadLineContext(wordId) {
+    const img = document.getElementById('line-context-img');
+    const marker = document.getElementById('line-context-marker');
+    marker.style.display = 'none';
+    img.src = '/line-context/' + wordId + '?t=' + Date.now();
+    img.onload = () => {
+      fetch('/line-context-meta/' + wordId).then(r => r.json()).then(meta => {
+        if (!meta.okChirho) { marker.style.display = 'none'; return; }
+        // Compute marker rect inside the rendered line image
+        const lineW = meta.lineWidthChirho + meta.linePadChirho * 2;
+        const wordLeft = (meta.wordXMinChirho - (meta.lineXMinChirho - meta.linePadChirho)) / lineW;
+        const wordW = (meta.wordXMaxChirho - meta.wordXMinChirho) / lineW;
+        const imgRect = img.getBoundingClientRect();
+        const parent = img.parentElement.getBoundingClientRect();
+        marker.style.left = (imgRect.left - parent.left + wordLeft * imgRect.width) + 'px';
+        marker.style.top = (imgRect.top - parent.top) + 'px';
+        marker.style.width = (wordW * imgRect.width) + 'px';
+        marker.style.height = imgRect.height + 'px';
+        marker.style.display = 'block';
+      });
+    };
   }
 
   function redraw() {
@@ -382,6 +458,38 @@ Bun.serve({
       const pChirho = join(batchDirChirho, fileChirho);
       if (!existsSync(pChirho)) return new Response("not found", { status: 404 });
       return new Response(Bun.file(pChirho));
+    }
+    // GET /line-context/<wordId>: returns a PNG crop of the line strip the
+    // word sits on, cached in /tmp. Lookups go through the local sqlite to
+    // map word_id -> scanline bbox -> page image.
+    if (urlChirho.pathname.startsWith("/line-context/")) {
+      const wordIdChirho = parseInt(urlChirho.pathname.slice("/line-context/".length), 10);
+      if (!wordIdChirho) return new Response("bad id", { status: 400 });
+      const metaChirho = lookupLineContextChirho(wordIdChirho);
+      if (!metaChirho) return new Response("not found", { status: 404 });
+      const cachePathChirho = join(tmpdir(), `hottp-line-${wordIdChirho}-chirho.png`);
+      if (!existsSync(cachePathChirho)) {
+        const pad = metaChirho.linePadChirho;
+        const x = Math.max(0, metaChirho.lineXMinChirho - pad);
+        const y = Math.max(0, metaChirho.lineYMinChirho - pad);
+        const w = metaChirho.lineWidthChirho + pad * 2;
+        const h = metaChirho.lineHeightChirho + pad * 2;
+        const rChirho = spawnSync("magick", [
+          metaChirho.pageImagePathChirho,
+          "-crop", `${w}x${h}+${x}+${y}`,
+          "+repage",
+          cachePathChirho,
+        ]);
+        if (rChirho.status !== 0) return new Response("crop failed", { status: 500 });
+      }
+      return new Response(Bun.file(cachePathChirho));
+    }
+    if (urlChirho.pathname.startsWith("/line-context-meta/")) {
+      const wordIdChirho = parseInt(urlChirho.pathname.slice("/line-context-meta/".length), 10);
+      if (!wordIdChirho) return new Response(JSON.stringify({ okChirho: false }), { status: 400 });
+      const metaChirho = lookupLineContextChirho(wordIdChirho);
+      if (!metaChirho) return new Response(JSON.stringify({ okChirho: false }), { status: 404 });
+      return new Response(JSON.stringify({ okChirho: true, ...metaChirho }), { headers: { "Content-Type": "application/json" } });
     }
     if (urlChirho.pathname === "/save-polygons" && reqChirho.method === "POST") {
       try {
