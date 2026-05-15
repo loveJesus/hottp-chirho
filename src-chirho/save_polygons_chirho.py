@@ -72,21 +72,43 @@ def main_chirho():
         arr_chirho[mask_arr_chirho == 0] = 255
         masked_chirho = Image.fromarray(arr_chirho, mode="L")
 
-        # Tight-crop to the polygon's bbox (use mask bounds, not ink bounds, so
-        # we keep nikkud/dots even if they sit on or near the polygon edge).
+        # Horizontal-tight, vertical-full crop: keep polygon pixels at their
+        # ORIGINAL y within the word-crop so the composer can place letters at
+        # their proper baseline. Final-nun's descender stays in the bottom-band,
+        # yod's body stays in the top-band, etc. We only trim left/right whitespace.
         ys_chirho, xs_chirho = np.where(mask_arr_chirho > 0)
         if xs_chirho.size == 0 or ys_chirho.size == 0:
             continue
         bx0_chirho = max(0, int(xs_chirho.min()) - 1)
-        by0_chirho = max(0, int(ys_chirho.min()) - 1)
         bx1_chirho = min(w_chirho, int(xs_chirho.max()) + 2)
-        by1_chirho = min(h_chirho, int(ys_chirho.max()) + 2)
-        glyph_chirho = masked_chirho.crop((bx0_chirho, by0_chirho, bx1_chirho, by1_chirho))
+        # Vertical extent: keep the full word-crop height. The polygon's actual
+        # y-band is recorded in a sidecar JSON so the composer knows where the
+        # ink lives within the strip (without needing to re-detect it).
+        glyph_chirho = masked_chirho.crop((bx0_chirho, 0, bx1_chirho, h_chirho))
+        poly_top_chirho = int(ys_chirho.min())
+        poly_bottom_chirho = int(ys_chirho.max())
 
         out_dir_chirho = font_dir_chirho / f"U+{cp_chirho:04X}"
         out_dir_chirho.mkdir(parents=True, exist_ok=True)
-        out_path_chirho = out_dir_chirho / f"vol-{vol_chirho}-word-{word_id_chirho}-poly-{poly_i_chirho:02d}-chirho.png"
+        out_stem_chirho = f"vol-{vol_chirho}-word-{word_id_chirho}-poly-{poly_i_chirho:02d}-chirho"
+        out_path_chirho = out_dir_chirho / f"{out_stem_chirho}.png"
         glyph_chirho.save(out_path_chirho, optimize=True)
+        meta_path_chirho = out_dir_chirho / f"{out_stem_chirho}.json"
+        with open(meta_path_chirho, "w") as mf_chirho:
+            json.dump({
+                "wordIdChirho": word_id_chirho,
+                "volChirho": vol_chirho,
+                "letterChirho": letter_chirho,
+                "wordCropHeightChirho": h_chirho,
+                "wordCropWidthChirho": w_chirho,
+                "polyTopChirho": poly_top_chirho,
+                "polyBottomChirho": poly_bottom_chirho,
+                "polyXMinChirho": bx0_chirho,
+                "polyXMaxChirho": bx1_chirho,
+                "polyHeightChirho": poly_bottom_chirho - poly_top_chirho,
+                "glyphHeightChirho": glyph_chirho.height,
+                "glyphWidthChirho": glyph_chirho.width,
+            }, mf_chirho, ensure_ascii=False, indent=2)
         saved_chirho += 1
 
     print(json.dumps({"savedChirho": saved_chirho}))

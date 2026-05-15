@@ -68,7 +68,17 @@ def consonants_only_chirho(text_chirho: str) -> str:
 
 
 def load_glyph_library_chirho() -> dict:
-    """Returns {character: [PIL.Image, ...]} of normalized-height glyphs."""
+    """Returns {character: [{'imgChirho': PIL.Image, 'polyTopFracChirho': 0-1,
+    'polyBottomFracChirho': 0-1}]}. Glyphs are scaled to a common reference
+    word-crop height so per-glyph vertical position (relative to baseline) is
+    preserved across the library — final-nun descenders, yod tops, lamed
+    ascenders all stay at their correct line-position.
+
+    If the sidecar .json exists (newer v3 glyphs saved with full word-crop
+    height), we use polyTop/polyBottom + wordCropHeight. Older tight-cropped
+    glyphs fall back to default centered placement."""
+    import os as os_chirho
+    import json as json_chirho
     library_chirho: dict = {}
     if not GLYPH_DIR_CHIRHO.exists():
         return library_chirho
@@ -83,12 +93,32 @@ def load_glyph_library_chirho() -> dict:
         glyphs_chirho = []
         for png_chirho in cp_dir_chirho.glob("*.png"):
             img_chirho = Image.open(png_chirho).convert("L")
-            # Normalize to consistent height while preserving aspect ratio.
-            # Letters with descenders or ascenders keep their relative height.
+            sidecar_chirho = png_chirho.with_suffix(".json")
+            poly_top_frac_chirho = 0.0
+            poly_bottom_frac_chirho = 1.0
+            has_position_chirho = False
+            if os_chirho.path.exists(sidecar_chirho):
+                try:
+                    with open(sidecar_chirho) as f_chirho:
+                        meta_chirho = json_chirho.load(f_chirho)
+                    h_chirho = float(meta_chirho.get("wordCropHeightChirho", img_chirho.height))
+                    if h_chirho > 0:
+                        poly_top_frac_chirho = meta_chirho.get("polyTopChirho", 0) / h_chirho
+                        poly_bottom_frac_chirho = meta_chirho.get("polyBottomChirho", h_chirho) / h_chirho
+                        has_position_chirho = True
+                except Exception:
+                    pass
+            # Scale to common word-crop reference height TARGET_HEIGHT_CHIRHO,
+            # preserving aspect ratio
             scale_chirho = TARGET_HEIGHT_CHIRHO / img_chirho.height
             new_w_chirho = max(4, int(round(img_chirho.width * scale_chirho)))
             img_chirho = img_chirho.resize((new_w_chirho, TARGET_HEIGHT_CHIRHO), Image.BILINEAR)
-            glyphs_chirho.append(img_chirho)
+            glyphs_chirho.append({
+                "imgChirho": img_chirho,
+                "polyTopFracChirho": poly_top_frac_chirho,
+                "polyBottomFracChirho": poly_bottom_frac_chirho,
+                "hasPositionChirho": has_position_chirho,
+            })
         if glyphs_chirho:
             library_chirho[ch_chirho] = glyphs_chirho
     return library_chirho
@@ -121,40 +151,48 @@ def sample_wlc_words_chirho(n_chirho: int, library_chars_chirho: set) -> list:
 
 
 def compose_word_image_chirho(consonants_chirho: str, library_chirho: dict, glue_prob_chirho: float) -> Image.Image:
-    """Lay glyphs out left-to-right (text reversed for RTL). Random gaps,
-    occasional overlap (glue), then scan degradation."""
+    """Lay glyphs out left-to-right (text reversed for RTL). All glyphs share
+    the same reference word-crop height (TARGET_HEIGHT_CHIRHO), so simply
+    pasting them at y=0 preserves the per-glyph vertical position relative to
+    the line baseline. Older tight-cropped glyphs without sidecar metadata
+    fall back to bottom-aligned placement."""
     # Hebrew is RTL: first consonant in text is on the right of the image,
     # so we reverse the text for left-to-right pixel composition.
     chars_in_pixel_order_chirho = consonants_chirho[::-1]
     sampled_chirho = [random.choice(library_chirho[ch_chirho]) for ch_chirho in chars_in_pixel_order_chirho]
 
-    # Compute layout positions
+    # All glyphs already normalized to TARGET_HEIGHT_CHIRHO in load_glyph_library.
+    line_h_chirho = TARGET_HEIGHT_CHIRHO
     positions_chirho = []
     x_chirho = PER_GLYPH_PAD_CHIRHO
-    max_h_chirho = max(g_chirho.height for g_chirho in sampled_chirho)
-    for i_chirho, g_chirho in enumerate(sampled_chirho):
-        positions_chirho.append((x_chirho, max_h_chirho - g_chirho.height))
-        x_chirho += g_chirho.width
+    for i_chirho, glyph_info_chirho in enumerate(sampled_chirho):
+        img_chirho = glyph_info_chirho["imgChirho"]
+        if glyph_info_chirho["hasPositionChirho"]:
+            # Glyph already at its correct y within the word-crop strip — paste at y=0.
+            y_chirho = 0
+        else:
+            # Legacy tight-cropped glyph — bottom-align to the baseline.
+            y_chirho = line_h_chirho - img_chirho.height
+        positions_chirho.append((x_chirho, y_chirho))
+        x_chirho += img_chirho.width
         if i_chirho < len(sampled_chirho) - 1:
             if random.random() < glue_prob_chirho:
-                gap_chirho = random.randint(-4, -1)  # overlap
+                gap_chirho = random.randint(-4, -1)
             else:
                 gap_chirho = random.randint(*GAP_RANGE_CHIRHO)
             x_chirho += gap_chirho
 
     canvas_w_chirho = x_chirho + PER_GLYPH_PAD_CHIRHO
-    canvas_h_chirho = max_h_chirho + PER_GLYPH_PAD_CHIRHO * 2
+    canvas_h_chirho = line_h_chirho + PER_GLYPH_PAD_CHIRHO * 2
     paper_chirho = random.randint(*PAPER_TINT_RANGE_CHIRHO)
     canvas_chirho = Image.new("L", (canvas_w_chirho, canvas_h_chirho), paper_chirho)
 
-    # Paste each glyph using its ink mask so paper shows through whitespace.
-    for i_chirho, (g_chirho, pos_chirho) in enumerate(zip(sampled_chirho, positions_chirho)):
+    # Paste each glyph using its ink as an alpha mask.
+    for i_chirho, (glyph_info_chirho, pos_chirho) in enumerate(zip(sampled_chirho, positions_chirho)):
+        g_chirho = glyph_info_chirho["imgChirho"]
         gx_chirho, gy_chirho = pos_chirho
-        # Build alpha mask: dark pixels = full opacity, light = transparent
         arr_chirho = np.asarray(g_chirho, dtype=np.uint8)
-        alpha_chirho = 255 - arr_chirho  # invert so ink (dark) becomes high alpha
-        glyph_rgba_chirho = Image.new("L", g_chirho.size, 0)  # ink color is near-black
-        # Use the glyph as both image source and mask source
+        alpha_chirho = 255 - arr_chirho
         canvas_chirho.paste(
             Image.new("L", g_chirho.size, random.randint(0, 25)),
             (gx_chirho, gy_chirho + PER_GLYPH_PAD_CHIRHO),
