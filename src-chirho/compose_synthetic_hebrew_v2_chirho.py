@@ -167,12 +167,12 @@ def compose_word_image_chirho(consonants_chirho: str, library_chirho: dict, glue
     x_chirho = PER_GLYPH_PAD_CHIRHO
     for i_chirho, glyph_info_chirho in enumerate(sampled_chirho):
         img_chirho = glyph_info_chirho["imgChirho"]
-        if glyph_info_chirho["hasPositionChirho"]:
-            # Glyph already at its correct y within the word-crop strip — paste at y=0.
-            y_chirho = 0
-        else:
-            # Legacy tight-cropped glyph — bottom-align to the baseline.
-            y_chirho = line_h_chirho - img_chirho.height
+        # Hebrew block letters hang from a TOPLINE, not a Latin baseline.
+        # Both the sidecar-positioned glyphs (full-strip, paste at y=0) and the
+        # legacy tight-cropped glyphs are top-aligned. For legacy glyphs this
+        # keeps descenders (ך ן ף ץ ק) hanging below the consonant body and
+        # short letters (yod) up near the topline — the correct Hebrew shape.
+        y_chirho = 0
         positions_chirho.append((x_chirho, y_chirho))
         x_chirho += img_chirho.width
         if i_chirho < len(sampled_chirho) - 1:
