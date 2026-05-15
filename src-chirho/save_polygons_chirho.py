@@ -99,6 +99,7 @@ def main_chirho():
                 "wordIdChirho": word_id_chirho,
                 "volChirho": vol_chirho,
                 "letterChirho": letter_chirho,
+                "polyIndexChirho": poly_i_chirho,
                 "wordCropHeightChirho": h_chirho,
                 "wordCropWidthChirho": w_chirho,
                 "polyTopChirho": poly_top_chirho,
@@ -108,6 +109,10 @@ def main_chirho():
                 "polyHeightChirho": poly_bottom_chirho - poly_top_chirho,
                 "glyphHeightChirho": glyph_chirho.height,
                 "glyphWidthChirho": glyph_chirho.width,
+                # Raw polygon vertices in WORD-CROP image coords (scale-divided
+                # from canvas). Persisted so overlap/merge analysis has the
+                # exact shape, not just the bbox.
+                "polygonPointsChirho": [[round(px_chirho, 2), round(py_chirho, 2)] for px_chirho, py_chirho in image_points_chirho],
             }, mf_chirho, ensure_ascii=False, indent=2)
         saved_chirho += 1
 

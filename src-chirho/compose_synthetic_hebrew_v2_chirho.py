@@ -50,8 +50,32 @@ NIKKUD_RANGES_CHIRHO = [(0x0591, 0x05BD), (0x05BF, 0x05C7)]
 HEBREW_LETTER_RANGE_CHIRHO = (0x05D0, 0x05EA)
 
 TARGET_HEIGHT_CHIRHO = 40   # Consonant "body" height (topline → baseline).
-ASCENDER_H_CHIRHO = 16      # Extra zone ABOVE the topline (lamed's ascender).
-DESCENDER_H_CHIRHO = 16     # Extra zone BELOW the baseline (final letters, qof).
+# ASCENDER/DESCENDER zones default to a guess but are OVERRIDDEN below by the
+# empirically measured ratios in hebrew-metrics-chirho.json when present
+# (measure_hebrew_metrics_chirho.py: lamed rise ~12% of body, finals/qof
+# drop ~38% of body — both control-validated, not guessed).
+ASCENDER_H_CHIRHO = 16
+DESCENDER_H_CHIRHO = 16
+
+def _load_measured_zones_chirho():
+    """Override ASCENDER_H / DESCENDER_H from the corpus-measured metrics."""
+    import json as _json_chirho
+    metrics_path_chirho = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "models-chirho" / "hebrew-metrics-chirho.json"
+    if not metrics_path_chirho.exists():
+        return False, None
+    try:
+        with open(metrics_path_chirho) as f_chirho:
+            m_chirho = _json_chirho.load(f_chirho)
+        global ASCENDER_H_CHIRHO, DESCENDER_H_CHIRHO
+        asc_over_body_chirho = m_chirho.get("ascenderRiseOverBodyChirho")
+        desc_over_body_chirho = m_chirho.get("descenderDropOverBodyChirho")
+        if asc_over_body_chirho is not None:
+            ASCENDER_H_CHIRHO = max(1, int(round(asc_over_body_chirho * TARGET_HEIGHT_CHIRHO)))
+        if desc_over_body_chirho is not None:
+            DESCENDER_H_CHIRHO = max(1, int(round(desc_over_body_chirho * TARGET_HEIGHT_CHIRHO)))
+        return True, m_chirho
+    except Exception:
+        return False, None
 
 # Hebrew typographic class per letter. Drives vertical placement of legacy
 # tight-cropped glyphs (which lost their absolute y). Recovers the correct
@@ -66,6 +90,9 @@ LETTER_CLASS_CHIRHO = {
     "ך": "descender", "ן": "descender", "ף": "descender", "ץ": "descender", "ק": "descender",
 }
 SHORT_BODY_FRAC_CHIRHO = 0.55  # yod height as a fraction of full body height
+
+# Apply the corpus-measured ascender/descender zones at import time.
+_MEASURED_OK_CHIRHO, _MEASURED_METRICS_CHIRHO = _load_measured_zones_chirho()
 GAP_RANGE_CHIRHO = (-3, 6)  # Pixel gap between adjacent glyphs (negative = overlap).
 ROTATION_RANGE_CHIRHO = (-1.2, 1.2)
 SCALE_JITTER_RANGE_CHIRHO = (0.92, 1.08)
@@ -278,7 +305,13 @@ def compose_word_image_chirho(consonants_chirho: str, library_chirho: dict, glue
         placed_chirho.append((resized_chirho, x_chirho, y_off_chirho))
         x_chirho += resized_chirho.width
         if i_chirho < len(sampled_chirho) - 1:
-            if random.random() < glue_prob_chirho:
+            # Yod stays visually isolated — it does not merge into its
+            # neighbors in this font (observed: never seen a yod glued from
+            # its right). So suppress overlap when either side of the gap is
+            # a yod; use a normal positive gap instead.
+            this_is_yod_chirho = glyph_info_chirho["charChirho"] == "י"
+            next_is_yod_chirho = sampled_chirho[i_chirho + 1]["charChirho"] == "י"
+            if (random.random() < glue_prob_chirho) and not this_is_yod_chirho and not next_is_yod_chirho:
                 gap_chirho = random.randint(-4, -1)
             else:
                 gap_chirho = random.randint(*GAP_RANGE_CHIRHO)
