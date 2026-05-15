@@ -82,7 +82,10 @@ const lineContextStmtChirho = dbChirho.prepare(
      WHERE w.id_chirho = ?`
 );
 
-const insertStmtChirho = dbChirho.prepare(
+// Two insert paths: clean human labels go to source='human-chirho'; bad-bbox
+// flags go to source='human-bad-bbox-chirho' so the re-segmentation pipeline
+// can target them without polluting the classifier training set.
+const insertHumanStmtChirho = dbChirho.prepare(
   `INSERT OR IGNORE INTO training_pairs_chirho
     (word_id_chirho, scanline_id_chirho, page_id_chirho, vol_chirho, page_num_chirho,
      line_idx_chirho, word_idx_chirho,
@@ -90,6 +93,15 @@ const insertStmtChirho = dbChirho.prepare(
      crop_path_chirho, text_chirho, script_chirho, source_chirho,
      certainty_chirho, tesseract_was_chirho)
    VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'human-chirho', NULL, ?)`
+);
+const insertBadBboxStmtChirho = dbChirho.prepare(
+  `INSERT OR IGNORE INTO training_pairs_chirho
+    (word_id_chirho, scanline_id_chirho, page_id_chirho, vol_chirho, page_num_chirho,
+     line_idx_chirho, word_idx_chirho,
+     x_min_chirho, y_min_chirho, x_max_chirho, y_max_chirho,
+     crop_path_chirho, text_chirho, script_chirho, source_chirho,
+     certainty_chirho, tesseract_was_chirho)
+   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?, 'human-bad-bbox-chirho', NULL, ?)`
 );
 
 const logStepStmtChirho = dbChirho.prepare(
@@ -145,157 +157,246 @@ const indexHtmlChirho = String.raw`<!doctype html>
   <div class="stage" id="stage"></div>
 
   <script>
-  const manifest = ${JSON.stringify(manifestChirho)};
-  let idx = 0;
-  let counts = { hebrew: 0, latin: 0, symbol: 0, skip: 0 };
+  // All client identifiers carry the Chirho suffix per project AGENTS.md.
+  const manifestChirho = ${JSON.stringify(manifestChirho)};
+  let idxChirho = 0;
+  let countsChirho = { hebrewChirho: 0, latinChirho: 0, greekChirho: 0, symbolChirho: 0, skipChirho: 0, badBboxChirho: 0 };
+  // Set of word IDs already labeled by the user (loaded from server on init,
+  // refreshed locally as the user goes). Used so refresh skips past prior work.
+  let labeledSetChirho = new Set();
 
-  function el(tag, opts, children) {
-    const e = document.createElement(tag);
-    if (opts) {
-      if (opts.cls) e.className = opts.cls;
-      if (opts.text != null) e.textContent = opts.text;
-      if (opts.id) e.id = opts.id;
-      if (opts.attrs) for (const k of Object.keys(opts.attrs)) e.setAttribute(k, opts.attrs[k]);
-      if (opts.style) e.setAttribute('style', opts.style);
+  async function loadLabeledFromServerChirho() {
+    try {
+      const rChirho = await fetch('/labeled-set');
+      const jChirho = await rChirho.json();
+      labeledSetChirho = new Set(jChirho.labeledChirho);
+      if (jChirho.byScriptChirho) {
+        countsChirho.hebrewChirho = jChirho.byScriptChirho['hebrew-chirho'] || 0;
+        countsChirho.latinChirho  = jChirho.byScriptChirho['latin-chirho']  || 0;
+        countsChirho.greekChirho  = jChirho.byScriptChirho['greek-chirho']  || 0;
+        countsChirho.symbolChirho = jChirho.byScriptChirho['symbol-chirho'] || 0;
+      }
+      if (typeof jChirho.badBboxCountChirho === 'number') countsChirho.badBboxChirho = jChirho.badBboxCountChirho;
+      while (idxChirho < manifestChirho.itemsChirho.length && labeledSetChirho.has(manifestChirho.itemsChirho[idxChirho].wordIdChirho)) {
+        idxChirho++;
+      }
+    } catch (errChirho) { /* non-fatal */ }
+  }
+
+  function elChirho(tagChirho, optsChirho, childrenChirho) {
+    const eChirho = document.createElement(tagChirho);
+    if (optsChirho) {
+      if (optsChirho.cls) eChirho.className = optsChirho.cls;
+      if (optsChirho.text != null) eChirho.textContent = optsChirho.text;
+      if (optsChirho.id) eChirho.id = optsChirho.id;
+      if (optsChirho.attrs) for (const kChirho of Object.keys(optsChirho.attrs)) eChirho.setAttribute(kChirho, optsChirho.attrs[kChirho]);
+      if (optsChirho.style) eChirho.setAttribute('style', optsChirho.style);
     }
-    if (children) for (const c of children) if (c) e.appendChild(c);
-    return e;
+    if (childrenChirho) for (const cChirho of childrenChirho) if (cChirho) eChirho.appendChild(cChirho);
+    return eChirho;
   }
 
-  function clearNode(n) { while (n.firstChild) n.removeChild(n.firstChild); }
+  function clearNodeChirho(nChirho) { while (nChirho.firstChild) nChirho.removeChild(nChirho.firstChild); }
 
-  function update() {
-    const total = manifest.itemsChirho.length;
-    document.getElementById('progress').textContent = (idx + 1) + ' / ' + total;
-    const s = document.getElementById('stats');
-    clearNode(s);
-    s.appendChild(document.createTextNode('Hebrew: '));
-    s.appendChild(el('span', { cls: 'yes', text: String(counts.hebrew) }));
-    s.appendChild(document.createTextNode(' · Latin: '));
-    s.appendChild(el('span', { cls: 'no', text: String(counts.latin) }));
-    s.appendChild(document.createTextNode(' · Symbol: ' + counts.symbol + ' · Skipped: ' + counts.skip));
+  function updateChirho() {
+    const totalChirho = manifestChirho.itemsChirho.length;
+    document.getElementById('progress').textContent = (idxChirho + 1) + ' / ' + totalChirho;
+    const sChirho = document.getElementById('stats');
+    clearNodeChirho(sChirho);
+    sChirho.appendChild(document.createTextNode('Hebrew: '));
+    sChirho.appendChild(elChirho('span', { cls: 'yes', text: String(countsChirho.hebrewChirho) }));
+    sChirho.appendChild(document.createTextNode(' · Latin: '));
+    sChirho.appendChild(elChirho('span', { cls: 'no', text: String(countsChirho.latinChirho) }));
+    sChirho.appendChild(document.createTextNode(' · Greek: ' + countsChirho.greekChirho + ' · Symbol: ' + countsChirho.symbolChirho + ' · Bad bbox: ' + countsChirho.badBboxChirho + ' · Skipped: ' + countsChirho.skipChirho));
   }
 
-  function render() {
-    const stage = document.getElementById('stage');
-    clearNode(stage);
-    if (idx >= manifest.itemsChirho.length) {
-      const doneDiv = el('div', { cls: 'done' });
-      doneDiv.appendChild(document.createTextNode('Done — labeled '));
-      doneDiv.appendChild(el('span', { cls: 'yes', text: String(counts.hebrew) }));
-      doneDiv.appendChild(document.createTextNode(' Hebrew, '));
-      doneDiv.appendChild(el('span', { cls: 'no', text: String(counts.latin) }));
-      doneDiv.appendChild(document.createTextNode(' Latin, ' + counts.symbol + ' Symbol, ' + counts.skip + ' skipped.'));
-      stage.appendChild(doneDiv);
-      update();
+  function renderChirho() {
+    const stageChirho = document.getElementById('stage');
+    clearNodeChirho(stageChirho);
+    if (idxChirho >= manifestChirho.itemsChirho.length) {
+      const doneDivChirho = elChirho('div', { cls: 'done' });
+      doneDivChirho.appendChild(document.createTextNode('Done — labeled '));
+      doneDivChirho.appendChild(elChirho('span', { cls: 'yes', text: String(countsChirho.hebrewChirho) }));
+      doneDivChirho.appendChild(document.createTextNode(' Hebrew, '));
+      doneDivChirho.appendChild(elChirho('span', { cls: 'no', text: String(countsChirho.latinChirho) }));
+      doneDivChirho.appendChild(document.createTextNode(' Latin, ' + countsChirho.greekChirho + ' Greek, ' + countsChirho.symbolChirho + ' Symbol, ' + countsChirho.badBboxChirho + ' bad-bbox, ' + countsChirho.skipChirho + ' skipped.'));
+      stageChirho.appendChild(doneDivChirho);
+      updateChirho();
       return;
     }
-    const item = manifest.itemsChirho[idx];
-    const cropWrap = el('div', { cls: 'crop-wrap' });
-    const img = el('img', { attrs: { src: '/crop/' + item.cropFileChirho + '?t=' + Date.now(), alt: '' } });
-    cropWrap.appendChild(img);
-    stage.appendChild(cropWrap);
+    const itemChirho = manifestChirho.itemsChirho[idxChirho];
+    const cropWrapChirho = elChirho('div', { cls: 'crop-wrap' });
+    const imgChirho = elChirho('img', { attrs: { src: '/crop/' + itemChirho.cropFileChirho + '?t=' + Date.now(), alt: '' } });
+    cropWrapChirho.appendChild(imgChirho);
+    stageChirho.appendChild(cropWrapChirho);
 
-    const meta = el('div', { cls: 'meta' });
-    meta.appendChild(el('span', { cls: 'tess', text: 'tesseract: "' + item.tesseractTextChirho + '"' }));
-    meta.appendChild(el('span', { cls: 'prob', text: '  ·  p(hebrew) = ' + (item.allProbsChirho.hebrew * 100).toFixed(0) + '%' }));
-    meta.appendChild(el('span', { text: '  ·  vol ' + item.volChirho + ' p' + item.pageNumChirho + ' line ' + item.lineIdxChirho }));
-    stage.appendChild(meta);
+    const metaChirho = elChirho('div', { cls: 'meta' });
+    metaChirho.appendChild(elChirho('span', { cls: 'tess', text: 'tesseract: "' + itemChirho.tesseractTextChirho + '"' }));
+    metaChirho.appendChild(elChirho('span', { cls: 'prob', text: '  ·  p(hebrew) = ' + (itemChirho.allProbsChirho.hebrew * 100).toFixed(0) + '%' }));
+    metaChirho.appendChild(elChirho('span', { text: '  ·  vol ' + itemChirho.volChirho + ' p' + itemChirho.pageNumChirho + ' line ' + itemChirho.lineIdxChirho }));
+    stageChirho.appendChild(metaChirho);
 
-    // Line context
-    const lineWrap = el('div', { cls: 'line-wrap' });
-    const lineImg = el('img', { attrs: { id: 'line-img', alt: '' } });
-    const marker = el('div', { cls: 'line-marker', id: 'line-marker', style: 'display:none' });
-    lineWrap.appendChild(lineImg);
-    lineWrap.appendChild(marker);
-    stage.appendChild(lineWrap);
-    lineImg.onload = () => {
-      fetch('/line-context-meta/' + item.wordIdChirho).then(r => r.json()).then(meta => {
-        if (!meta.okChirho) return;
-        const lineW = meta.lineWidthChirho + meta.linePadChirho * 2;
-        const wordLeft = (meta.wordXMinChirho - (meta.lineXMinChirho - meta.linePadChirho)) / lineW;
-        const wordW = (meta.wordXMaxChirho - meta.wordXMinChirho) / lineW;
-        const w = lineImg.offsetWidth;
-        marker.style.left = (wordLeft * w + 4) + 'px';
-        marker.style.width = (wordW * w) + 'px';
-        marker.style.display = 'block';
+    const lineWrapChirho = elChirho('div', { cls: 'line-wrap' });
+    const lineImgChirho = elChirho('img', { attrs: { id: 'line-img', alt: '' } });
+    const markerChirho = elChirho('div', { cls: 'line-marker', id: 'line-marker', style: 'display:none' });
+    lineWrapChirho.appendChild(lineImgChirho);
+    lineWrapChirho.appendChild(markerChirho);
+    stageChirho.appendChild(lineWrapChirho);
+    lineImgChirho.onload = () => {
+      fetch('/line-context-meta/' + itemChirho.wordIdChirho).then(rChirho => rChirho.json()).then(metaRespChirho => {
+        if (!metaRespChirho.okChirho) return;
+        const lineWChirho = metaRespChirho.lineWidthChirho + metaRespChirho.linePadChirho * 2;
+        const wordLeftChirho = (metaRespChirho.wordXMinChirho - (metaRespChirho.lineXMinChirho - metaRespChirho.linePadChirho)) / lineWChirho;
+        const wordWChirho = (metaRespChirho.wordXMaxChirho - metaRespChirho.wordXMinChirho) / lineWChirho;
+        const renderedWChirho = lineImgChirho.offsetWidth;
+        markerChirho.style.left = (wordLeftChirho * renderedWChirho + 4) + 'px';
+        markerChirho.style.width = (wordWChirho * renderedWChirho) + 'px';
+        markerChirho.style.display = 'block';
       });
     };
-    lineImg.src = '/line-context/' + item.wordIdChirho + '?t=' + Date.now();
+    lineImgChirho.src = '/line-context/' + itemChirho.wordIdChirho + '?t=' + Date.now();
 
-    const actions = el('div', { cls: 'actions' });
-    const yes = el('button', { cls: 'btn-yes', text: '✓ Hebrew (Y)' });
-    yes.addEventListener('click', () => decide('hebrew'));
-    actions.appendChild(yes);
-    const latin = el('button', { cls: 'btn-no', text: 'Latin (L)' });
-    latin.addEventListener('click', () => decide('latin'));
-    actions.appendChild(latin);
-    const sym = el('button', { cls: 'btn-sym', text: 'Symbol (O)' });
-    sym.addEventListener('click', () => decide('symbol'));
-    actions.appendChild(sym);
-    const skip = el('button', { cls: 'btn-skip', text: 'Skip (S)' });
-    skip.addEventListener('click', () => decide('skip'));
-    actions.appendChild(skip);
-    stage.appendChild(actions);
+    const actionsChirho = elChirho('div', { cls: 'actions' });
+    const yesBtnChirho = elChirho('button', { cls: 'btn-yes', text: '✓ Hebrew (Y)' });
+    yesBtnChirho.addEventListener('click', () => decideChirho('hebrew'));
+    actionsChirho.appendChild(yesBtnChirho);
+    const latinBtnChirho = elChirho('button', { cls: 'btn-no', text: 'Latin (L)' });
+    latinBtnChirho.addEventListener('click', () => decideChirho('latin'));
+    actionsChirho.appendChild(latinBtnChirho);
+    const greekBtnChirho = elChirho('button', { cls: 'btn-no', text: 'Greek (G)', attrs: { style: 'border-color:#4cc24c;color:#4cc24c' } });
+    greekBtnChirho.addEventListener('click', () => decideChirho('greek'));
+    actionsChirho.appendChild(greekBtnChirho);
+    const symBtnChirho = elChirho('button', { cls: 'btn-sym', text: 'Symbol (O)' });
+    symBtnChirho.addEventListener('click', () => decideChirho('symbol'));
+    actionsChirho.appendChild(symBtnChirho);
+    const skipBtnChirho = elChirho('button', { cls: 'btn-skip', text: 'Skip (S)' });
+    skipBtnChirho.addEventListener('click', () => decideChirho('skip'));
+    actionsChirho.appendChild(skipBtnChirho);
+    const bboxBtnChirho = elChirho('button', { cls: 'btn-skip', text: '✂ Bad bbox (B)', attrs: { style: 'border-color:#f59e0b;color:#fbbf24' } });
+    bboxBtnChirho.addEventListener('click', () => decideChirho('bad-bbox'));
+    actionsChirho.appendChild(bboxBtnChirho);
+    const undoBtnChirho = elChirho('button', { cls: 'btn-skip', text: '↶ Undo last (U)' });
+    undoBtnChirho.addEventListener('click', undoLastChirho);
+    actionsChirho.appendChild(undoBtnChirho);
+    stageChirho.appendChild(actionsChirho);
 
-    const keys = el('div', { cls: 'keys' });
-    const tip = el('span');
-    tip.appendChild(document.createTextNode('Press '));
-    tip.appendChild(el('kbd', { text: 'Y' }));
-    tip.appendChild(document.createTextNode(' Hebrew · '));
-    tip.appendChild(el('kbd', { text: 'L' }));
-    tip.appendChild(document.createTextNode(' Latin · '));
-    tip.appendChild(el('kbd', { text: 'O' }));
-    tip.appendChild(document.createTextNode(' Symbol · '));
-    tip.appendChild(el('kbd', { text: 'S' }));
-    tip.appendChild(document.createTextNode(' Skip'));
-    keys.appendChild(tip);
-    stage.appendChild(keys);
+    const keysChirho = elChirho('div', { cls: 'keys' });
+    const tipChirho = elChirho('span');
+    tipChirho.appendChild(document.createTextNode('Press '));
+    tipChirho.appendChild(elChirho('kbd', { text: 'Y' }));
+    tipChirho.appendChild(document.createTextNode(' Hebrew · '));
+    tipChirho.appendChild(elChirho('kbd', { text: 'L' }));
+    tipChirho.appendChild(document.createTextNode(' Latin · '));
+    tipChirho.appendChild(elChirho('kbd', { text: 'G' }));
+    tipChirho.appendChild(document.createTextNode(' Greek · '));
+    tipChirho.appendChild(elChirho('kbd', { text: 'O' }));
+    tipChirho.appendChild(document.createTextNode(' Symbol · '));
+    tipChirho.appendChild(elChirho('kbd', { text: 'S' }));
+    tipChirho.appendChild(document.createTextNode(' Skip · '));
+    tipChirho.appendChild(elChirho('kbd', { text: 'B' }));
+    tipChirho.appendChild(document.createTextNode(' Bad bbox · '));
+    tipChirho.appendChild(elChirho('kbd', { text: 'U' }));
+    tipChirho.appendChild(document.createTextNode(' Undo last'));
+    keysChirho.appendChild(tipChirho);
+    stageChirho.appendChild(keysChirho);
 
-    update();
+    updateChirho();
   }
 
-  async function decide(verdict) {
-    const item = manifest.itemsChirho[idx];
-    let script;
-    if (verdict === 'hebrew') { script = 'hebrew-chirho'; counts.hebrew++; }
-    else if (verdict === 'latin') { script = 'latin-chirho'; counts.latin++; }
-    else if (verdict === 'symbol') { script = 'symbol-chirho'; counts.symbol++; }
-    else { counts.skip++; idx++; render(); return; }
+  async function decideChirho(verdictChirho) {
+    const itemChirho = manifestChirho.itemsChirho[idxChirho];
+    let scriptChirho;
+    // Note: bad-bbox is a special skip that still writes a row to
+    // training_pairs_chirho (with source='human-bad-bbox-chirho') so the
+    // pipeline can later re-segment those crops without polluting training.
+    let badBboxFlagChirho = false;
+    if (verdictChirho === 'hebrew') { scriptChirho = 'hebrew-chirho'; countsChirho.hebrewChirho++; }
+    else if (verdictChirho === 'latin') { scriptChirho = 'latin-chirho'; countsChirho.latinChirho++; }
+    else if (verdictChirho === 'greek') { scriptChirho = 'greek-chirho'; countsChirho.greekChirho++; }
+    else if (verdictChirho === 'symbol') { scriptChirho = 'symbol-chirho'; countsChirho.symbolChirho++; }
+    else if (verdictChirho === 'bad-bbox') {
+      // Use 'unknown-chirho' as the script tag; the source tag is what carries
+      // the semantic of "do not trust this crop".
+      scriptChirho = 'unknown-chirho';
+      badBboxFlagChirho = true;
+      countsChirho.badBboxChirho++;
+    }
+    else {
+      countsChirho.skipChirho++;
+      idxChirho++;
+      while (idxChirho < manifestChirho.itemsChirho.length && labeledSetChirho.has(manifestChirho.itemsChirho[idxChirho].wordIdChirho)) idxChirho++;
+      renderChirho();
+      return;
+    }
     try {
-      const r = await fetch('/submit-one', {
+      const rChirho = await fetch('/submit-one', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({ itemChirho: item, scriptChirho: script })
+        body: JSON.stringify({ itemChirho, scriptChirho, badBboxFlagChirho })
       });
-      const j = await r.json();
-      const status = document.getElementById('status');
-      if (j.okChirho) {
-        status.className = '';
-        status.textContent = 'Saved as ' + verdict;
+      const jChirho = await rChirho.json();
+      const statusChirho = document.getElementById('status');
+      if (jChirho.okChirho) {
+        statusChirho.className = '';
+        statusChirho.textContent = 'Saved as ' + verdictChirho;
+        labeledSetChirho.add(itemChirho.wordIdChirho);
       } else {
-        status.className = 'error';
-        status.textContent = 'Save failed: ' + (j.errorChirho || 'unknown');
+        statusChirho.className = 'error';
+        statusChirho.textContent = 'Save failed: ' + (jChirho.errorChirho || 'unknown');
       }
-    } catch (err) {
+    } catch (errChirho) {
       document.getElementById('status').className = 'error';
-      document.getElementById('status').textContent = 'Network: ' + err.message;
+      document.getElementById('status').textContent = 'Network: ' + errChirho.message;
     }
-    idx++;
-    render();
+    idxChirho++;
+    while (idxChirho < manifestChirho.itemsChirho.length && labeledSetChirho.has(manifestChirho.itemsChirho[idxChirho].wordIdChirho)) idxChirho++;
+    renderChirho();
   }
 
-  document.addEventListener('keydown', e => {
-    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-    const k = e.key.toLowerCase();
-    if (k === 'y') { e.preventDefault(); decide('hebrew'); }
-    else if (k === 'l') { e.preventDefault(); decide('latin'); }
-    else if (k === 'o') { e.preventDefault(); decide('symbol'); }
-    else if (k === 's') { e.preventDefault(); decide('skip'); }
-    else if (k === 'arrowleft' || k === 'p') { if (idx > 0) { idx--; render(); } }
+  async function undoLastChirho() {
+    try {
+      const rChirho = await fetch('/undo-last', { method: 'POST' });
+      const jChirho = await rChirho.json();
+      const statusChirho = document.getElementById('status');
+      if (jChirho.okChirho) {
+        if (jChirho.deletedScriptChirho === 'hebrew-chirho') countsChirho.hebrewChirho = Math.max(0, countsChirho.hebrewChirho - 1);
+        else if (jChirho.deletedScriptChirho === 'latin-chirho') countsChirho.latinChirho = Math.max(0, countsChirho.latinChirho - 1);
+        else if (jChirho.deletedScriptChirho === 'greek-chirho') countsChirho.greekChirho = Math.max(0, countsChirho.greekChirho - 1);
+        else if (jChirho.deletedScriptChirho === 'symbol-chirho') countsChirho.symbolChirho = Math.max(0, countsChirho.symbolChirho - 1);
+        if (jChirho.deletedWordIdChirho != null) labeledSetChirho.delete(jChirho.deletedWordIdChirho);
+        idxChirho = Math.max(0, idxChirho - 1);
+        while (idxChirho > 0 && labeledSetChirho.has(manifestChirho.itemsChirho[idxChirho].wordIdChirho)) idxChirho--;
+        statusChirho.className = '';
+        statusChirho.textContent = 'Undid: ' + jChirho.deletedScriptChirho + ' (' + (jChirho.deletedWordIdChirho || '?') + ')';
+        renderChirho();
+      } else {
+        statusChirho.className = 'error';
+        statusChirho.textContent = 'Undo failed: ' + (jChirho.errorChirho || 'no recent labels');
+      }
+    } catch (errChirho) {
+      document.getElementById('status').className = 'error';
+      document.getElementById('status').textContent = 'Network: ' + errChirho.message;
+    }
+  }
+
+  document.addEventListener('keydown', evtChirho => {
+    if (evtChirho.target.tagName === 'INPUT' || evtChirho.target.tagName === 'TEXTAREA') return;
+    const kChirho = evtChirho.key.toLowerCase();
+    if (kChirho === 'y') { evtChirho.preventDefault(); decideChirho('hebrew'); }
+    else if (kChirho === 'l') { evtChirho.preventDefault(); decideChirho('latin'); }
+    else if (kChirho === 'g') { evtChirho.preventDefault(); decideChirho('greek'); }
+    else if (kChirho === 'o') { evtChirho.preventDefault(); decideChirho('symbol'); }
+    else if (kChirho === 's') { evtChirho.preventDefault(); decideChirho('skip'); }
+    else if (kChirho === 'b') { evtChirho.preventDefault(); decideChirho('bad-bbox'); }
+    else if (kChirho === 'u' || kChirho === 'backspace') { evtChirho.preventDefault(); undoLastChirho(); }
+    else if (kChirho === 'arrowleft' || kChirho === 'p') {
+      if (idxChirho > 0) { idxChirho--; renderChirho(); }
+    }
   });
 
-  render();
+  // Initial load: pull labeled-set + counts from server BEFORE first render so
+  // we land on the first unlabeled item.
+  loadLabeledFromServerChirho().then(() => { renderChirho(); });
   </script>
 </body>
 </html>`;
@@ -357,12 +458,73 @@ Bun.serve({
       if (!metaChirho) return new Response(JSON.stringify({ okChirho: false }), { status: 404 });
       return new Response(JSON.stringify({ okChirho: true, ...metaChirho }), { headers: { "Content-Type": "application/json" } });
     }
+    // Returns the set of word IDs in this manifest that already have a
+    // human-chirho label in training_pairs_chirho — so the UI can fast-forward
+    // past items the user already decided on. Survives browser refresh.
+    if (urlChirho.pathname === "/labeled-set") {
+      const wordIdsChirho = manifestChirho.itemsChirho.map((iChirho) => iChirho.wordIdChirho);
+      if (wordIdsChirho.length === 0) {
+        return new Response(JSON.stringify({ labeledChirho: [], byScriptChirho: {} }), { headers: { "Content-Type": "application/json" } });
+      }
+      const placeholdersChirho = wordIdsChirho.map(() => "?").join(",");
+      // Include both human-chirho and human-bad-bbox-chirho — both mean
+      // "the user has decided on this item, don't show it again."
+      const rowsChirho = dbChirho
+        .prepare(
+          `SELECT word_id_chirho, script_chirho, source_chirho FROM training_pairs_chirho
+             WHERE source_chirho IN ('human-chirho','human-bad-bbox-chirho')
+               AND word_id_chirho IN (${placeholdersChirho})`
+        )
+        .all(...wordIdsChirho) as Array<{ word_id_chirho: number; script_chirho: string; source_chirho: string }>;
+      const labeledChirho = rowsChirho.map((rChirho) => rChirho.word_id_chirho);
+      const byScriptChirho: Record<string, number> = {};
+      let badBboxCountChirho = 0;
+      for (const rChirho of rowsChirho) {
+        if (rChirho.source_chirho === "human-bad-bbox-chirho") {
+          badBboxCountChirho++;
+        } else {
+          byScriptChirho[rChirho.script_chirho] = (byScriptChirho[rChirho.script_chirho] ?? 0) + 1;
+        }
+      }
+      return new Response(JSON.stringify({ labeledChirho, byScriptChirho, badBboxCountChirho }), { headers: { "Content-Type": "application/json" } });
+    }
+    if (urlChirho.pathname === "/undo-last" && reqChirho.method === "POST") {
+      try {
+        // Delete the most-recent human-chirho row (server has no notion of
+        // session, so this is approximate — undoes the global latest human
+        // label, which in practice is the one the user just inserted).
+        const lastChirho = dbChirho.prepare(
+          `SELECT id_chirho, word_id_chirho, script_chirho FROM training_pairs_chirho
+             WHERE source_chirho = 'human-chirho'
+             ORDER BY id_chirho DESC LIMIT 1`
+        ).get() as { id_chirho: number; word_id_chirho: number; script_chirho: string } | undefined;
+        if (!lastChirho) {
+          return new Response(JSON.stringify({ okChirho: false, errorChirho: "no recent human-chirho rows" }), { headers: { "Content-Type": "application/json" } });
+        }
+        dbChirho.run(`DELETE FROM training_pairs_chirho WHERE id_chirho = ?`, [lastChirho.id_chirho]);
+        const nowChirho = new Date().toISOString();
+        logStepStmtChirho.run(
+          "hebrew-validate-chirho",
+          nowChirho, nowChirho,
+          `UNDO label on word ${lastChirho.word_id_chirho} (was script=${lastChirho.script_chirho})`,
+          `deleted training_pairs_chirho row id=${lastChirho.id_chirho}`,
+          "user pressed undo to retract the most recent labeling decision"
+        );
+        return new Response(
+          JSON.stringify({ okChirho: true, deletedScriptChirho: lastChirho.script_chirho, deletedWordIdChirho: lastChirho.word_id_chirho }),
+          { headers: { "Content-Type": "application/json" } }
+        );
+      } catch (errChirho) {
+        return new Response(JSON.stringify({ okChirho: false, errorChirho: String(errChirho) }), { status: 500, headers: { "Content-Type": "application/json" } });
+      }
+    }
     if (urlChirho.pathname === "/submit-one" && reqChirho.method === "POST") {
       try {
-        const bodyChirho = (await reqChirho.json()) as { itemChirho: ManifestItemChirho; scriptChirho: string };
+        const bodyChirho = (await reqChirho.json()) as { itemChirho: ManifestItemChirho; scriptChirho: string; badBboxFlagChirho?: boolean };
         const itemChirho = bodyChirho.itemChirho;
         const cropPathChirho = join(batchDirChirho, itemChirho.cropFileChirho);
-        const resChirho = insertStmtChirho.run(
+        const stmtChirho = bodyChirho.badBboxFlagChirho ? insertBadBboxStmtChirho : insertHumanStmtChirho;
+        const resChirho = stmtChirho.run(
           itemChirho.wordIdChirho,
           itemChirho.scanlineIdChirho,
           itemChirho.pageIdChirho,
