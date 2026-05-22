@@ -32,7 +32,7 @@ import numpy as np
 
 PROJECT_ROOT_CHIRHO = Path(__file__).resolve().parent.parent
 DB_PATH_CHIRHO = PROJECT_ROOT_CHIRHO / "spec-chirho" / "progress-chirho.sqlite"
-ONNX_PATH_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "models-chirho" / "script-classifier-v6-chirho.onnx"
+ONNX_PATH_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "models-chirho" / "script-classifier-v7-chirho.onnx"
 BATCHES_DIR_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "labeling-batches-chirho"
 IMAGES_DIR_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "images-chirho"
 

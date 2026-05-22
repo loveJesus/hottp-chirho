@@ -56,6 +56,12 @@ TARGET_HEIGHT_CHIRHO = 40   # Consonant "body" height (topline → baseline).
 # drop ~38% of body — both control-validated, not guessed).
 ASCENDER_H_CHIRHO = 16
 DESCENDER_H_CHIRHO = 16
+# The corpus measurement (ascenderRiseOverBodyChirho ≈ 0.119) UNDER-read
+# lamed's rise: loose word crops + lamed not always the topmost ink in its
+# word biased it low. User reviewing real-vs-synth: lamed must rise more
+# (~15-20% of body more). Use a perceptual, user-validated fraction for the
+# ascender; descender (qof/finals) stays corpus-measured — confirmed good.
+ASCENDER_RISE_FRAC_CHIRHO = 0.32
 
 def _load_measured_zones_chirho():
     """Override ASCENDER_H / DESCENDER_H from the corpus-measured metrics."""
@@ -67,10 +73,10 @@ def _load_measured_zones_chirho():
         with open(metrics_path_chirho) as f_chirho:
             m_chirho = _json_chirho.load(f_chirho)
         global ASCENDER_H_CHIRHO, DESCENDER_H_CHIRHO
-        asc_over_body_chirho = m_chirho.get("ascenderRiseOverBodyChirho")
         desc_over_body_chirho = m_chirho.get("descenderDropOverBodyChirho")
-        if asc_over_body_chirho is not None:
-            ASCENDER_H_CHIRHO = max(1, int(round(asc_over_body_chirho * TARGET_HEIGHT_CHIRHO)))
+        # Ascender from the perceptual constant, NOT the under-reading corpus
+        # value (see ASCENDER_RISE_FRAC_CHIRHO note above).
+        ASCENDER_H_CHIRHO = max(1, int(round(ASCENDER_RISE_FRAC_CHIRHO * TARGET_HEIGHT_CHIRHO)))
         if desc_over_body_chirho is not None:
             DESCENDER_H_CHIRHO = max(1, int(round(desc_over_body_chirho * TARGET_HEIGHT_CHIRHO)))
         return True, m_chirho
@@ -89,16 +95,35 @@ LETTER_CLASS_CHIRHO = {
     "י": "short",
     "ך": "descender", "ן": "descender", "ף": "descender", "ץ": "descender", "ק": "descender",
 }
-SHORT_BODY_FRAC_CHIRHO = 0.55  # yod height as a fraction of full body height
+# yod ink height / full-letter ink height, measured from the v3 glyph
+# library (n=10 yod: median ink 17px vs 23px median full-letter ink) —
+# data-driven, not guessed. Old 0.55 made yod consistently too small.
+SHORT_BODY_FRAC_CHIRHO = 0.74
 
 # Apply the corpus-measured ascender/descender zones at import time.
 _MEASURED_OK_CHIRHO, _MEASURED_METRICS_CHIRHO = _load_measured_zones_chirho()
-GAP_RANGE_CHIRHO = (-3, 6)  # Pixel gap between adjacent glyphs (negative = overlap).
-ROTATION_RANGE_CHIRHO = (-1.2, 1.2)
+# Pixel gap between adjacent glyphs. Tightened from (-3, 6) after ink-tight
+# cropping removed each glyph's horizontal padding: a wide range (and stray
+# negatives) made spacing look uneven. Small + all-positive = even rhythm;
+# intentional touching is handled separately by the glue-overlap branch.
+GAP_RANGE_CHIRHO = (2, 5)
+# Per-letter default LEFT side-bearing (extra px immediately to the glyph's
+# pixel-left). ח has a strong vertical left stroke that butts straight into
+# a vertical-edged neighbour (e.g. ה in משפחה) and reads as merged; one
+# default pixel separates them. Within the user's "a pixel or so is fine".
+LEFT_BEARING_CHIRHO = {"ח": 1}
+# Sideways jitter kept to ~1px: at ~150px word width, 1.2° already shifts
+# edges ~3px. 0.5° ≈ ~1px — enough life without looking wobbly.
+ROTATION_RANGE_CHIRHO = (-0.5, 0.5)
 SCALE_JITTER_RANGE_CHIRHO = (0.92, 1.08)
-BLUR_SIGMA_RANGE_CHIRHO = (0.3, 0.9)
-NOISE_STD_RANGE_CHIRHO = (2.0, 8.0)
-PAPER_TINT_RANGE_CHIRHO = (235, 250)
+# Lowered from (0.3, 0.9): high sigma over the flat-fill ink read as a
+# bleeding felt-tip. The glyph is itself a scan (carries real edge texture),
+# so it needs only a whisper of blur.
+BLUR_SIGMA_RANGE_CHIRHO = (0.0, 0.4)
+# Higher contrast: paper near-pure white, less speckle (the old 235-250 +
+# heavy noise read as a gray canvas; user wants white totally white).
+NOISE_STD_RANGE_CHIRHO = (1.0, 4.0)
+PAPER_TINT_RANGE_CHIRHO = (250, 255)
 PER_GLYPH_PAD_CHIRHO = 3
 
 
@@ -231,6 +256,22 @@ def sample_wlc_words_chirho(n_chirho: int, library_chars_chirho: set) -> list:
     return selected_chirho
 
 
+def ink_tight_crop_chirho(img_chirho, thresh_chirho=200):
+    """Crop to the actual ink bounding box. Legacy glyph PNGs carry ~25%
+    variable white padding (save_polygons keeps full word-strip height); sizing
+    by the stored crop therefore made each letter's real ink inconsistently
+    tall (tav too small ~half the time, generally uneven). Normalizing by the
+    ink box makes every full letter's INK map to the same body height."""
+    arr_chirho = np.asarray(img_chirho.convert("L"))
+    ys_chirho, xs_chirho = np.where(arr_chirho < thresh_chirho)
+    if ys_chirho.size == 0:
+        return img_chirho
+    return img_chirho.crop((
+        int(xs_chirho.min()), int(ys_chirho.min()),
+        int(xs_chirho.max()) + 1, int(ys_chirho.max()) + 1,
+    ))
+
+
 def size_and_anchor_chirho(glyph_info_chirho, measured_ref_chirho):
     """Return (resized_img, y_offset_from_canvas_top).
 
@@ -251,14 +292,21 @@ def size_and_anchor_chirho(glyph_info_chirho, measured_ref_chirho):
     img_chirho = glyph_info_chirho["imgChirho"]
     ch_chirho = glyph_info_chirho["charChirho"]
     cls_chirho = glyph_info_chirho["letterClassChirho"]
-    src_w_chirho, src_h_chirho = img_chirho.size
-    aspect_chirho = src_w_chirho / max(1, src_h_chirho)
 
     topline_y_chirho = ASCENDER_H_CHIRHO
     body_px_chirho = TARGET_HEIGHT_CHIRHO
 
     per_letter_chirho = (measured_ref_chirho or {}).get("perLetterChirho", {})
-    if measured_ref_chirho and ch_chirho in per_letter_chirho:
+    use_measured_chirho = bool(measured_ref_chirho and ch_chirho in per_letter_chirho)
+    if not use_measured_chirho:
+        # Class-fallback path: normalize by real ink, not the padded crop, so
+        # full letters end up the same height (even baseline) and yod scales
+        # to the measured SHORT_BODY_FRAC of that ink.
+        img_chirho = ink_tight_crop_chirho(img_chirho)
+    src_w_chirho, src_h_chirho = img_chirho.size
+    aspect_chirho = src_w_chirho / max(1, src_h_chirho)
+
+    if use_measured_chirho:
         # Data-driven: map measured fraction band onto the canvas.
         topline_frac_chirho = measured_ref_chirho["toplineFracChirho"]
         baseline_frac_chirho = measured_ref_chirho["baselineFracChirho"]
@@ -305,31 +353,66 @@ def compose_word_image_chirho(consonants_chirho: str, library_chirho: dict, glue
         placed_chirho.append((resized_chirho, x_chirho, y_off_chirho))
         x_chirho += resized_chirho.width
         if i_chirho < len(sampled_chirho) - 1:
-            # Yod stays visually isolated — it does not merge into its
-            # neighbors in this font (observed: never seen a yod glued from
-            # its right). So suppress overlap when either side of the gap is
-            # a yod; use a normal positive gap instead.
+            # Yod spacing is ASYMMETRIC (observed in the real scans):
+            #   - it hugs the letter on its pixel-LEFT (= the next letter in
+            #     RTL reading order): little/no padding there, can tuck under.
+            #   - its pixel-RIGHT side (toward the preceding reading-order
+            #     letter) keeps a clear gap — a yod is never merged into from
+            #     that side.
+            # chars_in_pixel_order is reversed text, so glyph i+1 sits to the
+            # pixel-LEFT of glyph i.
             this_is_yod_chirho = glyph_info_chirho["charChirho"] == "י"
             next_is_yod_chirho = sampled_chirho[i_chirho + 1]["charChirho"] == "י"
-            if (random.random() < glue_prob_chirho) and not this_is_yod_chirho and not next_is_yod_chirho:
+            if next_is_yod_chirho:
+                # Yod's pixel-LEFT side: it frequently sits ON TOP of the
+                # letter to its left (overlap), but not always — so a wide
+                # mostly-negative range: usually tucks over by a few px,
+                # occasionally just flush. Never a real positive gap there.
+                gap_chirho = random.randint(-5, 1)
+            elif this_is_yod_chirho:
+                # Yod's pixel-RIGHT side: a few clear pixels, never glued.
+                gap_chirho = random.randint(2, 4)
+            elif random.random() < glue_prob_chirho:
                 gap_chirho = random.randint(-4, -1)
             else:
                 gap_chirho = random.randint(*GAP_RANGE_CHIRHO)
+            # Default left side-bearing for the glyph about to be placed
+            # (i+1 sits to glyph i's pixel-right; the bearing is space on
+            # that next glyph's left).
+            gap_chirho += LEFT_BEARING_CHIRHO.get(
+                sampled_chirho[i_chirho + 1]["charChirho"], 0
+            )
             x_chirho += gap_chirho
 
     canvas_w_chirho = x_chirho + PER_GLYPH_PAD_CHIRHO
     canvas_h_chirho = line_box_h_chirho + PER_GLYPH_PAD_CHIRHO * 2
     paper_chirho = random.randint(*PAPER_TINT_RANGE_CHIRHO)
-    canvas_chirho = Image.new("L", (canvas_w_chirho, canvas_h_chirho), paper_chirho)
 
+    # Additive ink: where glyphs overlap (yod over its left neighbour, glued
+    # pairs) the ink SUMS — partial/anti-aliased edges darken together — the
+    # way overlapping scan ink physically behaves, instead of one paste
+    # replacing the other. White areas contribute 0 ink, so paper is kept.
+    ink_accum_chirho = np.zeros((canvas_h_chirho, canvas_w_chirho), dtype=np.float32)
     for resized_chirho, gx_chirho, gy_chirho in placed_chirho:
-        arr_chirho = np.asarray(resized_chirho, dtype=np.uint8)
-        alpha_chirho = 255 - arr_chirho
-        canvas_chirho.paste(
-            Image.new("L", resized_chirho.size, random.randint(0, 25)),
-            (gx_chirho, gy_chirho + PER_GLYPH_PAD_CHIRHO),
-            mask=Image.fromarray(alpha_chirho, "L"),
-        )
+        arr_chirho = np.asarray(resized_chirho, dtype=np.float32)
+        # Boost >1 so real ink saturates to true black (clipped by paper-ink
+        # below), instead of the old ×0.80 dark-gray. "Blacker than black."
+        glyph_ink_chirho = (255.0 - arr_chirho) * 1.20
+        py_chirho = gy_chirho + PER_GLYPH_PAD_CHIRHO
+        px_chirho = gx_chirho
+        gh_chirho, gw_chirho = glyph_ink_chirho.shape
+        y0_chirho = max(0, py_chirho)
+        y1_chirho = min(canvas_h_chirho, py_chirho + gh_chirho)
+        x0_chirho = max(0, px_chirho)
+        x1_chirho = min(canvas_w_chirho, px_chirho + gw_chirho)
+        if y1_chirho <= y0_chirho or x1_chirho <= x0_chirho:
+            continue
+        ink_accum_chirho[y0_chirho:y1_chirho, x0_chirho:x1_chirho] += glyph_ink_chirho[
+            y0_chirho - py_chirho : y1_chirho - py_chirho,
+            x0_chirho - px_chirho : x1_chirho - px_chirho,
+        ]
+    canvas_arr_chirho = np.clip(paper_chirho - ink_accum_chirho, 0, 255).astype(np.uint8)
+    canvas_chirho = Image.fromarray(canvas_arr_chirho, "L")
 
     # Slight rotation
     angle_chirho = random.uniform(*ROTATION_RANGE_CHIRHO)
@@ -349,6 +432,21 @@ def compose_word_image_chirho(consonants_chirho: str, library_chirho: dict, glue
     arr_chirho = np.asarray(canvas_chirho, dtype=np.float32)
     noise_chirho = np.random.normal(0, random.uniform(*NOISE_STD_RANGE_CHIRHO), arr_chirho.shape)
     arr_chirho = np.clip(arr_chirho + noise_chirho, 0, 255).astype(np.uint8)
+
+    # Trim the fixed ascender/descender padding band down to the actual ink
+    # bbox (+ a small even margin). The composed canvas reserved a tall
+    # line-box, so at equal display height the synthetic letters rendered
+    # ~15% larger than the tight real word crops. Framing it like a real
+    # crop makes letter sizes match. Whole-word bbox (not per-letter), so
+    # lamed's rise / final-letter drop are preserved.
+    FINAL_MARGIN_PX_CHIRHO = 3
+    ink_ys_chirho, ink_xs_chirho = np.where(arr_chirho < 200)
+    if ink_ys_chirho.size and ink_xs_chirho.size:
+        y0_chirho = max(0, int(ink_ys_chirho.min()) - FINAL_MARGIN_PX_CHIRHO)
+        y1_chirho = min(arr_chirho.shape[0], int(ink_ys_chirho.max()) + 1 + FINAL_MARGIN_PX_CHIRHO)
+        x0_chirho = max(0, int(ink_xs_chirho.min()) - FINAL_MARGIN_PX_CHIRHO)
+        x1_chirho = min(arr_chirho.shape[1], int(ink_xs_chirho.max()) + 1 + FINAL_MARGIN_PX_CHIRHO)
+        arr_chirho = arr_chirho[y0_chirho:y1_chirho, x0_chirho:x1_chirho]
     return Image.fromarray(arr_chirho, mode="L")
 
 

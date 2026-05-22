@@ -38,8 +38,9 @@ import numpy as np
 PROJECT_ROOT_CHIRHO = Path(__file__).resolve().parent.parent
 DB_PATH_CHIRHO = PROJECT_ROOT_CHIRHO / "spec-chirho" / "progress-chirho.sqlite"
 MODEL_OUT_DIR_CHIRHO = PROJECT_ROOT_CHIRHO / "workspace-chirho" / "models-chirho"
-ONNX_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v8-chirho.onnx"
-METRICS_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / "script-classifier-v8-chirho.metrics.json"
+VERSION_CHIRHO = "v9"  # v9 adds the human-ductus stroke-font synthetic corpus
+ONNX_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / f"script-classifier-{VERSION_CHIRHO}-chirho.onnx"
+METRICS_OUT_PATH_CHIRHO = MODEL_OUT_DIR_CHIRHO / f"script-classifier-{VERSION_CHIRHO}-chirho.metrics.json"
 
 IMAGE_SIZE_CHIRHO = 32
 NUM_CLASSES_CHIRHO = 4

@@ -25,6 +25,7 @@ import sqlite3
 import sys
 from pathlib import Path
 
+import numpy as np
 from PIL import Image
 
 PROJECT_ROOT_CHIRHO = Path(__file__).resolve().parent.parent
@@ -38,11 +39,49 @@ from compose_synthetic_hebrew_v2_chirho import (  # noqa: E402
     strip_nikkud_chirho,
     consonants_only_chirho,
 )
+from audit_canonical_recon_chirho import (  # noqa: E402
+    load_wlc_validators_chirho,
+    skeleton_in_wlc_chirho,
+)
 
 FORBIDDEN_CHARS_CHIRHO = set("()[]{}<>" "-–—_/\\|" '"' "'" "‘’“”")
 
 
+COMPARE_INK_H_CHIRHO = 46  # both real & synth scaled so their ink is this tall
+
+
+def normalize_ink_height_chirho(img_chirho: Image.Image) -> Image.Image:
+    """Scale so the ACTUAL INK is COMPARE_INK_H tall (not the image box), so
+    real and synthetic letters are rendered at identical size — otherwise the
+    differing padding made one look 15-20% larger and confounded the QA."""
+    arr_chirho = np.asarray(img_chirho.convert("L"))
+    ys_chirho, xs_chirho = np.where(arr_chirho < 200)
+    if ys_chirho.size == 0:
+        return img_chirho
+    y0_chirho, y1_chirho = int(ys_chirho.min()), int(ys_chirho.max())
+    x0_chirho, x1_chirho = int(xs_chirho.min()), int(xs_chirho.max())
+    ink_h_chirho = y1_chirho - y0_chirho + 1
+    scale_chirho = COMPARE_INK_H_CHIRHO / max(1, ink_h_chirho)
+    cropped_chirho = img_chirho.convert("L").crop(
+        (x0_chirho, y0_chirho, x1_chirho + 1, y1_chirho + 1)
+    )
+    scaled_chirho = cropped_chirho.resize(
+        (
+            max(1, int(round(cropped_chirho.width * scale_chirho))),
+            COMPARE_INK_H_CHIRHO,
+        ),
+        Image.LANCZOS,
+    )
+    # Uniform 4px white margin so real & synth share identical framing.
+    out_chirho = Image.new(
+        "L", (scaled_chirho.width + 8, COMPARE_INK_H_CHIRHO + 8), 255
+    )
+    out_chirho.paste(scaled_chirho, (4, 4))
+    return out_chirho
+
+
 def img_to_data_uri_chirho(img_chirho: Image.Image) -> str:
+    img_chirho = normalize_ink_height_chirho(img_chirho)
     buf_chirho = io.BytesIO()
     img_chirho.save(buf_chirho, format="PNG")
     b64_chirho = base64.b64encode(buf_chirho.getvalue()).decode("ascii")
@@ -64,12 +103,24 @@ def main_chirho():
     measured_chirho = library_chirho.get("_measuredChirho")
     print(f"Glyph library: {len(glyph_chars_chirho)} letters; measured metrics: {'yes' if measured_chirho else 'no (using class fallback)'}")
 
+    # Only canonical-recon-chirho: its labels are WLC/BHS positionally aligned,
+    # so crop<->text is trustworthy. human-chirho rows came from the binary
+    # SCRIPT-validation tool — the text was never human-verified and carries a
+    # systematic yod->lamed / vav->resh OCR confusion (~24% absent from WLC).
+    # We additionally drop any canonical-recon label whose consonant skeleton
+    # is absent from the entire WLC (the ~6% alignment misses) so every pair
+    # shown is a true real-scan / same-text comparison. vol1 p150 is excluded:
+    # it was a test page whose D1 events were wiped, shifting word indexing, so
+    # its positional alignment drifts even onto coincidentally-valid WLC words
+    # (e.g. crop רשמתם mislabeled ישראל) — undetectable by the lexicon filter.
+    word_skeletons_chirho, verse_blob_chirho = load_wlc_validators_chirho()
     conn_chirho = sqlite3.connect(DB_PATH_CHIRHO)
     rows_chirho = conn_chirho.execute(
         """SELECT crop_path_chirho, text_chirho, vol_chirho, page_num_chirho
              FROM training_pairs_chirho
              WHERE script_chirho = 'hebrew-chirho'
-               AND source_chirho IN ('canonical-recon-chirho', 'human-chirho')
+               AND source_chirho = 'canonical-recon-chirho'
+               AND NOT (vol_chirho = 1 AND page_num_chirho = 150)
              ORDER BY RANDOM()"""
     ).fetchall()
     conn_chirho.close()
@@ -84,6 +135,11 @@ def main_chirho():
         t_chirho = text_chirho or ""
         if any(c_chirho in FORBIDDEN_CHARS_CHIRHO for c_chirho in t_chirho):
             continue
+        verdict_chirho, _skel_chirho = skeleton_in_wlc_chirho(
+            t_chirho, word_skeletons_chirho, verse_blob_chirho
+        )
+        if verdict_chirho == "ABSENT":
+            continue  # alignment miss — label doesn't match a real WLC form
         consonants_chirho = consonants_only_chirho(strip_nikkud_chirho(t_chirho))
         if not (2 <= len(consonants_chirho) <= 10):
             continue

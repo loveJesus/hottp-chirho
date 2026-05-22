@@ -72,21 +72,24 @@ def main_chirho():
         arr_chirho[mask_arr_chirho == 0] = 255
         masked_chirho = Image.fromarray(arr_chirho, mode="L")
 
-        # Horizontal-tight, vertical-full crop: keep polygon pixels at their
-        # ORIGINAL y within the word-crop so the composer can place letters at
-        # their proper baseline. Final-nun's descender stays in the bottom-band,
-        # yod's body stays in the top-band, etc. We only trim left/right whitespace.
+        # Ink-tight crop on BOTH axes: the saved PNG hugs the non-white
+        # (polygon-masked) pixels. The earlier design kept the full word-crop
+        # height so the composer could recover the letter's baseline position;
+        # that is now redundant because polyTop/polyBottom (+ polygonPoints,
+        # + wordCropHeight) are persisted in the sidecar — absolute position
+        # is fully recoverable WITHOUT padding the asset. Hugging the ink
+        # keeps the stored glyph honest (review tools see the true letter) and
+        # frees the composer from re-trimming.
         ys_chirho, xs_chirho = np.where(mask_arr_chirho > 0)
         if xs_chirho.size == 0 or ys_chirho.size == 0:
             continue
         bx0_chirho = max(0, int(xs_chirho.min()) - 1)
         bx1_chirho = min(w_chirho, int(xs_chirho.max()) + 2)
-        # Vertical extent: keep the full word-crop height. The polygon's actual
-        # y-band is recorded in a sidecar JSON so the composer knows where the
-        # ink lives within the strip (without needing to re-detect it).
-        glyph_chirho = masked_chirho.crop((bx0_chirho, 0, bx1_chirho, h_chirho))
         poly_top_chirho = int(ys_chirho.min())
         poly_bottom_chirho = int(ys_chirho.max())
+        by0_chirho = max(0, poly_top_chirho - 1)
+        by1_chirho = min(h_chirho, poly_bottom_chirho + 2)
+        glyph_chirho = masked_chirho.crop((bx0_chirho, by0_chirho, bx1_chirho, by1_chirho))
 
         out_dir_chirho = font_dir_chirho / f"U+{cp_chirho:04X}"
         out_dir_chirho.mkdir(parents=True, exist_ok=True)

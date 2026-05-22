@@ -1,0 +1,23 @@
+{
+  "_noteChirho": "Target pen-stroke (ductus) count per Hebrew consonant. A stroke = one pen-down to pen-up motion; a closed loop = 1 stroke; count ~= capped ends / 2. sourceChirho=human are the values the user explicitly fixed (authoritative). sourceChirho=convention are unambiguous square-script values used to coerce the auto seed; ambiguous letters (1-2) are intentionally omitted so the raw route-inspection seed is kept for the human to correct in the editor.",
+  "lettersChirho": {
+    "א": { "countChirho": 3, "sourceChirho": "human" },
+    "ב": { "countChirho": 2, "sourceChirho": "human" },
+    "ד": { "countChirho": 2, "sourceChirho": "human" },
+    "ת": { "countChirho": 2, "sourceChirho": "human" },
+    "ס": { "countChirho": 1, "sourceChirho": "human" },
+    "ם": { "countChirho": 1, "sourceChirho": "human" },
+    "ן": { "countChirho": 2, "sourceChirho": "human" },
+    "מ": { "countChirho": 2, "sourceChirho": "human" },
+    "ו": { "countChirho": 1, "sourceChirho": "convention" },
+    "י": { "countChirho": 1, "sourceChirho": "convention" },
+    "ל": { "countChirho": 1, "sourceChirho": "convention" },
+    "ר": { "countChirho": 1, "sourceChirho": "convention" },
+    "ך": { "countChirho": 1, "sourceChirho": "convention" },
+    "ש": { "countChirho": 3, "sourceChirho": "convention" },
+    "ה": { "countChirho": 2, "sourceChirho": "convention" },
+    "ח": { "countChirho": 2, "sourceChirho": "convention" },
+    "ע": { "countChirho": 2, "sourceChirho": "convention" },
+    "ק": { "countChirho": 2, "sourceChirho": "convention" }
+  }
+}

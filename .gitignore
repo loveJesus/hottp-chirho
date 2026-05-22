@@ -24,6 +24,14 @@ spec-chirho/*.sqlite-shm
 # OCR pre-trained models (download via scripts when needed)
 tessdata-best-chirho/
 
+# python caches
+__pycache__/
+**/__pycache__/
+*.pyc
+
+# MCP / tooling scratch
+.playwright-mcp/
+
 # build / runtime artifacts
 node_modules/
 **/node_modules/
