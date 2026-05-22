@@ -226,6 +226,19 @@ def load_real_items_chirho(records_chirho):
     return items_chirho
 
 
+def load_pseudo_gold_chirho(test_crop_names_chirho):
+    """Self-training pseudo-labels (CRNN high-conf WLC-exact reads on
+    un-gold crops). EXCLUDES any crop in the held-out test set (none
+    should overlap — pseudo is un-gold — but guard anyway)."""
+    p_chirho = MODEL_OUT_CHIRHO.parent / "pseudo-gold-chirho.json"
+    if not p_chirho.exists():
+        return []
+    recs_chirho = json.loads(p_chirho.read_text()).get("pseudoGoldChirho", [])
+    recs_chirho = [r_chirho for r_chirho in recs_chirho
+                   if r_chirho["cropChirho"] not in test_crop_names_chirho]
+    return load_real_items_chirho(recs_chirho)
+
+
 @torch.no_grad()
 def score_heldout_chirho(model_chirho, items_chirho, dev_chirho, bs_chirho=32):
     model_chirho.train(False)
@@ -271,6 +284,10 @@ def main_chirho():
     ap_chirho.add_argument("--finetune-epochs", type=int, default=40,
                            dest="finetune_epochs_chirho")
     ap_chirho.add_argument("--batch", type=int, default=32, dest="bs_chirho")
+    ap_chirho.add_argument("--use-pseudo", action="store_true",
+                           dest="use_pseudo_chirho",
+                           help="add CRNN self-training pseudo-gold to the "
+                                "real fine-tune set")
     args_chirho = ap_chirho.parse_args()
     if args_chirho.smoke_chirho:
         args_chirho.pretrain_steps_chirho = 300
@@ -288,8 +305,15 @@ def main_chirho():
     train_recs_chirho, test_recs_chirho = load_gold_split_chirho()
     real_train_chirho = load_real_items_chirho(train_recs_chirho)
     real_test_chirho = load_real_items_chirho(test_recs_chirho)
+    test_names_chirho = {r_chirho["cropChirho"] for r_chirho in test_recs_chirho}
+    n_pseudo_chirho = 0
+    if args_chirho.use_pseudo_chirho:
+        pseudo_items_chirho = load_pseudo_gold_chirho(test_names_chirho)
+        n_pseudo_chirho = len(pseudo_items_chirho)
+        real_train_chirho = real_train_chirho + pseudo_items_chirho
     print(f"WLC vocab={len(vocab_chirho)}  "
-          f"real train={len(real_train_chirho)}  test={len(real_test_chirho)}")
+          f"real train={len(real_train_chirho)} (+{n_pseudo_chirho} pseudo)  "
+          f"test={len(real_test_chirho)}")
 
     model_chirho = CRNNChirho(NUM_CLASSES_CHIRHO).to(dev_chirho)
     ctc_chirho = nn.CTCLoss(blank=0, zero_infinity=True)

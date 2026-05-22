@@ -70,6 +70,13 @@ def main_chirho():
     ap_chirho = argparse.ArgumentParser()
     ap_chirho.add_argument("--n", type=int, default=400, dest="n_chirho")
     ap_chirho.add_argument("--show", type=int, default=24, dest="show_chirho")
+    ap_chirho.add_argument("--save-pseudo", action="store_true",
+                           dest="save_pseudo_chirho",
+                           help="write high-confidence WLC-exact reads as "
+                                "pseudo-gold (image,text) for self-training")
+    ap_chirho.add_argument("--pseudo-conf", type=float, default=0.95,
+                           dest="pseudo_conf_chirho",
+                           help="min confidence for a pseudo-gold read")
     args_chirho = ap_chirho.parse_args()
 
     if not MODEL_OUT_CHIRHO.exists():
@@ -146,6 +153,25 @@ def main_chirho():
     for name_chirho, reading_chirho, conf_chirho, verdict_chirho in \
             preds_chirho[:args_chirho.show_chirho]:
         print(f"    {conf_chirho:.2f}  {verdict_chirho:6}  {reading_chirho}")
+
+    if args_chirho.save_pseudo_chirho:
+        pseudo_chirho = [
+            {"cropChirho": name_chirho, "goldConsonantsChirho": reading_chirho,
+             "confChirho": round(conf_chirho, 4), "sourceChirho": "crnn-pseudo"}
+            for name_chirho, reading_chirho, conf_chirho, verdict_chirho
+            in preds_chirho
+            if verdict_chirho == "exact"
+            and conf_chirho >= args_chirho.pseudo_conf_chirho
+            and len(reading_chirho) >= 2]
+        out_chirho = (MODEL_OUT_CHIRHO.parent / "pseudo-gold-chirho.json")
+        out_chirho.parent.mkdir(parents=True, exist_ok=True)
+        out_chirho.write_text(json.dumps(
+            {"pseudoGoldChirho": pseudo_chirho,
+             "minConfChirho": args_chirho.pseudo_conf_chirho,
+             "scoredChirho": n_chirho}, ensure_ascii=False, indent=2))
+        print(f"\n  saved {len(pseudo_chirho)} pseudo-gold "
+              f"(conf>={args_chirho.pseudo_conf_chirho}, WLC-exact, len>=2) "
+              f"-> {out_chirho}")
 
 
 if __name__ == "__main__":
