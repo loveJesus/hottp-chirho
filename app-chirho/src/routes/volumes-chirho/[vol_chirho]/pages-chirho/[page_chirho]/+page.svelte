@@ -349,6 +349,48 @@
   // Surfaces save failures (network or D1 errors) — silent failure was masking lost edits.
   let saveErrorChirho = $state<string | null>(null);
 
+  // Machine OCR suggestions (CRNN+CTC word reader) for this page, keyed by
+  // word id. Read-only — accepting one just pre-fills the edit + saves via the
+  // normal event path, so a machine read never auto-overwrites a reading.
+  interface OcrSuggestionChirho {
+    textChirho: string;
+    confChirho: number;
+    verdictChirho: string;
+    bucketChirho: string;
+  }
+  let ocrSuggestionsChirho = $state<Map<number, OcrSuggestionChirho>>(new Map());
+  let ocrFetchedChirho = false;
+  $effect(() => {
+    if (!browser || ocrFetchedChirho) return;
+    const pageIdChirho = (data as any).pageDataChirho?.idChirho;
+    if (pageIdChirho == null) return;
+    ocrFetchedChirho = true;
+    fetch(`/api-chirho/ocr-suggestions-chirho?page-id-chirho=${pageIdChirho}`)
+      .then((rChirho) => (rChirho.ok ? rChirho.json() : null))
+      .then((jChirho: any) => {
+        const listChirho = jChirho?.suggestionsChirho;
+        if (!Array.isArray(listChirho)) return;
+        const mChirho = new Map<number, OcrSuggestionChirho>();
+        for (const sChirho of listChirho as any[]) {
+          if (mChirho.has(sChirho.wordIdChirho)) continue; // highest-conf first
+          mChirho.set(sChirho.wordIdChirho, {
+            textChirho: sChirho.suggestedTextChirho,
+            confChirho: sChirho.confidenceChirho,
+            verdictChirho: sChirho.wlcVerdictChirho,
+            bucketChirho: sChirho.bucketChirho,
+          });
+        }
+        ocrSuggestionsChirho = mChirho;
+      })
+      .catch(() => {});
+  });
+
+  function acceptOcrChirho(textChirho: string): void {
+    wordEditTextChirho = textChirho;
+    wordEditScriptChirho = "hebrew-chirho";
+    void saveWordChirho();
+  }
+
   function openWordEditChirho(wChirho: MergedWordChirho): void {
     editingWordChirho = wChirho;
     wordEditTextChirho = wChirho.displayTextChirho;
@@ -1118,6 +1160,20 @@
             <span class="meta-pill-chirho flagged-pill-chirho">⚠ script flagged</span>
           {/if}
         </div>
+        {#if ocrSuggestionsChirho.get(wChirho.wordIdChirho)}
+          {@const sugChirho = ocrSuggestionsChirho.get(wChirho.wordIdChirho)!}
+          <div class="ocr-suggestion-chirho" class:ocr-auto-chirho={sugChirho.bucketChirho === "AUTO"}>
+            <span class="ocr-label-chirho">CRNN</span>
+            <code dir="rtl" class="ocr-text-chirho">{sugChirho.textChirho}</code>
+            <span class="ocr-conf-chirho">{Math.round(sugChirho.confChirho * 100)}% · {sugChirho.verdictChirho}</span>
+            <button
+              type="button"
+              class="ocr-accept-chirho"
+              onclick={() => acceptOcrChirho(sugChirho.textChirho)}
+              disabled={wordSavingChirho}
+            >Accept</button>
+          </div>
+        {/if}
         <label>Text
           <input
             type="text"
@@ -1334,6 +1390,13 @@
   .modal-body-chirho label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.8rem; color: #888; }
   .modal-meta-chirho { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-bottom: 0.4rem; }
   .meta-pill-chirho { padding: 0.2rem 0.55rem; background: #12121f; border: 1px solid #2a2a4a; border-radius: 12px; color: #ccc; font-size: 0.75rem; }
+  .ocr-suggestion-chirho { display: flex; align-items: center; gap: 0.5rem; margin: 0.5rem 0; padding: 0.4rem 0.6rem; background: #11161f; border: 1px solid #2a3a4a; border-radius: 8px; }
+  .ocr-suggestion-chirho.ocr-auto-chirho { border-color: #2e6f4e; background: #0f1a14; }
+  .ocr-label-chirho { font-size: 0.65rem; letter-spacing: 0.05em; color: #6aa6ff; text-transform: uppercase; }
+  .ocr-text-chirho { font-size: 1.1rem; color: #eee; }
+  .ocr-conf-chirho { font-size: 0.72rem; color: #9aa; margin-left: auto; }
+  .ocr-accept-chirho { padding: 0.25rem 0.7rem; background: #2e6f4e; color: #fff; border: none; border-radius: 6px; font-size: 0.78rem; cursor: pointer; }
+  .ocr-accept-chirho:disabled { opacity: 0.5; cursor: default; }
   .modal-body-chirho textarea {
     background: #111; border: 1px solid #2a2a4a; border-radius: 4px;
     padding: 0.5rem; color: #e0e0e0; font-family: "Georgia", "Noto Serif", "SBL Hebrew", "SBL Greek", serif;
