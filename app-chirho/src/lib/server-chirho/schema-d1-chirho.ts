@@ -207,3 +207,33 @@ export const pageSnapshotsChirho = sqliteTable("page_snapshots_chirho", {
     .default(sql`(datetime('now'))`)
     .notNull(),
 });
+
+/**
+ * Machine OCR suggestions from the CRNN+CTC word reader (migration 0013).
+ * One row per (word, model): a suggested reading + confidence + WLC verdict
+ * + triage bucket. Surfaced in the editor for one-click accept; a machine
+ * read NEVER auto-overwrites a human/canonical reading — accepting one emits
+ * the normal word-text-corrected-chirho event.
+ */
+export const ocrSuggestionsChirho = sqliteTable("ocr_suggestions_chirho", {
+  idChirho: integer("id_chirho").primaryKey({ autoIncrement: true }),
+  wordIdChirho: integer("word_id_chirho")
+    .notNull()
+    .references(() => wordsChirho.idChirho),
+  pageIdChirho: integer("page_id_chirho")
+    .notNull()
+    .references(() => pagesChirho.idChirho),
+  suggestedTextChirho: text("suggested_text_chirho").notNull(),
+  suggestedScriptChirho: text("suggested_script_chirho").default("hebrew-chirho").notNull(),
+  confidenceChirho: real("confidence_chirho").notNull(),
+  /** 'exact' | 'substr' | 'ABSENT' */
+  wlcVerdictChirho: text("wlc_verdict_chirho").notNull(),
+  /** 'AUTO' | 'REVIEW' | 'REJECT' */
+  bucketChirho: text("bucket_chirho").notNull(),
+  modelChirho: text("model_chirho").notNull(),
+  cropChirho: text("crop_chirho"),
+  acceptedChirho: integer("accepted_chirho").default(0).notNull(),
+  createdAtChirho: text("created_at_chirho")
+    .default(sql`(datetime('now'))`)
+    .notNull(),
+});
