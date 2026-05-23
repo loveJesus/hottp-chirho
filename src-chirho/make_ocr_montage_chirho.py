@@ -87,6 +87,10 @@ def main_chirho():
     ap_chirho.add_argument("--out", required=True, dest="out_chirho")
     ap_chirho.add_argument("--cols", type=int, default=6, dest="cols_chirho")
     ap_chirho.add_argument("--max", type=int, default=48, dest="max_chirho")
+    ap_chirho.add_argument("--tess-hebrew-only", action="store_true",
+                           dest="tess_hebrew_only_chirho",
+                           help="silver: keep only tess-Hebrew crops (the "
+                                "is-Hebrew-gated silver the app would use)")
     args_chirho = ap_chirho.parse_args()
 
     items_chirho = []  # (crop, readingText, goldText|None, correct|None)
@@ -101,7 +105,9 @@ def main_chirho():
         tri_chirho = json.loads(TRIAGE_PATH_CHIRHO.read_text())["recordsChirho"]
         auto_ungold_chirho = [r_chirho for r_chirho in tri_chirho
                               if r_chirho["bucketChirho"] == "AUTO"
-                              and not r_chirho["inGoldChirho"]]
+                              and not r_chirho["inGoldChirho"]
+                              and (not args_chirho.tess_hebrew_only_chirho
+                                   or r_chirho.get("tessHebrewChirho"))]
         for r_chirho in auto_ungold_chirho[:args_chirho.max_chirho]:
             items_chirho.append((r_chirho["cropChirho"], r_chirho["readingChirho"],
                                  None, None))
