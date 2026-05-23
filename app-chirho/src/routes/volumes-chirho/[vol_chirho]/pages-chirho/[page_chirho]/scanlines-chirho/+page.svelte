@@ -50,7 +50,9 @@
       const responseChirho = await fetch(
         `/api-chirho/reconstruct-chirho?volume-chirho=${data.volumeNumberChirho}&page-chirho=${data.pageNumberChirho}`
       );
-      const resultChirho = await responseChirho.json();
+      const resultChirho = (await responseChirho.json()) as {
+        reconstructedTextChirho?: string;
+      };
       reconstructedTextChirho = resultChirho.reconstructedTextChirho ?? "";
       showReconstructedChirho = true;
     } finally {
