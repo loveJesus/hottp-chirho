@@ -95,16 +95,21 @@ def img_to_tensor_chirho(pil_gray_chirho):
     return torch.from_numpy(arr_chirho).unsqueeze(0)
 
 
-def load_wlc_vocab_chirho(max_words_chirho=None):
+def load_wlc_vocab_chirho(max_words_chirho=None, exclude_texts_chirho=None):
     """distinct folded WLC consonant-words usable as synthetic vocab,
-    restricted to words whose chars are all in the alphabet."""
+    restricted to words whose chars are all in the alphabet. When
+    exclude_texts_chirho is given, those folded words are DROPPED — used to
+    strip held-out test-word sequences so the synthetic pretraining cannot
+    leak the test vocabulary (a strict generalisation measurement)."""
+    exclude_chirho = exclude_texts_chirho or set()
     conn_chirho = sqlite3.connect(WLC_PATH_CHIRHO)
     seen_chirho = set()
     for (cons_chirho,) in conn_chirho.execute(
             "SELECT consonants_only_chirho FROM words_chirho"):
         f_chirho = fold_chirho(cons_chirho)
-        if 2 <= len(f_chirho) <= 10 and all(
-                c_chirho in CHAR_TO_IDX_CHIRHO for c_chirho in f_chirho):
+        if (2 <= len(f_chirho) <= 10
+                and f_chirho not in exclude_chirho
+                and all(c_chirho in CHAR_TO_IDX_CHIRHO for c_chirho in f_chirho)):
             seen_chirho.add(f_chirho)
     conn_chirho.close()
     vocab_chirho = sorted(seen_chirho)
@@ -288,6 +293,13 @@ def main_chirho():
                            dest="use_pseudo_chirho",
                            help="add CRNN self-training pseudo-gold to the "
                                 "real fine-tune set")
+    ap_chirho.add_argument("--exclude-test-vocab", action="store_true",
+                           dest="exclude_test_vocab_chirho",
+                           help="drop held-out test-word sequences from the "
+                                "synthetic vocab (strict generalisation test)")
+    ap_chirho.add_argument("--dump-preds", default="", dest="dump_preds_chirho",
+                           help="after training, write per-test-word "
+                                "(crop, gold, pred, correct) JSON to this path")
     args_chirho = ap_chirho.parse_args()
     if args_chirho.smoke_chirho:
         args_chirho.pretrain_steps_chirho = 300
@@ -300,12 +312,20 @@ def main_chirho():
 
     csyn_chirho.CTRL_JITTER_FRAC_CHIRHO = 0.004
     font_chirho = csyn_chirho.load_stroke_font_chirho()
-    vocab_chirho = load_wlc_vocab_chirho(
-        max_words_chirho=2000 if args_chirho.smoke_chirho else None)
     train_recs_chirho, test_recs_chirho = load_gold_split_chirho()
+    # Strict generalisation: optionally strip held-out test-word sequences
+    # from the synthetic vocab so pretraining cannot leak the test lexicon.
+    test_texts_chirho = {fold_chirho(r_chirho["goldConsonantsChirho"])
+                         for r_chirho in test_recs_chirho}
+    exclude_chirho = test_texts_chirho if args_chirho.exclude_test_vocab_chirho else None
+    vocab_chirho = load_wlc_vocab_chirho(
+        max_words_chirho=2000 if args_chirho.smoke_chirho else None,
+        exclude_texts_chirho=exclude_chirho)
     real_train_chirho = load_real_items_chirho(train_recs_chirho)
     real_test_chirho = load_real_items_chirho(test_recs_chirho)
     test_names_chirho = {r_chirho["cropChirho"] for r_chirho in test_recs_chirho}
+    train_texts_chirho = {fold_chirho(r_chirho["goldConsonantsChirho"])
+                          for r_chirho in train_recs_chirho}
     n_pseudo_chirho = 0
     if args_chirho.use_pseudo_chirho:
         pseudo_items_chirho = load_pseudo_gold_chirho(test_names_chirho)
@@ -368,6 +388,53 @@ def main_chirho():
     torch.save({"modelChirho": model_chirho.state_dict(),
                 "alphabetChirho": ALPHABET_CHIRHO}, MODEL_OUT_CHIRHO)
     print(f"saved {MODEL_OUT_CHIRHO}")
+
+    # ---- per-test-word prediction dump + novel-vs-seen breakdown ----
+    if args_chirho.dump_preds_chirho:
+        model_chirho.train(False)
+        preds_out_chirho = []
+        for i_chirho in range(0, len(test_recs_chirho), args_chirho.bs_chirho):
+            chunk_chirho = test_recs_chirho[i_chirho:i_chirho + args_chirho.bs_chirho]
+            items_chirho, metas_chirho = [], []
+            for r_chirho in chunk_chirho:
+                p_chirho = CORPUS_DIR_CHIRHO / r_chirho["cropChirho"]
+                if not p_chirho.exists():
+                    continue
+                t_chirho = img_to_tensor_chirho(Image.open(p_chirho).convert("L"))
+                if t_chirho is None:
+                    continue
+                items_chirho.append((t_chirho, [1]))
+                metas_chirho.append(r_chirho)
+            batch_chirho = collate_chirho(items_chirho)
+            if batch_chirho is None:
+                continue
+            with torch.no_grad():
+                logits_chirho = model_chirho(batch_chirho[0].to(dev_chirho))
+            for r_chirho, pred_chirho in zip(metas_chirho,
+                                             greedy_decode_chirho(logits_chirho)):
+                gold_chirho = fold_chirho(r_chirho["goldConsonantsChirho"])
+                preds_out_chirho.append({
+                    "cropChirho": r_chirho["cropChirho"],
+                    "goldChirho": gold_chirho,
+                    "predChirho": pred_chirho,
+                    "correctChirho": pred_chirho == gold_chirho,
+                    "seenInTrainChirho": gold_chirho in train_texts_chirho,
+                })
+        Path(args_chirho.dump_preds_chirho).write_text(
+            json.dumps({"predsChirho": preds_out_chirho,
+                        "excludeTestVocabChirho": args_chirho.exclude_test_vocab_chirho},
+                       ensure_ascii=False, indent=1))
+        seen_chirho = [p_chirho for p_chirho in preds_out_chirho if p_chirho["seenInTrainChirho"]]
+        novel_chirho = [p_chirho for p_chirho in preds_out_chirho if not p_chirho["seenInTrainChirho"]]
+        sc_chirho = sum(p_chirho["correctChirho"] for p_chirho in seen_chirho)
+        nc_chirho = sum(p_chirho["correctChirho"] for p_chirho in novel_chirho)
+        print(f"\n=== generalisation breakdown (exact-match) ===")
+        print(f"  test words whose TEXT was in train (seen): "
+              f"{sc_chirho}/{len(seen_chirho)} = {sc_chirho / max(1, len(seen_chirho)):.3f}")
+        print(f"  test words with NOVEL text (never in train): "
+              f"{nc_chirho}/{len(novel_chirho)} = {nc_chirho / max(1, len(novel_chirho)):.3f}"
+              f"  <- the honest generalisation floor")
+        print(f"  dumped per-word preds -> {args_chirho.dump_preds_chirho}")
 
 
 if __name__ == "__main__":

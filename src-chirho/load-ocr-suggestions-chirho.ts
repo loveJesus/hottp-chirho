@@ -43,6 +43,12 @@ interface TriageRecordChirho {
   confChirho: number;
   wlcVerdictChirho: string;
   bucketChirho: "AUTO" | "REVIEW" | "REJECT";
+  // tesseract saw Hebrew chars in this crop. REQUIRED gate: the CRNN has no
+  // "not Hebrew" output and confidently misreads French (avec, comme, …) as
+  // short WLC-exact Hebrew, so WLC-membership alone does NOT screen
+  // contamination (~71% of un-gold AUTO is French/punct). Only surface
+  // suggestions on crops an independent signal also calls Hebrew.
+  tessHebrewChirho: boolean;
 }
 
 const sqlEscapeChirho = (sChirho: string): string => sChirho.replace(/'/g, "''");
@@ -73,9 +79,16 @@ function mainChirho(): void {
   let emittedChirho = 0;
   let skippedRejectChirho = 0;
   let skippedBadNameChirho = 0;
+  let skippedNonHebrewChirho = 0;
   for (const rChirho of recordsChirho) {
     if (rChirho.bucketChirho === "REJECT") {
       skippedRejectChirho += 1;
+      continue;
+    }
+    // is-Hebrew gate (see TriageRecordChirho.tessHebrewChirho): never surface
+    // a Hebrew suggestion on a crop tesseract did not read as Hebrew.
+    if (!rChirho.tessHebrewChirho) {
+      skippedNonHebrewChirho += 1;
       continue;
     }
     if (!rChirho.readingChirho || rChirho.readingChirho.length < 2) continue;
@@ -112,8 +125,9 @@ function mainChirho(): void {
   writeFileSync(OUT_SQL_PATH_CHIRHO, linesChirho.join("\n") + "\n", "utf8");
 
   console.log(`triage records: ${recordsChirho.length}`);
-  console.log(`  emitted INSERTs (AUTO+REVIEW, len>=2): ${emittedChirho}`);
+  console.log(`  emitted INSERTs (AUTO+REVIEW, tess-Hebrew, len>=2): ${emittedChirho}`);
   console.log(`  skipped REJECT (contamination): ${skippedRejectChirho}`);
+  console.log(`  skipped tess-NON-Hebrew (is-Hebrew gate): ${skippedNonHebrewChirho}`);
   console.log(`  skipped unparseable crop name: ${skippedBadNameChirho}`);
   console.log(`wrote ${OUT_SQL_PATH_CHIRHO}`);
   console.log(
