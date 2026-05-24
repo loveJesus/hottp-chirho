@@ -10,4 +10,11 @@
 -- heuristic-detection pipeline that was the only writer of this column has
 -- been deleted. segments_chirho is currently empty (Pass 3 has not run yet),
 -- so dropping the column is safe with no data loss.
-ALTER TABLE segments_chirho DROP COLUMN is_french_chirho;
+--
+-- HISTORICAL NO-OP (2026-05-24): like 0003, 0001-scanlines-chirho.sql was since
+-- edited to create segments_chirho WITHOUT is_french_chirho, so on a from-scratch
+-- replay there is no column to drop and the ALTER errored ("no such column:
+-- is_french_chirho"). The end-state (no is_french_chirho) is already reached by
+-- 0001-scanlines, so this migration is intentionally now empty.
+
+-- (drop removed — see note above)

@@ -9,5 +9,13 @@
 --   - segments_chirho.x_min_px_chirho still holds the span left edge in line-local px.
 -- This matches the agent JSON shape produced by Pass C and the ImageMagick
 -- "-crop WxH+X+Y" arity used by Pass E re-OCR.
+--
+-- HISTORICAL NO-OP (2026-05-24): 0001-scanlines-chirho.sql was since edited to
+-- create segments_chirho with width_px_chirho directly, so on a from-scratch
+-- replay there is no x_max_px_chirho to rename and the ALTER errored
+-- ("no such column: x_max_px_chirho"), breaking the whole chain at 0003.
+-- The end-state (width_px_chirho present, x_max_px_chirho absent) is already
+-- reached by 0001-scanlines, so this migration is intentionally now empty.
+-- Existing DBs already have width_px_chirho; nothing to do.
 
-ALTER TABLE segments_chirho RENAME COLUMN x_max_px_chirho TO width_px_chirho;
+-- (rename removed — see note above)
