@@ -10,6 +10,13 @@ const configChirho = {
 			routes: {
 				include: ['/*'],
 				exclude: ['<all>']
+			},
+			// Local dev (`vite dev`) reads D1/R2 bindings from our non-default
+			// config name + persisted miniflare state (.wrangler/state/v3), so the
+			// editor renders against a local clone of prod instead of empty bindings.
+			platformProxy: {
+				configPath: 'wrangler-chirho.toml',
+				persist: true
 			}
 		})
 	}
