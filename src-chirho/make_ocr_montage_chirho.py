@@ -90,11 +90,19 @@ def main_chirho():
     ap_chirho.add_argument("--title", default=None, dest="title_chirho",
                            help="override the header text (e.g. for a "
                                 "per-page suggestions montage, not held-out)")
+    ap_chirho.add_argument("--corpus-dir", default=None, dest="corpus_dir_chirho",
+                           help="resolve crop files from this dir instead of "
+                                "the default hebrew-corpus-chirho (e.g. a "
+                                "per-volume page-read crop dir)")
     ap_chirho.add_argument("--tess-hebrew-only", action="store_true",
                            dest="tess_hebrew_only_chirho",
                            help="silver: keep only tess-Hebrew crops (the "
                                 "is-Hebrew-gated silver the app would use)")
     args_chirho = ap_chirho.parse_args()
+
+    if args_chirho.corpus_dir_chirho:
+        global CORPUS_DIR_CHIRHO
+        CORPUS_DIR_CHIRHO = Path(args_chirho.corpus_dir_chirho)
 
     items_chirho = []  # (crop, readingText, goldText|None, correct|None)
     if args_chirho.kind_chirho == "heldout":
