@@ -87,6 +87,9 @@ def main_chirho():
     ap_chirho.add_argument("--out", required=True, dest="out_chirho")
     ap_chirho.add_argument("--cols", type=int, default=6, dest="cols_chirho")
     ap_chirho.add_argument("--max", type=int, default=48, dest="max_chirho")
+    ap_chirho.add_argument("--title", default=None, dest="title_chirho",
+                           help="override the header text (e.g. for a "
+                                "per-page suggestions montage, not held-out)")
     ap_chirho.add_argument("--tess-hebrew-only", action="store_true",
                            dest="tess_hebrew_only_chirho",
                            help="silver: keep only tess-Hebrew crops (the "
@@ -131,6 +134,8 @@ def main_chirho():
     else:
         head_chirho = ("CRNN reads on UNSEEN un-gold corpus crops "
                        "(AUTO/silver tier) — read shown under each crop")
+    if args_chirho.title_chirho:
+        head_chirho = args_chirho.title_chirho
     draw_chirho.text((PAD_CHIRHO, 10), head_chirho, font=head_font_chirho,
                      fill=WHITE_CHIRHO)
 
