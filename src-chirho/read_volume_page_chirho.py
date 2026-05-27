@@ -32,12 +32,15 @@ Render + read + montage (fully local, no prod, no creds):
 """
 import argparse
 import json
+import shutil
 import sqlite3
+import subprocess
 import sys
+import tempfile
 from pathlib import Path
 
 import torch
-from PIL import Image
+from PIL import Image, ImageOps
 
 if str(Path(__file__).resolve().parent) not in sys.path:
     sys.path.insert(0, str(Path(__file__).resolve().parent))
@@ -48,6 +51,64 @@ from train_word_ocr_chirho import (
 from infer_word_ocr_chirho import decode_with_conf_chirho
 from audit_canonical_recon_chirho import (
     load_wlc_validators_chirho, skeleton_in_wlc_chirho)
+
+# Independent is-Hebrew witness: tesseract with the SAME multi-script stack the
+# segmentation pass uses (pass1-extract-lines-chirho.ts). Giving tesseract the
+# choice of scripts means real Hebrew reads as Hebrew while French contamination
+# reads as Latin — so "did tesseract see Hebrew chars?" is a real screen the
+# CRNN cannot provide (it has no "not Hebrew" output and confidently misreads
+# French as short WLC-exact Hebrew). See project_cross_volume_generalization.
+# Validated on vol-2 p148: מלכת/סרו/בדרכ -> Hebrew (kept); une/en/de (CRNN
+# hallucinated as פח/חפ/פנ) -> Latin (rejected).
+PROJECT_ROOT_CHIRHO = Path(__file__).resolve().parent.parent
+TESSDATA_BEST_DIR_CHIRHO = (PROJECT_ROOT_CHIRHO / "workspace-chirho"
+                            / "tessdata-best-chirho")
+TESS_LANG_STACK_CHIRHO = "fra+heb+grc+lat"
+TESS_UPSCALE_CHIRHO = 4     # word crops are ~30px tall; tesseract needs bigger
+TESS_PAD_CHIRHO = 30        # white margin; tesseract fails on border-touching text
+
+
+def has_hebrew_chirho(text_chirho):
+    """True if any char falls in the Hebrew unicode block (U+0590..U+05FF)."""
+    return any("֐" <= c_chirho <= "׿" for c_chirho in (text_chirho or ""))
+
+
+def tess_text_chirho(crop_path_chirho, tmp_dir_chirho):
+    """Run tesseract (multi-script stack, single-line psm) on one word crop and
+    return the recognized text — the independent witness for the is-Hebrew gate.
+
+    Two non-obvious requirements, both learned the hard way (0/26 false-reject):
+      1. UPSCALE+PAD: a raw ~80x30 word crop yields EMPTY from tesseract; a 4x
+         upscale with a white border reads cleanly.
+      2. PROJECT-LOCAL temp path: under the agent Bash sandbox, files written to
+         /tmp (incl. tempfile.TemporaryDirectory) are NOT readable by the
+         tesseract child ("Leptonica: image file not found"), even though Python
+         can read them. Writing the temp image inside the repo works. So callers
+         MUST pass a tmp_dir_chirho under PROJECT_ROOT_CHIRHO.
+    Best-effort: any failure yields '' (treated as non-Hebrew = rejected)."""
+    try:
+        crop_im_chirho = Image.open(crop_path_chirho).convert("L")
+    except Exception:
+        return ""
+    big_chirho = crop_im_chirho.resize(
+        (max(1, crop_im_chirho.width * TESS_UPSCALE_CHIRHO),
+         max(1, crop_im_chirho.height * TESS_UPSCALE_CHIRHO)), Image.LANCZOS)
+    big_chirho = ImageOps.expand(big_chirho, border=TESS_PAD_CHIRHO, fill=255)
+    gate_in_chirho = Path(tmp_dir_chirho) / "gate_in_chirho.png"
+    big_chirho.save(gate_in_chirho)
+    stem_chirho = str(Path(tmp_dir_chirho) / "gate_out_chirho")
+    try:
+        subprocess.run(
+            ["tesseract", str(gate_in_chirho), stem_chirho,
+             "--tessdata-dir", str(TESSDATA_BEST_DIR_CHIRHO),
+             "-l", TESS_LANG_STACK_CHIRHO, "--psm", "7", "--dpi", "300"],
+            capture_output=True, text=True, timeout=30, check=False)
+    except Exception:
+        return ""
+    txt_path_chirho = Path(stem_chirho + ".txt")
+    if txt_path_chirho.exists():
+        return txt_path_chirho.read_text(errors="ignore").strip()
+    return ""
 
 
 def fetch_words_chirho(db_path_chirho, vol_chirho, page_chirho):
@@ -83,6 +144,14 @@ def main_chirho():
     ap_chirho.add_argument("--out-preds", required=True, dest="out_preds_chirho")
     ap_chirho.add_argument("--auto-conf", type=float, default=0.90,
                            dest="auto_conf_chirho")
+    ap_chirho.add_argument("--tess-gate", action=argparse.BooleanOptionalAction,
+                           default=True, dest="tess_gate_chirho",
+                           help="run the independent tesseract is-Hebrew gate on "
+                                "AUTO candidates (default on; --no-tess-gate to "
+                                "see the raw WLC-membership contamination)")
+    ap_chirho.add_argument("--out-triage", default=None, dest="out_triage_chirho",
+                           help="also write a load-ocr-suggestions-chirho.ts "
+                                "compatible triage JSON (records w/ tessHebrewChirho)")
     args_chirho = ap_chirho.parse_args()
 
     db_path_chirho = args_chirho.db_chirho
@@ -158,20 +227,73 @@ def main_chirho():
           f"AUTO (exact & conf>={args_chirho.auto_conf_chirho} & len>=2) "
           f"{len(auto_chirho)}")
 
-    # montage the AUTO subset (what we'd surface) highest-confidence first;
-    # silver-style: no gold (this volume has none), green = reads-as-WLC-word.
+    # independent is-Hebrew gate on each AUTO candidate (the small set we'd
+    # surface) — NOT all words, to keep the tesseract cost bounded. The CRNN
+    # has no "not Hebrew" output, so WLC-membership alone is ~70% French on an
+    # unseen volume; only a crop tesseract ALSO reads as Hebrew may be minted.
     auto_chirho.sort(key=lambda p_chirho: -p_chirho[2])
+    gated_chirho = []   # (name, reading, conf, verdict, tess_text, tess_heb)
+    if args_chirho.tess_gate_chirho:
+        # temp dir MUST live under the repo (see tess_text_chirho docstring:
+        # the sandbox hides /tmp from the tesseract child).
+        tess_tmp_chirho = Path(tempfile.mkdtemp(prefix="gate-tmp-",
+                                                dir=str(PROJECT_ROOT_CHIRHO)))
+        try:
+            for (name_chirho, reading_chirho, conf_chirho,
+                 verdict_chirho) in auto_chirho:
+                tess_text_value_chirho = tess_text_chirho(
+                    out_crops_chirho / name_chirho, tess_tmp_chirho)
+                gated_chirho.append((name_chirho, reading_chirho, conf_chirho,
+                                     verdict_chirho, tess_text_value_chirho,
+                                     has_hebrew_chirho(tess_text_value_chirho)))
+        finally:
+            shutil.rmtree(tess_tmp_chirho, ignore_errors=True)
+    else:
+        gated_chirho = [(name_chirho, reading_chirho, conf_chirho,
+                         verdict_chirho, "", True)
+                        for (name_chirho, reading_chirho, conf_chirho,
+                             verdict_chirho) in auto_chirho]
+    n_pass_chirho = sum(1 for g_chirho in gated_chirho if g_chirho[5])
+    print(f"  tess-Hebrew gate: {n_pass_chirho}/{len(gated_chirho)} AUTO "
+          f"candidates pass (rest = non-Hebrew contamination, rejected)")
+
+    # montage EVERY AUTO candidate, colored by the gate (green = tesseract also
+    # read Hebrew → kept; red = tesseract read non-Hebrew → contamination the
+    # gate kills). The tesseract reading is shown as the grey "gold" line so the
+    # screen is visually auditable. Wrong-first sort surfaces rejects on top.
     recs_chirho = [{
         "cropChirho": name_chirho,
         "predChirho": reading_chirho,
-        "goldChirho": None,
-        "correctChirho": True,
+        "goldChirho": (tess_text_value_chirho or None),
+        "correctChirho": tess_heb_chirho,
         "confChirho": round(conf_chirho, 4),
         "verdictChirho": verdict_chirho,
-    } for (name_chirho, reading_chirho, conf_chirho, verdict_chirho) in auto_chirho]
+        "tessHebrewChirho": tess_heb_chirho,
+    } for (name_chirho, reading_chirho, conf_chirho, verdict_chirho,
+           tess_text_value_chirho, tess_heb_chirho) in gated_chirho]
     Path(args_chirho.out_preds_chirho).write_text(
         json.dumps({"predsChirho": recs_chirho}, ensure_ascii=False))
     print(f"  wrote {len(recs_chirho)} AUTO preds -> {args_chirho.out_preds_chirho}")
+
+    # loader-compatible triage JSON (load-ocr-suggestions-chirho.ts --triage=...).
+    # tessHebrewChirho carries the gate the loader REQUIRES; non-Hebrew rows are
+    # written too (bucket AUTO) but the loader skips them on the gate.
+    if args_chirho.out_triage_chirho:
+        triage_recs_chirho = [{
+            "cropChirho": name_chirho,
+            "pageChirho": args_chirho.page_chirho,
+            "readingChirho": reading_chirho,
+            "confChirho": round(conf_chirho, 4),
+            "wlcVerdictChirho": verdict_chirho,
+            "bucketChirho": "AUTO",
+            "tessHebrewChirho": tess_heb_chirho,
+        } for (name_chirho, reading_chirho, conf_chirho, verdict_chirho,
+               _tess_text_value_chirho, tess_heb_chirho) in gated_chirho]
+        Path(args_chirho.out_triage_chirho).write_text(
+            json.dumps({"recordsChirho": triage_recs_chirho}, ensure_ascii=False))
+        print(f"  wrote {len(triage_recs_chirho)} triage records "
+              f"({n_pass_chirho} tess-Hebrew, loader-ready) "
+              f"-> {args_chirho.out_triage_chirho}")
 
 
 if __name__ == "__main__":
