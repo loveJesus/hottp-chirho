@@ -118,7 +118,8 @@ def main_chirho():
                               if r_chirho["bucketChirho"] == "AUTO"
                               and not r_chirho["inGoldChirho"]
                               and (not args_chirho.tess_hebrew_only_chirho
-                                   or r_chirho.get("tessHebrewChirho"))]
+                                   or r_chirho.get("isHebrewChirho",
+                                                   r_chirho.get("tessHebrewChirho")))]
         for r_chirho in auto_ungold_chirho[:args_chirho.max_chirho]:
             items_chirho.append((r_chirho["cropChirho"], r_chirho["readingChirho"],
                                  None, None))

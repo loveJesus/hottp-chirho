@@ -71,24 +71,31 @@ TESS_UPSCALE_CHIRHO = 4     # word crops are ~30px tall; tesseract needs bigger
 TESS_PAD_CHIRHO = 30        # white margin; tesseract fails on border-touching text
 
 # Second is-Hebrew witness: the v8 whole-word script CNN, used to RESCUE genuine
-# Hebrew the tesseract witness wrongly rejects. On real-scan crops tesseract's FN
-# rate is ~31-43% (it drops short/degraded Hebrew as Latin/Greek); v8 reads the
-# same crops with ~98% Hebrew recall. We only TRUST a v8 rescue at high
-# confidence. The classes separate with a clean gap: contamination the CRNN
-# hallucinated (real Latin/Greek) scores P(hebrew) <= ~0.96 (e.g. vol5-p149 "EER"
-# 0.952), while genuine Hebrew scores >= ~0.994 (vol4 שד 0.994-0.997 — visually
-# Hebrew though tesseract misread it "τὴν"; אלהא, דרכו = 1.0). So threshold 0.98
-# sits in the gap with margin for render-resolution jitter: it admits 0/41
-# vol5-p149 hallucinations yet keeps the genuine vol4 rescues. (NOTE: 0.995 was
-# first proposed to reject שד as "Greek", but visual review showed שד IS Hebrew
-# — a correct rescue — and 0.995 risks clipping it; hence 0.98.) Gate KEEP =
-# tess-Hebrew OR v8 P(hebrew) >= threshold; both witnesses + the probability are
-# recorded in the triage for auditability. (Cracked with Codex/GPT via
-# metropoliluya 2026-05-27; see project_cross_volume_generalization. CAVEAT:
-# positive set is vol-1-heavy; no trusted cross-volume Hebrew recall set yet.)
+# Hebrew the tesseract witness wrongly rejects (tess FN's ~31-43% of real-scan
+# Hebrew, misreading short/degraded Hebrew as Latin/Greek). v8 reads the same
+# crops at ~98% Hebrew recall.
+#
+# A v8 rescue requires TWO conditions, because v8's P(hebrew) alone does NOT
+# fully separate Hebrew from CRNN hallucinations: genuine vol4 שד scores ~0.997,
+# but a low-quality vol5-p149 crop the CRNN misread as חוזה scores 0.9992 — so no
+# pure v8 threshold keeps שד yet rejects that crop. What DOES separate them is
+# the CRNN confidence (the hallucination is conf 0.76; the genuine rescues are
+# >=0.90). So: v8 rescue = (v8 P(hebrew) >= V8_GATE_THRESHOLD) AND
+# (CRNN conf >= V8_RESCUE_MIN_CONF). The gate already only runs on AUTO
+# candidates (conf >= --auto-conf, default 0.90), but the explicit floor makes
+# the rescue self-protecting even when --auto-conf is lowered for diagnostics.
+# Threshold 0.98 (not 0.995): visual review proved שד — first mislabeled a "Greek
+# false admit" from tess's "τὴν" — is genuine Hebrew that 0.995 would clip.
+#
+# Gate KEEP = tess-Hebrew OR v8-rescue. tessHebrewChirho, v8PHebChirho and the
+# combined isHebrewChirho are all recorded in the triage for auditability.
+# (Cracked + cross-audited with Codex/GPT via metropoliluya 2026-05-27; see
+# project_cross_volume_generalization. CAVEAT: v8's positive training set is
+# vol-1-heavy; no trusted cross-volume Hebrew recall set yet.)
 V8_MODEL_PATH_CHIRHO = (PROJECT_ROOT_CHIRHO / "workspace-chirho" / "models-chirho"
                         / "script-classifier-v8-chirho.onnx")
 V8_GATE_THRESHOLD_CHIRHO = 0.98
+V8_RESCUE_MIN_CONF_CHIRHO = 0.90  # v8 may only RESCUE when the CRNN is also confident
 V8_IMAGE_SIZE_CHIRHO = 32
 V8_HEBREW_CLASS_CHIRHO = 1   # classes: 0 latin, 1 hebrew, 2 greek, 3 symbol
 
@@ -369,8 +376,12 @@ def main_chirho():
                 tess_heb_chirho = has_hebrew_chirho(tess_text_value_chirho)
                 v8_pheb_value_chirho = v8_pheb_chirho(
                     v8_session_chirho, crop_by_name_chirho[name_chirho])
+                # v8 may only RESCUE a tess-reject when the CRNN is ALSO confident
+                # (P(heb) alone can't separate שד 0.997 from a conf-0.76 hallucination
+                # at 0.9992; CRNN conf can).
                 is_heb_chirho = (tess_heb_chirho
-                                 or v8_pheb_value_chirho >= V8_GATE_THRESHOLD_CHIRHO)
+                                 or (v8_pheb_value_chirho >= V8_GATE_THRESHOLD_CHIRHO
+                                     and conf_chirho >= V8_RESCUE_MIN_CONF_CHIRHO))
                 gated_chirho.append((name_chirho, reading_chirho, conf_chirho,
                                      verdict_chirho, tess_text_value_chirho,
                                      tess_heb_chirho, v8_pheb_value_chirho,
@@ -394,8 +405,9 @@ def main_chirho():
     # read Hebrew → kept; red = tesseract read non-Hebrew → contamination the
     # gate kills). The tesseract reading is shown as the grey "gold" line so the
     # screen is visually auditable. Wrong-first sort surfaces rejects on top.
-    def gate_reason_chirho(tess_heb_chirho, v8_pheb_value_chirho):
-        v8_ok_chirho = v8_pheb_value_chirho >= V8_GATE_THRESHOLD_CHIRHO
+    def gate_reason_chirho(tess_heb_chirho, v8_pheb_value_chirho, conf_chirho):
+        v8_ok_chirho = (v8_pheb_value_chirho >= V8_GATE_THRESHOLD_CHIRHO
+                        and conf_chirho >= V8_RESCUE_MIN_CONF_CHIRHO)
         if tess_heb_chirho and v8_ok_chirho:
             return "both"
         if tess_heb_chirho:
@@ -415,7 +427,7 @@ def main_chirho():
         "tessHebrewChirho": tess_heb_chirho,
         "v8PHebChirho": round(v8_pheb_value_chirho, 4),
         "isHebrewChirho": is_heb_chirho,
-        "gateReasonChirho": gate_reason_chirho(tess_heb_chirho, v8_pheb_value_chirho),
+        "gateReasonChirho": gate_reason_chirho(tess_heb_chirho, v8_pheb_value_chirho, conf_chirho),
     } for (name_chirho, reading_chirho, conf_chirho, verdict_chirho,
            tess_text_value_chirho, tess_heb_chirho, v8_pheb_value_chirho,
            is_heb_chirho) in gated_chirho]
@@ -439,7 +451,7 @@ def main_chirho():
             # isHebrewChirho is the combined gate the loader keys on (tess OR v8);
             # tessHebrewChirho kept for transparency / back-compat.
             "isHebrewChirho": is_heb_chirho,
-            "gateReasonChirho": gate_reason_chirho(tess_heb_chirho, v8_pheb_value_chirho),
+            "gateReasonChirho": gate_reason_chirho(tess_heb_chirho, v8_pheb_value_chirho, conf_chirho),
         } for (name_chirho, reading_chirho, conf_chirho, verdict_chirho,
                _tess_text_value_chirho, tess_heb_chirho, v8_pheb_value_chirho,
                is_heb_chirho) in gated_chirho]
