@@ -52,6 +52,12 @@ interface TriageRecordChirho {
   // contamination (~71% of un-gold AUTO is French/punct). Only surface
   // suggestions on crops an independent signal also calls Hebrew.
   tessHebrewChirho: boolean;
+  // Combined is-Hebrew gate = tessHebrew OR v8 P(hebrew) >= 0.98. The v8 script
+  // CNN rescues genuine Hebrew tesseract drops (~31-43% real-scan FN). The loader
+  // gates on this when present; falls back to tessHebrewChirho for older triage.
+  isHebrewChirho?: boolean;
+  v8PHebChirho?: number;        // v8 P(hebrew) for the crop (0..1)
+  gateReasonChirho?: string;    // "tess" | "v8-rescue" | "both" | "reject"
 }
 
 const sqlEscapeChirho = (sChirho: string): string => sChirho.replace(/'/g, "''");
@@ -93,9 +99,10 @@ function mainChirho(): void {
       skippedRejectChirho += 1;
       continue;
     }
-    // is-Hebrew gate (see TriageRecordChirho.tessHebrewChirho): never surface
-    // a Hebrew suggestion on a crop tesseract did not read as Hebrew.
-    if (!rChirho.tessHebrewChirho) {
+    // is-Hebrew gate: keep only crops the combined witness (tess OR v8 P>=0.98)
+    // calls Hebrew. Back-compat: older triage carries only tessHebrewChirho.
+    const isHebrewChirho = rChirho.isHebrewChirho ?? rChirho.tessHebrewChirho;
+    if (!isHebrewChirho) {
       skippedNonHebrewChirho += 1;
       continue;
     }

@@ -40,6 +40,8 @@ import sys
 import tempfile
 from pathlib import Path
 
+import numpy as np
+import onnxruntime as ort
 import torch
 from PIL import Image, ImageOps
 
@@ -67,6 +69,50 @@ TESSDATA_BEST_DIR_CHIRHO = (PROJECT_ROOT_CHIRHO / "workspace-chirho"
 TESS_LANG_STACK_CHIRHO = "fra+heb+grc+lat"
 TESS_UPSCALE_CHIRHO = 4     # word crops are ~30px tall; tesseract needs bigger
 TESS_PAD_CHIRHO = 30        # white margin; tesseract fails on border-touching text
+
+# Second is-Hebrew witness: the v8 whole-word script CNN, used to RESCUE genuine
+# Hebrew the tesseract witness wrongly rejects. On real-scan crops tesseract's FN
+# rate is ~31-43% (it drops short/degraded Hebrew as Latin/Greek); v8 reads the
+# same crops with ~98% Hebrew recall. We only TRUST a v8 rescue at high
+# confidence. The classes separate with a clean gap: contamination the CRNN
+# hallucinated (real Latin/Greek) scores P(hebrew) <= ~0.96 (e.g. vol5-p149 "EER"
+# 0.952), while genuine Hebrew scores >= ~0.994 (vol4 שד 0.994-0.997 — visually
+# Hebrew though tesseract misread it "τὴν"; אלהא, דרכו = 1.0). So threshold 0.98
+# sits in the gap with margin for render-resolution jitter: it admits 0/41
+# vol5-p149 hallucinations yet keeps the genuine vol4 rescues. (NOTE: 0.995 was
+# first proposed to reject שד as "Greek", but visual review showed שד IS Hebrew
+# — a correct rescue — and 0.995 risks clipping it; hence 0.98.) Gate KEEP =
+# tess-Hebrew OR v8 P(hebrew) >= threshold; both witnesses + the probability are
+# recorded in the triage for auditability. (Cracked with Codex/GPT via
+# metropoliluya 2026-05-27; see project_cross_volume_generalization. CAVEAT:
+# positive set is vol-1-heavy; no trusted cross-volume Hebrew recall set yet.)
+V8_MODEL_PATH_CHIRHO = (PROJECT_ROOT_CHIRHO / "workspace-chirho" / "models-chirho"
+                        / "script-classifier-v8-chirho.onnx")
+V8_GATE_THRESHOLD_CHIRHO = 0.98
+V8_IMAGE_SIZE_CHIRHO = 32
+V8_HEBREW_CLASS_CHIRHO = 1   # classes: 0 latin, 1 hebrew, 2 greek, 3 symbol
+
+
+def load_v8_session_chirho():
+    """Lazy-load the v8 ONNX is-Hebrew classifier (CPU is plenty: ~0.01 ms/crop)."""
+    if not V8_MODEL_PATH_CHIRHO.exists():
+        return None
+    return ort.InferenceSession(str(V8_MODEL_PATH_CHIRHO),
+                                providers=["CPUExecutionProvider"])
+
+
+def v8_pheb_chirho(session_chirho, crop_img_chirho):
+    """P(hebrew) for a whole word crop from the v8 CNN. crop_img_chirho is a PIL
+    grayscale image; matches training preprocessing (Resize 32x32, Normalize 0.5/0.5)."""
+    if session_chirho is None:
+        return 0.0
+    g_chirho = crop_img_chirho.convert("L").resize(
+        (V8_IMAGE_SIZE_CHIRHO, V8_IMAGE_SIZE_CHIRHO), Image.LANCZOS)
+    arr_chirho = (np.asarray(g_chirho, dtype=np.float32) / 255.0 - 0.5) / 0.5
+    arr_chirho = arr_chirho.reshape(1, 1, V8_IMAGE_SIZE_CHIRHO, V8_IMAGE_SIZE_CHIRHO)
+    logits_chirho = session_chirho.run(None, {"input": arr_chirho})[0][0]
+    exp_chirho = np.exp(logits_chirho - logits_chirho.max())
+    return float((exp_chirho / exp_chirho.sum())[V8_HEBREW_CLASS_CHIRHO])
 
 # Vol 5's persisted D1 boxes were produced from `pdftohtml -xml`, whose page
 # coordinate space is 892x1263 at Poppler's default 108-ish DPI. Pass A then
@@ -306,7 +352,10 @@ def main_chirho():
     # has no "not Hebrew" output, so WLC-membership alone is ~70% French on an
     # unseen volume; only a crop tesseract ALSO reads as Hebrew may be minted.
     auto_chirho.sort(key=lambda p_chirho: -p_chirho[2])
-    gated_chirho = []   # (name, reading, conf, verdict, tess_text, tess_heb)
+    crop_by_name_chirho = {n_chirho: c_chirho for n_chirho, c_chirho in crops_chirho}
+    v8_session_chirho = load_v8_session_chirho()
+    # gated tuple: (name, reading, conf, verdict, tess_text, tess_heb, v8_pheb, is_heb)
+    gated_chirho = []
     if args_chirho.tess_gate_chirho:
         # temp dir MUST live under the repo (see tess_text_chirho docstring:
         # the sandbox hides /tmp from the tesseract child).
@@ -317,34 +366,59 @@ def main_chirho():
                  verdict_chirho) in auto_chirho:
                 tess_text_value_chirho = tess_text_chirho(
                     out_crops_chirho / name_chirho, tess_tmp_chirho)
+                tess_heb_chirho = has_hebrew_chirho(tess_text_value_chirho)
+                v8_pheb_value_chirho = v8_pheb_chirho(
+                    v8_session_chirho, crop_by_name_chirho[name_chirho])
+                is_heb_chirho = (tess_heb_chirho
+                                 or v8_pheb_value_chirho >= V8_GATE_THRESHOLD_CHIRHO)
                 gated_chirho.append((name_chirho, reading_chirho, conf_chirho,
                                      verdict_chirho, tess_text_value_chirho,
-                                     has_hebrew_chirho(tess_text_value_chirho)))
+                                     tess_heb_chirho, v8_pheb_value_chirho,
+                                     is_heb_chirho))
         finally:
             shutil.rmtree(tess_tmp_chirho, ignore_errors=True)
     else:
         gated_chirho = [(name_chirho, reading_chirho, conf_chirho,
-                         verdict_chirho, "", True)
+                         verdict_chirho, "", True, 1.0, True)
                         for (name_chirho, reading_chirho, conf_chirho,
                              verdict_chirho) in auto_chirho]
-    n_pass_chirho = sum(1 for g_chirho in gated_chirho if g_chirho[5])
-    print(f"  tess-Hebrew gate: {n_pass_chirho}/{len(gated_chirho)} AUTO "
-          f"candidates pass (rest = non-Hebrew contamination, rejected)")
+    n_tess_chirho = sum(1 for g_chirho in gated_chirho if g_chirho[5])
+    n_pass_chirho = sum(1 for g_chirho in gated_chirho if g_chirho[7])
+    n_rescued_chirho = sum(1 for g_chirho in gated_chirho
+                           if g_chirho[7] and not g_chirho[5])
+    print(f"  is-Hebrew gate: {n_pass_chirho}/{len(gated_chirho)} AUTO kept "
+          f"(tess {n_tess_chirho} + v8-rescued {n_rescued_chirho} at "
+          f"P(heb)>={V8_GATE_THRESHOLD_CHIRHO}); rest = contamination, rejected")
 
     # montage EVERY AUTO candidate, colored by the gate (green = tesseract also
     # read Hebrew → kept; red = tesseract read non-Hebrew → contamination the
     # gate kills). The tesseract reading is shown as the grey "gold" line so the
     # screen is visually auditable. Wrong-first sort surfaces rejects on top.
+    def gate_reason_chirho(tess_heb_chirho, v8_pheb_value_chirho):
+        v8_ok_chirho = v8_pheb_value_chirho >= V8_GATE_THRESHOLD_CHIRHO
+        if tess_heb_chirho and v8_ok_chirho:
+            return "both"
+        if tess_heb_chirho:
+            return "tess"
+        if v8_ok_chirho:
+            return "v8-rescue"
+        return "reject"
+
     recs_chirho = [{
         "cropChirho": name_chirho,
         "predChirho": reading_chirho,
-        "goldChirho": (tess_text_value_chirho or None),
-        "correctChirho": tess_heb_chirho,
+        # grey audit line: what tesseract read + v8's Hebrew probability
+        "goldChirho": f"{tess_text_value_chirho or '∅'} · v8={v8_pheb_value_chirho:.2f}",
+        "correctChirho": is_heb_chirho,   # montage green = kept by the combined gate
         "confChirho": round(conf_chirho, 4),
         "verdictChirho": verdict_chirho,
         "tessHebrewChirho": tess_heb_chirho,
+        "v8PHebChirho": round(v8_pheb_value_chirho, 4),
+        "isHebrewChirho": is_heb_chirho,
+        "gateReasonChirho": gate_reason_chirho(tess_heb_chirho, v8_pheb_value_chirho),
     } for (name_chirho, reading_chirho, conf_chirho, verdict_chirho,
-           tess_text_value_chirho, tess_heb_chirho) in gated_chirho]
+           tess_text_value_chirho, tess_heb_chirho, v8_pheb_value_chirho,
+           is_heb_chirho) in gated_chirho]
     Path(args_chirho.out_preds_chirho).write_text(
         json.dumps({"predsChirho": recs_chirho}, ensure_ascii=False))
     print(f"  wrote {len(recs_chirho)} AUTO preds -> {args_chirho.out_preds_chirho}")
@@ -361,12 +435,18 @@ def main_chirho():
             "wlcVerdictChirho": verdict_chirho,
             "bucketChirho": "AUTO",
             "tessHebrewChirho": tess_heb_chirho,
+            "v8PHebChirho": round(v8_pheb_value_chirho, 4),
+            # isHebrewChirho is the combined gate the loader keys on (tess OR v8);
+            # tessHebrewChirho kept for transparency / back-compat.
+            "isHebrewChirho": is_heb_chirho,
+            "gateReasonChirho": gate_reason_chirho(tess_heb_chirho, v8_pheb_value_chirho),
         } for (name_chirho, reading_chirho, conf_chirho, verdict_chirho,
-               _tess_text_value_chirho, tess_heb_chirho) in gated_chirho]
+               _tess_text_value_chirho, tess_heb_chirho, v8_pheb_value_chirho,
+               is_heb_chirho) in gated_chirho]
         Path(args_chirho.out_triage_chirho).write_text(
             json.dumps({"recordsChirho": triage_recs_chirho}, ensure_ascii=False))
         print(f"  wrote {len(triage_recs_chirho)} triage records "
-              f"({n_pass_chirho} tess-Hebrew, loader-ready) "
+              f"({n_pass_chirho} is-Hebrew, loader-ready) "
               f"-> {args_chirho.out_triage_chirho}")
 
 
