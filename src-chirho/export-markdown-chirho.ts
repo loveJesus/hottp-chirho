@@ -67,6 +67,45 @@ const PASS_C_OCR_SCRIPTS_CHIRHO = new Set<string>([
   "syriac-chirho",
   "arabic-chirho",
 ]);
+const LATIN_TEXT_SCRIPTS_CHIRHO = new Set<string>([
+  "french-chirho",
+  "latin-chirho",
+  "latin-non-french-chirho",
+]);
+const NON_LATIN_SCRIPT_IN_LATIN_TEXT_RE_CHIRHO =
+  /[\p{Script=Greek}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Arabic}]/u;
+const LETTER_RE_CHIRHO = /\p{L}/u;
+const EXPECTED_SCRIPT_CHAR_RE_CHIRHO: Record<string, RegExp> = {
+  "hebrew-chirho": /[\u0590-\u05FF]/u,
+  "greek-chirho": /[\u0370-\u03FF\u1F00-\u1FFF]/u,
+  "syriac-chirho": /[\u0700-\u074F]/u,
+  "arabic-chirho": /[\u0600-\u06FF]/u,
+};
+const SHORT_FRENCH_WORD_ALLOWLIST_CHIRHO = new Set<string>([
+  "a",
+  "à",
+  "ce",
+  "de",
+  "des",
+  "du",
+  "en",
+  "et",
+  "la",
+  "le",
+  "les",
+  "ne",
+  "ni",
+  "on",
+  "or",
+  "ou",
+  "où",
+  "que",
+  "qui",
+  "se",
+  "si",
+  "un",
+  "une",
+]);
 
 type ProvenanceChirho =
   | "pdftotext-chirho"
@@ -639,6 +678,54 @@ function textForSpanChirho(spanChirho: SpanChirho, lineIndexChirho: number): str
   return `[EMPTY-SPAN-CHIRHO line=${lineIndexChirho} segment=${spanChirho.segmentIndexChirho}]`;
 }
 
+function lettersOnlyChirho(textChirho: string): string {
+  return [...textChirho.normalize("NFC")]
+    .filter((charChirho) => LETTER_RE_CHIRHO.test(charChirho))
+    .join("");
+}
+
+function suspectTextReasonChirho(
+  spanChirho: SpanChirho,
+  previousSpanChirho: SpanChirho | undefined,
+  nextSpanChirho: SpanChirho | undefined
+): string | null {
+  const textChirho = spanChirho.utf8TextChirho.trim();
+  if (textChirho.length === 0 || spanChirho.scriptChirho === "unknown-chirho") return null;
+
+  if (LATIN_TEXT_SCRIPTS_CHIRHO.has(spanChirho.scriptChirho)) {
+    if (textChirho.includes("\\")) {
+      return `Latin-script span contains a backslash, often indicating pdftotext garble: ${JSON.stringify(textChirho)}`;
+    }
+    if (NON_LATIN_SCRIPT_IN_LATIN_TEXT_RE_CHIRHO.test(textChirho)) {
+      return `Latin-script span contains non-Latin script codepoints: ${JSON.stringify(textChirho)}`;
+    }
+  }
+
+  if (
+    spanChirho.scriptChirho === "french-chirho" &&
+    previousSpanChirho &&
+    nextSpanChirho &&
+    previousSpanChirho.scriptChirho === nextSpanChirho.scriptChirho &&
+    PASS_C_OCR_SCRIPTS_CHIRHO.has(previousSpanChirho.scriptChirho)
+  ) {
+    const lettersChirho = lettersOnlyChirho(textChirho);
+    if (
+      lettersChirho.length > 0 &&
+      lettersChirho.length <= 2 &&
+      !SHORT_FRENCH_WORD_ALLOWLIST_CHIRHO.has(lettersChirho.toLocaleLowerCase("fr-FR"))
+    ) {
+      return `Short French span is sandwiched between ${previousSpanChirho.scriptChirho} spans; review for OCR split garble: ${JSON.stringify(textChirho)}`;
+    }
+  }
+
+  const expectedScriptReChirho = EXPECTED_SCRIPT_CHAR_RE_CHIRHO[spanChirho.scriptChirho];
+  if (expectedScriptReChirho && !expectedScriptReChirho.test(textChirho)) {
+    return `${spanChirho.scriptChirho} span contains no codepoints from its declared script: ${JSON.stringify(textChirho)}`;
+  }
+
+  return null;
+}
+
 function spanCommentChirho(
   lineChirho: SpanLineChirho,
   auditsChirho: SpanAuditChirho[],
@@ -733,7 +820,10 @@ function validateLineChirho(
     (aChirho, bChirho) => aChirho.segmentIndexChirho - bChirho.segmentIndexChirho
   );
 
-  for (const spanChirho of spansBySegmentChirho) {
+  for (let spanArrayIndexChirho = 0; spanArrayIndexChirho < spansBySegmentChirho.length; spanArrayIndexChirho++) {
+    const spanChirho = spansBySegmentChirho[spanArrayIndexChirho]!;
+    const previousSpanChirho = spansBySegmentChirho[spanArrayIndexChirho - 1];
+    const nextSpanChirho = spansBySegmentChirho[spanArrayIndexChirho + 1];
     if (spanChirho.segmentIndexChirho !== spanAuditChirho.length) {
       addIssueChirho(
         issuesChirho,
@@ -772,6 +862,18 @@ function validateLineChirho(
         "warning-chirho",
         "blank-span-text-chirho",
         "Span has no visible UTF-8 text; Markdown includes an EMPTY-SPAN marker",
+        lineChirho.lineIndexChirho,
+        spanChirho.segmentIndexChirho
+      );
+    }
+
+    const suspectTextMessageChirho = suspectTextReasonChirho(spanChirho, previousSpanChirho, nextSpanChirho);
+    if (suspectTextMessageChirho) {
+      addIssueChirho(
+        issuesChirho,
+        "warning-chirho",
+        "suspect-text-chirho",
+        suspectTextMessageChirho,
         lineChirho.lineIndexChirho,
         spanChirho.segmentIndexChirho
       );
