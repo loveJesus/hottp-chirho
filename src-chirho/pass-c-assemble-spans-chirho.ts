@@ -124,7 +124,8 @@ interface PageContextChirho {
 }
 
 interface CandidateVerdictChirho {
-  wordIndexChirho: number;
+  wordIndexChirho?: number;
+  candidateIndexChirho?: number;
   scriptChirho: string;
   utf8TextChirho: string | null;
   addToKnownWordsChirho?: boolean;
@@ -154,6 +155,10 @@ interface OutLineChirho {
   lineHeightPxChirho: number;
   agentChirho: string;
   spansChirho: OutSpanChirho[];
+}
+
+function candidateWordIndexChirho(verdictChirho: CandidateVerdictChirho): number | null {
+  return verdictChirho.wordIndexChirho ?? verdictChirho.candidateIndexChirho ?? null;
 }
 
 function assembleLineSpansChirho(
@@ -202,6 +207,9 @@ function assembleLineSpansChirho(
       return wChirho.textChirho;
     }
     const verdictChirho = verdictsByWordChirho.get(wChirho.wordIndexChirho);
+    if (verdictChirho?.scriptChirho === "symbol-chirho") {
+      return (verdictChirho.utf8TextChirho ?? wChirho.textChirho).trim();
+    }
     const agentRawChirho = verdictChirho?.utf8TextChirho ?? wChirho.textChirho;
     const strippedChirho = agentRawChirho
       .replace(/^[«"'‘’“”\(\[\{\s]+/u, "")
@@ -399,7 +407,8 @@ if (import.meta.main) {
 
       const verdictByWordChirho = new Map<number, CandidateVerdictChirho>();
       for (const vChirho of verdictsChirho.candidateVerdictsChirho) {
-        verdictByWordChirho.set(vChirho.wordIndexChirho, vChirho);
+        const wordIndexChirho = candidateWordIndexChirho(vChirho);
+        if (wordIndexChirho !== null) verdictByWordChirho.set(wordIndexChirho, vChirho);
       }
 
       const outChirho = assembleLineSpansChirho(
@@ -424,8 +433,10 @@ if (import.meta.main) {
           verdictChirho.scriptChirho === "french-chirho" &&
           verdictChirho.addToKnownWordsChirho === true
         ) {
+          const wordIndexChirho = candidateWordIndexChirho(verdictChirho);
+          if (wordIndexChirho === null) continue;
           const wordChirho = lineChirho.wordsChirho.find(
-            (wChirho) => wChirho.wordIndexChirho === verdictChirho.wordIndexChirho
+            (wChirho) => wChirho.wordIndexChirho === wordIndexChirho
           );
           if (!wordChirho) continue;
           const resultChirho = upsertKnownWordChirho(
