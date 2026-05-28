@@ -32,6 +32,7 @@ Render + read + montage (fully local, no prod, no creds):
 """
 import argparse
 import json
+import math
 import shutil
 import sqlite3
 import subprocess
@@ -66,6 +67,16 @@ TESSDATA_BEST_DIR_CHIRHO = (PROJECT_ROOT_CHIRHO / "workspace-chirho"
 TESS_LANG_STACK_CHIRHO = "fra+heb+grc+lat"
 TESS_UPSCALE_CHIRHO = 4     # word crops are ~30px tall; tesseract needs bigger
 TESS_PAD_CHIRHO = 30        # white margin; tesseract fails on border-touching text
+
+# Vol 5's persisted D1 boxes were produced from `pdftohtml -xml`, whose page
+# coordinate space is 892x1263 at Poppler's default 108-ish DPI. Pass A then
+# multiplied those XML units by 300/72, treating them as PDF points. The reader
+# crops a 300 DPI render, so the old D1 bbox must be scaled back to render
+# pixels. Keep crop filenames in the original D1 space because the SQL loader
+# resolves word_id by filename x/y against words_chirho.
+VOL5_PDFTOHTML_XML_WIDTH_CHIRHO = 892.0
+VOL5_PDFTOHTML_XML_HEIGHT_CHIRHO = 1263.0
+VOL5_STORED_XML_SCALE_CHIRHO = 300.0 / 72.0
 
 
 def has_hebrew_chirho(text_chirho):
@@ -133,6 +144,47 @@ def fetch_words_chirho(db_path_chirho, vol_chirho, page_chirho):
     return rows_chirho
 
 
+def should_apply_vol5_calibration_chirho(vol_chirho, words_chirho,
+                                         image_size_chirho):
+    """True when vol-5 D1 boxes still live in the inflated pdftohtml space."""
+    if vol_chirho != 5 or not words_chirho:
+        return False
+    image_width_chirho, image_height_chirho = image_size_chirho
+    max_x_chirho = max(float(row_chirho[3]) for row_chirho in words_chirho)
+    max_y_chirho = max(float(row_chirho[4]) for row_chirho in words_chirho)
+    return max_x_chirho > image_width_chirho or max_y_chirho > image_height_chirho
+
+
+def vol5_calibration_scales_chirho(image_size_chirho):
+    """Return old-D1-space -> render-pixel affine scales for vol 5."""
+    image_width_chirho, image_height_chirho = image_size_chirho
+    stored_width_chirho = (
+        VOL5_PDFTOHTML_XML_WIDTH_CHIRHO * VOL5_STORED_XML_SCALE_CHIRHO
+    )
+    stored_height_chirho = (
+        VOL5_PDFTOHTML_XML_HEIGHT_CHIRHO * VOL5_STORED_XML_SCALE_CHIRHO
+    )
+    return (
+        image_width_chirho / stored_width_chirho,
+        image_height_chirho / stored_height_chirho,
+    )
+
+
+def calibrated_crop_box_chirho(raw_box_chirho, scale_x_chirho, scale_y_chirho,
+                               image_size_chirho):
+    """Map a raw D1 bbox into page-render pixels and clamp to image bounds."""
+    image_width_chirho, image_height_chirho = image_size_chirho
+    left_chirho = max(0, math.floor(raw_box_chirho[0] * scale_x_chirho))
+    top_chirho = max(0, math.floor(raw_box_chirho[1] * scale_y_chirho))
+    right_chirho = min(
+        image_width_chirho, math.ceil(raw_box_chirho[2] * scale_x_chirho)
+    )
+    bottom_chirho = min(
+        image_height_chirho, math.ceil(raw_box_chirho[3] * scale_y_chirho)
+    )
+    return (left_chirho, top_chirho, right_chirho, bottom_chirho)
+
+
 def main_chirho():
     ap_chirho = argparse.ArgumentParser()
     ap_chirho.add_argument("--vol", type=int, required=True, dest="vol_chirho")
@@ -180,6 +232,16 @@ def main_chirho():
     print(f"vol-{args_chirho.vol_chirho} p{args_chirho.page_chirho}: "
           f"{len(words_chirho)} word boxes; image {page_img_chirho.size}")
 
+    calibration_scales_chirho = None
+    if should_apply_vol5_calibration_chirho(
+            args_chirho.vol_chirho, words_chirho, page_img_chirho.size):
+        calibration_scales_chirho = vol5_calibration_scales_chirho(
+            page_img_chirho.size)
+        print("  vol-5 bbox calibration: old-D1 -> render pixels "
+              f"x*{calibration_scales_chirho[0]:.6f}, "
+              f"y*{calibration_scales_chirho[1]:.6f} "
+              "(crop filenames keep old D1 x/y for loader matching)")
+
     out_crops_chirho = Path(args_chirho.out_crops_chirho)
     out_crops_chirho.mkdir(parents=True, exist_ok=True)
 
@@ -187,13 +249,25 @@ def main_chirho():
     crops_chirho = []   # (crop_name, PIL_L_crop)
     for (_id_chirho, xmin_chirho, ymin_chirho,
          xmax_chirho, ymax_chirho) in words_chirho:
-        box_chirho = (int(round(xmin_chirho)), int(round(ymin_chirho)),
-                      int(round(xmax_chirho)), int(round(ymax_chirho)))
-        if box_chirho[2] <= box_chirho[0] or box_chirho[3] <= box_chirho[1]:
+        raw_box_chirho = (int(round(xmin_chirho)), int(round(ymin_chirho)),
+                          int(round(xmax_chirho)), int(round(ymax_chirho)))
+        if (raw_box_chirho[2] <= raw_box_chirho[0]
+                or raw_box_chirho[3] <= raw_box_chirho[1]):
+            continue
+        crop_box_chirho = raw_box_chirho
+        if calibration_scales_chirho is not None:
+            crop_box_chirho = calibrated_crop_box_chirho(
+                raw_box_chirho,
+                calibration_scales_chirho[0],
+                calibration_scales_chirho[1],
+                page_img_chirho.size,
+            )
+        if (crop_box_chirho[2] <= crop_box_chirho[0]
+                or crop_box_chirho[3] <= crop_box_chirho[1]):
             continue
         name_chirho = (f"p{args_chirho.page_chirho:04d}"
-                       f"-x{box_chirho[0]}-y{box_chirho[1]}-chirho.png")
-        crop_chirho = page_img_chirho.crop(box_chirho)
+                       f"-x{raw_box_chirho[0]}-y{raw_box_chirho[1]}-chirho.png")
+        crop_chirho = page_img_chirho.crop(crop_box_chirho)
         crop_chirho.save(out_crops_chirho / name_chirho)
         crops_chirho.append((name_chirho, crop_chirho))
 
