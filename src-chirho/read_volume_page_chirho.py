@@ -181,8 +181,9 @@ def fetch_words_chirho(db_path_chirho, vol_chirho, page_chirho):
     try:
         rows_chirho = conn_chirho.execute(
             """
-            SELECT w.id_chirho, w.x_min_chirho, w.y_min_chirho,
-                   w.x_max_chirho, w.y_max_chirho
+            SELECT w.id_chirho, s.line_index_chirho, w.word_index_chirho,
+                   w.x_min_chirho, w.y_min_chirho, w.x_max_chirho,
+                   w.y_max_chirho
             FROM words_chirho w
             JOIN scanlines_chirho s ON s.id_chirho = w.scanline_id_chirho
             JOIN pages_chirho p ON p.id_chirho = s.page_id_chirho
@@ -203,8 +204,8 @@ def should_apply_vol5_calibration_chirho(vol_chirho, words_chirho,
     if vol_chirho != 5 or not words_chirho:
         return False
     image_width_chirho, image_height_chirho = image_size_chirho
-    max_x_chirho = max(float(row_chirho[3]) for row_chirho in words_chirho)
-    max_y_chirho = max(float(row_chirho[4]) for row_chirho in words_chirho)
+    max_x_chirho = max(float(row_chirho[5]) for row_chirho in words_chirho)
+    max_y_chirho = max(float(row_chirho[6]) for row_chirho in words_chirho)
     return max_x_chirho > image_width_chirho or max_y_chirho > image_height_chirho
 
 
@@ -299,9 +300,9 @@ def main_chirho():
     out_crops_chirho.mkdir(parents=True, exist_ok=True)
 
     # crop every word, name it the way the montage + loader expect
-    crops_chirho = []   # (crop_name, PIL_L_crop)
-    for (_id_chirho, xmin_chirho, ymin_chirho,
-         xmax_chirho, ymax_chirho) in words_chirho:
+    crops_chirho = []   # (crop_name, PIL_L_crop, word_id, line_index, word_index)
+    for (word_id_chirho, line_index_chirho, word_index_chirho,
+         xmin_chirho, ymin_chirho, xmax_chirho, ymax_chirho) in words_chirho:
         raw_box_chirho = (int(round(xmin_chirho)), int(round(ymin_chirho)),
                           int(round(xmax_chirho)), int(round(ymax_chirho)))
         if (raw_box_chirho[2] <= raw_box_chirho[0]
@@ -322,26 +323,31 @@ def main_chirho():
                        f"-x{raw_box_chirho[0]}-y{raw_box_chirho[1]}-chirho.png")
         crop_chirho = page_img_chirho.crop(crop_box_chirho)
         crop_chirho.save(out_crops_chirho / name_chirho)
-        crops_chirho.append((name_chirho, crop_chirho))
+        crops_chirho.append((name_chirho, crop_chirho, word_id_chirho,
+                             line_index_chirho, word_index_chirho))
 
     # CRNN read + WLC verdict, batched
-    preds_chirho = []   # (name, reading, conf, verdict)
+    # (name, reading, conf, verdict, word_id, line_index, word_index)
+    preds_chirho = []
     bs_chirho = 32
     for i_chirho in range(0, len(crops_chirho), bs_chirho):
         chunk_chirho = crops_chirho[i_chirho:i_chirho + bs_chirho]
         items_chirho = [(img_to_tensor_chirho(c_chirho), [1])
-                        for _n_chirho, c_chirho in chunk_chirho]
+                        for _n_chirho, c_chirho, _word_id_chirho,
+                        _line_index_chirho, _word_index_chirho in chunk_chirho]
         batch_chirho = collate_chirho(items_chirho)
         if batch_chirho is None:
             continue
         with torch.no_grad():
             logits_chirho = model_chirho(batch_chirho[0].to(dev_chirho))
-        for (name_chirho, _c_chirho), (reading_chirho, conf_chirho) in zip(
+        for (name_chirho, _c_chirho, word_id_chirho, line_index_chirho,
+             word_index_chirho), (reading_chirho, conf_chirho) in zip(
                 chunk_chirho, decode_with_conf_chirho(logits_chirho)):
             verdict_chirho, _ = skeleton_in_wlc_chirho(
                 reading_chirho, word_skel_chirho, verse_blob_chirho)
             preds_chirho.append((name_chirho, reading_chirho,
-                                 conf_chirho, verdict_chirho))
+                                 conf_chirho, verdict_chirho, word_id_chirho,
+                                 line_index_chirho, word_index_chirho))
 
     n_chirho = len(preds_chirho)
     exact_chirho = [p_chirho for p_chirho in preds_chirho if p_chirho[3] == "exact"]
@@ -359,7 +365,11 @@ def main_chirho():
     # has no "not Hebrew" output, so WLC-membership alone is ~70% French on an
     # unseen volume; only a crop tesseract ALSO reads as Hebrew may be minted.
     auto_chirho.sort(key=lambda p_chirho: -p_chirho[2])
-    crop_by_name_chirho = {n_chirho: c_chirho for n_chirho, c_chirho in crops_chirho}
+    crop_by_name_chirho = {
+        n_chirho: c_chirho
+        for n_chirho, c_chirho, _word_id_chirho, _line_index_chirho,
+        _word_index_chirho in crops_chirho
+    }
     v8_session_chirho = load_v8_session_chirho()
     # gated tuple: (name, reading, conf, verdict, tess_text, tess_heb, v8_pheb, is_heb)
     gated_chirho = []
@@ -370,7 +380,8 @@ def main_chirho():
                                                 dir=str(PROJECT_ROOT_CHIRHO)))
         try:
             for (name_chirho, reading_chirho, conf_chirho,
-                 verdict_chirho) in auto_chirho:
+                 verdict_chirho, word_id_chirho, line_index_chirho,
+                 word_index_chirho) in auto_chirho:
                 tess_text_value_chirho = tess_text_chirho(
                     out_crops_chirho / name_chirho, tess_tmp_chirho)
                 tess_heb_chirho = has_hebrew_chirho(tess_text_value_chirho)
@@ -385,14 +396,17 @@ def main_chirho():
                 gated_chirho.append((name_chirho, reading_chirho, conf_chirho,
                                      verdict_chirho, tess_text_value_chirho,
                                      tess_heb_chirho, v8_pheb_value_chirho,
-                                     is_heb_chirho))
+                                     is_heb_chirho, word_id_chirho,
+                                     line_index_chirho, word_index_chirho))
         finally:
             shutil.rmtree(tess_tmp_chirho, ignore_errors=True)
     else:
-        gated_chirho = [(name_chirho, reading_chirho, conf_chirho,
-                         verdict_chirho, "", True, 1.0, True)
+        gated_chirho = [(name_chirho, reading_chirho, conf_chirho, verdict_chirho,
+                         "", True, 1.0, True, word_id_chirho,
+                         line_index_chirho, word_index_chirho)
                         for (name_chirho, reading_chirho, conf_chirho,
-                             verdict_chirho) in auto_chirho]
+                             verdict_chirho, word_id_chirho, line_index_chirho,
+                             word_index_chirho) in auto_chirho]
     n_tess_chirho = sum(1 for g_chirho in gated_chirho if g_chirho[5])
     n_pass_chirho = sum(1 for g_chirho in gated_chirho if g_chirho[7])
     n_rescued_chirho = sum(1 for g_chirho in gated_chirho
@@ -418,6 +432,9 @@ def main_chirho():
 
     recs_chirho = [{
         "cropChirho": name_chirho,
+        "wordIdChirho": word_id_chirho,
+        "lineIndexChirho": line_index_chirho,
+        "wordIndexChirho": word_index_chirho,
         "predChirho": reading_chirho,
         # grey audit line: what tesseract read + v8's Hebrew probability
         "goldChirho": f"{tess_text_value_chirho or '∅'} · v8={v8_pheb_value_chirho:.2f}",
@@ -430,7 +447,8 @@ def main_chirho():
         "gateReasonChirho": gate_reason_chirho(tess_heb_chirho, v8_pheb_value_chirho, conf_chirho),
     } for (name_chirho, reading_chirho, conf_chirho, verdict_chirho,
            tess_text_value_chirho, tess_heb_chirho, v8_pheb_value_chirho,
-           is_heb_chirho) in gated_chirho]
+           is_heb_chirho, word_id_chirho, line_index_chirho,
+           word_index_chirho) in gated_chirho]
     Path(args_chirho.out_preds_chirho).write_text(
         json.dumps({"predsChirho": recs_chirho}, ensure_ascii=False))
     print(f"  wrote {len(recs_chirho)} AUTO preds -> {args_chirho.out_preds_chirho}")
@@ -441,6 +459,9 @@ def main_chirho():
     if args_chirho.out_triage_chirho:
         triage_recs_chirho = [{
             "cropChirho": name_chirho,
+            "wordIdChirho": word_id_chirho,
+            "lineIndexChirho": line_index_chirho,
+            "wordIndexChirho": word_index_chirho,
             "pageChirho": args_chirho.page_chirho,
             "readingChirho": reading_chirho,
             "confChirho": round(conf_chirho, 4),
@@ -454,9 +475,24 @@ def main_chirho():
             "gateReasonChirho": gate_reason_chirho(tess_heb_chirho, v8_pheb_value_chirho, conf_chirho),
         } for (name_chirho, reading_chirho, conf_chirho, verdict_chirho,
                _tess_text_value_chirho, tess_heb_chirho, v8_pheb_value_chirho,
-               is_heb_chirho) in gated_chirho]
+               is_heb_chirho, word_id_chirho, line_index_chirho,
+               word_index_chirho) in gated_chirho]
+        all_read_recs_chirho = [{
+            "cropChirho": name_chirho,
+            "wordIdChirho": word_id_chirho,
+            "lineIndexChirho": line_index_chirho,
+            "wordIndexChirho": word_index_chirho,
+            "pageChirho": args_chirho.page_chirho,
+            "readingChirho": reading_chirho,
+            "confChirho": round(conf_chirho, 4),
+            "wlcVerdictChirho": verdict_chirho,
+        } for (name_chirho, reading_chirho, conf_chirho, verdict_chirho,
+               word_id_chirho, line_index_chirho, word_index_chirho) in preds_chirho]
         Path(args_chirho.out_triage_chirho).write_text(
-            json.dumps({"recordsChirho": triage_recs_chirho}, ensure_ascii=False))
+            json.dumps({
+                "recordsChirho": triage_recs_chirho,
+                "allReadsChirho": all_read_recs_chirho,
+            }, ensure_ascii=False))
         print(f"  wrote {len(triage_recs_chirho)} triage records "
               f"({n_pass_chirho} is-Hebrew, loader-ready) "
               f"-> {args_chirho.out_triage_chirho}")
