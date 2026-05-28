@@ -10,6 +10,7 @@
     "detect-chirho": "bun run src-chirho/detect-snippets-chirho.ts",
     "crop-chirho": "bun run src-chirho/crop-snippets-chirho.ts",
     "ocr-chirho": "bun run src-chirho/ocr-snippets-chirho.ts",
+    "export-markdown-chirho": "bun run src-chirho/export-markdown-chirho.ts",
     "upload-chirho": "bun run src-chirho/upload-chirho.ts"
   },
   "devDependencies": {
