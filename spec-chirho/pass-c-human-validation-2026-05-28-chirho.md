@@ -34,6 +34,10 @@ The UI warning is intentional: machine witnesses validate consonantal skeletons 
 - `skip-chirho`: leave for later.
 - `undo-chirho`: append-only undo of the latest current verdict.
 
+The correction box includes a Hebrew typewriter for meteg, maqaf, common niqqud,
+dagesh, and shin/sin dots. Buttons insert at the correction cursor or replace
+the selected text.
+
 ## Storage
 
 Human decisions are append-only in `spec-chirho/progress-chirho.sqlite`,

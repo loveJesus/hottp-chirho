@@ -642,6 +642,10 @@ function pageHtmlChirho(): string {
     .hebrew-chirho { direction: rtl; unicode-bidi: plaintext; font-size: 32px; line-height: 1.35; background: white; border: 1px solid #d6d9dd; padding: 12px; min-height: 56px; }
     .line-text-chirho { font-size: 17px; line-height: 1.5; background: white; border: 1px solid #d6d9dd; padding: 10px; }
     .edit-chirho { direction: rtl; unicode-bidi: plaintext; min-height: 76px; resize: vertical; width: 100%; box-sizing: border-box; border: 1px solid #b8bec7; padding: 10px; background: #fff; font-size: 25px; line-height: 1.35; }
+    .typewriter-chirho { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: #fff; border: 1px solid #d6d9dd; padding: 8px; }
+    .typewriter-button-chirho { min-width: 38px; height: 34px; border: 1px solid #aab1b9; background: #fff; cursor: pointer; font-size: 20px; line-height: 1; }
+    .typewriter-button-chirho:hover { background: #edf1f4; }
+    .typewriter-button-chirho:focus-visible { outline: 2px solid #bd7a1b; outline-offset: 1px; }
     .side-chirho { display: flex; flex-direction: column; gap: 12px; }
     .box-chirho { border: 1px solid #d6d9dd; background: #fff; padding: 12px; }
     .meta-grid-chirho { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 13px; }
@@ -696,6 +700,24 @@ function pageHtmlChirho(): string {
     function clearChirho(nodeChirho) { while (nodeChirho.firstChild) nodeChirho.removeChild(nodeChirho.firstChild); }
     function activeQueueChirho() { return queueChirho.filter((itemChirho) => !validationsChirho.has(itemChirho.keyChirho)); }
     function currentItemChirho() { return activeQueueChirho()[indexChirho]; }
+    const hebrewTypewriterMarksChirho = [
+      { labelChirho: "◌ֽ", valueChirho: "ֽ", titleChirho: "Meteg U+05BD" },
+      { labelChirho: "־", valueChirho: "־", titleChirho: "Maqaf U+05BE" },
+      { labelChirho: "◌ְ", valueChirho: "ְ", titleChirho: "Sheva U+05B0" },
+      { labelChirho: "◌ֱ", valueChirho: "ֱ", titleChirho: "Hataf segol U+05B1" },
+      { labelChirho: "◌ֲ", valueChirho: "ֲ", titleChirho: "Hataf patah U+05B2" },
+      { labelChirho: "◌ֳ", valueChirho: "ֳ", titleChirho: "Hataf qamats U+05B3" },
+      { labelChirho: "◌ִ", valueChirho: "ִ", titleChirho: "Hiriq U+05B4" },
+      { labelChirho: "◌ֵ", valueChirho: "ֵ", titleChirho: "Tsere U+05B5" },
+      { labelChirho: "◌ֶ", valueChirho: "ֶ", titleChirho: "Segol U+05B6" },
+      { labelChirho: "◌ַ", valueChirho: "ַ", titleChirho: "Patah U+05B7" },
+      { labelChirho: "◌ָ", valueChirho: "ָ", titleChirho: "Qamats U+05B8" },
+      { labelChirho: "◌ֹ", valueChirho: "ֹ", titleChirho: "Holam U+05B9" },
+      { labelChirho: "◌ֻ", valueChirho: "ֻ", titleChirho: "Qubuts U+05BB" },
+      { labelChirho: "◌ּ", valueChirho: "ּ", titleChirho: "Dagesh U+05BC" },
+      { labelChirho: "◌ׁ", valueChirho: "ׁ", titleChirho: "Shin dot U+05C1" },
+      { labelChirho: "◌ׂ", valueChirho: "ׂ", titleChirho: "Sin dot U+05C2" }
+    ];
     async function loadValidationsChirho() {
       const responseChirho = await fetch("/api-chirho/validations-chirho");
       const dataChirho = await responseChirho.json();
@@ -713,6 +735,30 @@ function pageHtmlChirho(): string {
       return tokenChirho.witnessesChirho
         .map((wChirho) => wChirho.sourceChirho + ": " + wChirho.textChirho + (wChirho.confidenceChirho == null ? "" : " @" + wChirho.confidenceChirho))
         .join(" | ");
+    }
+    function insertCorrectionTextChirho(valueChirho) {
+      const editChirho = document.getElementById("edit-chirho");
+      if (!editChirho) return;
+      const selectionStartChirho = editChirho.selectionStart ?? editChirho.value.length;
+      const selectionEndChirho = editChirho.selectionEnd ?? selectionStartChirho;
+      editChirho.setRangeText(valueChirho, selectionStartChirho, selectionEndChirho, "end");
+      editChirho.dispatchEvent(new Event("input", { bubbles: true }));
+      editChirho.focus();
+    }
+    function typewriterChirho() {
+      const wrapChirho = elChirho("div", { classChirho: "typewriter-chirho" });
+      for (const markChirho of hebrewTypewriterMarksChirho) {
+        const buttonChirho = elChirho("button", {
+          classChirho: "typewriter-button-chirho",
+          type: "button",
+          title: markChirho.titleChirho,
+          "aria-label": markChirho.titleChirho,
+          textChirho: markChirho.labelChirho
+        });
+        buttonChirho.addEventListener("click", () => insertCorrectionTextChirho(markChirho.valueChirho));
+        wrapChirho.appendChild(buttonChirho);
+      }
+      return wrapChirho;
     }
     function renderChirho() {
       const appChirho = document.getElementById("app-chirho");
@@ -764,6 +810,7 @@ function pageHtmlChirho(): string {
       const editChirho = elChirho("textarea", { classChirho: "edit-chirho", id: "edit-chirho" });
       editChirho.value = itemChirho.textChirho;
       targetRowChirho.appendChild(editChirho);
+      targetRowChirho.appendChild(typewriterChirho());
       leftChirho.appendChild(targetRowChirho);
 
       const sideChirho = elChirho("aside", { classChirho: "side-chirho" });
