@@ -919,7 +919,9 @@ function validateLineChirho(
       );
     }
 
-    const suspectTextMessageChirho = suspectTextReasonChirho(spanChirho, previousSpanChirho, nextSpanChirho);
+    const suspectTextMessageChirho = spanChirho.humanReviewStatusChirho === "reviewed-clean-chirho"
+      ? null
+      : suspectTextReasonChirho(spanChirho, previousSpanChirho, nextSpanChirho);
     if (suspectTextMessageChirho) {
       addIssueChirho(
         issuesChirho,

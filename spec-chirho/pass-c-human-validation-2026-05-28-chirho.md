@@ -9,6 +9,12 @@ Run the local validator:
 bun run pass-c-human-validate-chirho
 ```
 
+Run the suspect-text validator for exporter warnings:
+
+```bash
+bun run pass-c-suspect-validate-chirho
+```
+
 Open:
 
 ```text
@@ -24,6 +30,11 @@ The queue contains all 126 Pass-C Hebrew spans from `pass-c-hebrew-validation-ch
 - `spot-check-chirho`: all-token skeleton-agreement spans; lower priority because correlated OCR errors remain possible.
 
 The UI warning is intentional: machine witnesses validate consonantal skeletons only. Vowels and niqqud are unverified even when consonants agree.
+
+The suspect-text queue is loaded from `workspace-chirho/markdown-chirho/export-report-chirho.json`
+and contains current `suspect-text-chirho` exporter warnings. Clean review of a
+suspect span marks that warning as a false positive after source review; checked
+issues keep the span warning-active for correction/training.
 
 ## Human Review
 
@@ -42,6 +53,10 @@ Current issue flags:
 - `latin-punctuation-chirho`
 - `missing-hebrew-chirho`
 - `extra-latin-chirho`
+- `wrong-script-chirho`
+- `garbled-text-chirho`
+- `missing-greek-chirho`
+- `extra-symbol-chirho`
 - `wrong-language-chirho`
 - `segmentation-chirho`
 
@@ -91,6 +106,8 @@ Live writeback, only after review:
 bun run apply-pass-c-human-validations-chirho --apply
 ```
 
-Writeback stamps `reviewed-clean-chirho` spans as `provenanceChirho=human-chirho`.
-Issue-marked spans keep their original text/provenance and receive review flags
-for downstream training and export warnings.
+Writeback stamps `reviewed-clean-chirho` spans as `provenanceChirho=human-chirho`
+and `humanReviewStatusChirho=reviewed-clean-chirho`. The exporter suppresses
+machine suspect-text warnings for those clean human-reviewed spans. Issue-marked
+spans keep their original text/provenance and receive review flags for downstream
+training and export warnings.
