@@ -21,7 +21,7 @@
 import { join } from "path";
 import { existsSync, rmSync, readdirSync } from "fs";
 
-import { SCANLINES_DIR_CHIRHO } from "./config-chirho.ts";
+import { PROJECT_ROOT_CHIRHO, SCANLINES_DIR_CHIRHO } from "./config-chirho.ts";
 import {
   dbChirho,
   initDbChirho,
@@ -38,6 +38,9 @@ const AGENT_CODE_CHIRHO = "pass2-emit-line-crops-chirho";
 const PILOT_VOLS_CHIRHO = [1, 2, 3, 4, 5] as const;
 const PILOT_START_CHIRHO = 148;
 const PILOT_END_CHIRHO = 152;
+const VOL5_PDFTOHTML_XML_WIDTH_CHIRHO = 892.0;
+const VOL5_PDFTOHTML_XML_HEIGHT_CHIRHO = 1263.0;
+const VOL5_STORED_XML_SCALE_CHIRHO = 300.0 / 72.0;
 
 /** Directory where line crops for one page live */
 function pageCropDirChirho(
@@ -63,6 +66,33 @@ function lineCropPathChirho(
   );
 }
 
+function canonicalPageImagePathChirho(volumeNumberChirho: number, pageNumberChirho: number): string {
+  return join(
+    PROJECT_ROOT_CHIRHO,
+    "workspace-chirho",
+    "images-chirho",
+    `vol-${volumeNumberChirho}-chirho`,
+    `page-${String(pageNumberChirho).padStart(4, "0")}-chirho.png`
+  );
+}
+
+function resolvePageImagePathChirho(
+  storedImagePathChirho: string | null,
+  volumeNumberChirho: number,
+  pageNumberChirho: number
+): string {
+  if (storedImagePathChirho && existsSync(storedImagePathChirho)) return storedImagePathChirho;
+  if (storedImagePathChirho) {
+    const workspaceIndexChirho = storedImagePathChirho.lastIndexOf("workspace-chirho/");
+    if (workspaceIndexChirho >= 0) {
+      const relativeWorkspacePathChirho = storedImagePathChirho.slice(workspaceIndexChirho);
+      const relocatedPathChirho = join(PROJECT_ROOT_CHIRHO, relativeWorkspacePathChirho);
+      if (existsSync(relocatedPathChirho)) return relocatedPathChirho;
+    }
+  }
+  return canonicalPageImagePathChirho(volumeNumberChirho, pageNumberChirho);
+}
+
 /** Wipe existing line PNGs in a page dir so we don't leave stale crops behind */
 function wipePageCropsChirho(dirChirho: string): void {
   if (!existsSync(dirChirho)) return;
@@ -82,6 +112,87 @@ interface ScanlineRowChirho {
   heightChirho: number;
 }
 
+interface CropBoxChirho {
+  xChirho: number;
+  yChirho: number;
+  widthChirho: number;
+  heightChirho: number;
+}
+
+interface ImageSizeChirho {
+  widthChirho: number;
+  heightChirho: number;
+}
+
+async function imageSizeChirho(imagePathChirho: string): Promise<ImageSizeChirho> {
+  const outputChirho = await runCmdChirho([
+    "magick",
+    "identify",
+    "-format",
+    "%w %h",
+    imagePathChirho,
+  ]);
+  const [widthTextChirho, heightTextChirho] = outputChirho.trim().split(/\s+/);
+  const widthChirho = Number.parseInt(widthTextChirho ?? "", 10);
+  const heightChirho = Number.parseInt(heightTextChirho ?? "", 10);
+  if (!Number.isFinite(widthChirho) || !Number.isFinite(heightChirho)) {
+    throw new Error(`Could not read image dimensions for ${imagePathChirho}: ${outputChirho}`);
+  }
+  return { widthChirho, heightChirho };
+}
+
+function cropBoxForScanlineChirho(
+  volumeNumberChirho: number,
+  pageImageSizeChirho: ImageSizeChirho,
+  scanlineChirho: ScanlineRowChirho,
+  shouldApplyVol5CalibrationChirho: boolean
+): CropBoxChirho {
+  if (volumeNumberChirho !== 5 || !shouldApplyVol5CalibrationChirho) {
+    return {
+      xChirho: Math.max(0, Math.round(scanlineChirho.xMinChirho)),
+      yChirho: Math.max(0, Math.round(scanlineChirho.yMinChirho)),
+      widthChirho: Math.round(scanlineChirho.widthChirho),
+      heightChirho: Math.round(scanlineChirho.heightChirho),
+    };
+  }
+
+  const scaleXChirho =
+    pageImageSizeChirho.widthChirho /
+    (VOL5_PDFTOHTML_XML_WIDTH_CHIRHO * VOL5_STORED_XML_SCALE_CHIRHO);
+  const scaleYChirho =
+    pageImageSizeChirho.heightChirho /
+    (VOL5_PDFTOHTML_XML_HEIGHT_CHIRHO * VOL5_STORED_XML_SCALE_CHIRHO);
+  const leftChirho = Math.max(0, Math.floor(scanlineChirho.xMinChirho * scaleXChirho));
+  const topChirho = Math.max(0, Math.floor(scanlineChirho.yMinChirho * scaleYChirho));
+  const rightChirho = Math.min(
+    pageImageSizeChirho.widthChirho,
+    Math.ceil((scanlineChirho.xMinChirho + scanlineChirho.widthChirho) * scaleXChirho)
+  );
+  const bottomChirho = Math.min(
+    pageImageSizeChirho.heightChirho,
+    Math.ceil((scanlineChirho.yMinChirho + scanlineChirho.heightChirho) * scaleYChirho)
+  );
+  return {
+    xChirho: leftChirho,
+    yChirho: topChirho,
+    widthChirho: rightChirho - leftChirho,
+    heightChirho: bottomChirho - topChirho,
+  };
+}
+
+function shouldApplyVol5CalibrationChirho(
+  volumeNumberChirho: number,
+  pageImageSizeChirho: ImageSizeChirho,
+  scanlinesChirho2: ScanlineRowChirho[]
+): boolean {
+  if (volumeNumberChirho !== 5 || scanlinesChirho2.length === 0) return false;
+  return scanlinesChirho2.some(
+    (scanlineChirho) =>
+      scanlineChirho.xMinChirho + scanlineChirho.widthChirho > pageImageSizeChirho.widthChirho ||
+      scanlineChirho.yMinChirho + scanlineChirho.heightChirho > pageImageSizeChirho.heightChirho
+  );
+}
+
 /** Crop all line strips for one page in a single magick invocation (much faster than per-line spawn) */
 async function cropPageChirho(
   volumeNumberChirho: number,
@@ -96,16 +207,28 @@ async function cropPageChirho(
   const outDirChirho = pageCropDirChirho(volumeNumberChirho, pageNumberChirho);
   ensureDirChirho(outDirChirho);
   wipePageCropsChirho(outDirChirho);
+  const pageImageSizeChirho = await imageSizeChirho(pageImagePathChirho);
+  const shouldApplyVol5CalibrationChirho2 = shouldApplyVol5CalibrationChirho(
+    volumeNumberChirho,
+    pageImageSizeChirho,
+    scanlinesChirho2
+  );
 
   // Build a single ImageMagick batch:
   //   magick page.png \( -clone 0 -crop WxH+X+Y +repage -write out0.png +delete \) ... null:
   const argsChirho: string[] = ["magick", pageImagePathChirho];
   let skippedChirho = 0;
   for (const sChirho of scanlinesChirho2) {
-    const xChirho = Math.max(0, Math.round(sChirho.xMinChirho));
-    const yChirho = Math.max(0, Math.round(sChirho.yMinChirho));
-    const wChirho = Math.round(sChirho.widthChirho);
-    const hChirho = Math.round(sChirho.heightChirho);
+    const cropBoxChirho = cropBoxForScanlineChirho(
+      volumeNumberChirho,
+      pageImageSizeChirho,
+      sChirho,
+      shouldApplyVol5CalibrationChirho2
+    );
+    const xChirho = cropBoxChirho.xChirho;
+    const yChirho = cropBoxChirho.yChirho;
+    const wChirho = cropBoxChirho.widthChirho;
+    const hChirho = cropBoxChirho.heightChirho;
     if (wChirho <= 0 || hChirho <= 0) {
       skippedChirho++;
       continue;
@@ -165,7 +288,11 @@ async function pass2PageChirho(
       );
     }
     const pageRowChirho = pageRowsChirho[0]!;
-    const imagePathChirho = pageRowChirho.imagePathChirho;
+    const imagePathChirho = resolvePageImagePathChirho(
+      pageRowChirho.imagePathChirho,
+      volumeNumberChirho,
+      pageNumberChirho
+    );
     if (!imagePathChirho || !existsSync(imagePathChirho)) {
       throw new Error(
         `Page image missing on disk for vol ${volumeNumberChirho} p${pageNumberChirho}: ${imagePathChirho}`
