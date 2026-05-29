@@ -28,7 +28,7 @@ const REPORT_PATH_CHIRHO = join(
 );
 const SPANS_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
 const SCANLINES_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "scanlines-chirho");
-const DB_PATH_CHIRHO = join(PROJECT_ROOT_CHIRHO, "spec-chirho", "progress-chirho.sqlite");
+const DEFAULT_DB_PATH_CHIRHO = join(PROJECT_ROOT_CHIRHO, "spec-chirho", "progress-chirho.sqlite");
 
 interface TokenWitnessChirho {
   sourceChirho: string;
@@ -148,6 +148,7 @@ interface HumanValidationRowChirho {
   verdict_chirho: string;
   corrected_text_chirho: string | null;
   corrected_skeleton_chirho: string | null;
+  issue_flags_chirho: string | null;
   notes_chirho: string | null;
   witness_snapshot_chirho: string | null;
   queue_generated_at_chirho: string | null;
@@ -160,6 +161,19 @@ interface HumanValidationRowChirho {
   applied_to_file_chirho: string | null;
   schema_version_chirho: number;
 }
+
+const ISSUE_FLAG_OPTIONS_CHIRHO = [
+  { valueChirho: "letters-chirho", labelChirho: "Letters" },
+  { valueChirho: "vowels-chirho", labelChirho: "Vowels" },
+  { valueChirho: "accents-chirho", labelChirho: "Accents/meteg" },
+  { valueChirho: "hebrew-punctuation-chirho", labelChirho: "Hebrew punct." },
+  { valueChirho: "latin-punctuation-chirho", labelChirho: "Latin punct." },
+  { valueChirho: "missing-hebrew-chirho", labelChirho: "Missing Heb." },
+  { valueChirho: "extra-latin-chirho", labelChirho: "Extra Latin" },
+  { valueChirho: "wrong-language-chirho", labelChirho: "Wrong lang." },
+  { valueChirho: "segmentation-chirho", labelChirho: "Segmentation" },
+];
+const ISSUE_FLAG_VALUES_CHIRHO = new Set(ISSUE_FLAG_OPTIONS_CHIRHO.map((optionChirho) => optionChirho.valueChirho));
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
   const prefixChirho = `--${nameChirho}=`;
@@ -418,7 +432,8 @@ function loadQueueChirho(reportChirho: ValidationReportChirho): QueueItemChirho[
 }
 
 const portChirho = positivePortChirho(parseArgValueChirho(process.argv.slice(2), "port"));
-const dbChirho = new Database(DB_PATH_CHIRHO);
+const dbPathChirho = parseArgValueChirho(process.argv.slice(2), "db") ?? DEFAULT_DB_PATH_CHIRHO;
+const dbChirho = new Database(dbPathChirho);
 const reportChirho = loadReportChirho();
 const queueGeneratedAtChirho = reportChirho.generatedAtChirho ?? null;
 const queueChirho = loadQueueChirho(reportChirho);
@@ -457,6 +472,7 @@ CREATE TABLE IF NOT EXISTS pass_c_human_validations_chirho (
   verdict_chirho            TEXT NOT NULL,
   corrected_text_chirho     TEXT,
   corrected_skeleton_chirho TEXT,
+  issue_flags_chirho        TEXT,
   notes_chirho              TEXT,
   witness_snapshot_chirho   TEXT,
   queue_generated_at_chirho TEXT,
@@ -470,6 +486,19 @@ CREATE TABLE IF NOT EXISTS pass_c_human_validations_chirho (
   schema_version_chirho     INTEGER NOT NULL DEFAULT 1
 )`);
 
+function addColumnIfMissingChirho(tableNameChirho: string, columnNameChirho: string, definitionChirho: string): void {
+  const columnsChirho = new Set(tableColumnsChirho(tableNameChirho));
+  if (!columnsChirho.has(columnNameChirho)) {
+    dbChirho.run(`ALTER TABLE ${tableNameChirho} ADD COLUMN ${definitionChirho}`);
+  }
+}
+
+addColumnIfMissingChirho(
+  "pass_c_human_validations_chirho",
+  "issue_flags_chirho",
+  "issue_flags_chirho TEXT"
+);
+
 dbChirho.run(`
 CREATE INDEX IF NOT EXISTS idx_pchv_span_chirho
   ON pass_c_human_validations_chirho(volume_chirho, page_chirho, line_index_chirho, segment_index_chirho, is_current_chirho)`);
@@ -482,27 +511,27 @@ const saveValidationStmtChirho = dbChirho.prepare(`
 INSERT INTO pass_c_human_validations_chirho
   (volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
    original_text_chirho, original_text_hash_chirho, line_text_chirho, verdict_chirho,
-   corrected_text_chirho, corrected_skeleton_chirho, notes_chirho, witness_snapshot_chirho,
+   corrected_text_chirho, corrected_skeleton_chirho, issue_flags_chirho, notes_chirho, witness_snapshot_chirho,
    queue_generated_at_chirho, reviewer_chirho, created_at_chirho, updated_at_chirho,
    supersedes_id_chirho, is_current_chirho, schema_version_chirho)
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)`);
+  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 2)`);
 
 const validationRowsStmtChirho = dbChirho.prepare(`
 SELECT id_chirho, volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
        original_text_chirho, original_text_hash_chirho, line_text_chirho,
-       verdict_chirho, corrected_text_chirho, corrected_skeleton_chirho, notes_chirho,
+       verdict_chirho, corrected_text_chirho, corrected_skeleton_chirho, issue_flags_chirho, notes_chirho,
        witness_snapshot_chirho, queue_generated_at_chirho, reviewer_chirho,
        created_at_chirho, updated_at_chirho, supersedes_id_chirho, is_current_chirho,
        applied_at_chirho, applied_to_file_chirho, schema_version_chirho
   FROM pass_c_human_validations_chirho
- WHERE is_current_chirho = 1 AND verdict_chirho <> 'undo-chirho'
+ WHERE is_current_chirho = 1 AND verdict_chirho <> 'undo-chirho' AND schema_version_chirho >= 2
  ORDER BY updated_at_chirho DESC, id_chirho DESC`);
 
 const validationByIdStmtChirho = dbChirho.prepare(`
 SELECT id_chirho, volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
        original_text_chirho, original_text_hash_chirho, line_text_chirho,
-       verdict_chirho, corrected_text_chirho, corrected_skeleton_chirho, notes_chirho,
+       verdict_chirho, corrected_text_chirho, corrected_skeleton_chirho, issue_flags_chirho, notes_chirho,
        witness_snapshot_chirho, queue_generated_at_chirho, reviewer_chirho,
        created_at_chirho, updated_at_chirho, supersedes_id_chirho, is_current_chirho,
        applied_at_chirho, applied_to_file_chirho, schema_version_chirho
@@ -519,7 +548,7 @@ SELECT id_chirho FROM pass_c_human_validations_chirho
 const latestCurrentValidationStmtChirho = dbChirho.prepare(`
 SELECT id_chirho, volume_chirho, page_chirho, line_index_chirho, segment_index_chirho
   FROM pass_c_human_validations_chirho
- WHERE is_current_chirho = 1 AND verdict_chirho <> 'undo-chirho'
+ WHERE is_current_chirho = 1 AND verdict_chirho <> 'undo-chirho' AND schema_version_chirho >= 2
  ORDER BY updated_at_chirho DESC, id_chirho DESC
  LIMIT 1`);
 
@@ -572,10 +601,21 @@ function witnessSnapshotChirho(itemChirho: QueueItemChirho): string {
   });
 }
 
+function sanitizeIssueFlagsChirho(issueFlagsChirho: unknown): string[] {
+  if (!Array.isArray(issueFlagsChirho)) return [];
+  const cleanFlagsChirho: string[] = [];
+  for (const flagChirho of issueFlagsChirho) {
+    if (typeof flagChirho !== "string" || !ISSUE_FLAG_VALUES_CHIRHO.has(flagChirho)) continue;
+    if (!cleanFlagsChirho.includes(flagChirho)) cleanFlagsChirho.push(flagChirho);
+  }
+  return cleanFlagsChirho;
+}
+
 function saveDecisionChirho(
   itemChirho: QueueItemChirho,
   verdictChirho: string,
   correctedTextChirho: string | null,
+  issueFlagsChirho: string[],
   notesChirho: string | null,
   supersedesIdChirho: number | null
 ): HumanValidationRowChirho {
@@ -597,6 +637,7 @@ function saveDecisionChirho(
     verdictChirho,
     correctedTextChirho,
     correctedTextChirho ? hebrewSkeletonChirho(correctedTextChirho) : null,
+    JSON.stringify(issueFlagsChirho),
     notesChirho,
     witnessSnapshotChirho(itemChirho),
     queueGeneratedAtChirho,
@@ -627,7 +668,7 @@ function pageHtmlChirho(): string {
     .top-chirho { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid #d8d4c8; padding-bottom: 12px; }
     .title-chirho { font-size: 20px; font-weight: 700; }
     .summary-chirho { color: #59636f; font-size: 14px; }
-    .main-chirho { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 18px; padding-top: 18px; }
+    .main-chirho { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 18px; padding-top: 18px; }
     .line-panel-chirho { min-width: 0; }
     .image-label-chirho { color: #59636f; font-size: 13px; font-weight: 650; margin: 0 0 6px; }
     .target-image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: hidden; margin-bottom: 12px; }
@@ -654,13 +695,15 @@ function pageHtmlChirho(): string {
     .witness-chirho { border-left: 3px solid #8aa399; padding-left: 8px; }
     .warning-chirho { border-left: 4px solid #bd7a1b; background: #fff7e8; padding: 10px; font-size: 13px; color: #704000; }
     .tier-chirho { display: inline-block; padding: 2px 6px; border: 1px solid #b8bec7; background: #f5f7f8; font-size: 12px; }
-    .actions-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .issue-grid-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .issue-option-chirho { display: flex; gap: 7px; align-items: center; border: 1px solid #d6d9dd; padding: 8px; min-height: 38px; box-sizing: border-box; cursor: pointer; }
+    .issue-option-chirho input { margin: 0; }
+    .issue-option-chirho:has(input:checked) { border-color: #bd7a1b; background: #fff7e8; }
+    .actions-chirho { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
     .actions-chirho button { border: 1px solid #aab1b9; background: #fff; padding: 10px; cursor: pointer; min-height: 42px; }
     .actions-chirho button:hover { background: #edf1f4; }
-    .accept-chirho { color: #116149; border-color: #499b7f !important; }
-    .correct-chirho { color: #874900; border-color: #bd7a1b !important; }
-    .source-chirho { color: #923434; border-color: #c15c5c !important; }
-    .skip-chirho { color: #59636f; }
+    .continue-chirho { color: #116149; border-color: #499b7f !important; font-weight: 700; }
+    .undo-chirho { color: #59636f; }
     .status-chirho { min-height: 22px; color: #116149; font-size: 13px; }
     .done-chirho { padding: 42px 0; color: #59636f; font-size: 18px; }
     @media (max-width: 900px) {
@@ -683,6 +726,7 @@ function pageHtmlChirho(): string {
   </main>
   <script>
     const queueChirho = ${scriptJsonChirho(queueChirho)};
+    const issueFlagOptionsChirho = ${scriptJsonChirho(ISSUE_FLAG_OPTIONS_CHIRHO)};
     let validationsChirho = new Map();
     let indexChirho = 0;
 
@@ -802,13 +846,17 @@ function pageHtmlChirho(): string {
       leftChirho.appendChild(imageWrapChirho);
 
       const targetRowChirho = elChirho("div", { classChirho: "target-row-chirho" });
-      targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Pass C text" }));
-      targetRowChirho.appendChild(elChirho("div", { classChirho: "hebrew-chirho", textChirho: itemChirho.textChirho }));
+      targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Live span text" }));
+      targetRowChirho.appendChild(elChirho("div", { classChirho: "hebrew-chirho", textChirho: itemChirho.liveSpanTextChirho }));
+      if (itemChirho.hasLiveSpanTextDriftChirho) {
+        targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Report text" }));
+        targetRowChirho.appendChild(elChirho("div", { classChirho: "hebrew-chirho", textChirho: itemChirho.textChirho }));
+      }
       targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Line text" }));
       targetRowChirho.appendChild(elChirho("div", { classChirho: "line-text-chirho", textChirho: itemChirho.lineTextChirho }));
-      targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Correction" }));
+      targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Optional suggested text" }));
       const editChirho = elChirho("textarea", { classChirho: "edit-chirho", id: "edit-chirho" });
-      editChirho.value = itemChirho.textChirho;
+      editChirho.value = itemChirho.liveSpanTextChirho;
       targetRowChirho.appendChild(editChirho);
       targetRowChirho.appendChild(typewriterChirho());
       leftChirho.appendChild(targetRowChirho);
@@ -816,7 +864,7 @@ function pageHtmlChirho(): string {
       const sideChirho = elChirho("aside", { classChirho: "side-chirho" });
       sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "Machine witnesses validate consonants only. Vowels and niqqud are UNVERIFIED even when consonants agree." }));
       if (itemChirho.hasLiveSpanTextDriftChirho) {
-        sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "Live span text differs from this report. Use Needs source or Bad segmentation; do not accept blindly." }));
+        sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "Live span text differs from this report. Check the relevant issue box; clean review is blocked." }));
       }
       const metaChirho = elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
         elChirho("div", { textChirho: "Location" }),
@@ -844,6 +892,24 @@ function pageHtmlChirho(): string {
       witnessBoxChirho.appendChild(witnessListChirho);
       sideChirho.appendChild(witnessBoxChirho);
 
+      const issuesBoxChirho = elChirho("div", { classChirho: "box-chirho" });
+      issuesBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Issues" }));
+      const issueGridChirho = elChirho("div", { classChirho: "issue-grid-chirho" });
+      for (const optionChirho of issueFlagOptionsChirho) {
+        const inputChirho = elChirho("input", {
+          classChirho: "issue-checkbox-chirho",
+          id: "issue-" + optionChirho.valueChirho,
+          type: "checkbox",
+          value: optionChirho.valueChirho
+        });
+        issueGridChirho.appendChild(elChirho("label", { classChirho: "issue-option-chirho", for: "issue-" + optionChirho.valueChirho }, [
+          inputChirho,
+          elChirho("span", { textChirho: optionChirho.labelChirho })
+        ]));
+      }
+      issuesBoxChirho.appendChild(issueGridChirho);
+      sideChirho.appendChild(issuesBoxChirho);
+
       const notesBoxChirho = elChirho("div", { classChirho: "box-chirho" });
       notesBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Notes" }));
       const notesChirho = elChirho("textarea", { id: "notes-chirho", style: "width:100%;min-height:58px;box-sizing:border-box;" });
@@ -851,41 +917,36 @@ function pageHtmlChirho(): string {
       sideChirho.appendChild(notesBoxChirho);
 
       const actionsChirho = elChirho("div", { classChirho: "actions-chirho" });
-      const buttonDataChirho = [
-        ["accept-chirho", "Accept", "accept-chirho"],
-        ["correct-chirho", "Correct", "correct-chirho"],
-        ["source-chirho", "Needs source", "needs-source-chirho"],
-        ["source-chirho", "Bad segmentation", "bad-segmentation-chirho"],
-        ["skip-chirho", "Skip", "skip-chirho"],
-        ["skip-chirho", "Undo last", "undo-chirho"]
-      ];
-      for (const [classChirho, labelChirho, verdictChirho] of buttonDataChirho) {
-        const buttonChirho = elChirho("button", { classChirho, textChirho: labelChirho });
-        buttonChirho.addEventListener("click", () => verdictChirho === "undo-chirho" ? undoLastChirho() : submitChirho(verdictChirho));
-        actionsChirho.appendChild(buttonChirho);
-      }
+      const continueButtonChirho = elChirho("button", { classChirho: "continue-chirho", textChirho: "Continue" });
+      continueButtonChirho.addEventListener("click", () => submitReviewChirho());
+      actionsChirho.appendChild(continueButtonChirho);
+      const undoButtonChirho = elChirho("button", { classChirho: "undo-chirho", textChirho: "Undo last" });
+      undoButtonChirho.addEventListener("click", () => undoLastChirho());
+      actionsChirho.appendChild(undoButtonChirho);
       sideChirho.appendChild(actionsChirho);
 
       appChirho.appendChild(leftChirho);
       appChirho.appendChild(sideChirho);
     }
-    async function submitChirho(verdictChirho) {
+    async function submitReviewChirho() {
       const itemChirho = currentItemChirho();
       if (!itemChirho) return;
       const correctedTextChirho = document.getElementById("edit-chirho").value;
       const notesChirho = document.getElementById("notes-chirho").value;
+      const issueFlagsChirho = Array.from(document.querySelectorAll(".issue-checkbox-chirho:checked"))
+        .map((inputChirho) => inputChirho.value);
       const responseChirho = await fetch("/api-chirho/submit-chirho", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyChirho: itemChirho.keyChirho, verdictChirho, correctedTextChirho, notesChirho })
+        body: JSON.stringify({ keyChirho: itemChirho.keyChirho, issueFlagsChirho, correctedTextChirho, notesChirho })
       });
       const dataChirho = await responseChirho.json();
       if (!dataChirho.okChirho) {
-        setStatusChirho("Save failed");
+        setStatusChirho(dataChirho.errorChirho || "Save failed");
         return;
       }
       validationsChirho.set(itemChirho.keyChirho, dataChirho.rowChirho);
-      setStatusChirho("Saved " + verdictChirho);
+      setStatusChirho("Saved " + dataChirho.rowChirho.verdict_chirho);
       if (indexChirho >= activeQueueChirho().length) indexChirho = Math.max(0, activeQueueChirho().length - 1);
       renderChirho();
     }
@@ -903,11 +964,7 @@ function pageHtmlChirho(): string {
     document.addEventListener("keydown", (eventChirho) => {
       if (eventChirho.target && ["TEXTAREA", "INPUT"].includes(eventChirho.target.tagName)) return;
       const keyChirho = eventChirho.key.toLowerCase();
-      if (keyChirho === "a") submitChirho("accept-chirho");
-      if (keyChirho === "c") submitChirho("correct-chirho");
-      if (keyChirho === "n") submitChirho("needs-source-chirho");
-      if (keyChirho === "b") submitChirho("bad-segmentation-chirho");
-      if (keyChirho === "s") submitChirho("skip-chirho");
+      if (keyChirho === "enter") submitReviewChirho();
       if (keyChirho === "u") undoLastChirho();
       if (keyChirho === "arrowright") { indexChirho = Math.min(activeQueueChirho().length - 1, indexChirho + 1); renderChirho(); }
       if (keyChirho === "arrowleft") { indexChirho = Math.max(0, indexChirho - 1); renderChirho(); }
@@ -978,18 +1035,31 @@ Bun.serve({
     if (urlChirho.pathname === "/api-chirho/submit-chirho" && reqChirho.method === "POST") {
       const bodyChirho = (await reqChirho.json()) as {
         keyChirho: string;
-        verdictChirho: string;
+        issueFlagsChirho?: unknown;
         correctedTextChirho: string;
         notesChirho: string;
       };
       const itemChirho = queueByKeyChirho.get(bodyChirho.keyChirho);
       if (!itemChirho) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown key" }, 404);
-      const correctedTextChirho = bodyChirho.verdictChirho === "correct-chirho"
-        ? bodyChirho.correctedTextChirho
-        : null;
-      if (bodyChirho.verdictChirho === "correct-chirho" && !correctedTextChirho?.trim()) {
-        return jsonResponseChirho({ okChirho: false, errorChirho: "corrected text is required" }, 400);
+      const issueFlagsChirho = sanitizeIssueFlagsChirho(bodyChirho.issueFlagsChirho);
+      const editedTextChirho = bodyChirho.correctedTextChirho ?? itemChirho.liveSpanTextChirho;
+      const hasEditedTextChirho = editedTextChirho !== itemChirho.liveSpanTextChirho;
+      if (itemChirho.hasLiveSpanTextDriftChirho && issueFlagsChirho.length === 0) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: "Live span text drifted; check at least one issue box",
+        }, 400);
       }
+      if (hasEditedTextChirho && issueFlagsChirho.length === 0) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: "Text changed; check at least one issue box",
+        }, 400);
+      }
+      const verdictChirho = issueFlagsChirho.length === 0 && !hasEditedTextChirho
+        ? "reviewed-clean-chirho"
+        : "reviewed-issues-chirho";
+      const correctedTextChirho = hasEditedTextChirho ? editedTextChirho : null;
       const currentChirho = currentValidationStmtChirho.get(
         itemChirho.volumeChirho,
         itemChirho.pageChirho,
@@ -998,8 +1068,9 @@ Bun.serve({
       ) as { id_chirho: number } | undefined;
       const rowChirho = saveDecisionChirho(
         itemChirho,
-        bodyChirho.verdictChirho,
+        verdictChirho,
         correctedTextChirho,
+        issueFlagsChirho,
         bodyChirho.notesChirho,
         currentChirho?.id_chirho ?? null
       );
@@ -1008,8 +1079,8 @@ Bun.serve({
         MODULE_CHIRHO,
         nowChirho,
         nowChirho,
-        `Human validation ${bodyChirho.verdictChirho} for ${itemChirho.keyChirho}`,
-        `stored pass_c_human_validations_chirho row for original=${JSON.stringify(itemChirho.textChirho)}`,
+        `Human validation ${verdictChirho} for ${itemChirho.keyChirho}`,
+        `stored pass_c_human_validations_chirho row with issue_flags=${JSON.stringify(issueFlagsChirho)}`,
         "human review decision captured for Pass C Hebrew transcription validation"
       );
       return jsonResponseChirho({ okChirho: true, rowChirho });
@@ -1037,6 +1108,7 @@ Bun.serve({
         itemChirho,
         "undo-chirho",
         null,
+        [],
         "undo latest validation",
         latestChirho.id_chirho
       );

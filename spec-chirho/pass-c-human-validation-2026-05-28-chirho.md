@@ -25,18 +25,34 @@ The queue contains all 126 Pass-C Hebrew spans from `pass-c-hebrew-validation-ch
 
 The UI warning is intentional: machine witnesses validate consonantal skeletons only. Vowels and niqqud are unverified even when consonants agree.
 
-## Verdicts
+## Human Review
 
-- `accept-chirho`: visible source matches the full vocalized Pass-C text.
-- `correct-chirho`: store the full corrected vocalized UTF-8 text from the source.
-- `needs-source-chirho`: crop is not sufficient; defer to the PDF/page source.
-- `bad-segmentation-chirho`: span/crop does not isolate the intended source text.
-- `skip-chirho`: leave for later.
-- `undo-chirho`: append-only undo of the latest current verdict.
+Use `Continue` for every span.
+
+- no issue boxes checked: stores `reviewed-clean-chirho`; the visible source matches the Pass-C text closely enough for the current review pass.
+- one or more issue boxes checked: stores `reviewed-issues-chirho` plus `issue_flags_chirho`.
+- `undo-chirho`: append-only undo of the latest schema-v2 review row.
+
+Current issue flags:
+
+- `letters-chirho`
+- `vowels-chirho`
+- `accents-chirho`
+- `hebrew-punctuation-chirho`
+- `latin-punctuation-chirho`
+- `missing-hebrew-chirho`
+- `extra-latin-chirho`
+- `wrong-language-chirho`
+- `segmentation-chirho`
 
 The correction box includes a Hebrew typewriter for meteg, maqaf, common niqqud,
 dagesh, and shin/sin dots. Buttons insert at the correction cursor or replace
-the selected text.
+the selected text. Corrected text is optional in this pass; the primary signal is
+clean review vs checked issue flags.
+
+The review surface displays and pre-fills the live span-file text, not a stale
+report copy. If the report text ever drifts from the live span text, clean review
+is blocked until an issue box is checked.
 
 ## Storage
 
@@ -54,10 +70,27 @@ Each decision stores:
 - original live span-file text
 - `original_text_hash_chirho` SHA-256 staleness guard over the live span-file text
 - full line text
-- full corrected vocalized text when corrected
-- corrected consonantal skeleton
+- optional corrected vocalized text when supplied
+- optional corrected consonantal skeleton
+- issue flags as JSON
 - witness snapshot
 - queue generation timestamp
 - supersession fields for append-only undo/writeback
 
 Writeback must refuse blind re-apply when the current span text hash differs from `original_text_hash_chirho`.
+
+Dry-run writeback:
+
+```bash
+bun run apply-pass-c-human-validations-chirho
+```
+
+Live writeback, only after review:
+
+```bash
+bun run apply-pass-c-human-validations-chirho --apply
+```
+
+Writeback stamps `reviewed-clean-chirho` spans as `provenanceChirho=human-chirho`.
+Issue-marked spans keep their original text/provenance and receive review flags
+for downstream training and export warnings.

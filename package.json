@@ -11,6 +11,7 @@
     "crop-chirho": "bun run src-chirho/crop-snippets-chirho.ts",
     "ocr-chirho": "bun run src-chirho/ocr-snippets-chirho.ts",
     "export-markdown-chirho": "bun run src-chirho/export-markdown-chirho.ts",
+    "apply-pass-c-human-validations-chirho": "bun run src-chirho/apply-pass-c-human-validations-chirho.ts",
     "pass-c-human-validate-chirho": "bun run src-chirho/pass-c-human-validate-server-chirho.ts",
     "validate-pass-c-hebrew-chirho": "bun run src-chirho/validate-pass-c-hebrew-chirho.ts",
     "upload-chirho": "bun run src-chirho/upload-chirho.ts"

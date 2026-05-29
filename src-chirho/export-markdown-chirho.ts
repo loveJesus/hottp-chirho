@@ -116,6 +116,12 @@ type ProvenanceChirho =
   | "unknown-chirho"
   | "none-chirho";
 
+const EXPLICIT_PROVENANCE_VALUES_CHIRHO = new Set<string>([
+  "canonical-chirho",
+  "human-chirho",
+  "vision-chirho",
+]);
+
 interface CliOptionsChirho {
   allChirho: boolean;
   volumeChirho?: number;
@@ -138,6 +144,15 @@ interface SpanChirho {
   widthPxChirho: number;
   scriptChirho: string;
   utf8TextChirho: string;
+  provenanceChirho?: string;
+  humanValidationIdChirho?: number;
+  humanValidationVerdictChirho?: string;
+  humanValidatedAtChirho?: string;
+  needsSourceChirho?: boolean;
+  badSegmentationChirho?: boolean;
+  humanReviewStatusChirho?: string;
+  humanIssueFlagsChirho?: string[];
+  humanSuggestedTextChirho?: string;
 }
 
 interface SpanLineChirho {
@@ -591,6 +606,12 @@ function provenanceForSpanChirho(
   spanChirho: SpanChirho,
   d1AuditChirho?: D1AuditChirho
 ): ProvenanceChirho {
+  if (
+    spanChirho.provenanceChirho !== undefined &&
+    EXPLICIT_PROVENANCE_VALUES_CHIRHO.has(spanChirho.provenanceChirho)
+  ) {
+    return spanChirho.provenanceChirho as ProvenanceChirho;
+  }
   if (spanChirho.scriptChirho === "unknown-chirho") return "unknown-chirho";
   if (
     spanChirho.scriptChirho === "french-chirho" ||
@@ -862,6 +883,37 @@ function validateLineChirho(
         "warning-chirho",
         "blank-span-text-chirho",
         "Span has no visible UTF-8 text; Markdown includes an EMPTY-SPAN marker",
+        lineChirho.lineIndexChirho,
+        spanChirho.segmentIndexChirho
+      );
+    }
+
+    if (spanChirho.needsSourceChirho) {
+      addIssueChirho(
+        issuesChirho,
+        "warning-chirho",
+        "needs-source-chirho",
+        `Human reviewer marked span as needing source review: ${JSON.stringify(spanChirho.utf8TextChirho)}`,
+        lineChirho.lineIndexChirho,
+        spanChirho.segmentIndexChirho
+      );
+    }
+    if (spanChirho.badSegmentationChirho) {
+      addIssueChirho(
+        issuesChirho,
+        "warning-chirho",
+        "bad-segmentation-chirho",
+        `Human reviewer marked span as bad segmentation: ${JSON.stringify(spanChirho.utf8TextChirho)}`,
+        lineChirho.lineIndexChirho,
+        spanChirho.segmentIndexChirho
+      );
+    }
+    if (Array.isArray(spanChirho.humanIssueFlagsChirho) && spanChirho.humanIssueFlagsChirho.length > 0) {
+      addIssueChirho(
+        issuesChirho,
+        "warning-chirho",
+        "human-review-issues-chirho",
+        `Human reviewer flagged ${spanChirho.humanIssueFlagsChirho.join(", ")}: ${JSON.stringify(spanChirho.utf8TextChirho)}`,
         lineChirho.lineIndexChirho,
         spanChirho.segmentIndexChirho
       );
