@@ -12,7 +12,8 @@
  *
  * For each line:
  *   1. Compute every word's scriptChirho:
- *        FRENCH-AUTO words → "french-chirho"
+ *        FRENCH-AUTO words → "french-chirho" unless auto-accept reason maps
+ *                             to an existing non-French script value
  *        CANDIDATE words   → agent verdict's scriptChirho
  *   2. Walk words left-to-right; group consecutive same-script words into spans.
  *   3. Tile [0, lineWidth] with no gaps/overlaps:
@@ -107,6 +108,7 @@ interface ContextWordChirho {
   xLocChirho: number;
   widthChirho: number;
   markerChirho: "FRENCH-AUTO" | "CANDIDATE";
+  autoAcceptReasonChirho?: string;
 }
 
 interface ContextLineChirho {
@@ -157,6 +159,13 @@ interface OutLineChirho {
   spansChirho: OutSpanChirho[];
 }
 
+function scriptForAutoAcceptedWordChirho(wordChirho: ContextWordChirho): string {
+  if (wordChirho.autoAcceptReasonChirho === "latin-hunspell-chirho") {
+    return "latin-non-french-chirho";
+  }
+  return "french-chirho";
+}
+
 function candidateWordIndexChirho(verdictChirho: CandidateVerdictChirho): number | null {
   return verdictChirho.wordIndexChirho ?? verdictChirho.candidateIndexChirho ?? null;
 }
@@ -192,7 +201,9 @@ function assembleLineSpansChirho(
 
   // Per-word effective script
   const wordScriptsChirho: string[] = wordsChirho.map((wChirho) => {
-    if (wChirho.markerChirho === "FRENCH-AUTO") return "french-chirho";
+    if (wChirho.markerChirho === "FRENCH-AUTO") {
+      return scriptForAutoAcceptedWordChirho(wChirho);
+    }
     const verdictChirho = verdictsByWordChirho.get(wChirho.wordIndexChirho);
     return verdictChirho?.scriptChirho ?? "unknown-chirho";
   });

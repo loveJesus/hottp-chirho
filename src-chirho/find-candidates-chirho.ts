@@ -91,6 +91,7 @@ if (import.meta.main) {
     "citation-chirho": 0,
     "hyphenation-chirho": 0,
     "known-words-chirho": 0,
+    "latin-hunspell-chirho": 0,
     "candidate-chirho": 0,
   };
   const candidatesByLineChirho = new Map<number, typeof classificationsChirho>();
@@ -133,6 +134,7 @@ if (import.meta.main) {
   console.log(`  Citation/sigla regex:  ${reasonCountsChirho["citation-chirho"]}`);
   console.log(`  Hyphenation pairs:     ${reasonCountsChirho["hyphenation-chirho"]}`);
   console.log(`  known_words_chirho:    ${reasonCountsChirho["known-words-chirho"]}`);
+  console.log(`  Broader Latin:        ${reasonCountsChirho["latin-hunspell-chirho"]}`);
   console.log(`  CANDIDATES (agent):    ${reasonCountsChirho["candidate-chirho"]}`);
   const acceptedChirho =
     classificationsChirho.length - reasonCountsChirho["candidate-chirho"];

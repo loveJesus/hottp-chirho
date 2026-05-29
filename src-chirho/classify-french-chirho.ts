@@ -10,10 +10,13 @@
  *   1. Hunspell French dict (handles conjugations + accented forms via affix file)
  *   2. Citation/sigla regex (biblical book abbrevs, all-caps acronyms,
  *      letter+digit refs like J2/BH3, Qumran-style 4Q-h, chapter:verse like 8,12)
- *   3. Hyphenation pair detection — a word ending "-" plus the first word of
+ *   3. Broader Latin Hunspell pass — for digital-PDF Latin font hints only,
+ *      auto-accept obvious English/German scholarly prose as latin-non-french
+ *      downstream.
+ *   4. Hyphenation pair detection — a word ending "-" plus the first word of
  *      the next line concatenate into a real French word (e.g. "permuta-" +
  *      "tion" = permutation)
- *   4. known_words_chirho — dynamic dict the agent / human appends to during
+ *   5. known_words_chirho — dynamic dict the agent / human appends to during
  *      review; entries are global (volume_number_chirho = 0) or per-volume.
  *
  * Designed to run once per page: takes ALL words from ALL lines as input,
@@ -51,6 +54,7 @@ export type ClassifyReasonChirho =
   | "citation-chirho"
   | "hyphenation-chirho"
   | "known-words-chirho"
+  | "latin-hunspell-chirho"
   | "candidate-chirho";
 
 /** Per-word classification result. */
@@ -134,7 +138,11 @@ function sanitizeForHunspellChirho(textChirho: string): string {
  * Spawn hunspell once with `-l` (list-only-misses), pipe ALL words on the page,
  * return the set of strings that hunspell DID NOT recognize.
  */
-async function hunspellMissesChirho(
+const FRENCH_HUNSPELL_LANG_CHIRHO = "fr";
+const BROADER_LATIN_HUNSPELL_LANG_CHIRHO = "en_US,en_GB,de_DE";
+
+async function hunspellMissesForDictionaryChirho(
+  dictionaryChirho: string,
   wordsChirho: string[]
 ): Promise<Set<string>> {
   const uniqueChirho = [...new Set(wordsChirho.filter((wChirho) => wChirho.length > 0))];
@@ -143,7 +151,7 @@ async function hunspellMissesChirho(
   return new Promise((resolveChirho, rejectChirho) => {
     const procChirho = spawn(
       "hunspell",
-      ["-d", "fr", "-i", "UTF-8", "-l"],
+      ["-d", dictionaryChirho, "-i", "UTF-8", "-l"],
       { stdio: ["pipe", "pipe", "pipe"] }
     );
     let outChirho = "";
@@ -157,7 +165,11 @@ async function hunspellMissesChirho(
     procChirho.on("error", rejectChirho);
     procChirho.on("close", (codeChirho) => {
       if (codeChirho !== 0) {
-        rejectChirho(new Error(`hunspell ${codeChirho}: ${errChirho}`));
+        rejectChirho(
+          new Error(
+            `hunspell ${codeChirho} for dictionary ${dictionaryChirho}: ${errChirho}`
+          )
+        );
         return;
       }
       resolveChirho(
@@ -248,7 +260,14 @@ export async function classifyPageChirho(
     wordsForHunspellChirho.push(stemChirho + nxtChirho.wordsChirho[0]!.textChirho);
   }
 
-  const missSetChirho = await hunspellMissesChirho(wordsForHunspellChirho);
+  const missSetChirho = await hunspellMissesForDictionaryChirho(
+    FRENCH_HUNSPELL_LANG_CHIRHO,
+    wordsForHunspellChirho
+  );
+  const broaderLatinMissSetChirho = await hunspellMissesForDictionaryChirho(
+    BROADER_LATIN_HUNSPELL_LANG_CHIRHO,
+    [...missSetChirho]
+  );
   const hunspellAcceptedChirho = (sChirho: string) =>
     !missSetChirho.has(sanitizeForHunspellChirho(sChirho));
 
@@ -285,6 +304,11 @@ export async function classifyPageChirho(
         reasonChirho = "candidate-chirho";
       } else if (!missSetChirho.has(sanitizedChirho)) {
         reasonChirho = "hunspell-chirho";
+      } else if (
+        wChirho.scriptHintChirho === "latin-chirho" &&
+        !broaderLatinMissSetChirho.has(sanitizedChirho)
+      ) {
+        reasonChirho = "latin-hunspell-chirho";
       } else if (hyphenationSetChirho.has(`${lineChirho.lineIndexChirho}:${wiChirho}`)) {
         reasonChirho = "hyphenation-chirho";
       } else if (knownWordsSetChirho.has(wChirho.textChirho)) {
