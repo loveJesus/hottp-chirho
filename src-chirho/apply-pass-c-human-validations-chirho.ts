@@ -235,8 +235,8 @@ function applyRowChirho(
   const issueFlagsChirho = parseIssueFlagsChirho(rowChirho.issue_flags_chirho);
   const scriptVerdictChirho = parseScriptVerdictChirho(rowChirho.script_verdict_chirho);
   if (rowChirho.verdict_chirho === "reviewed-clean-chirho") {
-    const effectiveScriptChirho = scriptVerdictChirho ?? spanChirho.scriptChirho;
-    const stampsHumanProvenanceChirho = shouldStampHumanProvenanceChirho(effectiveScriptChirho);
+    const stampsHumanProvenanceChirho =
+      scriptVerdictChirho === null || shouldStampHumanProvenanceChirho(scriptVerdictChirho);
     if (applyChirho) {
       if (scriptVerdictChirho) spanChirho.scriptChirho = scriptVerdictChirho;
       if (stampsHumanProvenanceChirho) {
