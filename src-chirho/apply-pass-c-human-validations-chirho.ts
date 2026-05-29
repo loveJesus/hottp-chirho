@@ -16,6 +16,20 @@ import { PROGRESS_DB_PATH_CHIRHO, PROJECT_ROOT_CHIRHO } from "./config-chirho.ts
 
 const MODULE_CHIRHO = "apply-pass-c-human-validations-chirho";
 const SPANS_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
+const SCRIPT_VERDICT_VALUES_CHIRHO = new Set([
+  "latin-non-french-chirho",
+  "french-chirho",
+  "hebrew-chirho",
+  "greek-chirho",
+  "syriac-chirho",
+  "symbol-chirho",
+]);
+const HUMAN_PROVENANCE_SCRIPT_VALUES_CHIRHO = new Set([
+  "latin-non-french-chirho",
+  "french-chirho",
+  "latin-chirho",
+  "symbol-chirho",
+]);
 
 interface HumanValidationRowChirho {
   id_chirho: number;
@@ -27,6 +41,7 @@ interface HumanValidationRowChirho {
   original_text_hash_chirho: string;
   verdict_chirho: string;
   corrected_text_chirho: string | null;
+  script_verdict_chirho: string | null;
   issue_flags_chirho: string | null;
   notes_chirho: string | null;
   applied_at_chirho: string | null;
@@ -87,6 +102,15 @@ function parseIssueFlagsChirho(issueFlagsChirho: string | null): string[] {
   }
 }
 
+function parseScriptVerdictChirho(scriptVerdictChirho: string | null): string | null {
+  if (!scriptVerdictChirho) return null;
+  return SCRIPT_VERDICT_VALUES_CHIRHO.has(scriptVerdictChirho) ? scriptVerdictChirho : null;
+}
+
+function shouldStampHumanProvenanceChirho(scriptChirho: string): boolean {
+  return HUMAN_PROVENANCE_SCRIPT_VALUES_CHIRHO.has(scriptChirho);
+}
+
 function spanKeyChirho(rowChirho: Pick<HumanValidationRowChirho, "volume_chirho" | "page_chirho" | "line_index_chirho" | "segment_index_chirho">): string {
   return [
     rowChirho.volume_chirho,
@@ -121,7 +145,8 @@ function tableColumnsChirho(dbChirho: Database, tableNameChirho: string): string
 
 function rowQueryChirho(
   argsChirho: string[],
-  hasIssueFlagsColumnChirho: boolean
+  hasIssueFlagsColumnChirho: boolean,
+  hasScriptVerdictColumnChirho: boolean
 ): { sqlChirho: string; paramsChirho: Array<string | number> } {
   const clausesChirho = [
     "is_current_chirho = 1",
@@ -149,6 +174,7 @@ function rowQueryChirho(
       SELECT id_chirho, volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
              original_text_chirho, original_text_hash_chirho, verdict_chirho,
              corrected_text_chirho,
+             ${hasScriptVerdictColumnChirho ? "script_verdict_chirho" : "NULL AS script_verdict_chirho"},
              ${hasIssueFlagsColumnChirho ? "issue_flags_chirho" : "NULL AS issue_flags_chirho"},
              notes_chirho, applied_at_chirho
         FROM pass_c_human_validations_chirho
@@ -207,24 +233,37 @@ function applyRowChirho(
 
   const messagePartsChirho: string[] = [];
   const issueFlagsChirho = parseIssueFlagsChirho(rowChirho.issue_flags_chirho);
+  const scriptVerdictChirho = parseScriptVerdictChirho(rowChirho.script_verdict_chirho);
   if (rowChirho.verdict_chirho === "reviewed-clean-chirho") {
+    const effectiveScriptChirho = scriptVerdictChirho ?? spanChirho.scriptChirho;
+    const stampsHumanProvenanceChirho = shouldStampHumanProvenanceChirho(effectiveScriptChirho);
     if (applyChirho) {
-      spanChirho.provenanceChirho = "human-chirho";
+      if (scriptVerdictChirho) spanChirho.scriptChirho = scriptVerdictChirho;
+      if (stampsHumanProvenanceChirho) {
+        spanChirho.provenanceChirho = "human-chirho";
+      } else {
+        delete spanChirho.provenanceChirho;
+      }
       spanChirho.humanReviewStatusChirho = rowChirho.verdict_chirho;
       spanChirho.humanIssueFlagsChirho = [];
       spanChirho.needsSourceChirho = false;
       spanChirho.badSegmentationChirho = false;
     }
-    messagePartsChirho.push("reviewed clean; stamp provenanceChirho=human-chirho");
+    messagePartsChirho.push(
+      `reviewed clean; ${stampsHumanProvenanceChirho ? "stamp provenanceChirho=human-chirho" : "leave provenance derived for script-specific validation"}${scriptVerdictChirho ? `; set scriptChirho=${scriptVerdictChirho}` : ""}`
+    );
   } else if (rowChirho.verdict_chirho === "reviewed-issues-chirho") {
     if (applyChirho) {
+      if (scriptVerdictChirho) spanChirho.scriptChirho = scriptVerdictChirho;
       spanChirho.humanReviewStatusChirho = rowChirho.verdict_chirho;
       spanChirho.humanIssueFlagsChirho = issueFlagsChirho;
       if (rowChirho.corrected_text_chirho?.trim()) spanChirho.humanSuggestedTextChirho = rowChirho.corrected_text_chirho;
       if (issueFlagsChirho.includes("segmentation-chirho")) spanChirho.badSegmentationChirho = true;
       if (issueFlagsChirho.includes("missing-hebrew-chirho")) spanChirho.needsSourceChirho = true;
     }
-    messagePartsChirho.push(`reviewed with issue flags=${JSON.stringify(issueFlagsChirho)}`);
+    messagePartsChirho.push(
+      `reviewed with issue flags=${JSON.stringify(issueFlagsChirho)}${scriptVerdictChirho ? `; set scriptChirho=${scriptVerdictChirho}` : ""}`
+    );
   }
 
   if (applyChirho) {
@@ -253,7 +292,11 @@ function mainChirho(): void {
   const spansDirChirho = parseArgValueChirho(argsChirho, "spans-dir") ?? SPANS_DIR_CHIRHO;
   const dbChirho = new Database(dbPathChirho);
   const columnsChirho = new Set(tableColumnsChirho(dbChirho, "pass_c_human_validations_chirho"));
-  const queryChirho = rowQueryChirho(argsChirho, columnsChirho.has("issue_flags_chirho"));
+  const queryChirho = rowQueryChirho(
+    argsChirho,
+    columnsChirho.has("issue_flags_chirho"),
+    columnsChirho.has("script_verdict_chirho")
+  );
   const rowsChirho = dbChirho.query(queryChirho.sqlChirho).all(...queryChirho.paramsChirho) as HumanValidationRowChirho[];
   const updateAppliedStmtChirho = dbChirho.prepare(`
     UPDATE pass_c_human_validations_chirho
