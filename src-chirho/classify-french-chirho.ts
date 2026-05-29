@@ -11,8 +11,9 @@
  *   2. Citation/sigla regex (biblical book abbrevs, all-caps acronyms,
  *      letter+digit refs like J2/BH3, Qumran-style 4Q-h, chapter:verse like 8,12)
  *   3. Broader Latin Hunspell pass — for digital-PDF Latin font hints only,
- *      auto-accept obvious English/German scholarly prose as latin-non-french
- *      downstream.
+ *      auto-accept obvious English/German/Latin scholarly prose as
+ *      latin-non-french downstream. Latin proper is min-length guarded because
+ *      short forms collide with mis-OCR'd non-Latin fragments.
  *   4. Hyphenation pair detection — a word ending "-" plus the first word of
  *      the next line concatenate into a real French word (e.g. "permuta-" +
  *      "tion" = permutation)
@@ -140,6 +141,8 @@ function sanitizeForHunspellChirho(textChirho: string): string {
  */
 const FRENCH_HUNSPELL_LANG_CHIRHO = "fr";
 const BROADER_LATIN_HUNSPELL_LANG_CHIRHO = "en_US,en_GB,de_DE";
+const LATIN_LANGUAGE_HUNSPELL_LANG_CHIRHO = "la";
+const LATIN_LANGUAGE_MIN_LENGTH_CHIRHO = 4;
 
 async function hunspellMissesForDictionaryChirho(
   dictionaryChirho: string,
@@ -268,6 +271,10 @@ export async function classifyPageChirho(
     BROADER_LATIN_HUNSPELL_LANG_CHIRHO,
     [...missSetChirho]
   );
+  const latinLanguageMissSetChirho = await hunspellMissesForDictionaryChirho(
+    LATIN_LANGUAGE_HUNSPELL_LANG_CHIRHO,
+    [...missSetChirho]
+  );
   const hunspellAcceptedChirho = (sChirho: string) =>
     !missSetChirho.has(sanitizeForHunspellChirho(sChirho));
 
@@ -306,7 +313,9 @@ export async function classifyPageChirho(
         reasonChirho = "hunspell-chirho";
       } else if (
         wChirho.scriptHintChirho === "latin-chirho" &&
-        !broaderLatinMissSetChirho.has(sanitizedChirho)
+        (!broaderLatinMissSetChirho.has(sanitizedChirho) ||
+          (sanitizedChirho.length >= LATIN_LANGUAGE_MIN_LENGTH_CHIRHO &&
+            !latinLanguageMissSetChirho.has(sanitizedChirho)))
       ) {
         reasonChirho = "latin-hunspell-chirho";
       } else if (hyphenationSetChirho.has(`${lineChirho.lineIndexChirho}:${wiChirho}`)) {
