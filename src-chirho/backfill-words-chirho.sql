@@ -29,9 +29,15 @@ SELECT
   CAST(json_extract(je.value, '$.xMaxChirho') AS REAL) AS x_max_chirho,
   CAST(json_extract(je.value, '$.yMaxChirho') AS REAL) AS y_max_chirho,
   json_extract(je.value, '$.textChirho')              AS original_ocr_text_chirho,
-  'latin-chirho'                                       AS original_ocr_script_chirho,
+  COALESCE(
+    json_extract(je.value, '$.scriptHintChirho'),
+    'latin-chirho'
+  )                                                    AS original_ocr_script_chirho,
   json_extract(je.value, '$.textChirho')              AS current_text_chirho,
-  'latin-chirho'                                       AS current_script_chirho,
+  COALESCE(
+    json_extract(je.value, '$.scriptHintChirho'),
+    'latin-chirho'
+  )                                                    AS current_script_chirho,
   'ocr-chirho'                                         AS current_source_chirho,
   0                                                    AS is_human_confirmed_chirho,
   0                                                    AS pending_script_flag_chirho,
