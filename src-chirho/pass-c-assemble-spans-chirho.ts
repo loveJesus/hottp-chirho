@@ -467,7 +467,7 @@ if (import.meta.main) {
     console.log(
       `\nPass C v2 assemble — vol ${volChirho} p${pageChirho}\n` +
         `  Lines written: ${writtenChirho} / ${contextChirho.linesChirho.length}\n` +
-        `  Missing verdict files (still classified all-french): ${missingVerdictsChirho}\n` +
+        `  Lines with missing candidate verdict files (candidates become unknown): ${missingVerdictsChirho}\n` +
         `  known_words_chirho inserted: ${knownInsertedChirho}, already-present: ${knownExistedChirho}\n` +
         `  Output dir: ${spansDirChirho}`
     );
