@@ -16,6 +16,7 @@
     "pass-c-suspect-validate-chirho": "bun run src-chirho/pass-c-human-validate-server-chirho.ts --queue=suspect-text-chirho",
     "pass-c-unknown-validate-chirho": "bun run src-chirho/pass-c-human-validate-server-chirho.ts --queue=unknown-script-chirho",
     "validate-pass-c-hebrew-chirho": "bun run src-chirho/validate-pass-c-hebrew-chirho.ts",
+    "vision-transcribe-unknown-chirho": "bun run src-chirho/vision-transcribe-unknown-chirho.ts",
     "upload-chirho": "bun run src-chirho/upload-chirho.ts"
   },
   "devDependencies": {
