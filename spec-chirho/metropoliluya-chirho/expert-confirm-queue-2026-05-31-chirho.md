@@ -39,6 +39,11 @@ These are not additional strict-export blockers, but they should be called out d
 | Priority | Span | Current status | Text now stored | Question |
 |---|---|---|---|---|
 | Medium | vol 5 p64 L18 S3 | `hebrew-chirho`, `vision-chirho` | `תוּשִׁיּה` | Confirm the vocalization. Claude's note had `תּוּשִׁיָּה`, while Codex could not independently see the qamats under the yod and intentionally did not upgrade the stored vowels. |
+| Medium | vol 4 p148 L6-L7 | `hebrew-chirho`, `vision-chirho` | `מְטוּל דִּבְמֵימְרָךְ / אַסְגֵּי מַשִּׁירְיָין / וּבְמֵימַר אֱלָהִי אֶכְבּוֹשׁ כְּרַכִּין תַּקִּיפִין` | Targum Aramaic recovered from French-looking OCR garbage. Claude/Codex agree on the consonants; exact pointing, shin dots, dagesh, and final-kaf sheva remain vision-tier. |
+| Medium | vol 4 p148 L14 | `hebrew-chirho`, `vision-chirho` | `אֲרֵי בְמֵימְרָךְ אַסְגִּי מַשְׁרִין / וּבְמֵימַר אֱלָהִי אֲכַבֵּשׁ כָּל כַרְכִין תַקִּיפִין` | Targum Aramaic recovered from a clipped/garbled line. The consonants were second-witnessed, but a Targum reader should confirm vowels and the lower continuation against the full page print. |
+| Medium | vol 4 p151 L1-L2 | `hebrew-chirho`, `vision-chirho` | `אֱלָהָא דְּסָעִיד לִי בְּחֵילָא / וּמְתַקַן שְׁלִים אוֹרְחִי.` | Claude caught the yod in `דסעיד`; confirm that yod and exact vocalization, especially `בְּחֵילָא` and `וּמְתַקַן`, against the print. |
+| Medium | vol 4 p152 L4-L5 | `hebrew-chirho`, `vision-chirho` | `מְשַׁוֶּה רַגְלַי כָּאַיָּלוֹת / וְעַל בָּמֹתַי יַעֲמִידֵנִי.`; note quotes `בָּמֹתַי` | Confirm the Ps 18,34 matres distinction: defective-vav `בָּמֹתַי` and plene-yod `יַעֲמִידֵנִי`; Claude second-witnessed the clipped continuation row before commit. |
+| Medium | vol 4 p152 L19-L20 | `hebrew-chirho`, `vision-chirho` | `מְשַׁוֶּה רַגְלַי כָּאַיָּלוֹת / וְעַל בָּמוֹתַי יַעֲמִדֵנִי.` | Confirm the 2 S 22,34 matres distinction: plene-vav `בָּמוֹתַי` and defective-yod `יַעֲמִדֵנִי`; do not silently normalize it to the Ps form. |
 | Medium | vol 5 p65 L2 S5 | `hebrew-chirho`, `vision-chirho` | `מס` | Short Hebrew fragment at the end of the line; include in the WLC/human spot-check because it was flagged as medium-confidence. |
 
 ## Resolved Non-Expert Strict Residue
