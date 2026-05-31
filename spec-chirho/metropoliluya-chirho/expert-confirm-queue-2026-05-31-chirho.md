@@ -5,6 +5,8 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 This is the honest residue after the vol-5 vision pass and Codex/Claude cross-audit. The listed spans are intentionally not promoted above `vision-chirho`; they need a Syriac or Arabic/Hebrew-aware human reviewer before being treated as final text.
 
+This queue is not a replacement for the broader WLC/human confirmation pass over the full vision set. The durable source for that larger scope is `spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json`.
+
 ## Current Export Gate
 
 - `bun run src-chirho/export-markdown-chirho.ts --all --strict`
@@ -23,11 +25,21 @@ This is the honest residue after the vol-5 vision pass and Codex/Claude cross-au
 | Medium | vol 5 p66 L19 S5 | `syriac-chirho`, `vision-chirho` | `ܘܳܐܦ ܐܰܢܬܽܘܢ ܗܘܰܝܬܽܘܢ ܥܠܰܝ` | Script/context agree with Job 6:21 Peshitta; exact letters/vowels need Syriac-reader confirmation. |
 | Medium | vol 5 p66 L20 S2 | `syriac-chirho`, `vision-chirho` | `ܛܥܢܐ` | Short Syriac word in an Ambrosianus note; tesseract and crop agree at machine level, but it should be checked. |
 
-## Arabic Expert Item
+## Arabic Expert Items
 
 | Priority | Span | Current status | Text now stored | Alternatives to check | Why it needs review |
 |---|---|---|---|---|---|
 | High | vol 5 p55 L32 S1 | `arabic-chirho`, `vision-chirho` | `ضِمَار` | `ضِمَام`, `ضِمَاد` | Full-resolution crop leaves the final letter genuinely ambiguous. Claude leaned `ضِمَام`; `ضِمَاد` is lexically plausible in context; Codex originally stored `ضِمَار`. Do not silently change without Arabist/Hallelujah review. |
+| Medium | vol 5 p64 L16 S1 | `arabic-chirho`, `vision-chirho` | `للمذيب من صاحبه الفضل / وخية الكافي يترك` | Confirm `وخية` | Codex's image audit passed the whole Arabic line at vision-tier, but explicitly noted `وخية` was not a high-confidence lexical call. Ask the same Arabist reviewer to confirm this word while checking p55 L32. |
+
+## Hebrew/WLC Confirmation Pointers
+
+These are not additional strict-export blockers, but they should be called out during the broader WLC/human pass because earlier audits flagged them as less certain than ordinary vision-tier Hebrew.
+
+| Priority | Span | Current status | Text now stored | Question |
+|---|---|---|---|---|
+| Medium | vol 5 p64 L18 S3 | `hebrew-chirho`, `vision-chirho` | `תוּשִׁיּה` | Confirm the vocalization. Claude's note had `תּוּשִׁיָּה`, while Codex could not independently see the qamats under the yod and intentionally did not upgrade the stored vowels. |
+| Medium | vol 5 p65 L2 S5 | `hebrew-chirho`, `vision-chirho` | `מס` | Short Hebrew fragment at the end of the line; include in the WLC/human spot-check because it was flagged as medium-confidence. |
 
 ## Non-Expert Strict Residue
 
