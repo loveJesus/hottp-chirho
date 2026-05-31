@@ -10,15 +10,15 @@ This queue is not a replacement for the broader WLC/human confirmation pass over
 ## Current Export Gate
 
 - `bun run src-chirho/export-markdown-chirho.ts --all --strict`
-- Result: strict fails with 1 issue.
-- Issue mix: 1 `unknown-script-chirho` warning.
+- Result: strict passes with 0 issues.
+- Issue mix: none; `unknownSpans=0`.
+- Caveat: strict pass certifies structure, not final semantic certainty. The items below remain reviewer targets before treating `vision-chirho` as final text.
 
 ## Syriac Expert Items
 
 | Priority | Span | Current status | Text now stored | Why it needs review |
 |---|---|---|---|---|
-| High | vol 5 p69 L30 S5 | `unknown-chirho` | `](KE N"'E ?A 7<'E8 "P 7H$ >E/` | Narrow tail of a Syriac line after `La 𝔖 porte: ܐܶܢ ܕܡܳܟ̰`; Codex deferred it because the glyphs were not independently readable enough. |
-| High | vol 5 p69 L30-L31 | `syriac-chirho`, `vision-chirho` plus one unknown tail | L30 S3 `ܐܶܢ ܕܡܳܟ̰`; L31 S0 `ܟܽܘܪ ܡܺܝܬܳܐ ܟܽܘܪ ܣܶܕܪܳܐ ܟܽܘܪ ܪܰܒܺܝܠ ܟܽܘܪ.` | Review the whole Peshitta line as one unit so the deferred tail can be merged or corrected in context. |
+| High | vol 5 p69 L30-L31 | `syriac-chirho`, `vision-chirho` | L30 S3 `ܘܡܳܫܰܚ`; L31 S0 `ܐ̱ܢܳܐ ܠܪܰܡܫܳܐ: ܘܫܳܟܶܒ ܐ̱ܢܳܐ. ܘܢܳܐܶܕ ܐ̱ܢܳܐ ܠܫܰܦܪܳܐ.` | Rebuilt from the scanline plus the Job 7:4 Peshitta witness at `https://www.peshitta.eu/ot/job/7.html`. The former unknown tail is structurally resolved, but a Syriac reader should confirm exact letters/vowels before promotion above `vision-chirho`. |
 | Medium | vol 5 p50 L4 S8 | `syriac-chirho`, `vision-chirho` | `ܘܳܐܒܕܳܐ` | Claude and Codex agree the crop is genuinely Syriac/Serto and context matches Job 5:3 Peshitta, but exact letters/vowels remain machine-tier. |
 | Medium | vol 5 p50 L5 S0 | `syriac-chirho`, `vision-chirho` | `ܕܰܝܪܶܗ ܡܶܢ ܫܶܠܝ` | Continuation of the same Job 5:3 Peshitta citation; exact letters/vowels need Syriac-reader confirmation. |
 | Medium | vol 5 p53 L8 S1 | `syriac-chirho`, `vision-chirho` | `ܘܠܗ ܢܫܩܠܘܢ ܙܝܢܬܢܐ` | Claude confirmed script and context, but neither agent certifies exact Estrangela/Serto letters. |
@@ -50,4 +50,4 @@ These were strict warnings, but not part of the Syriac/Arabic expert queue. They
 - vol 2 p148 L29: merged the Greek phrase to `ἀπειθοῦσι τῇ πορείᾳ τῆς ὁδοῦ τοῦ λαοῦ`.
 - vol 5 p58 L10: rebuilt the French/Hebrew line as `Disant conjecturer מָחֵרֶב au lieu de מֵחֶרֶב, J123 traduit: “Il`.
 
-No current non-expert strict residue remains; the export gate is blocked only by the p69 Syriac tail.
+No current non-expert strict residue remains; the export gate now passes. The unresolved work is semantic/expert confirmation of the `vision-chirho` items above, not a structural Markdown blocker.
