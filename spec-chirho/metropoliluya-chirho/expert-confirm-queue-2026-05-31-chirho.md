@@ -45,7 +45,7 @@ These are not additional strict-export blockers, but they should be called out d
 
 These were strict warnings, but not part of the Syriac/Arabic expert queue. They were resolved with `spec-chirho/metropoliluya-chirho/cleanup-nonexpert-suspects-2026-05-31-chirho.ts`, which rebuilds the affected scanlines gap-free from the line images:
 
-- vol 1 p151 L34: removed phantom `An` and duplicate Hebrew, leaving `וַיָּרִיעוּ הָעָם תְּרוּעָה גְדוֹלָה en un`.
+- vol 1 p151 L34: removed phantom `An` and duplicate Hebrew, leaving the consonantal print reading `ויריעו העם תרועה גדולה en un`.
 - vol 2 p148 L25: merged the Hebrew phrase to `שבי ישראל סרו מדרך העם`.
 - vol 2 p148 L29: merged the Greek phrase to `ἀπειθοῦσι τῇ πορείᾳ τῆς ὁδοῦ τοῦ λαοῦ`.
 - vol 5 p58 L10: rebuilt the French/Hebrew line as `Disant conjecturer מָחֵרֶב au lieu de מֵחֶרֶב, J123 traduit: “Il`.

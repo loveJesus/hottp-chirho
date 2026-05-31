@@ -85,7 +85,7 @@ const REBUILD_SPECS_CHIRHO: RebuildSpecChirho[] = [
     lineWidthPxChirho: 1442,
     spansChirho: [
       { xMinPxChirho: 0, widthPxChirho: 946, scriptChirho: "french-chirho", utf8TextChirho: "clameur du peuple qu'elle conserve, alors qu'elle allège" },
-      { xMinPxChirho: 946, widthPxChirho: 296, scriptChirho: "hebrew-chirho", utf8TextChirho: "וַיָּרִיעוּ הָעָם תְּרוּעָה גְדוֹלָה" },
+      { xMinPxChirho: 946, widthPxChirho: 296, scriptChirho: "hebrew-chirho", utf8TextChirho: "ויריעו העם תרועה גדולה", visionChirho: true },
       { xMinPxChirho: 1242, widthPxChirho: 200, scriptChirho: "french-chirho", utf8TextChirho: "en un" },
     ],
   },
