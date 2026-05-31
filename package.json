@@ -20,6 +20,7 @@
     "make-pass-c-hebrew-human-pack-chirho": "bun run spec-chirho/metropoliluya-chirho/make-pass-c-hebrew-human-pack-2026-05-31-chirho.ts",
     "make-expert-confirm-pack-chirho": "bun run spec-chirho/metropoliluya-chirho/make-expert-confirm-pack-2026-05-31-chirho.ts",
     "make-latin-symbol-vision-pack-chirho": "bun run spec-chirho/metropoliluya-chirho/make-latin-symbol-vision-pack-2026-05-31-chirho.ts",
+    "latin-symbol-vision-review-chirho": "bun run src-chirho/latin-symbol-vision-review-server-chirho.ts",
     "record-latin-symbol-vision-review-chirho": "bun run src-chirho/record-latin-symbol-vision-review-chirho.ts",
     "vision-transcribe-unknown-chirho": "bun run src-chirho/vision-transcribe-unknown-chirho.ts",
     "upload-chirho": "bun run src-chirho/upload-chirho.ts"

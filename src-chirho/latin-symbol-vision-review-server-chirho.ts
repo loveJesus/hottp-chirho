@@ -1,0 +1,395 @@
+// For God so loved the world that he gave his only begotten Son,
+// that whoever believes in him should not perish but have eternal life. John 3:16
+
+/**
+ * Browser review UI for Latin/symbol vision-tier decisions.
+ *
+ * A clean Continue records accepted-clean-chirho. Continue with issue flags
+ * records reviewed-issues-chirho and keeps the item pending.
+ */
+
+import { Database } from "bun:sqlite";
+import { existsSync } from "fs";
+import { resolve } from "path";
+
+import { PROGRESS_DB_PATH_CHIRHO } from "./config-chirho.ts";
+import {
+  latinSymbolVisionLiveItemsChirho,
+  type LatinSymbolVisionLiveItemChirho,
+} from "./latin-symbol-vision-live-items-chirho.ts";
+import {
+  assertLatinSymbolManifestMatchesLiveChirho,
+  ensureLatinSymbolReviewSchemaChirho,
+  LATIN_SYMBOL_PACK_DIR_CHIRHO,
+  LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO,
+  loadLatinSymbolPacketManifestChirho,
+  parseLatinSymbolIssueFlagsChirho,
+  publicLatinSymbolReviewRowsChirho,
+  saveLatinSymbolReviewChirho,
+  verdictForLatinSymbolIssueFlagsChirho,
+  writeLatinSymbolReviewBackupChirho,
+  type LatinSymbolPacketManifestChirho,
+} from "./latin-symbol-vision-review-store-chirho.ts";
+
+const MODULE_CHIRHO = "latin-symbol-vision-review-server-chirho";
+const DEFAULT_PORT_CHIRHO = 8770;
+const ISSUE_FLAG_OPTIONS_CHIRHO = [
+  { valueChirho: "letters-chirho", labelChirho: "Letters" },
+  { valueChirho: "punctuation-chirho", labelChirho: "Punctuation" },
+  { valueChirho: "spacing-chirho", labelChirho: "Spacing" },
+  { valueChirho: "wrong-script-chirho", labelChirho: "Wrong script" },
+  { valueChirho: "segmentation-chirho", labelChirho: "Segmentation" },
+  { valueChirho: "garbled-text-chirho", labelChirho: "Garbled text" },
+  { valueChirho: "missing-text-chirho", labelChirho: "Missing text" },
+  { valueChirho: "extra-text-chirho", labelChirho: "Extra text" },
+  { valueChirho: "wrong-language-chirho", labelChirho: "Wrong language" },
+];
+
+interface ReviewRequestChirho {
+  idChirho?: string;
+  issueFlagsChirho?: unknown;
+  notesChirho?: string;
+  reviewerChirho?: string;
+}
+
+function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
+  const prefixChirho = `--${nameChirho}=`;
+  return argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho))?.slice(prefixChirho.length);
+}
+
+function parsePortChirho(argsChirho: string[]): number {
+  const valueChirho = parseArgValueChirho(argsChirho, "port");
+  if (valueChirho === undefined) return DEFAULT_PORT_CHIRHO;
+  const portChirho = Number.parseInt(valueChirho, 10);
+  if (!Number.isInteger(portChirho) || portChirho <= 0) throw new Error(`port must be positive; got ${valueChirho}`);
+  return portChirho;
+}
+
+function scriptJsonChirho(valueChirho: unknown): string {
+  return JSON.stringify(valueChirho)
+    .replace(/</g, "\\u003c")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
+}
+
+function safeAssetPathChirho(relativePathChirho: string): string | null {
+  const resolvedChirho = resolve(LATIN_SYMBOL_PACK_DIR_CHIRHO, relativePathChirho);
+  const packRootChirho = resolve(LATIN_SYMBOL_PACK_DIR_CHIRHO);
+  if (resolvedChirho !== packRootChirho && !resolvedChirho.startsWith(`${packRootChirho}/`)) return null;
+  return resolvedChirho;
+}
+
+function jsonResponseChirho(dataChirho: unknown, statusChirho = 200): Response {
+  return new Response(JSON.stringify(dataChirho), {
+    status: statusChirho,
+    headers: { "Content-Type": "application/json; charset=utf-8" },
+  });
+}
+
+function htmlChirho(): string {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Latin/Symbol Vision Review Chirho</title>
+  <style>
+    :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
+    body { margin: 0; background: #f5f5f2; color: #1f2933; }
+    button, textarea, select, input { font: inherit; }
+    .shell-chirho { max-width: 1240px; margin: 0 auto; padding: 18px; }
+    .top-chirho { display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid #d8d4c8; padding-bottom: 12px; }
+    .title-chirho { font-size: 20px; font-weight: 750; }
+    .summary-chirho, .status-chirho { color: #59636f; font-size: 13px; }
+    .toolbar-chirho { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .toolbar-chirho select, .toolbar-chirho button { border: 1px solid #aab1b9; background: white; min-height: 34px; padding: 5px 8px; }
+    .main-chirho { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 18px; padding-top: 18px; }
+    .panel-chirho { min-width: 0; }
+    .image-label-chirho { color: #59636f; font-size: 13px; font-weight: 650; margin: 0 0 6px; }
+    .image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: auto; margin-bottom: 12px; }
+    .target-image-chirho { display: block; width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
+    .line-image-chirho { display: block; max-width: none; width: 1400px; height: auto; image-rendering: -webkit-optimize-contrast; }
+    .text-box-chirho { background: white; border: 1px solid #d6d9dd; padding: 10px; line-height: 1.45; overflow-wrap: anywhere; }
+    .current-text-chirho { font-size: 22px; }
+    .line-text-chirho { font-size: 16px; }
+    .side-chirho { display: flex; flex-direction: column; gap: 12px; }
+    .box-chirho { border: 1px solid #d6d9dd; background: white; padding: 12px; }
+    .meta-grid-chirho { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 13px; }
+    .label-chirho { color: #59636f; font-size: 13px; font-weight: 650; }
+    .mono-chirho { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .issue-grid-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+    .issue-option-chirho { display: flex; gap: 7px; align-items: center; border: 1px solid #d6d9dd; padding: 8px; min-height: 38px; box-sizing: border-box; cursor: pointer; }
+    .issue-option-chirho input { margin: 0; }
+    .issue-option-chirho:has(input:checked) { border-color: #bd7a1b; background: #fff7e8; }
+    .notes-chirho { width: 100%; min-height: 82px; resize: vertical; box-sizing: border-box; border: 1px solid #b8bec7; padding: 9px; }
+    .actions-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    .actions-chirho button { border: 1px solid #aab1b9; background: white; padding: 10px; cursor: pointer; min-height: 42px; }
+    .actions-chirho button:hover, .toolbar-chirho button:hover { background: #edf1f4; }
+    .continue-chirho { color: #116149; border-color: #499b7f !important; font-weight: 750; }
+    .warning-chirho { border-left: 4px solid #bd7a1b; background: #fff7e8; padding: 10px; font-size: 13px; color: #704000; }
+    .done-chirho { padding: 42px 0; color: #59636f; font-size: 18px; }
+    @media (max-width: 900px) {
+      .main-chirho { grid-template-columns: 1fr; }
+      .side-chirho { order: -1; }
+      .line-image-chirho { width: 1100px; }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell-chirho">
+    <div class="top-chirho">
+      <div>
+        <div class="title-chirho">Latin/Symbol Vision Review</div>
+        <div class="summary-chirho" id="summary-chirho"></div>
+      </div>
+      <div class="status-chirho" id="status-chirho"></div>
+    </div>
+    <div class="toolbar-chirho">
+      <label class="label-chirho" for="script-filter-chirho">Script</label>
+      <select id="script-filter-chirho">
+        <option value="all-chirho">All</option>
+        <option value="french-chirho">French</option>
+        <option value="latin-non-french-chirho">Latin non-French</option>
+        <option value="symbol-chirho">Symbol</option>
+      </select>
+      <button type="button" id="prev-chirho">Previous</button>
+      <button type="button" id="next-chirho">Skip</button>
+    </div>
+    <section class="main-chirho" id="app-chirho"></section>
+  </main>
+  <script>
+    const issueFlagOptionsChirho = ${scriptJsonChirho(ISSUE_FLAG_OPTIONS_CHIRHO)};
+    let itemsChirho = [];
+    let reviewsChirho = new Map();
+    let indexChirho = 0;
+    let scriptFilterChirho = "all-chirho";
+
+    function textNodeChirho(valueChirho) { return document.createTextNode(valueChirho == null ? "" : String(valueChirho)); }
+    function elChirho(tagChirho, attrsChirho = {}, childrenChirho = []) {
+      const nodeChirho = document.createElement(tagChirho);
+      for (const [keyChirho, valueChirho] of Object.entries(attrsChirho)) {
+        if (keyChirho === "classChirho") nodeChirho.className = valueChirho;
+        else if (keyChirho === "textChirho") nodeChirho.textContent = valueChirho;
+        else nodeChirho.setAttribute(keyChirho, valueChirho);
+      }
+      for (const childChirho of childrenChirho) nodeChirho.appendChild(childChirho);
+      return nodeChirho;
+    }
+    function clearChirho(nodeChirho) { while (nodeChirho.firstChild) nodeChirho.removeChild(nodeChirho.firstChild); }
+    function setStatusChirho(messageChirho) { document.getElementById("status-chirho").textContent = messageChirho; }
+    function acceptedCleanIdsChirho() {
+      const idsChirho = new Set();
+      for (const reviewChirho of reviewsChirho.values()) {
+        if (reviewChirho.verdictChirho === "accepted-clean-chirho") idsChirho.add(reviewChirho.itemIdChirho);
+      }
+      return idsChirho;
+    }
+    function activeItemsChirho() {
+      const acceptedChirho = acceptedCleanIdsChirho();
+      return itemsChirho.filter((itemChirho) =>
+        !acceptedChirho.has(itemChirho.idChirho) &&
+        (scriptFilterChirho === "all-chirho" || itemChirho.scriptChirho === scriptFilterChirho)
+      );
+    }
+    function currentItemChirho() { return activeItemsChirho()[indexChirho]; }
+    function imageSrcChirho(pathChirho) { return "/asset-chirho?path=" + encodeURIComponent(pathChirho); }
+    async function loadStateChirho() {
+      const responseChirho = await fetch("/api-chirho/state-chirho");
+      const dataChirho = await responseChirho.json();
+      if (!dataChirho.okChirho) throw new Error(dataChirho.errorChirho || "state failed");
+      itemsChirho = dataChirho.itemsChirho;
+      reviewsChirho = new Map(dataChirho.reviewsChirho.map((reviewChirho) => [reviewChirho.itemIdChirho, reviewChirho]));
+      if (indexChirho >= activeItemsChirho().length) indexChirho = Math.max(0, activeItemsChirho().length - 1);
+      renderChirho();
+    }
+    function renderSummaryChirho() {
+      const acceptedChirho = acceptedCleanIdsChirho().size;
+      const activeChirho = activeItemsChirho().length;
+      document.getElementById("summary-chirho").textContent =
+        activeChirho + " pending in filter, " + acceptedChirho + " accepted-clean, " + reviewsChirho.size + " current review rows";
+    }
+    function renderChirho() {
+      const appChirho = document.getElementById("app-chirho");
+      clearChirho(appChirho);
+      renderSummaryChirho();
+      const itemChirho = currentItemChirho();
+      if (!itemChirho) {
+        appChirho.appendChild(elChirho("div", { classChirho: "done-chirho", textChirho: "No pending items in this filter." }));
+        return;
+      }
+      const reviewChirho = reviewsChirho.get(itemChirho.idChirho);
+      const leftChirho = elChirho("div", { classChirho: "panel-chirho" });
+      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Target crop" }));
+      const targetWrapChirho = elChirho("div", { classChirho: "image-wrap-chirho" });
+      targetWrapChirho.appendChild(elChirho("img", { classChirho: "target-image-chirho", src: imageSrcChirho(itemChirho.targetMarkdownPathChirho), alt: "" }));
+      leftChirho.appendChild(targetWrapChirho);
+      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Full line" }));
+      const lineWrapChirho = elChirho("div", { classChirho: "image-wrap-chirho" });
+      lineWrapChirho.appendChild(elChirho("img", { classChirho: "line-image-chirho", src: imageSrcChirho(itemChirho.lineMarkdownPathChirho), alt: "" }));
+      leftChirho.appendChild(lineWrapChirho);
+      leftChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Current text" }));
+      leftChirho.appendChild(elChirho("div", { classChirho: "text-box-chirho current-text-chirho", textChirho: itemChirho.textChirho }));
+      leftChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Line text" }));
+      leftChirho.appendChild(elChirho("div", { classChirho: "text-box-chirho line-text-chirho", textChirho: itemChirho.lineTextChirho }));
+
+      const sideChirho = elChirho("div", { classChirho: "side-chirho" });
+      const metaChirho = elChirho("div", { classChirho: "box-chirho" });
+      const metaGridChirho = elChirho("div", { classChirho: "meta-grid-chirho" });
+      for (const [labelChirho, valueChirho] of [
+        ["ID", itemChirho.idChirho],
+        ["Location", "vol " + itemChirho.volumeChirho + " p" + itemChirho.pageChirho + " L" + itemChirho.lineIndexChirho],
+        ["Kind", itemChirho.itemKindChirho],
+        ["Script", itemChirho.scriptChirho],
+        ["Source", itemChirho.sourceChirho],
+        ["Review", reviewChirho ? reviewChirho.verdictChirho : "none"]
+      ]) {
+        metaGridChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: labelChirho }));
+        metaGridChirho.appendChild(elChirho("div", { classChirho: "mono-chirho", textChirho: valueChirho }));
+      }
+      metaChirho.appendChild(metaGridChirho);
+      sideChirho.appendChild(metaChirho);
+      if (reviewChirho?.verdictChirho === "reviewed-issues-chirho") {
+        sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "This item has issue flags and remains pending until accepted clean." }));
+      }
+      const formChirho = elChirho("div", { classChirho: "box-chirho" });
+      formChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Issue flags" }));
+      const issueGridChirho = elChirho("div", { classChirho: "issue-grid-chirho" });
+      for (const optionChirho of issueFlagOptionsChirho) {
+        const inputChirho = elChirho("input", { type: "checkbox", value: optionChirho.valueChirho });
+        const labelChirho = elChirho("label", { classChirho: "issue-option-chirho" }, [inputChirho, textNodeChirho(optionChirho.labelChirho)]);
+        issueGridChirho.appendChild(labelChirho);
+      }
+      formChirho.appendChild(issueGridChirho);
+      formChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Notes" }));
+      const notesChirho = elChirho("textarea", { classChirho: "notes-chirho", id: "notes-chirho" });
+      formChirho.appendChild(notesChirho);
+      const actionsChirho = elChirho("div", { classChirho: "actions-chirho" });
+      const continueChirho = elChirho("button", { classChirho: "continue-chirho", type: "button", textChirho: "Continue" });
+      continueChirho.addEventListener("click", () => saveCurrentChirho(itemChirho));
+      const skipChirho = elChirho("button", { type: "button", textChirho: "Skip" });
+      skipChirho.addEventListener("click", () => { indexChirho = Math.min(indexChirho + 1, Math.max(0, activeItemsChirho().length - 1)); renderChirho(); });
+      actionsChirho.appendChild(continueChirho);
+      actionsChirho.appendChild(skipChirho);
+      formChirho.appendChild(actionsChirho);
+      sideChirho.appendChild(formChirho);
+      appChirho.appendChild(leftChirho);
+      appChirho.appendChild(sideChirho);
+    }
+    async function saveCurrentChirho(itemChirho) {
+      const flagsChirho = [...document.querySelectorAll(".issue-option-chirho input:checked")].map((nodeChirho) => nodeChirho.value);
+      const notesChirho = document.getElementById("notes-chirho").value;
+      setStatusChirho("Saving...");
+      const responseChirho = await fetch("/api-chirho/review-chirho", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idChirho: itemChirho.idChirho, issueFlagsChirho: flagsChirho, notesChirho })
+      });
+      const dataChirho = await responseChirho.json();
+      if (!dataChirho.okChirho) {
+        setStatusChirho(dataChirho.errorChirho || "Save failed");
+        return;
+      }
+      reviewsChirho.set(dataChirho.reviewChirho.itemIdChirho, dataChirho.reviewChirho);
+      if (dataChirho.reviewChirho.verdictChirho === "accepted-clean-chirho") {
+        if (indexChirho >= activeItemsChirho().length) indexChirho = Math.max(0, activeItemsChirho().length - 1);
+      } else {
+        indexChirho = Math.min(indexChirho + 1, Math.max(0, activeItemsChirho().length - 1));
+      }
+      setStatusChirho("Saved " + dataChirho.reviewChirho.verdictChirho + " and refreshed backup.");
+      renderChirho();
+    }
+    document.getElementById("script-filter-chirho").addEventListener("change", (eventChirho) => {
+      scriptFilterChirho = eventChirho.target.value;
+      indexChirho = 0;
+      renderChirho();
+    });
+    document.getElementById("prev-chirho").addEventListener("click", () => {
+      indexChirho = Math.max(0, indexChirho - 1);
+      renderChirho();
+    });
+    document.getElementById("next-chirho").addEventListener("click", () => {
+      indexChirho = Math.min(indexChirho + 1, Math.max(0, activeItemsChirho().length - 1));
+      renderChirho();
+    });
+    loadStateChirho().catch((errorChirho) => setStatusChirho(String(errorChirho)));
+  </script>
+</body>
+</html>`;
+}
+
+const argsChirho = process.argv.slice(2);
+const portChirho = parsePortChirho(argsChirho);
+const dbPathChirho = parseArgValueChirho(argsChirho, "db") ?? PROGRESS_DB_PATH_CHIRHO;
+const backupPathChirho = parseArgValueChirho(argsChirho, "backup") ?? LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO;
+const reviewerChirho = parseArgValueChirho(argsChirho, "reviewer") ?? "human-chirho";
+const dbChirho = new Database(dbPathChirho);
+ensureLatinSymbolReviewSchemaChirho(dbChirho);
+
+function loadCurrentStateChirho(): {
+  manifestChirho: LatinSymbolPacketManifestChirho;
+  liveItemsChirho: LatinSymbolVisionLiveItemChirho[];
+  liveByIdChirho: Map<string, LatinSymbolVisionLiveItemChirho>;
+} {
+  const manifestChirho = loadLatinSymbolPacketManifestChirho();
+  const liveItemsChirho = latinSymbolVisionLiveItemsChirho();
+  const liveByIdChirho = assertLatinSymbolManifestMatchesLiveChirho(manifestChirho, liveItemsChirho);
+  return { manifestChirho, liveItemsChirho, liveByIdChirho };
+}
+
+Bun.serve({
+  port: portChirho,
+  async fetch(reqChirho) {
+    const urlChirho = new URL(reqChirho.url);
+    try {
+      if (urlChirho.pathname === "/") {
+        return new Response(htmlChirho(), { headers: { "Content-Type": "text/html; charset=utf-8" } });
+      }
+      if (urlChirho.pathname === "/asset-chirho") {
+        const relativePathChirho = urlChirho.searchParams.get("path");
+        if (!relativePathChirho) return new Response("missing path", { status: 400 });
+        const assetPathChirho = safeAssetPathChirho(relativePathChirho);
+        if (assetPathChirho === null || !existsSync(assetPathChirho)) return new Response("not found", { status: 404 });
+        return new Response(Bun.file(assetPathChirho));
+      }
+      if (urlChirho.pathname === "/api-chirho/state-chirho") {
+        const { manifestChirho } = loadCurrentStateChirho();
+        return jsonResponseChirho({
+          okChirho: true,
+          generatedAtChirho: manifestChirho.generatedAtChirho ?? null,
+          itemsChirho: manifestChirho.itemsChirho ?? [],
+          reviewsChirho: publicLatinSymbolReviewRowsChirho(dbChirho),
+        });
+      }
+      if (urlChirho.pathname === "/api-chirho/review-chirho" && reqChirho.method === "POST") {
+        const bodyChirho = (await reqChirho.json()) as ReviewRequestChirho;
+        if (typeof bodyChirho.idChirho !== "string") return jsonResponseChirho({ okChirho: false, errorChirho: "missing idChirho" }, 400);
+        const { manifestChirho, liveItemsChirho, liveByIdChirho } = loadCurrentStateChirho();
+        const liveItemChirho = liveByIdChirho.get(bodyChirho.idChirho);
+        if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);
+        const issueFlagsChirho = parseLatinSymbolIssueFlagsChirho(bodyChirho.issueFlagsChirho);
+        const notesChirho = typeof bodyChirho.notesChirho === "string" && bodyChirho.notesChirho.trim().length > 0
+          ? bodyChirho.notesChirho.trim()
+          : null;
+        const effectiveReviewerChirho = typeof bodyChirho.reviewerChirho === "string" && bodyChirho.reviewerChirho.trim().length > 0
+          ? bodyChirho.reviewerChirho.trim()
+          : reviewerChirho;
+        const reviewChirho = saveLatinSymbolReviewChirho({
+          dbChirho,
+          manifestChirho,
+          liveItemChirho,
+          verdictChirho: verdictForLatinSymbolIssueFlagsChirho(issueFlagsChirho),
+          issueFlagsChirho,
+          notesChirho,
+          reviewerChirho: effectiveReviewerChirho,
+        });
+        writeLatinSymbolReviewBackupChirho(dbChirho, backupPathChirho, liveItemsChirho, manifestChirho);
+        return jsonResponseChirho({ okChirho: true, reviewChirho });
+      }
+      return new Response("not found", { status: 404 });
+    } catch (errorChirho) {
+      return jsonResponseChirho({ okChirho: false, errorChirho: String(errorChirho) }, 500);
+    }
+  },
+});
+
+console.log(`[${MODULE_CHIRHO}] http://localhost:${portChirho}/`);
