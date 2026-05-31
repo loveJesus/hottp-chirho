@@ -10,8 +10,8 @@
  */
 
 import { Database } from "bun:sqlite";
-import { existsSync, readFileSync } from "fs";
-import { join } from "path";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { dirname, join } from "path";
 
 import { PROGRESS_DB_PATH_CHIRHO, PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
@@ -27,6 +27,12 @@ const LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO = join(
   "latin-symbol-vision-pack-chirho",
   "2026-05-31-chirho",
   "manifest-chirho.json"
+);
+const LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "latin-symbol-vision-reviews-backup-2026-05-31-chirho.json"
 );
 const VERDICT_VALUES_CHIRHO = new Set([
   "accepted-clean-chirho",
@@ -61,6 +67,32 @@ interface PacketItemChirho {
 interface PacketManifestChirho {
   generatedAtChirho?: string;
   itemsChirho?: PacketItemChirho[];
+}
+
+interface ReviewDbRowChirho {
+  id_chirho: number;
+  item_id_chirho: string;
+  item_kind_chirho: string;
+  volume_chirho: number;
+  page_chirho: number;
+  line_index_chirho: number;
+  segment_index_chirho: number | null;
+  word_index_chirho: number | null;
+  script_chirho: string;
+  source_chirho: string;
+  current_text_chirho: string;
+  current_text_hash_chirho: string;
+  line_text_chirho: string;
+  verdict_chirho: string;
+  issue_flags_chirho: string | null;
+  notes_chirho: string | null;
+  packet_generated_at_chirho: string | null;
+  reviewer_chirho: string;
+  created_at_chirho: string;
+  updated_at_chirho: string;
+  supersedes_id_chirho: number | null;
+  applied_at_chirho: string | null;
+  schema_version_chirho: number;
 }
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
@@ -187,8 +219,91 @@ function usageChirho(): string {
   return [
     `Usage: bun run ${MODULE_CHIRHO} --id=<packet-item-id> --verdict=<accepted-clean|reviewed-issues> --reviewer=<reviewer-chirho> [--issue-flags=a,b] [--notes=text]`,
     "",
+    "Use --export-backup[=path] to write a committable JSON backup of current review rows.",
     "Use --list-pending to print the first unreviewed packet IDs.",
   ].join("\n");
+}
+
+function exportBackupPathChirho(argsChirho: string[]): string | null {
+  const explicitPathChirho = parseArgValueChirho(argsChirho, "export-backup");
+  if (explicitPathChirho !== undefined) return explicitPathChirho;
+  return argsChirho.includes("--export-backup") ? LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO : null;
+}
+
+function parseStoredIssueFlagsChirho(valueChirho: string | null): string[] {
+  if (!valueChirho) return [];
+  try {
+    const parsedChirho = JSON.parse(valueChirho) as unknown;
+    if (!Array.isArray(parsedChirho)) return [];
+    return parsedChirho.filter((flagChirho): flagChirho is string => typeof flagChirho === "string");
+  } catch {
+    return [];
+  }
+}
+
+function currentReviewRowsChirho(dbChirho: Database): ReviewDbRowChirho[] {
+  return dbChirho
+    .query(`
+      SELECT id_chirho, item_id_chirho, item_kind_chirho, volume_chirho, page_chirho,
+             line_index_chirho, segment_index_chirho, word_index_chirho, script_chirho,
+             source_chirho, current_text_chirho, current_text_hash_chirho, line_text_chirho,
+             verdict_chirho, issue_flags_chirho, notes_chirho, packet_generated_at_chirho,
+             reviewer_chirho, created_at_chirho, updated_at_chirho, supersedes_id_chirho,
+             applied_at_chirho, schema_version_chirho
+        FROM latin_symbol_vision_reviews_chirho
+       WHERE is_current_chirho = 1
+         AND verdict_chirho <> 'undo-chirho'
+       ORDER BY item_id_chirho, id_chirho`)
+    .all() as ReviewDbRowChirho[];
+}
+
+function writeBackupChirho(
+  dbChirho: Database,
+  backupPathChirho: string,
+  liveItemsChirho: LatinSymbolVisionLiveItemChirho[],
+  manifestChirho: PacketManifestChirho
+): void {
+  const rowsChirho = currentReviewRowsChirho(dbChirho);
+  const liveHashByIdChirho = new Map(liveItemsChirho.map((itemChirho) => [itemChirho.idChirho, hashTextChirho(itemChirho.textChirho)]));
+  const backupChirho = {
+    john316Chirho:
+      "For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16",
+    schemaVersionChirho: 1,
+    generatedAtChirho: new Date().toISOString(),
+    sourceChirho: "latin_symbol_vision_reviews_chirho current rows",
+    packetGeneratedAtChirho: manifestChirho.generatedAtChirho ?? null,
+    liveItemCountChirho: liveItemsChirho.length,
+    reviewCountChirho: rowsChirho.length,
+    reviewsChirho: rowsChirho.map((rowChirho) => ({
+      dbIdChirho: rowChirho.id_chirho,
+      itemIdChirho: rowChirho.item_id_chirho,
+      itemKindChirho: rowChirho.item_kind_chirho,
+      volumeChirho: rowChirho.volume_chirho,
+      pageChirho: rowChirho.page_chirho,
+      lineIndexChirho: rowChirho.line_index_chirho,
+      segmentIndexChirho: rowChirho.segment_index_chirho,
+      wordIndexChirho: rowChirho.word_index_chirho,
+      scriptChirho: rowChirho.script_chirho,
+      sourceChirho: rowChirho.source_chirho,
+      currentTextChirho: rowChirho.current_text_chirho,
+      currentTextHashChirho: rowChirho.current_text_hash_chirho,
+      currentHashMatchesLiveChirho: liveHashByIdChirho.get(rowChirho.item_id_chirho) === rowChirho.current_text_hash_chirho,
+      lineTextChirho: rowChirho.line_text_chirho,
+      verdictChirho: rowChirho.verdict_chirho,
+      issueFlagsChirho: parseStoredIssueFlagsChirho(rowChirho.issue_flags_chirho),
+      notesChirho: rowChirho.notes_chirho,
+      packetGeneratedAtChirho: rowChirho.packet_generated_at_chirho,
+      reviewerChirho: rowChirho.reviewer_chirho,
+      createdAtChirho: rowChirho.created_at_chirho,
+      updatedAtChirho: rowChirho.updated_at_chirho,
+      supersedesIdChirho: rowChirho.supersedes_id_chirho,
+      appliedAtChirho: rowChirho.applied_at_chirho,
+      schemaVersionChirho: rowChirho.schema_version_chirho,
+    })),
+  };
+  mkdirSync(dirname(backupPathChirho), { recursive: true });
+  writeFileSync(backupPathChirho, `${JSON.stringify(backupChirho, null, 2)}\n`);
+  console.log(`[${MODULE_CHIRHO}] exported ${rowsChirho.length} current review row(s) to ${backupPathChirho}`);
 }
 
 function acceptedCleanReviewIdsChirho(
@@ -234,6 +349,13 @@ function mainChirho(): void {
   const liveByIdChirho = assertManifestMatchesLiveChirho(manifestChirho, liveItemsChirho);
   const dbChirho = new Database(dbPathChirho);
   ensureSchemaChirho(dbChirho);
+
+  const backupPathChirho = exportBackupPathChirho(argsChirho);
+  if (backupPathChirho !== null) {
+    writeBackupChirho(dbChirho, backupPathChirho, liveItemsChirho, manifestChirho);
+    dbChirho.close();
+    return;
+  }
 
   if (argsChirho.includes("--list-pending")) {
     listPendingChirho(dbChirho, manifestChirho, liveItemsChirho);
