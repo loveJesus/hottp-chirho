@@ -3,8 +3,10 @@
 
 // Builds a reviewer packet for the remaining vision-tier transcription
 // questions. Priority items are listed first, followed by a complete generated
-// appendix of every non-Latin vision-chirho span so machine text is never
-// mistaken for human-confirmed text.
+// appendix of every non-Latin vision-tier span so machine text is never
+// mistaken for human-confirmed text. Vision-tier includes explicit
+// provenanceChirho="vision-chirho" spans plus D1 current_source_chirho
+// vision words that resolve a Hebrew span by exact text or skeleton.
 
 import {
   copyFileSync,
@@ -12,13 +14,24 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  statSync,
   writeFileSync,
 } from "fs";
 import { join, relative } from "path";
+import { Database } from "bun:sqlite";
 
 const PROJECT_ROOT_CHIRHO = "/Users/hallelujah/dev-chirho/friends-chirho/andrewbeth-chirho/hottp-chirho";
 const SPANS_ROOT_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
 const SCANLINES_ROOT_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "scanlines-chirho");
+const LOCAL_D1_DIR_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "app-chirho",
+  ".wrangler",
+  "state",
+  "v3",
+  "d1",
+  "miniflare-D1DatabaseObject"
+);
 const OUT_DIR_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "workspace-chirho",
@@ -86,6 +99,7 @@ interface VisionSpanItemChirho {
   idChirho: string;
   reviewerChirho: string;
   scriptChirho: string;
+  visionSourceChirho: "explicit-span-chirho" | "d1-derived-chirho";
   volumeChirho: number;
   pageChirho: number;
   lineIndexChirho: number;
@@ -95,6 +109,11 @@ interface VisionSpanItemChirho {
   packetPathChirho: string;
   markdownPathChirho: string;
   priorityMatchChirho: boolean;
+}
+
+interface D1VisionSourcesChirho {
+  textSourceByExactTextChirho: Set<string>;
+  textSourceByHebrewSkeletonChirho: Set<string>;
 }
 
 interface PacketManifestChirho {
@@ -115,6 +134,81 @@ function paddedLineChirho(lineChirho: number): string {
 
 function spanKeyChirho(volumeChirho: number, pageChirho: number, lineChirho: number, segmentChirho: number): string {
   return `v${volumeChirho}-p${paddedPageChirho(pageChirho)}-l${paddedLineChirho(lineChirho)}-s${segmentChirho}`;
+}
+
+function targetKeyChirho(volumeChirho: number, pageChirho: number): string {
+  return `${volumeChirho}:${pageChirho}`;
+}
+
+function latestLocalD1PathChirho(): string | null {
+  if (!existsSync(LOCAL_D1_DIR_CHIRHO)) return null;
+  const sqliteFilesChirho = readdirSync(LOCAL_D1_DIR_CHIRHO)
+    .filter((fileChirho) => fileChirho.endsWith(".sqlite"))
+    .map((fileChirho) => join(LOCAL_D1_DIR_CHIRHO, fileChirho))
+    .sort((aChirho, bChirho) => statSync(bChirho).mtimeMs - statSync(aChirho).mtimeMs);
+  return sqliteFilesChirho[0] ?? null;
+}
+
+function stripHebrewMarksChirho(textChirho: string): string {
+  return textChirho.normalize("NFKD").replace(/[\u0591-\u05C7]/g, "");
+}
+
+function hebrewSkeletonChirho(textChirho: string): string {
+  return stripHebrewMarksChirho(textChirho).replace(/[^\u05D0-\u05EA]/g, "");
+}
+
+function hebrewTokenSkeletonsChirho(textChirho: string): string[] {
+  const tokenMatchesChirho = textChirho.match(/[\u0591-\u05C7\u05D0-\u05EA]+/g) ?? [];
+  return tokenMatchesChirho.map(hebrewSkeletonChirho).filter((tokenChirho) => tokenChirho.length > 0);
+}
+
+function normalizedExactTextChirho(textChirho: string): string {
+  return textChirho.trim().normalize("NFC");
+}
+
+function readD1VisionSourcesChirho(): Map<string, D1VisionSourcesChirho> {
+  const dbPathChirho = latestLocalD1PathChirho();
+  const sourcesChirho = new Map<string, D1VisionSourcesChirho>();
+  if (dbPathChirho === null) return sourcesChirho;
+  const dbChirho = new Database(dbPathChirho, { readonly: true });
+  try {
+    const rowsChirho = dbChirho
+      .query(
+        `SELECT p.volume_number_chirho AS volume_chirho,
+                p.page_number_chirho AS page_chirho,
+                w.current_text_chirho AS current_text_chirho,
+                w.current_script_chirho AS current_script_chirho
+           FROM words_chirho w
+           JOIN scanlines_chirho sl ON sl.id_chirho = w.scanline_id_chirho
+           JOIN pages_chirho p ON p.id_chirho = sl.page_id_chirho
+          WHERE w.current_source_chirho = 'vision-chirho'`
+      )
+      .all() as Array<{
+        volume_chirho: number;
+        page_chirho: number;
+        current_text_chirho: string | null;
+        current_script_chirho: string | null;
+      }>;
+
+    for (const rowChirho of rowsChirho) {
+      const textChirho = normalizedExactTextChirho(rowChirho.current_text_chirho ?? "");
+      if (textChirho.length === 0) continue;
+      const keyChirho = targetKeyChirho(rowChirho.volume_chirho, rowChirho.page_chirho);
+      const sourceChirho = sourcesChirho.get(keyChirho) ?? {
+        textSourceByExactTextChirho: new Set<string>(),
+        textSourceByHebrewSkeletonChirho: new Set<string>(),
+      };
+      sourceChirho.textSourceByExactTextChirho.add(textChirho);
+      if (rowChirho.current_script_chirho === "hebrew-chirho") {
+        const skeletonChirho = hebrewSkeletonChirho(textChirho);
+        if (skeletonChirho.length > 0) sourceChirho.textSourceByHebrewSkeletonChirho.add(skeletonChirho);
+      }
+      sourcesChirho.set(keyChirho, sourceChirho);
+    }
+  } finally {
+    dbChirho.close();
+  }
+  return sourcesChirho;
 }
 
 function scanlinePathChirho(volumeChirho: number, pageChirho: number, lineChirho: number): string {
@@ -207,12 +301,38 @@ function scriptSortIndexChirho(scriptChirho: string): number {
   return indexChirho === -1 ? REVIEW_SCRIPT_ORDER_CHIRHO.length : indexChirho;
 }
 
+function visionSourceForSpanChirho(
+  lineChirho: SpanLineChirho,
+  spanChirho: SpanChirho,
+  d1VisionSourcesChirho: Map<string, D1VisionSourcesChirho>
+): "explicit-span-chirho" | "d1-derived-chirho" | null {
+  if (spanChirho.provenanceChirho === "vision-chirho") return "explicit-span-chirho";
+  if (spanChirho.scriptChirho !== "hebrew-chirho") return null;
+  const sourceChirho = d1VisionSourcesChirho.get(targetKeyChirho(lineChirho.volumeChirho, lineChirho.pageChirho));
+  if (!sourceChirho) return null;
+  if (sourceChirho.textSourceByExactTextChirho.has(normalizedExactTextChirho(spanChirho.utf8TextChirho))) {
+    return "d1-derived-chirho";
+  }
+  const tokenSkeletonsChirho = hebrewTokenSkeletonsChirho(spanChirho.utf8TextChirho);
+  if (
+    tokenSkeletonsChirho.length > 0 &&
+    tokenSkeletonsChirho.every((skeletonChirho) =>
+      sourceChirho.textSourceByHebrewSkeletonChirho.has(skeletonChirho)
+    )
+  ) {
+    return "d1-derived-chirho";
+  }
+  return null;
+}
+
 function discoverVisionItemsChirho(priorityKeysChirho: Set<string>): VisionSpanItemChirho[] {
   const itemsChirho: VisionSpanItemChirho[] = [];
+  const d1VisionSourcesChirho = readD1VisionSourcesChirho();
   for (const lineChirho of readSpanLinesChirho()) {
     for (const spanChirho of lineChirho.spansChirho) {
-      if (spanChirho.provenanceChirho !== "vision-chirho") continue;
       if (!REVIEW_SCRIPTS_CHIRHO.has(spanChirho.scriptChirho)) continue;
+      const visionSourceChirho = visionSourceForSpanChirho(lineChirho, spanChirho, d1VisionSourcesChirho);
+      if (visionSourceChirho === null) continue;
       const idChirho = spanKeyChirho(
         lineChirho.volumeChirho,
         lineChirho.pageChirho,
@@ -228,6 +348,7 @@ function discoverVisionItemsChirho(priorityKeysChirho: Set<string>): VisionSpanI
         idChirho,
         reviewerChirho: REVIEW_SCRIPT_LABELS_CHIRHO[spanChirho.scriptChirho] ?? "Reviewer",
         scriptChirho: spanChirho.scriptChirho,
+        visionSourceChirho,
         volumeChirho: lineChirho.volumeChirho,
         pageChirho: lineChirho.pageChirho,
         lineIndexChirho: lineChirho.lineIndexChirho,
@@ -279,7 +400,7 @@ function completeVisionMarkdownChirho(itemsChirho: VisionSpanItemChirho[]): stri
   const linesChirho: string[] = [
     "## Complete Vision-Tier Appendix",
     "",
-    "Every item below is `vision-chirho`, not human-confirmed. Priority items are marked `yes` but are repeated here so this appendix is complete.",
+    "Every item below is vision-tier, not human-confirmed. Priority items are marked `yes` but are repeated here so this appendix is complete.",
     "",
   ];
 
@@ -293,6 +414,7 @@ function completeVisionMarkdownChirho(itemsChirho: VisionSpanItemChirho[]): stri
         `- Reviewer: ${itemChirho.reviewerChirho}`,
         `- Location: vol ${itemChirho.volumeChirho}, p${itemChirho.pageChirho}, L${itemChirho.lineIndexChirho} S${itemChirho.segmentIndexChirho}`,
         `- Priority section: ${itemChirho.priorityMatchChirho ? "yes" : "no"}`,
+        `- Vision source: ${itemChirho.visionSourceChirho}`,
         `- Current text: ${itemChirho.currentTextChirho}`,
         "",
         `![${itemChirho.idChirho}](${itemChirho.markdownPathChirho})`,
@@ -481,7 +603,7 @@ function generatePacketChirho(): void {
     "",
     "# Expert Confirm Packet Chirho, 2026-05-31",
     "",
-    "Use this packet to confirm `vision-chirho` text against the printed line images. Keep `vision-chirho` provenance unless an expert/human reviewer explicitly certifies the text.",
+    "Use this packet to confirm vision-tier text against the printed line images. Keep machine provenance unless an expert/human reviewer explicitly certifies the text.",
     "",
     "The strict Markdown export currently passes with `issues=0`, `unknownSpans=0`, and `d1GapPages=0`; these questions are semantic review items, not structural export blockers.",
     "",

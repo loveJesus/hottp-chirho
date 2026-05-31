@@ -14,6 +14,12 @@
  *   local D1 ocr_suggestions_chirho
  *   optional dry-run triage JSONs from read_volume_page_chirho.py
  *
+ * By default this reports only Hebrew spans whose text still comes from
+ * Pass-C OCR. D1 canonical/vision/human word witnesses are used to exclude
+ * already-resolved spans even when the span JSON has no explicit provenance.
+ * Use --source=all to audit already reviewed spans alongside the raw Pass-C
+ * text.
+ *
  * Outputs:
  *   workspace-chirho/pass-c-hebrew-validation-chirho/pass-c-hebrew-validation-chirho.json
  *   workspace-chirho/pass-c-hebrew-validation-chirho/pass-c-hebrew-validation-chirho.md
@@ -62,7 +68,22 @@ interface CliOptionsChirho {
   triageDirChirho: string;
   dbPathChirho?: string;
   directConfChirho: number;
+  sourceFilterChirho: SourceFilterChirho;
 }
+
+type SourceFilterChirho =
+  | "canonical-chirho"
+  | "pass-c-ocr-chirho"
+  | "vision-chirho"
+  | "human-chirho"
+  | "all-chirho";
+
+type SpanSourceChirho =
+  | "canonical-chirho"
+  | "pass-c-ocr-chirho"
+  | "vision-chirho"
+  | "human-chirho"
+  | "other-chirho";
 
 interface TargetPageChirho {
   volumeChirho: number;
@@ -75,6 +96,7 @@ interface SpanChirho {
   widthPxChirho: number;
   scriptChirho: string;
   utf8TextChirho: string;
+  provenanceChirho?: string;
 }
 
 interface SpanLineChirho {
@@ -119,6 +141,11 @@ interface PageContextChirho {
   linesChirho: ContextLineChirho[];
 }
 
+interface D1TextSourcesChirho {
+  textSourceByExactTextChirho: Map<string, SpanSourceChirho>;
+  textSourceByHebrewSkeletonChirho: Map<string, SpanSourceChirho>;
+}
+
 interface TokenValidationChirho {
   tokenIndexChirho: number;
   skeletonChirho: string;
@@ -131,6 +158,7 @@ interface HebrewSpanValidationChirho {
   pageChirho: number;
   lineIndexChirho: number;
   segmentIndexChirho: number;
+  spanSourceChirho: SpanSourceChirho;
   textChirho: string;
   lineTextChirho: string;
   tokenSkeletonsChirho: string[];
@@ -157,6 +185,8 @@ interface ValidationReportChirho {
   triageDirChirho: string;
   d1DbPathChirho: string | null;
   directConfChirho: number;
+  sourceFilterChirho: SourceFilterChirho;
+  sourceCountsChirho: Record<string, number>;
   spanCountChirho: number;
   tokenCountChirho: number;
   allTokenValidatedSpanCountChirho: number;
@@ -190,6 +220,17 @@ function parseNumberChirho(valueChirho: string | undefined, defaultChirho: numbe
   return parsedChirho;
 }
 
+function parseSourceFilterChirho(valueChirho: string | undefined): SourceFilterChirho {
+  if (valueChirho === undefined || valueChirho === "pass-c-ocr" || valueChirho === "pass-c-ocr-chirho") {
+    return "pass-c-ocr-chirho";
+  }
+  if (valueChirho === "canonical" || valueChirho === "canonical-chirho") return "canonical-chirho";
+  if (valueChirho === "vision" || valueChirho === "vision-chirho") return "vision-chirho";
+  if (valueChirho === "human" || valueChirho === "human-chirho") return "human-chirho";
+  if (valueChirho === "all" || valueChirho === "all-chirho") return "all-chirho";
+  throw new Error(`--source must be pass-c-ocr, canonical, vision, human, or all; got ${valueChirho}`);
+}
+
 function parseVolumeListChirho(valueChirho: string | undefined): number[] {
   if (valueChirho === undefined || valueChirho.trim().length === 0) return [];
   return valueChirho
@@ -216,6 +257,7 @@ function parseCliOptionsChirho(argsChirho: string[]): CliOptionsChirho {
   const triageDirChirho = parseArgValueChirho(argsChirho, "triage-dir") ?? DEFAULT_TRIAGE_DIR_CHIRHO;
   const dbPathChirho = parseArgValueChirho(argsChirho, "db") ?? latestLocalD1PathChirho();
   const directConfChirho = parseNumberChirho(parseArgValueChirho(argsChirho, "direct-conf"), 0.9, "direct-conf");
+  const sourceFilterChirho = parseSourceFilterChirho(parseArgValueChirho(argsChirho, "source"));
 
   if (!allChirho && volumeChirho === undefined && volumesChirho.length === 0) {
     throw new Error("Pass --all, --vol=N, or --vols=N,N");
@@ -235,6 +277,7 @@ function parseCliOptionsChirho(argsChirho: string[]): CliOptionsChirho {
     triageDirChirho,
     dbPathChirho,
     directConfChirho,
+    sourceFilterChirho,
   };
 }
 
@@ -346,6 +389,71 @@ function hebrewTokenSkeletonsChirho(textChirho: string): string[] {
     .filter((tokenChirho) => tokenChirho.length > 0);
 }
 
+function normalizedExactTextChirho(textChirho: string): string {
+  return textChirho.trim().normalize("NFC");
+}
+
+function trustedSourceChirho(sourceChirho: string | null | undefined): SpanSourceChirho | null {
+  if (
+    sourceChirho === "canonical-chirho" ||
+    sourceChirho === "vision-chirho" ||
+    sourceChirho === "human-chirho"
+  ) {
+    return sourceChirho;
+  }
+  return null;
+}
+
+function sourcePriorityChirho(sourceChirho: SpanSourceChirho): number {
+  if (sourceChirho === "human-chirho") return 3;
+  if (sourceChirho === "vision-chirho") return 2;
+  if (sourceChirho === "canonical-chirho") return 1;
+  return 0;
+}
+
+function setSourceChirho(mapChirho: Map<string, SpanSourceChirho>, keyChirho: string, sourceChirho: SpanSourceChirho): void {
+  const existingChirho = mapChirho.get(keyChirho);
+  if (existingChirho === undefined || sourcePriorityChirho(sourceChirho) > sourcePriorityChirho(existingChirho)) {
+    mapChirho.set(keyChirho, sourceChirho);
+  }
+}
+
+function spanSourceChirho(
+  targetChirho: TargetPageChirho,
+  spanChirho: SpanChirho,
+  tokenSkeletonsChirho: string[],
+  d1TextSourcesChirho: Map<string, D1TextSourcesChirho>
+): SpanSourceChirho {
+  if (spanChirho.provenanceChirho === "vision-chirho") return "vision-chirho";
+  if (spanChirho.provenanceChirho === "human-chirho") return "human-chirho";
+  const pageSourcesChirho = d1TextSourcesChirho.get(targetKeyChirho(targetChirho));
+  if (pageSourcesChirho) {
+    const exactSourceChirho = pageSourcesChirho.textSourceByExactTextChirho.get(
+      normalizedExactTextChirho(spanChirho.utf8TextChirho)
+    );
+    if (exactSourceChirho) return exactSourceChirho;
+
+    const tokenSourcesChirho = tokenSkeletonsChirho
+      .map((skeletonChirho) => pageSourcesChirho.textSourceByHebrewSkeletonChirho.get(skeletonChirho))
+      .filter((sourceChirho): sourceChirho is SpanSourceChirho => sourceChirho !== undefined);
+    if (tokenSkeletonsChirho.length > 0 && tokenSourcesChirho.length === tokenSkeletonsChirho.length) {
+      if (tokenSourcesChirho.includes("human-chirho")) return "human-chirho";
+      if (tokenSourcesChirho.includes("vision-chirho")) return "vision-chirho";
+      if (tokenSourcesChirho.every((sourceChirho) => sourceChirho === "canonical-chirho")) return "canonical-chirho";
+    }
+  }
+  if (spanChirho.scriptChirho === "hebrew-chirho") return "pass-c-ocr-chirho";
+  return "other-chirho";
+}
+
+function sourceIncludedChirho(sourceChirho: SpanSourceChirho, filterChirho: SourceFilterChirho): boolean {
+  return filterChirho === "all-chirho" || sourceChirho === filterChirho;
+}
+
+function addSourceCountChirho(countsChirho: Record<string, number>, sourceChirho: SpanSourceChirho): void {
+  countsChirho[sourceChirho] = (countsChirho[sourceChirho] ?? 0) + 1;
+}
+
 function lineTextChirho(lineChirho: SpanLineChirho): string {
   return [...lineChirho.spansChirho]
     .sort((aChirho, bChirho) => aChirho.segmentIndexChirho - bChirho.segmentIndexChirho)
@@ -418,6 +526,65 @@ function readD1SuggestionWitnessesChirho(
     dbChirho.close();
   }
   return witnessesBySkeletonChirho;
+}
+
+function readD1TextSourcesChirho(
+  dbPathChirho: string | undefined,
+  targetsChirho: TargetPageChirho[]
+): Map<string, D1TextSourcesChirho> {
+  const sourcesByTargetChirho = new Map<string, D1TextSourcesChirho>();
+  if (dbPathChirho === undefined) return sourcesByTargetChirho;
+  const targetKeysChirho = new Set(targetsChirho.map(targetKeyChirho));
+  const dbChirho = new Database(dbPathChirho, { readonly: true });
+  try {
+    const rowsChirho = dbChirho
+      .query(
+        `SELECT p.volume_number_chirho AS volume_chirho,
+                p.page_number_chirho AS page_chirho,
+                w.current_text_chirho AS current_text_chirho,
+                w.current_script_chirho AS current_script_chirho,
+                w.current_source_chirho AS current_source_chirho
+           FROM words_chirho w
+           JOIN scanlines_chirho sl ON sl.id_chirho = w.scanline_id_chirho
+           JOIN pages_chirho p ON p.id_chirho = sl.page_id_chirho`
+      )
+      .all() as Array<{
+        volume_chirho: number;
+        page_chirho: number;
+        current_text_chirho: string | null;
+        current_script_chirho: string | null;
+        current_source_chirho: string | null;
+      }>;
+
+    for (const rowChirho of rowsChirho) {
+      const targetChirho = {
+        volumeChirho: rowChirho.volume_chirho,
+        pageChirho: rowChirho.page_chirho,
+      };
+      const targetKeyValueChirho = targetKeyChirho(targetChirho);
+      if (!targetKeysChirho.has(targetKeyValueChirho)) continue;
+      const sourceChirho = trustedSourceChirho(rowChirho.current_source_chirho);
+      if (!sourceChirho) continue;
+      const textChirho = normalizedExactTextChirho(rowChirho.current_text_chirho ?? "");
+      if (textChirho.length === 0) continue;
+
+      const targetSourcesChirho = sourcesByTargetChirho.get(targetKeyValueChirho) ?? {
+        textSourceByExactTextChirho: new Map<string, SpanSourceChirho>(),
+        textSourceByHebrewSkeletonChirho: new Map<string, SpanSourceChirho>(),
+      };
+      setSourceChirho(targetSourcesChirho.textSourceByExactTextChirho, textChirho, sourceChirho);
+      if (rowChirho.current_script_chirho === "hebrew-chirho") {
+        const skeletonChirho = hebrewSkeletonChirho(textChirho);
+        if (skeletonChirho.length > 0) {
+          setSourceChirho(targetSourcesChirho.textSourceByHebrewSkeletonChirho, skeletonChirho, sourceChirho);
+        }
+      }
+      sourcesByTargetChirho.set(targetKeyValueChirho, targetSourcesChirho);
+    }
+  } finally {
+    dbChirho.close();
+  }
+  return sourcesByTargetChirho;
 }
 
 function parseTriageTargetChirho(fileNameChirho: string): TargetPageChirho | null {
@@ -604,10 +771,9 @@ function directReadWitnessesForSpanChirho(
 }
 
 function buildValidationReportChirho(optionsChirho: CliOptionsChirho): ValidationReportChirho {
-  const targetsChirho = discoverTargetsChirho(optionsChirho).filter((targetChirho) =>
-    targetChirho.volumeChirho >= 2 && targetChirho.volumeChirho <= 5
-  );
+  const targetsChirho = discoverTargetsChirho(optionsChirho);
   const witnessesBySkeletonChirho = readD1SuggestionWitnessesChirho(optionsChirho.dbPathChirho, targetsChirho);
+  const d1TextSourcesChirho = readD1TextSourcesChirho(optionsChirho.dbPathChirho, targetsChirho);
   mergeWitnessMapsChirho(
     witnessesBySkeletonChirho,
     readTriageWitnessesChirho(optionsChirho.triageDirChirho, targetsChirho)
@@ -615,6 +781,7 @@ function buildValidationReportChirho(optionsChirho: CliOptionsChirho): Validatio
   const rawReadsChirho = readRawReadsChirho(optionsChirho.triageDirChirho, targetsChirho);
 
   const spansChirho: HebrewSpanValidationChirho[] = [];
+  const sourceCountsChirho: Record<string, number> = {};
   const pageSummariesChirho = new Map<string, PageSummaryChirho>();
   for (const targetChirho of targetsChirho) {
     const contextChirho = readPageContextChirho(targetChirho);
@@ -633,6 +800,14 @@ function buildValidationReportChirho(optionsChirho: CliOptionsChirho): Validatio
         if (spanChirho.scriptChirho !== "hebrew-chirho") continue;
         const tokenSkeletonsChirho = hebrewTokenSkeletonsChirho(spanChirho.utf8TextChirho);
         if (tokenSkeletonsChirho.length === 0) continue;
+        const spanSourceValueChirho = spanSourceChirho(
+          targetChirho,
+          spanChirho,
+          tokenSkeletonsChirho,
+          d1TextSourcesChirho
+        );
+        addSourceCountChirho(sourceCountsChirho, spanSourceValueChirho);
+        if (!sourceIncludedChirho(spanSourceValueChirho, optionsChirho.sourceFilterChirho)) continue;
         const directReadResultChirho = directReadWitnessesForSpanChirho(
           targetChirho,
           lineChirho.lineIndexChirho,
@@ -679,6 +854,7 @@ function buildValidationReportChirho(optionsChirho: CliOptionsChirho): Validatio
           ...targetChirho,
           lineIndexChirho: lineChirho.lineIndexChirho,
           segmentIndexChirho: spanChirho.segmentIndexChirho,
+          spanSourceChirho: spanSourceValueChirho,
           textChirho: spanChirho.utf8TextChirho,
           lineTextChirho: lineTextValueChirho,
           tokenSkeletonsChirho,
@@ -704,6 +880,8 @@ function buildValidationReportChirho(optionsChirho: CliOptionsChirho): Validatio
     triageDirChirho: optionsChirho.triageDirChirho,
     d1DbPathChirho: optionsChirho.dbPathChirho ?? null,
     directConfChirho: optionsChirho.directConfChirho,
+    sourceFilterChirho: optionsChirho.sourceFilterChirho,
+    sourceCountsChirho,
     spanCountChirho: spansChirho.length,
     tokenCountChirho: spansChirho.reduce((sumChirho, spanChirho) => sumChirho + spanChirho.tokenSkeletonsChirho.length, 0),
     allTokenValidatedSpanCountChirho: spansChirho.filter(
@@ -745,6 +923,8 @@ function markdownReportChirho(reportChirho: ValidationReportChirho): string {
     `- Unvalidated spans: ${reportChirho.unvalidatedSpanCountChirho}`,
     `- Validated tokens: ${reportChirho.validatedTokenCountChirho}/${reportChirho.tokenCountChirho}`,
     `- Direct CRNN confidence floor: ${reportChirho.directConfChirho}`,
+    `- Source filter: ${reportChirho.sourceFilterChirho}`,
+    `- Hebrew source counts before filter: ${Object.entries(reportChirho.sourceCountsChirho).map(([sourceChirho, countChirho]) => `${sourceChirho}=${countChirho}`).join(", ")}`,
     "",
     "## Pages",
     "",
@@ -757,8 +937,8 @@ function markdownReportChirho(reportChirho: ValidationReportChirho): string {
     "",
     "## Review Queue",
     "",
-    "| Status | Volume | Page | Line | Segment | Text | Skeletons | Witnesses |",
-    "|---|---:|---:|---:|---:|---|---|---|",
+    "| Status | Source | Volume | Page | Line | Segment | Text | Skeletons | Witnesses |",
+    "|---|---|---:|---:|---:|---:|---|---|---|",
   ];
 
   for (const spanChirho of reportChirho.spansChirho.filter(
@@ -769,7 +949,7 @@ function markdownReportChirho(reportChirho: ValidationReportChirho): string {
       0
     );
     linesChirho.push(
-      `| ${spanChirho.validationStatusChirho} | ${spanChirho.volumeChirho} | ${spanChirho.pageChirho} | ${spanChirho.lineIndexChirho} | ${spanChirho.segmentIndexChirho} | ${spanChirho.textChirho.replaceAll("|", "\\|")} | ${spanChirho.tokenSkeletonsChirho.join(" ")} | ${witnessCountChirho} |`
+      `| ${spanChirho.validationStatusChirho} | ${spanChirho.spanSourceChirho} | ${spanChirho.volumeChirho} | ${spanChirho.pageChirho} | ${spanChirho.lineIndexChirho} | ${spanChirho.segmentIndexChirho} | ${spanChirho.textChirho.replaceAll("|", "\\|")} | ${spanChirho.tokenSkeletonsChirho.join(" ")} | ${witnessCountChirho} |`
     );
   }
 
@@ -791,7 +971,8 @@ function mainChirho(): void {
       `all=${reportChirho.allTokenValidatedSpanCountChirho}, ` +
       `partial=${reportChirho.partialTokenValidatedSpanCountChirho}, ` +
       `unvalidated=${reportChirho.unvalidatedSpanCountChirho}, ` +
-      `validatedTokens=${reportChirho.validatedTokenCountChirho}/${reportChirho.tokenCountChirho}`
+      `validatedTokens=${reportChirho.validatedTokenCountChirho}/${reportChirho.tokenCountChirho}, ` +
+      `source=${reportChirho.sourceFilterChirho}`
   );
   console.log(`[${MODULE_CHIRHO}] report=${jsonPathChirho}`);
 }
