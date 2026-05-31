@@ -176,9 +176,29 @@ const LINE_REPLACEMENTS_CHIRHO: LineReplacementChirho[] = [
     replacementsChirho: [{ fromChirho: "hilfftfft", toChirho: "hilfft" }],
   },
   {
+    pageChirho: "0059",
+    lineChirho: "011",
+    replacementsChirho: [{ fromChirho: "155 7", toChirho: "1557" }],
+  },
+  {
+    pageChirho: "0064",
+    lineChirho: "003",
+    replacementsChirho: [{ fromChirho: "Ps 22, < C'est", toChirho: "Ps 22,15. C'est" }],
+  },
+  {
+    pageChirho: "0064",
+    lineChirho: "008",
+    replacementsChirho: [{ fromChirho: "N 8 à la 3 e forme", toChirho: "à la 3e forme" }],
+  },
+  {
     pageChirho: "0064",
     lineChirho: "023",
     replacementsChirho: [{ fromChirho: "0 AYYUJ", toChirho: "ḤAYYUJ" }],
+  },
+  {
+    pageChirho: "0148",
+    lineChirho: "016",
+    replacementsChirho: [{ fromChirho: "di % érents", toChirho: "différents" }],
   },
   {
     pageChirho: "0148",
@@ -205,13 +225,33 @@ const LINE_REPLACEMENTS_CHIRHO: LineReplacementChirho[] = [
   },
   {
     pageChirho: "0151",
+    lineChirho: "004",
+    replacementsChirho: [{ fromChirho: "a % aire", toChirho: "affaire" }],
+  },
+  {
+    pageChirho: "0151",
     lineChirho: "005",
     replacementsChirho: [{ fromChirho: "sou 8 e", toChirho: "souffle" }],
   },
   {
     pageChirho: "0151",
+    lineChirho: "010",
+    replacementsChirho: [{ fromChirho: "e % ectuée", toChirho: "effectuée" }],
+  },
+  {
+    pageChirho: "0151",
     lineChirho: "014",
     replacementsChirho: [{ fromChirho: "sou 8 e", toChirho: "souffle" }],
+  },
+  {
+    pageChirho: "0151",
+    lineChirho: "028",
+    replacementsChirho: [{ fromChirho: "o % re", toChirho: "offre" }],
+  },
+  {
+    pageChirho: "0152",
+    lineChirho: "010",
+    replacementsChirho: [{ fromChirho: "o % re", toChirho: "offre" }],
   },
 ];
 
@@ -226,6 +266,17 @@ const RANGE_REPAIRS_CHIRHO: RangeRepairChirho[] = [
     spansChirho: [
       { xMinPxChirho: 0, widthPxChirho: 180, scriptChirho: "latin-non-french-chirho", utf8TextChirho: "hilfft", visionChirho: true },
       { xMinPxChirho: 180, widthPxChirho: 650, scriptChirho: "latin-non-french-chirho", utf8TextChirho: "dem Armen von dem" },
+    ],
+  },
+  {
+    pageChirho: "0059",
+    lineChirho: "003",
+    startIndexChirho: 2,
+    endIndexChirho: 4,
+    expectedRenderedChirho: "𝔊 o f re:",
+    repairedRenderedChirho: "𝔊 offre:",
+    spansChirho: [
+      { xMinPxChirho: 505, widthPxChirho: 191, scriptChirho: "french-chirho", utf8TextChirho: "offre:", visionChirho: true },
     ],
   },
   {
@@ -316,6 +367,17 @@ const RANGE_REPAIRS_CHIRHO: RangeRepairChirho[] = [
       { xMinPxChirho: 0, widthPxChirho: 493, scriptChirho: "french-chirho", utf8TextChirho: "comme fond (", visionChirho: true },
       { xMinPxChirho: 493, widthPxChirho: 153, scriptChirho: "arabic-chirho", utf8TextChirho: "يذوب", visionChirho: true },
       { xMinPxChirho: 646, widthPxChirho: 242, scriptChirho: "french-chirho", utf8TextChirho: ") la cire.”", visionChirho: true },
+    ],
+  },
+  {
+    pageChirho: "0066",
+    lineChirho: "001",
+    startIndexChirho: 3,
+    endIndexChirho: 3,
+    expectedRenderedChirho: "seid ihr jetzt A r mich",
+    repairedRenderedChirho: "seid ihr jetzt für mich",
+    spansChirho: [
+      { xMinPxChirho: 1988, widthPxChirho: 140, scriptChirho: "latin-non-french-chirho", utf8TextChirho: "für", visionChirho: true },
     ],
   },
   {
