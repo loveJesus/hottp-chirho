@@ -10,8 +10,8 @@ This queue is not a replacement for the broader WLC/human confirmation pass over
 ## Current Export Gate
 
 - `bun run src-chirho/export-markdown-chirho.ts --all --strict`
-- Result: strict fails with 5 issues.
-- Issue mix: 4 `suspect-text-chirho` warnings, 1 `unknown-script-chirho` warning.
+- Result: strict fails with 1 issue.
+- Issue mix: 1 `unknown-script-chirho` warning.
 
 ## Syriac Expert Items
 
@@ -41,13 +41,13 @@ These are not additional strict-export blockers, but they should be called out d
 | Medium | vol 5 p64 L18 S3 | `hebrew-chirho`, `vision-chirho` | `תוּשִׁיּה` | Confirm the vocalization. Claude's note had `תּוּשִׁיָּה`, while Codex could not independently see the qamats under the yod and intentionally did not upgrade the stored vowels. |
 | Medium | vol 5 p65 L2 S5 | `hebrew-chirho`, `vision-chirho` | `מס` | Short Hebrew fragment at the end of the line; include in the WLC/human spot-check because it was flagged as medium-confidence. |
 
-## Non-Expert Strict Residue
+## Resolved Non-Expert Strict Residue
 
-These are still strict warnings, but not part of the Syriac/Arabic expert queue:
+These were strict warnings, but not part of the Syriac/Arabic expert queue. They were resolved with `spec-chirho/metropoliluya-chirho/cleanup-nonexpert-suspects-2026-05-31-chirho.ts`, which rebuilds the affected scanlines gap-free from the line images:
 
-- vol 1 p151 L34 S2: short French span `An` between Hebrew spans.
-- vol 2 p148 L25 S2: short French span `7x` between Hebrew spans.
-- vol 2 p148 L29 S2: short French span `1f)` between Greek spans.
-- vol 5 p58 L10 S3: Latin-script span contains embedded Hebrew, `ecturer מָחֵרֶב`.
+- vol 1 p151 L34: removed phantom `An` and duplicate Hebrew, leaving `וַיָּרִיעוּ הָעָם תְּרוּעָה גְדוֹלָה en un`.
+- vol 2 p148 L25: merged the Hebrew phrase to `שבי ישראל סרו מדרך העם`.
+- vol 2 p148 L29: merged the Greek phrase to `ἀπειθοῦσι τῇ πορείᾳ τῆς ὁδοῦ τοῦ λαοῦ`.
+- vol 5 p58 L10: rebuilt the French/Hebrew line as `Disant conjecturer מָחֵרֶב au lieu de מֵחֶרֶב, J123 traduit: “Il`.
 
-Those four should be resolved through the existing human/suspect-text queue rather than by a Syriac or Arabic specialist.
+No current non-expert strict residue remains; the export gate is blocked only by the p69 Syriac tail.
