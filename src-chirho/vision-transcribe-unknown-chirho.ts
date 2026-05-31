@@ -16,7 +16,7 @@
  *     Crop every unknown-script span out of its local line image into
  *     workspace-chirho/vision-unknown-chirho/vol-V-page-PPPP-chirho/ and emit a
  *     verdicts template JSON (one entry per span; scriptChirho/utf8TextChirho blank).
- *   --verdicts=<path> [--apply]
+ *   --verdicts=<path> [--apply] [--reviewer=codex-vision-chirho]
  *     Read the filled template, staleness-check each span, and (with --apply)
  *     stamp scriptChirho + utf8TextChirho + provenanceChirho="vision-chirho" into
  *     the span file, appending an audit row. Dry-run by default.
@@ -35,7 +35,7 @@ const SPANS_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-ch
 const SCANLINES_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "scanlines-chirho");
 const OUT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "vision-unknown-chirho");
 const EXPORT_REPORT_PATH_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "markdown-chirho", "export-report-chirho.json");
-const REVIEWER_CHIRHO = "claude-opus-vision-chirho";
+const DEFAULT_REVIEWER_CHIRHO = "claude-opus-vision-chirho";
 const ALLOWED_SCRIPTS_CHIRHO = new Set([
   "hebrew-chirho", "arabic-chirho", "greek-chirho", "syriac-chirho",
   "latin-non-french-chirho", "french-chirho", "symbol-chirho",
@@ -144,7 +144,7 @@ function cropModeChirho(volChirho: number, pageChirho: number): void {
   console.log(`  fill scriptChirho + utf8TextChirho in ${templatePathChirho}, then run --verdicts=... --apply`);
 }
 
-function applyModeChirho(verdictsPathChirho: string, applyChirho: boolean): void {
+function applyModeChirho(verdictsPathChirho: string, applyChirho: boolean, reviewerChirho: string): void {
   const verdictsChirho = JSON.parse(readFileSync(verdictsPathChirho, "utf8")) as VerdictChirho[];
   const dbChirho = new Database(PROGRESS_DB_PATH_CHIRHO);
   ensureAuditTableChirho(dbChirho);
@@ -175,7 +175,7 @@ function applyModeChirho(verdictsPathChirho: string, applyChirho: boolean): void
       spanChirho.provenanceChirho = "vision-chirho";
       spanChirho.visionTranscribedAtChirho = nowChirho;
       writeFileSync(linePathChirho, `${JSON.stringify(lineObjChirho, null, 2)}\n`);
-      insertChirho.run(vChirho.volumeChirho, vChirho.pageChirho, vChirho.lineIndexChirho, vChirho.segmentIndexChirho, origChirho, hashTextChirho(origChirho), vChirho.scriptChirho, newTextChirho, vChirho.notesChirho ?? null, REVIEWER_CHIRHO, nowChirho, nowChirho, linePathChirho);
+      insertChirho.run(vChirho.volumeChirho, vChirho.pageChirho, vChirho.lineIndexChirho, vChirho.segmentIndexChirho, origChirho, hashTextChirho(origChirho), vChirho.scriptChirho, newTextChirho, vChirho.notesChirho ?? null, reviewerChirho, nowChirho, nowChirho, linePathChirho);
       appliedChirho++;
     } else plannedChirho++;
   }
@@ -186,14 +186,15 @@ function applyModeChirho(verdictsPathChirho: string, applyChirho: boolean): void
 function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const verdictsPathChirho = argChirho(argsChirho, "verdicts");
-  if (verdictsPathChirho) { applyModeChirho(verdictsPathChirho, argsChirho.includes("--apply")); return; }
+  const reviewerChirho = argChirho(argsChirho, "reviewer") ?? DEFAULT_REVIEWER_CHIRHO;
+  if (verdictsPathChirho) { applyModeChirho(verdictsPathChirho, argsChirho.includes("--apply"), reviewerChirho); return; }
   if (argsChirho.includes("--crop")) {
     const volChirho = parseInt(argChirho(argsChirho, "vol") ?? "0", 10);
     const pageChirho = parseInt(argChirho(argsChirho, "page") ?? "0", 10);
     if (!volChirho || !pageChirho) { console.error("need --vol and --page for --crop"); process.exit(1); }
     cropModeChirho(volChirho, pageChirho); return;
   }
-  console.error("usage: --vol=V --page=P --crop  |  --verdicts=path [--apply]");
+  console.error("usage: --vol=V --page=P --crop  |  --verdicts=path [--apply] [--reviewer=name-chirho]");
   process.exit(1);
 }
 if (import.meta.main) mainChirho();

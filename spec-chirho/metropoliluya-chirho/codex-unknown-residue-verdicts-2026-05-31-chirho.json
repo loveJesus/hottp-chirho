@@ -1,0 +1,132 @@
+[
+  {
+    "volumeChirho": 5,
+    "pageChirho": 50,
+    "lineIndexChirho": 2,
+    "segmentIndexChirho": 3,
+    "garbleTextChirho": ";22’)10FQ/ '\"#R0+ %1=P( E IK%:=%",
+    "scriptChirho": "greek-chirho",
+    "utf8TextChirho": "ἀλλ’ εὐθέως ἐβρώθη αὐτῶν ἡ δίαιτα",
+    "notesChirho": "Printed Greek line is clear; comma is already segment 4."
+  },
+  {
+    "volumeChirho": 5,
+    "pageChirho": 50,
+    "lineIndexChirho": 4,
+    "segmentIndexChirho": 8,
+    "garbleTextChirho": "9:-E8",
+    "scriptChirho": "syriac-chirho",
+    "utf8TextChirho": "ܘܳܐܒܕܳܐ",
+    "notesChirho": "Serto crop matches Job 5:3 Peshitta; continuation is on the next line."
+  },
+  {
+    "volumeChirho": 5,
+    "pageChirho": 50,
+    "lineIndexChirho": 5,
+    "segmentIndexChirho": 0,
+    "garbleTextChirho": "FG$ 5' <=A)%",
+    "scriptChirho": "syriac-chirho",
+    "utf8TextChirho": "ܕܰܝܪܶܗ ܡܶܢ ܫܶܠܝ",
+    "notesChirho": "Serto crop matches the continuation of Job 5:3 Peshitta before the French period."
+  },
+  {
+    "volumeChirho": 5,
+    "pageChirho": 51,
+    "lineIndexChirho": 22,
+    "segmentIndexChirho": 1,
+    "garbleTextChirho": "‘assoi % és",
+    "scriptChirho": "french-chirho",
+    "utf8TextChirho": "‘assoiffés’,",
+    "notesChirho": "Visible French word with ff ligature; comma is inside this span before [N]RSV."
+  },
+  {
+    "volumeChirho": 5,
+    "pageChirho": 51,
+    "lineIndexChirho": 24,
+    "segmentIndexChirho": 0,
+    "garbleTextChirho": "‘assoi % és",
+    "scriptChirho": "french-chirho",
+    "utf8TextChirho": "‘assoiffés’.",
+    "notesChirho": "Visible French word with ff ligature and final period."
+  },
+  {
+    "volumeChirho": 5,
+    "pageChirho": 53,
+    "lineIndexChirho": 8,
+    "segmentIndexChirho": 1,
+    "garbleTextChirho": ">(HI2\"2 *)=J48",
+    "scriptChirho": "syriac-chirho",
+    "utf8TextChirho": "ܘܠܗ ܢܫܩܠܘܢ ܙܝܢܬܢܐ",
+    "notesChirho": "Full-line vision result and printed Serto line agree at line level; left as vision-tier, not human-certified Syriac."
+  },
+  {
+    "volumeChirho": 5,
+    "pageChirho": 60,
+    "lineIndexChirho": 29,
+    "segmentIndexChirho": 1,
+    "garbleTextChirho": "%",
+    "scriptChirho": "french-chirho",
+    "utf8TextChirho": "ff",
+    "notesChirho": "The percent sign is the ff ligature inside French 'effet'."
+  },
+  {
+    "volumeChirho": 5,
+    "pageChirho": 64,
+    "lineIndexChirho": 2,
+    "segmentIndexChirho": 1,
+    "garbleTextChirho": "devoyant’",
+    "scriptChirho": "french-chirho",
+    "utf8TextChirho": "devoyant’",
+    "notesChirho": "Already-correct French word; only the script label was unknown."
+  },
+  {
+    "volumeChirho": 5,
+    "pageChirho": 64,
+    "lineIndexChirho": 3,
+    "segmentIndexChirho": 1,
+    "garbleTextChirho": "denisant’",
+    "scriptChirho": "french-chirho",
+    "utf8TextChirho": "denisant’",
+    "notesChirho": "Already-correct French word; only the script label was unknown."
+  },
+  {
+    "volumeChirho": 5,
+    "pageChirho": 66,
+    "lineIndexChirho": 19,
+    "segmentIndexChirho": 5,
+    "garbleTextChirho": "FGO >8\")8= >8\"2E [E8",
+    "scriptChirho": "syriac-chirho",
+    "utf8TextChirho": "ܘܳܐܦ ܐܰܢܬܽܘܢ ܗܘܰܝܬܽܘܢ ܥܠܰܝ",
+    "notesChirho": "Serto crop, tesseract syr pass, and Job 6:21 Peshitta agree."
+  },
+  {
+    "volumeChirho": 5,
+    "pageChirho": 66,
+    "lineIndexChirho": 20,
+    "segmentIndexChirho": 2,
+    "garbleTextChirho": "*#Q\\",
+    "scriptChirho": "syriac-chirho",
+    "utf8TextChirho": "ܛܥܢܐ",
+    "notesChirho": "Short Serto word after the Ambrosianus note; tesseract syr pass matches the visible crop."
+  },
+  {
+    "volumeChirho": 5,
+    "pageChirho": 69,
+    "lineIndexChirho": 23,
+    "segmentIndexChirho": 5,
+    "garbleTextChirho": "_/ I’`(",
+    "scriptChirho": "greek-chirho",
+    "utf8TextChirho": "ὡς δ’ ἂν",
+    "notesChirho": "Printed Greek continuation is clear; accent on ἂν is grave."
+  },
+  {
+    "volumeChirho": 5,
+    "pageChirho": 69,
+    "lineIndexChirho": 26,
+    "segmentIndexChirho": 1,
+    "garbleTextChirho": "_/ I’`( ;(%,=P",
+    "scriptChirho": "greek-chirho",
+    "utf8TextChirho": "ὡς δ’ ἂν ἀναστῶ",
+    "notesChirho": "Printed Greek phrase is clear; accent on ἂν is grave."
+  }
+]
