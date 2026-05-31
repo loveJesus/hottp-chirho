@@ -1,14 +1,23 @@
 // For God so loved the world that he gave his only begotten Son,
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
-// Builds a compact reviewer packet for the remaining vision-tier transcription
-// questions. The packet is generated under workspace-chirho so it can be
-// regenerated without treating screenshots as source.
+// Builds a reviewer packet for the remaining vision-tier transcription
+// questions. Priority items are listed first, followed by a complete generated
+// appendix of every non-Latin vision-chirho span so machine text is never
+// mistaken for human-confirmed text.
 
-import { copyFileSync, mkdirSync, writeFileSync } from "fs";
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  readdirSync,
+  writeFileSync,
+} from "fs";
 import { join, relative } from "path";
 
 const PROJECT_ROOT_CHIRHO = "/Users/hallelujah/dev-chirho/friends-chirho/andrewbeth-chirho/hottp-chirho";
+const SPANS_ROOT_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
 const SCANLINES_ROOT_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "scanlines-chirho");
 const OUT_DIR_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -17,8 +26,38 @@ const OUT_DIR_CHIRHO = join(
   "2026-05-31-chirho"
 );
 const IMAGE_DIR_CHIRHO = join(OUT_DIR_CHIRHO, "images-chirho");
+const LINE_FILE_RE_CHIRHO = /^line-(\d+)-chirho\.json$/;
+const PAGE_DIR_RE_CHIRHO = /^page-(\d+)-chirho$/;
+const VOL_DIR_RE_CHIRHO = /^vol-(\d+)-chirho$/;
+const REVIEW_SCRIPT_ORDER_CHIRHO = [
+  "syriac-chirho",
+  "arabic-chirho",
+  "hebrew-chirho",
+  "greek-chirho",
+];
+const REVIEW_SCRIPT_LABELS_CHIRHO: Record<string, string> = {
+  "syriac-chirho": "Syriac reader",
+  "arabic-chirho": "Arabist",
+  "hebrew-chirho": "Hebrew/WLC reviewer",
+  "greek-chirho": "Greek/textual reviewer",
+};
+const REVIEW_SCRIPTS_CHIRHO = new Set<string>(REVIEW_SCRIPT_ORDER_CHIRHO);
 
-interface ExpertConfirmItemChirho {
+interface SpanChirho {
+  segmentIndexChirho: number;
+  scriptChirho: string;
+  utf8TextChirho: string;
+  provenanceChirho?: string;
+}
+
+interface SpanLineChirho {
+  volumeChirho: number;
+  pageChirho: number;
+  lineIndexChirho: number;
+  spansChirho: SpanChirho[];
+}
+
+interface PriorityItemChirho {
   idChirho: string;
   reviewerChirho: string;
   priorityChirho: string;
@@ -39,6 +78,33 @@ interface GeneratedImageChirho {
   markdownPathChirho: string;
 }
 
+interface PriorityManifestItemChirho extends PriorityItemChirho {
+  imagesChirho: GeneratedImageChirho[];
+}
+
+interface VisionSpanItemChirho {
+  idChirho: string;
+  reviewerChirho: string;
+  scriptChirho: string;
+  volumeChirho: number;
+  pageChirho: number;
+  lineIndexChirho: number;
+  segmentIndexChirho: number;
+  currentTextChirho: string;
+  sourcePathChirho: string;
+  packetPathChirho: string;
+  markdownPathChirho: string;
+  priorityMatchChirho: boolean;
+}
+
+interface PacketManifestChirho {
+  generatedAtChirho: string;
+  strictExportStatusChirho: string;
+  priorityItemsChirho: PriorityManifestItemChirho[];
+  completeVisionCountsChirho: Record<string, number>;
+  completeVisionItemsChirho: VisionSpanItemChirho[];
+}
+
 function paddedPageChirho(pageChirho: number): string {
   return String(pageChirho).padStart(4, "0");
 }
@@ -47,23 +113,44 @@ function paddedLineChirho(lineChirho: number): string {
   return String(lineChirho).padStart(3, "0");
 }
 
-function scanlinePathChirho(itemChirho: ExpertConfirmItemChirho, lineChirho: number): string {
+function spanKeyChirho(volumeChirho: number, pageChirho: number, lineChirho: number, segmentChirho: number): string {
+  return `v${volumeChirho}-p${paddedPageChirho(pageChirho)}-l${paddedLineChirho(lineChirho)}-s${segmentChirho}`;
+}
+
+function scanlinePathChirho(volumeChirho: number, pageChirho: number, lineChirho: number): string {
   return join(
     SCANLINES_ROOT_CHIRHO,
-    `vol-${itemChirho.volumeChirho}-chirho`,
-    `page-${paddedPageChirho(itemChirho.pageChirho)}-chirho`,
+    `vol-${volumeChirho}-chirho`,
+    `page-${paddedPageChirho(pageChirho)}-chirho`,
     `line-${paddedLineChirho(lineChirho)}-chirho.png`
   );
 }
 
-function packetImagePathChirho(itemChirho: ExpertConfirmItemChirho, lineChirho: number): string {
+function packetImagePathChirho(volumeChirho: number, pageChirho: number, lineChirho: number): string {
   return join(
     IMAGE_DIR_CHIRHO,
-    `${itemChirho.idChirho}-vol-${itemChirho.volumeChirho}-page-${paddedPageChirho(itemChirho.pageChirho)}-line-${paddedLineChirho(lineChirho)}-chirho.png`
+    `vol-${volumeChirho}-page-${paddedPageChirho(pageChirho)}-line-${paddedLineChirho(lineChirho)}-chirho.png`
   );
 }
 
-function linesForItemChirho(itemChirho: ExpertConfirmItemChirho): number[] {
+function copyLineImageChirho(volumeChirho: number, pageChirho: number, lineChirho: number): GeneratedImageChirho {
+  const sourcePathChirho = scanlinePathChirho(volumeChirho, pageChirho, lineChirho);
+  const packetPathChirho = packetImagePathChirho(volumeChirho, pageChirho, lineChirho);
+  if (!existsSync(sourcePathChirho)) {
+    throw new Error(`missing scanline image: ${sourcePathChirho}`);
+  }
+  if (!existsSync(packetPathChirho)) {
+    copyFileSync(sourcePathChirho, packetPathChirho);
+  }
+  return {
+    lineIndexChirho: lineChirho,
+    sourcePathChirho,
+    packetPathChirho,
+    markdownPathChirho: relative(OUT_DIR_CHIRHO, packetPathChirho),
+  };
+}
+
+function linesForPriorityItemChirho(itemChirho: PriorityItemChirho): number[] {
   const endChirho = itemChirho.lineEndChirho ?? itemChirho.lineStartChirho;
   const linesChirho: number[] = [];
   for (let lineChirho = itemChirho.lineStartChirho; lineChirho <= endChirho; lineChirho++) {
@@ -72,7 +159,152 @@ function linesForItemChirho(itemChirho: ExpertConfirmItemChirho): number[] {
   return linesChirho;
 }
 
-const ITEMS_CHIRHO: ExpertConfirmItemChirho[] = [
+function prioritySpanKeysChirho(itemsChirho: PriorityItemChirho[]): Set<string> {
+  const keysChirho = new Set<string>();
+  for (const itemChirho of itemsChirho) {
+    for (const refChirho of itemChirho.spanRefsChirho) {
+      const matchChirho = refChirho.match(/^L(\d+)\s+S(\d+)$/);
+      if (!matchChirho) continue;
+      keysChirho.add(
+        spanKeyChirho(
+          itemChirho.volumeChirho,
+          itemChirho.pageChirho,
+          Number.parseInt(matchChirho[1]!, 10),
+          Number.parseInt(matchChirho[2]!, 10)
+        )
+      );
+    }
+  }
+  return keysChirho;
+}
+
+function sortedDirNumbersChirho(rootChirho: string, reChirho: RegExp): number[] {
+  return readdirSync(rootChirho)
+    .map((nameChirho) => nameChirho.match(reChirho)?.[1])
+    .filter((valueChirho): valueChirho is string => valueChirho !== undefined)
+    .map((valueChirho) => Number.parseInt(valueChirho, 10))
+    .sort((aChirho, bChirho) => aChirho - bChirho);
+}
+
+function readSpanLinesChirho(): SpanLineChirho[] {
+  const linesChirho: SpanLineChirho[] = [];
+  for (const volumeChirho of sortedDirNumbersChirho(SPANS_ROOT_CHIRHO, VOL_DIR_RE_CHIRHO)) {
+    const volumeDirChirho = join(SPANS_ROOT_CHIRHO, `vol-${volumeChirho}-chirho`);
+    for (const pageChirho of sortedDirNumbersChirho(volumeDirChirho, PAGE_DIR_RE_CHIRHO)) {
+      const pageDirChirho = join(volumeDirChirho, `page-${paddedPageChirho(pageChirho)}-chirho`);
+      const lineNumbersChirho = sortedDirNumbersChirho(pageDirChirho, LINE_FILE_RE_CHIRHO);
+      for (const lineChirho of lineNumbersChirho) {
+        const pathChirho = join(pageDirChirho, `line-${paddedLineChirho(lineChirho)}-chirho.json`);
+        linesChirho.push(JSON.parse(readFileSync(pathChirho, "utf8")) as SpanLineChirho);
+      }
+    }
+  }
+  return linesChirho;
+}
+
+function scriptSortIndexChirho(scriptChirho: string): number {
+  const indexChirho = REVIEW_SCRIPT_ORDER_CHIRHO.indexOf(scriptChirho);
+  return indexChirho === -1 ? REVIEW_SCRIPT_ORDER_CHIRHO.length : indexChirho;
+}
+
+function discoverVisionItemsChirho(priorityKeysChirho: Set<string>): VisionSpanItemChirho[] {
+  const itemsChirho: VisionSpanItemChirho[] = [];
+  for (const lineChirho of readSpanLinesChirho()) {
+    for (const spanChirho of lineChirho.spansChirho) {
+      if (spanChirho.provenanceChirho !== "vision-chirho") continue;
+      if (!REVIEW_SCRIPTS_CHIRHO.has(spanChirho.scriptChirho)) continue;
+      const idChirho = spanKeyChirho(
+        lineChirho.volumeChirho,
+        lineChirho.pageChirho,
+        lineChirho.lineIndexChirho,
+        spanChirho.segmentIndexChirho
+      );
+      const imageChirho = copyLineImageChirho(
+        lineChirho.volumeChirho,
+        lineChirho.pageChirho,
+        lineChirho.lineIndexChirho
+      );
+      itemsChirho.push({
+        idChirho,
+        reviewerChirho: REVIEW_SCRIPT_LABELS_CHIRHO[spanChirho.scriptChirho] ?? "Reviewer",
+        scriptChirho: spanChirho.scriptChirho,
+        volumeChirho: lineChirho.volumeChirho,
+        pageChirho: lineChirho.pageChirho,
+        lineIndexChirho: lineChirho.lineIndexChirho,
+        segmentIndexChirho: spanChirho.segmentIndexChirho,
+        currentTextChirho: spanChirho.utf8TextChirho,
+        sourcePathChirho: imageChirho.sourcePathChirho,
+        packetPathChirho: imageChirho.packetPathChirho,
+        markdownPathChirho: imageChirho.markdownPathChirho,
+        priorityMatchChirho: priorityKeysChirho.has(idChirho),
+      });
+    }
+  }
+
+  return itemsChirho.sort((aChirho, bChirho) =>
+    scriptSortIndexChirho(aChirho.scriptChirho) - scriptSortIndexChirho(bChirho.scriptChirho) ||
+    aChirho.volumeChirho - bChirho.volumeChirho ||
+    aChirho.pageChirho - bChirho.pageChirho ||
+    aChirho.lineIndexChirho - bChirho.lineIndexChirho ||
+    aChirho.segmentIndexChirho - bChirho.segmentIndexChirho
+  );
+}
+
+function countByScriptChirho(itemsChirho: VisionSpanItemChirho[]): Record<string, number> {
+  const countsChirho: Record<string, number> = {};
+  for (const itemChirho of itemsChirho) {
+    countsChirho[itemChirho.scriptChirho] = (countsChirho[itemChirho.scriptChirho] ?? 0) + 1;
+  }
+  return countsChirho;
+}
+
+function priorityMarkdownChirho(itemsChirho: PriorityManifestItemChirho[]): string[] {
+  return itemsChirho.flatMap((itemChirho) => [
+    `## ${itemChirho.priorityChirho}: ${itemChirho.idChirho}`,
+    "",
+    `- Reviewer: ${itemChirho.reviewerChirho}`,
+    `- Location: vol ${itemChirho.volumeChirho}, p${itemChirho.pageChirho}, ${itemChirho.spanRefsChirho.join(", ")}`,
+    `- Current text: ${itemChirho.currentTextChirho}`,
+    `- Question: ${itemChirho.questionChirho}`,
+    ...(itemChirho.sourceNoteChirho ? [`- Source note: ${itemChirho.sourceNoteChirho}`] : []),
+    "",
+    ...itemChirho.imagesChirho.flatMap((imageChirho) => [
+      `![${itemChirho.idChirho} line ${imageChirho.lineIndexChirho}](${imageChirho.markdownPathChirho})`,
+      "",
+    ]),
+  ]);
+}
+
+function completeVisionMarkdownChirho(itemsChirho: VisionSpanItemChirho[]): string[] {
+  const linesChirho: string[] = [
+    "## Complete Vision-Tier Appendix",
+    "",
+    "Every item below is `vision-chirho`, not human-confirmed. Priority items are marked `yes` but are repeated here so this appendix is complete.",
+    "",
+  ];
+
+  for (const scriptChirho of REVIEW_SCRIPT_ORDER_CHIRHO) {
+    const scriptItemsChirho = itemsChirho.filter((itemChirho) => itemChirho.scriptChirho === scriptChirho);
+    linesChirho.push(`### ${scriptChirho} (${scriptItemsChirho.length})`, "");
+    for (const itemChirho of scriptItemsChirho) {
+      linesChirho.push(
+        `#### ${itemChirho.idChirho}`,
+        "",
+        `- Reviewer: ${itemChirho.reviewerChirho}`,
+        `- Location: vol ${itemChirho.volumeChirho}, p${itemChirho.pageChirho}, L${itemChirho.lineIndexChirho} S${itemChirho.segmentIndexChirho}`,
+        `- Priority section: ${itemChirho.priorityMatchChirho ? "yes" : "no"}`,
+        `- Current text: ${itemChirho.currentTextChirho}`,
+        "",
+        `![${itemChirho.idChirho}](${itemChirho.markdownPathChirho})`,
+        ""
+      );
+    }
+  }
+
+  return linesChirho;
+}
+
+const PRIORITY_ITEMS_CHIRHO: PriorityItemChirho[] = [
   {
     idChirho: "syriac-p69-job7-4-chirho",
     reviewerChirho: "Syriac reader",
@@ -170,20 +402,14 @@ const ITEMS_CHIRHO: ExpertConfirmItemChirho[] = [
 function generatePacketChirho(): void {
   mkdirSync(IMAGE_DIR_CHIRHO, { recursive: true });
 
-  const manifestChirho = ITEMS_CHIRHO.map((itemChirho) => {
-    const imagesChirho: GeneratedImageChirho[] = linesForItemChirho(itemChirho).map((lineChirho) => {
-      const sourcePathChirho = scanlinePathChirho(itemChirho, lineChirho);
-      const packetPathChirho = packetImagePathChirho(itemChirho, lineChirho);
-      copyFileSync(sourcePathChirho, packetPathChirho);
-      return {
-        lineIndexChirho: lineChirho,
-        sourcePathChirho,
-        packetPathChirho,
-        markdownPathChirho: relative(OUT_DIR_CHIRHO, packetPathChirho),
-      };
-    });
-    return { ...itemChirho, imagesChirho };
-  });
+  const priorityItemsChirho: PriorityManifestItemChirho[] = PRIORITY_ITEMS_CHIRHO.map((itemChirho) => ({
+    ...itemChirho,
+    imagesChirho: linesForPriorityItemChirho(itemChirho).map((lineChirho) =>
+      copyLineImageChirho(itemChirho.volumeChirho, itemChirho.pageChirho, lineChirho)
+    ),
+  }));
+  const completeVisionItemsChirho = discoverVisionItemsChirho(prioritySpanKeysChirho(PRIORITY_ITEMS_CHIRHO));
+  const completeVisionCountsChirho = countByScriptChirho(completeVisionItemsChirho);
 
   const markdownChirho = [
     "<!-- For God so loved the world that he gave his only begotten Son,",
@@ -191,29 +417,33 @@ function generatePacketChirho(): void {
     "",
     "# Expert Confirm Packet Chirho, 2026-05-31",
     "",
-    "Use this packet to confirm the remaining `vision-chirho` items against the printed line images. Keep `vision-chirho` provenance unless an expert/human reviewer explicitly certifies the text.",
+    "Use this packet to confirm `vision-chirho` text against the printed line images. Keep `vision-chirho` provenance unless an expert/human reviewer explicitly certifies the text.",
     "",
     "The strict Markdown export currently passes with `issues=0`, `unknownSpans=0`, and `d1GapPages=0`; these questions are semantic review items, not structural export blockers.",
     "",
-    ...manifestChirho.flatMap((itemChirho) => [
-      `## ${itemChirho.priorityChirho}: ${itemChirho.idChirho}`,
-      "",
-      `- Reviewer: ${itemChirho.reviewerChirho}`,
-      `- Location: vol ${itemChirho.volumeChirho}, p${itemChirho.pageChirho}, ${itemChirho.spanRefsChirho.join(", ")}`,
-      `- Current text: ${itemChirho.currentTextChirho}`,
-      `- Question: ${itemChirho.questionChirho}`,
-      ...(itemChirho.sourceNoteChirho ? [`- Source note: ${itemChirho.sourceNoteChirho}`] : []),
-      "",
-      ...itemChirho.imagesChirho.flatMap((imageChirho) => [
-        `![${itemChirho.idChirho} line ${imageChirho.lineIndexChirho}](${imageChirho.markdownPathChirho})`,
-        "",
-      ]),
-    ]),
+    "The first section is a priority subset. The appendix is complete for non-Latin machine-read spans: " +
+      REVIEW_SCRIPT_ORDER_CHIRHO.map((scriptChirho) => `${scriptChirho}=${completeVisionCountsChirho[scriptChirho] ?? 0}`).join(", ") +
+      ".",
+    "",
+    "# Priority Review Items",
+    "",
+    ...priorityMarkdownChirho(priorityItemsChirho),
+    ...completeVisionMarkdownChirho(completeVisionItemsChirho),
   ].join("\n");
+
+  const manifestChirho: PacketManifestChirho = {
+    generatedAtChirho: new Date().toISOString(),
+    strictExportStatusChirho: "issues=0; unknownSpans=0; d1GapPages=0",
+    priorityItemsChirho,
+    completeVisionCountsChirho,
+    completeVisionItemsChirho,
+  };
 
   writeFileSync(join(OUT_DIR_CHIRHO, "manifest-chirho.json"), `${JSON.stringify(manifestChirho, null, 2)}\n`);
   writeFileSync(join(OUT_DIR_CHIRHO, "index-chirho.md"), `${markdownChirho.trimEnd()}\n`);
-  console.log(`wrote ${manifestChirho.length} expert-confirm item(s) to ${OUT_DIR_CHIRHO}`);
+  console.log(
+    `wrote ${priorityItemsChirho.length} priority item(s) and ${completeVisionItemsChirho.length} complete vision item(s) to ${OUT_DIR_CHIRHO}`
+  );
 }
 
 generatePacketChirho();
