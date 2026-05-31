@@ -1,0 +1,41 @@
+<!-- For God so loved the world that he gave his only begotten Son,
+that whoever believes in him should not perish but have eternal life. John 3:16 -->
+
+# Expert Confirm Queue Chirho, 2026-05-31
+
+This is the honest residue after the vol-5 vision pass and Codex/Claude cross-audit. The listed spans are intentionally not promoted above `vision-chirho`; they need a Syriac or Arabic/Hebrew-aware human reviewer before being treated as final text.
+
+## Current Export Gate
+
+- `bun run src-chirho/export-markdown-chirho.ts --all --strict`
+- Result: strict fails with 5 issues.
+- Issue mix: 4 `suspect-text-chirho` warnings, 1 `unknown-script-chirho` warning.
+
+## Syriac Expert Items
+
+| Priority | Span | Current status | Text now stored | Why it needs review |
+|---|---|---|---|---|
+| High | vol 5 p69 L30 S5 | `unknown-chirho` | `](KE N"'E ?A 7<'E8 "P 7H$ >E/` | Narrow tail of a Syriac line after `La 𝔖 porte: ܐܶܢ ܕܡܳܟ̰`; Codex deferred it because the glyphs were not independently readable enough. |
+| High | vol 5 p69 L30-L31 | `syriac-chirho`, `vision-chirho` plus one unknown tail | L30 S3 `ܐܶܢ ܕܡܳܟ̰`; L31 S0 `ܟܽܘܪ ܡܺܝܬܳܐ ܟܽܘܪ ܣܶܕܪܳܐ ܟܽܘܪ ܪܰܒܺܝܠ ܟܽܘܪ.` | Review the whole Peshitta line as one unit so the deferred tail can be merged or corrected in context. |
+| Medium | vol 5 p50 L4 S8 | `syriac-chirho`, `vision-chirho` | `ܘܳܐܒܕܳܐ` | Claude and Codex agree the crop is genuinely Syriac/Serto and context matches Job 5:3 Peshitta, but exact letters/vowels remain machine-tier. |
+| Medium | vol 5 p50 L5 S0 | `syriac-chirho`, `vision-chirho` | `ܕܰܝܪܶܗ ܡܶܢ ܫܶܠܝ` | Continuation of the same Job 5:3 Peshitta citation; exact letters/vowels need Syriac-reader confirmation. |
+| Medium | vol 5 p53 L8 S1 | `syriac-chirho`, `vision-chirho` | `ܘܠܗ ܢܫܩܠܘܢ ܙܝܢܬܢܐ` | Claude confirmed script and context, but neither agent certifies exact Estrangela/Serto letters. |
+| Medium | vol 5 p66 L19 S5 | `syriac-chirho`, `vision-chirho` | `ܘܳܐܦ ܐܰܢܬܽܘܢ ܗܘܰܝܬܽܘܢ ܥܠܰܝ` | Script/context agree with Job 6:21 Peshitta; exact letters/vowels need Syriac-reader confirmation. |
+| Medium | vol 5 p66 L20 S2 | `syriac-chirho`, `vision-chirho` | `ܛܥܢܐ` | Short Syriac word in an Ambrosianus note; tesseract and crop agree at machine level, but it should be checked. |
+
+## Arabic Expert Item
+
+| Priority | Span | Current status | Text now stored | Alternatives to check | Why it needs review |
+|---|---|---|---|---|---|
+| High | vol 5 p55 L32 S1 | `arabic-chirho`, `vision-chirho` | `ضِمَار` | `ضِمَام`, `ضِمَاد` | Full-resolution crop leaves the final letter genuinely ambiguous. Claude leaned `ضِمَام`; `ضِمَاد` is lexically plausible in context; Codex originally stored `ضِمَار`. Do not silently change without Arabist/Hallelujah review. |
+
+## Non-Expert Strict Residue
+
+These are still strict warnings, but not part of the Syriac/Arabic expert queue:
+
+- vol 1 p151 L34 S2: short French span `An` between Hebrew spans.
+- vol 2 p148 L25 S2: short French span `7x` between Hebrew spans.
+- vol 2 p148 L29 S2: short French span `1f)` between Greek spans.
+- vol 5 p58 L10 S3: Latin-script span contains embedded Hebrew, `ecturer מָחֵרֶב`.
+
+Those four should be resolved through the existing human/suspect-text queue rather than by a Syriac or Arabic specialist.
