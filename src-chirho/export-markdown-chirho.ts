@@ -74,6 +74,9 @@ const LATIN_TEXT_SCRIPTS_CHIRHO = new Set<string>([
 ]);
 const NON_LATIN_SCRIPT_IN_LATIN_TEXT_RE_CHIRHO =
   /[\p{Script=Greek}\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Arabic}]/u;
+const GREEK_SCRIPT_IN_LATIN_TEXT_RE_CHIRHO = /[\p{Script=Greek}]/u;
+const NON_GREEK_NON_LATIN_SCRIPT_IN_LATIN_TEXT_RE_CHIRHO =
+  /[\p{Script=Hebrew}\p{Script=Syriac}\p{Script=Arabic}]/u;
 const LETTER_RE_CHIRHO = /\p{L}/u;
 const EXPECTED_SCRIPT_CHAR_RE_CHIRHO: Record<string, RegExp> = {
   "hebrew-chirho": /[\u0590-\u05FF]/u,
@@ -705,6 +708,20 @@ function lettersOnlyChirho(textChirho: string): string {
     .join("");
 }
 
+function isVerifiedGreekEmbeddedInLatinTextChirho(spanChirho: SpanChirho): boolean {
+  if (
+    spanChirho.provenanceChirho !== "vision-chirho" &&
+    spanChirho.provenanceChirho !== "human-chirho"
+  ) {
+    return false;
+  }
+  const textChirho = spanChirho.utf8TextChirho;
+  return (
+    GREEK_SCRIPT_IN_LATIN_TEXT_RE_CHIRHO.test(textChirho) &&
+    !NON_GREEK_NON_LATIN_SCRIPT_IN_LATIN_TEXT_RE_CHIRHO.test(textChirho)
+  );
+}
+
 function suspectTextReasonChirho(
   spanChirho: SpanChirho,
   previousSpanChirho: SpanChirho | undefined,
@@ -718,6 +735,7 @@ function suspectTextReasonChirho(
       return `Latin-script span contains a backslash, often indicating pdftotext garble: ${JSON.stringify(textChirho)}`;
     }
     if (NON_LATIN_SCRIPT_IN_LATIN_TEXT_RE_CHIRHO.test(textChirho)) {
+      if (isVerifiedGreekEmbeddedInLatinTextChirho(spanChirho)) return null;
       return `Latin-script span contains non-Latin script codepoints: ${JSON.stringify(textChirho)}`;
     }
   }
