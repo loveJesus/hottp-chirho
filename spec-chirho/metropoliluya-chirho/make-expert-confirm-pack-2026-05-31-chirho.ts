@@ -505,8 +505,8 @@ const PRIORITY_ITEMS_CHIRHO: PriorityItemChirho[] = [
     pageChirho: 64,
     lineStartChirho: 18,
     spanRefsChirho: ["L18 S3"],
-    currentTextChirho: "תוּשִׁיּה",
-    questionChirho: "Confirm the vocalization against the print/WLC question; earlier alternatives included תּוּשִׁיָּה.",
+    currentTextChirho: "תוּשִׁיָּה",
+    questionChirho: "Confirm the remaining vocalization against the print/WLC question; Hallelujah confirmed the yod qamats in this scan.",
   },
   {
     idChirho: "aramaic-vol4-p148-targum-ps18-30-chirho",

@@ -1,0 +1,33 @@
+{
+  "john316Chirho": "For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16",
+  "schemaVersionChirho": 1,
+  "generatedAtChirho": "2026-06-01T17:26:00Z",
+  "sourceChirho": "pass_c_human_validations_chirho current schema-v2 rows",
+  "reviewCountChirho": 1,
+  "reviewsChirho": [
+    {
+      "dbIdChirho": 3,
+      "volumeChirho": 3,
+      "pageChirho": 148,
+      "lineIndexChirho": 59,
+      "segmentIndexChirho": 1,
+      "originalTextChirho": "וְגַםחֲמָת",
+      "originalTextHashChirho": "43fb2e4ce9bd5170fdfdfa2fb8466079a21b3d8572491a335d935aa2b931b68d",
+      "verdictChirho": "reviewed-issues-chirho",
+      "correctedTextChirho": null,
+      "scriptVerdictChirho": null,
+      "issueFlagsChirho": [
+        "accents-chirho",
+        "hebrew-punctuation-chirho"
+      ],
+      "notesChirho": "",
+      "queueGeneratedAtChirho": "2026-05-31T11:48:01.682Z",
+      "reviewerChirho": "human-chirho",
+      "createdAtChirho": "2026-05-31T21:38:32.300Z",
+      "updatedAtChirho": "2026-06-01T17:23:10.335Z",
+      "appliedAtChirho": "2026-06-01T17:23:10.335Z",
+      "appliedToFileChirho": "workspace-chirho/spans-chirho/vol-3-chirho/page-0148-chirho/line-059-chirho.json",
+      "schemaVersionChirho": 2
+    }
+  ]
+}
