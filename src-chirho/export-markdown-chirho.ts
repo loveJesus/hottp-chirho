@@ -156,6 +156,8 @@ interface SpanChirho {
   humanReviewStatusChirho?: string;
   humanIssueFlagsChirho?: string[];
   humanSuggestedTextChirho?: string;
+  wlcSuggestedTextChirho?: string;
+  wlcSuggestionSourceChirho?: string;
 }
 
 interface SpanLineChirho {
@@ -927,11 +929,17 @@ function validateLineChirho(
       );
     }
     if (Array.isArray(spanChirho.humanIssueFlagsChirho) && spanChirho.humanIssueFlagsChirho.length > 0) {
+      const suggestedTextChirho = spanChirho.wlcSuggestedTextChirho ?? spanChirho.humanSuggestedTextChirho;
+      const suggestionSourceChirho = spanChirho.wlcSuggestionSourceChirho ??
+        (spanChirho.humanSuggestedTextChirho ? "human-suggested-text-chirho" : null);
+      const suggestionMessageChirho = suggestedTextChirho
+        ? `; suggested correction ${JSON.stringify(suggestedTextChirho)}${suggestionSourceChirho ? ` from ${suggestionSourceChirho}` : ""}`
+        : "";
       addIssueChirho(
         issuesChirho,
         "warning-chirho",
         "human-review-issues-chirho",
-        `Human reviewer flagged ${spanChirho.humanIssueFlagsChirho.join(", ")}: ${JSON.stringify(spanChirho.utf8TextChirho)}`,
+        `Human reviewer flagged ${spanChirho.humanIssueFlagsChirho.join(", ")}: ${JSON.stringify(spanChirho.utf8TextChirho)}${suggestionMessageChirho}`,
         lineChirho.lineIndexChirho,
         spanChirho.segmentIndexChirho
       );

@@ -505,7 +505,7 @@ const PRIORITY_ITEMS_CHIRHO: PriorityItemChirho[] = [
     pageChirho: 64,
     lineStartChirho: 18,
     spanRefsChirho: ["L18 S3"],
-    currentTextChirho: "תוּשִׁיָּה",
+    currentTextChirho: "תוּשִׁיָּה",
     questionChirho: "Confirm the remaining vocalization against the print/WLC question; Hallelujah confirmed the yod qamats in this scan.",
   },
   {
