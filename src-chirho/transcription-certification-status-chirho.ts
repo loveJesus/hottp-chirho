@@ -78,12 +78,23 @@ interface ExportReportChirho {
   generatedAtChirho?: string;
   strictPassedChirho?: boolean;
   issueCountChirho?: number;
+  issuesChirho?: ExportIssueChirho[];
   unknownSpanCountChirho?: number;
   nonNfcSpanCountChirho?: number;
   hebrewSpanCountChirho?: number;
   passCOcrHebrewSpanCountChirho?: number;
   crnnValidatedHebrewSpanCountChirho?: number;
   d1PagesWithoutSpansChirho?: unknown[];
+}
+
+interface ExportIssueChirho {
+  severityChirho?: string;
+  codeChirho?: string;
+  messageChirho?: string;
+  volumeChirho?: number;
+  pageChirho?: number;
+  lineIndexChirho?: number;
+  segmentIndexChirho?: number;
 }
 
 interface RawHebrewSpanChirho {
@@ -239,6 +250,8 @@ interface CertificationStatusChirho {
     exportGeneratedAtChirho: string | null;
     strictPassedChirho: boolean;
     issueCountChirho: number;
+    issueCodeCountsChirho: Record<string, number>;
+    issueSummariesChirho: string[];
     unknownSpanCountChirho: number;
     nonNfcSpanCountChirho: number;
     d1GapPageCountChirho: number;
@@ -484,6 +497,32 @@ function sumCountsChirho(countsChirho: Record<string, number>): number {
   return Object.values(countsChirho).reduce((sumChirho, countChirho) => sumChirho + countChirho, 0);
 }
 
+function countIssueCodesChirho(issuesChirho: ExportIssueChirho[]): Record<string, number> {
+  const countsChirho: Record<string, number> = {};
+  for (const issueChirho of issuesChirho) {
+    const codeChirho = issueChirho.codeChirho ?? "unknown-issue-chirho";
+    countsChirho[codeChirho] = (countsChirho[codeChirho] ?? 0) + 1;
+  }
+  return countsChirho;
+}
+
+function summarizeIssueChirho(issueChirho: ExportIssueChirho): string {
+  const locationChirho = [
+    typeof issueChirho.volumeChirho === "number" ? `vol ${issueChirho.volumeChirho}` : null,
+    typeof issueChirho.pageChirho === "number" ? `p${issueChirho.pageChirho}` : null,
+    typeof issueChirho.lineIndexChirho === "number" ? `line ${issueChirho.lineIndexChirho}` : null,
+    typeof issueChirho.segmentIndexChirho === "number" ? `seg ${issueChirho.segmentIndexChirho}` : null,
+  ]
+    .filter((partChirho): partChirho is string => partChirho !== null)
+    .join(" ");
+  const prefixChirho = [
+    issueChirho.severityChirho ?? "unknown-severity-chirho",
+    issueChirho.codeChirho ?? "unknown-issue-chirho",
+  ].join(" ");
+  const messageChirho = issueChirho.messageChirho ?? "";
+  return `${locationChirho.length === 0 ? "no-location-chirho" : locationChirho}: ${prefixChirho}${messageChirho.length === 0 ? "" : ` - ${messageChirho}`}`;
+}
+
 function summarizeLatinSymbolReviewsChirho(
   rowsChirho: LatinSymbolReviewRowChirho[],
   liveItemsChirho: LatinSymbolVisionLiveItemChirho[]
@@ -592,6 +631,8 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     exportGeneratedAtChirho: exportReportChirho.generatedAtChirho ?? null,
     strictPassedChirho: exportReportChirho.strictPassedChirho === true,
     issueCountChirho: exportReportChirho.issueCountChirho ?? 0,
+    issueCodeCountsChirho: countIssueCodesChirho(exportReportChirho.issuesChirho ?? []),
+    issueSummariesChirho: (exportReportChirho.issuesChirho ?? []).slice(0, 12).map(summarizeIssueChirho),
     unknownSpanCountChirho: exportReportChirho.unknownSpanCountChirho ?? 0,
     nonNfcSpanCountChirho: exportReportChirho.nonNfcSpanCountChirho ?? 0,
     d1GapPageCountChirho: exportReportChirho.d1PagesWithoutSpansChirho?.length ?? 0,
@@ -990,6 +1031,12 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   const d1LatinSymbolCountsChirho = Object.entries(statusChirho.latinSymbolVisionChirho.d1DerivedVisionCountsChirho)
     .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
     .join(", ");
+  const issueCodeCountsChirho = Object.entries(statusChirho.structuralChirho.issueCodeCountsChirho)
+    .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
+    .join(", ");
+  const issueSummaryLinesChirho = statusChirho.structuralChirho.issueSummariesChirho.length === 0
+    ? ["- None."]
+    : statusChirho.structuralChirho.issueSummariesChirho.map((issueChirho) => `- ${issueChirho}`);
   return [
     "<!-- For God so loved the world that he gave his only begotten Son,",
     "that whoever believes in him should not perish but have eternal life. John 3:16 -->",
@@ -1006,11 +1053,16 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Export report shape OK: ${statusChirho.artifactsChirho.exportReportShapeOkChirho}`,
     `- Strict passed: ${statusChirho.structuralChirho.strictPassedChirho}`,
     `- Issues: ${statusChirho.structuralChirho.issueCountChirho}`,
+    `- Issue code counts: ${issueCodeCountsChirho || "none"}`,
     `- Unknown spans: ${statusChirho.structuralChirho.unknownSpanCountChirho}`,
     `- Non-NFC spans in export report: ${statusChirho.structuralChirho.nonNfcSpanCountChirho}`,
     `- D1 gap pages: ${statusChirho.structuralChirho.d1GapPageCountChirho}`,
     `- Hebrew spans: ${statusChirho.structuralChirho.hebrewSpanCountChirho}`,
     `- Raw Pass-C Hebrew spans: ${statusChirho.structuralChirho.passCOcrHebrewSpanCountChirho}`,
+    "",
+    "### Strict Issue Details",
+    "",
+    ...issueSummaryLinesChirho,
     "",
     "## Unicode Normalization",
     "",
