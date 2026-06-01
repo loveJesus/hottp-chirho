@@ -16,6 +16,11 @@ import { join } from "path";
 
 import { PROGRESS_DB_PATH_CHIRHO, PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
+  LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO,
+  readLatinSymbolAcceptancePolicyFileChirho,
+  summarizeLatinSymbolAcceptancePolicyChirho,
+} from "./latin-symbol-vision-acceptance-policy-chirho.ts";
+import {
   countByScriptChirho,
   hashTextChirho,
   latinSymbolVisionLiveSnapshotChirho,
@@ -136,6 +141,17 @@ interface LatinSymbolReviewBackupChirho {
   reviewsChirho?: LatinSymbolReviewBackupReviewChirho[];
 }
 
+interface LatinSymbolPolicySummaryForStatusChirho {
+  policyFileExistsChirho: boolean;
+  policyFileShapeOkChirho: boolean;
+  acceptedPolicyCountChirho: number;
+  acceptedPolicyItemCountChirho: number;
+  validAcceptedPolicyItemCountChirho: number;
+  staleAcceptedPolicyItemCountChirho: number;
+  duplicateAcceptedPolicyItemCountChirho: number;
+  shapeErrorsChirho: string[];
+}
+
 interface LatinSymbolReviewRowChirho {
   itemIdChirho: string;
   currentTextHashChirho: string;
@@ -180,11 +196,13 @@ interface CertificationStatusChirho {
     expertPackManifestExistsChirho: boolean;
     latinSymbolPackManifestExistsChirho: boolean;
     latinSymbolReviewBackupExistsChirho: boolean;
+    latinSymbolAcceptancePolicyExistsChirho: boolean;
     exportReportShapeOkChirho: boolean;
     rawHebrewReportShapeOkChirho: boolean;
     expertPackManifestShapeOkChirho: boolean;
     latinSymbolPackManifestShapeOkChirho: boolean;
     latinSymbolReviewBackupShapeOkChirho: boolean;
+    latinSymbolAcceptancePolicyShapeOkChirho: boolean;
   };
   structuralChirho: {
     exportGeneratedAtChirho: string | null;
@@ -227,6 +245,8 @@ interface CertificationStatusChirho {
     reviewPacketTextMatchesCurrentChirho: boolean;
     reviewedCleanCountChirho: number;
     reviewedIssueCountChirho: number;
+    acceptedByPolicyCountChirho: number;
+    totalAcceptedDecisionCountChirho: number;
     staleReviewCountChirho: number;
     remainingDecisionCountChirho: number;
     includedInCompletionGateChirho: boolean;
@@ -238,6 +258,7 @@ interface CertificationStatusChirho {
   humanValidationDbChirho: HumanValidationSummaryChirho;
   latinSymbolReviewDbChirho: LatinSymbolReviewSummaryChirho;
   latinSymbolReviewBackupChirho: LatinSymbolReviewBackupSummaryChirho;
+  latinSymbolAcceptancePolicyChirho: LatinSymbolPolicySummaryForStatusChirho;
   certificationCompleteChirho: boolean;
   remainingWorkChirho: string[];
 }
@@ -453,12 +474,31 @@ function summarizeLatinSymbolReviewsChirho(
   };
 }
 
+function validLatinSymbolReviewIdsChirho(
+  rowsChirho: LatinSymbolReviewRowChirho[],
+  liveItemsChirho: LatinSymbolVisionLiveItemChirho[],
+  verdictChirho: string
+): Set<string> {
+  const hashByIdChirho = new Map(
+    liveItemsChirho.map((itemChirho) => [itemChirho.idChirho, hashTextChirho(itemChirho.textChirho)])
+  );
+  const idsChirho = new Set<string>();
+  for (const rowChirho of rowsChirho) {
+    if (rowChirho.verdictChirho !== verdictChirho) continue;
+    const currentHashChirho = hashByIdChirho.get(rowChirho.itemIdChirho);
+    if (currentHashChirho === undefined || currentHashChirho !== rowChirho.currentTextHashChirho) continue;
+    idsChirho.add(rowChirho.itemIdChirho);
+  }
+  return idsChirho;
+}
+
 function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const exportReportExistsChirho = existsSync(EXPORT_REPORT_PATH_CHIRHO);
   const rawHebrewReportExistsChirho = existsSync(RAW_HEBREW_REPORT_PATH_CHIRHO);
   const expertPackManifestExistsChirho = existsSync(EXPERT_PACK_MANIFEST_PATH_CHIRHO);
   const latinSymbolPackManifestExistsChirho = existsSync(LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO);
   const latinSymbolReviewBackupExistsChirho = existsSync(LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO);
+  const latinSymbolAcceptancePolicyExistsChirho = existsSync(LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO);
   const exportReportChirho = readJsonFileChirho<ExportReportChirho>(EXPORT_REPORT_PATH_CHIRHO, {});
   const rawReportChirho = readJsonFileChirho<RawHebrewReportChirho>(RAW_HEBREW_REPORT_PATH_CHIRHO, {});
   const expertManifestChirho = readJsonFileChirho<ExpertPackManifestChirho>(EXPERT_PACK_MANIFEST_PATH_CHIRHO, {});
@@ -470,6 +510,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO,
     {}
   );
+  const latinSymbolAcceptancePolicyFileChirho = readLatinSymbolAcceptancePolicyFileChirho();
   const nonNfcSpanTextFieldsChirho = scanNonNfcSpanTextFieldsChirho();
   const nonNfcSpanFilesChirho = new Set(
     nonNfcSpanTextFieldsChirho.map((findingChirho) => findingChirho.relativePathChirho)
@@ -554,6 +595,30 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     latinSymbolBackupRowsChirho
   );
   const latinSymbolReviewSummaryChirho = summarizeLatinSymbolReviewsChirho(latinSymbolMergedRowsChirho, latinSymbolLiveItemsChirho);
+  const latinSymbolAcceptedReviewIdsChirho = validLatinSymbolReviewIdsChirho(
+    latinSymbolMergedRowsChirho,
+    latinSymbolLiveItemsChirho,
+    "accepted-clean-chirho"
+  );
+  const latinSymbolPolicySummaryChirho = summarizeLatinSymbolAcceptancePolicyChirho(
+    latinSymbolAcceptancePolicyFileChirho,
+    latinSymbolAcceptancePolicyExistsChirho,
+    latinSymbolLiveItemsChirho
+  );
+  const latinSymbolAcceptedDecisionIdsChirho = new Set([
+    ...latinSymbolAcceptedReviewIdsChirho,
+    ...latinSymbolPolicySummaryChirho.acceptedItemIdsChirho,
+  ]);
+  const latinSymbolPolicySummaryForStatusChirho = {
+    policyFileExistsChirho: latinSymbolPolicySummaryChirho.policyFileExistsChirho,
+    policyFileShapeOkChirho: latinSymbolPolicySummaryChirho.policyFileShapeOkChirho,
+    acceptedPolicyCountChirho: latinSymbolPolicySummaryChirho.acceptedPolicyCountChirho,
+    acceptedPolicyItemCountChirho: latinSymbolPolicySummaryChirho.acceptedPolicyItemCountChirho,
+    validAcceptedPolicyItemCountChirho: latinSymbolPolicySummaryChirho.validAcceptedPolicyItemCountChirho,
+    staleAcceptedPolicyItemCountChirho: latinSymbolPolicySummaryChirho.staleAcceptedPolicyItemCountChirho,
+    duplicateAcceptedPolicyItemCountChirho: latinSymbolPolicySummaryChirho.duplicateAcceptedPolicyItemCountChirho,
+    shapeErrorsChirho: latinSymbolPolicySummaryChirho.shapeErrorsChirho,
+  };
   const latinSymbolReviewBackupSummaryChirho = {
     backupRowsChirho: latinSymbolBackupRowsChirho.length,
     dbRowsChirho: latinSymbolDbRowsChirho.length,
@@ -579,7 +644,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     latinSymbolD1ReadErrorChirho !== null
       ? Math.max(currentLatinSymbolDecisionCountChirho, latinSymbolPacketItemsChirho.length)
       : latinSymbolReviewPacketTextMatchesCurrentChirho
-      ? Math.max(0, currentLatinSymbolDecisionCountChirho - latinSymbolReviewSummaryChirho.validReviewedCleanRowsChirho)
+      ? Math.max(0, currentLatinSymbolDecisionCountChirho - latinSymbolAcceptedDecisionIdsChirho.size)
       : currentLatinSymbolDecisionCountChirho;
   const latinSymbolVisionChirho = {
     d1ReadErrorChirho: latinSymbolD1ReadErrorChirho,
@@ -593,6 +658,8 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     reviewPacketTextMatchesCurrentChirho: latinSymbolReviewPacketTextMatchesCurrentChirho,
     reviewedCleanCountChirho: latinSymbolReviewSummaryChirho.validReviewedCleanRowsChirho,
     reviewedIssueCountChirho: latinSymbolReviewSummaryChirho.validReviewedIssueRowsChirho,
+    acceptedByPolicyCountChirho: latinSymbolPolicySummaryChirho.validAcceptedPolicyItemCountChirho,
+    totalAcceptedDecisionCountChirho: latinSymbolAcceptedDecisionIdsChirho.size,
     staleReviewCountChirho: latinSymbolReviewSummaryChirho.staleRowsChirho,
     remainingDecisionCountChirho: latinSymbolRemainingDecisionCountChirho,
     includedInCompletionGateChirho: true,
@@ -631,6 +698,9 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   }
   if (latinSymbolReviewBackupExistsChirho && !latinSymbolReviewBackupShapeOkChirho) {
     remainingWorkChirho.push("Latin/symbol review backup is malformed; regenerate record-latin-symbol-vision-review-chirho --export-backup");
+  }
+  if (latinSymbolAcceptancePolicyExistsChirho && !latinSymbolPolicySummaryChirho.policyFileShapeOkChirho) {
+    remainingWorkChirho.push("Latin/symbol acceptance policy is malformed; fix or regenerate prepare-latin-symbol-vision-acceptance-policy-chirho");
   }
   if (!structuralChirho.strictPassedChirho || structuralChirho.issueCountChirho !== 0) {
     remainingWorkChirho.push("structural export strict gate is not clean");
@@ -692,6 +762,16 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       `${latinSymbolLocalRowsMissingFromBackupChirho} local Latin/symbol review row(s) need export-backup before certification can complete on a fresh checkout`
     );
   }
+  if (latinSymbolPolicySummaryChirho.staleAcceptedPolicyItemCountChirho !== 0) {
+    remainingWorkChirho.push(
+      `${latinSymbolPolicySummaryChirho.staleAcceptedPolicyItemCountChirho} Latin/symbol policy item(s) are stale against current live span/D1 text`
+    );
+  }
+  if (latinSymbolPolicySummaryChirho.duplicateAcceptedPolicyItemCountChirho !== 0) {
+    remainingWorkChirho.push(
+      `${latinSymbolPolicySummaryChirho.duplicateAcceptedPolicyItemCountChirho} duplicate Latin/symbol policy item(s) need cleanup`
+    );
+  }
   if (latinSymbolRemainingDecisionCountChirho !== 0) {
     remainingWorkChirho.push(
       `${latinSymbolRemainingDecisionCountChirho} Latin/symbol vision-tier span/word decision(s) still need accepted-clean review or explicit acceptance policy`
@@ -709,11 +789,13 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       expertPackManifestExistsChirho,
       latinSymbolPackManifestExistsChirho,
       latinSymbolReviewBackupExistsChirho,
+      latinSymbolAcceptancePolicyExistsChirho,
       exportReportShapeOkChirho,
       rawHebrewReportShapeOkChirho,
       expertPackManifestShapeOkChirho,
       latinSymbolPackManifestShapeOkChirho,
       latinSymbolReviewBackupShapeOkChirho,
+      latinSymbolAcceptancePolicyShapeOkChirho: latinSymbolPolicySummaryChirho.policyFileShapeOkChirho,
     },
     structuralChirho,
     rawHebrewChirho,
@@ -723,6 +805,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     humanValidationDbChirho: humanSummaryChirho,
     latinSymbolReviewDbChirho: latinSymbolReviewSummaryChirho,
     latinSymbolReviewBackupChirho: latinSymbolReviewBackupSummaryChirho,
+    latinSymbolAcceptancePolicyChirho: latinSymbolPolicySummaryForStatusChirho,
     certificationCompleteChirho,
     remainingWorkChirho,
   };
@@ -818,6 +901,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Review packet text matches current state: ${statusChirho.latinSymbolVisionChirho.reviewPacketTextMatchesCurrentChirho}`,
     `- Accepted-clean reviews: ${statusChirho.latinSymbolVisionChirho.reviewedCleanCountChirho}`,
     `- Reviewed-issues rows: ${statusChirho.latinSymbolVisionChirho.reviewedIssueCountChirho}`,
+    `- Accepted by explicit policy: ${statusChirho.latinSymbolVisionChirho.acceptedByPolicyCountChirho}`,
+    `- Total accepted decisions: ${statusChirho.latinSymbolVisionChirho.totalAcceptedDecisionCountChirho}`,
     `- Stale review rows: ${statusChirho.latinSymbolVisionChirho.staleReviewCountChirho}`,
     `- Remaining decisions: ${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho}`,
     "",
@@ -833,6 +918,17 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Valid reviewed-issues rows: ${statusChirho.latinSymbolReviewDbChirho.validReviewedIssueRowsChirho}`,
     `- Stale rows: ${statusChirho.latinSymbolReviewDbChirho.staleRowsChirho}`,
     `- Applied rows: ${statusChirho.latinSymbolReviewDbChirho.appliedRowsChirho}`,
+    "",
+    "## Latin/Symbol Acceptance Policy",
+    "",
+    `- Policy exists: ${statusChirho.latinSymbolAcceptancePolicyChirho.policyFileExistsChirho}`,
+    `- Policy shape OK: ${statusChirho.latinSymbolAcceptancePolicyChirho.policyFileShapeOkChirho}`,
+    `- Accepted policies: ${statusChirho.latinSymbolAcceptancePolicyChirho.acceptedPolicyCountChirho}`,
+    `- Accepted policy items: ${statusChirho.latinSymbolAcceptancePolicyChirho.acceptedPolicyItemCountChirho}`,
+    `- Valid accepted policy items: ${statusChirho.latinSymbolAcceptancePolicyChirho.validAcceptedPolicyItemCountChirho}`,
+    `- Stale accepted policy items: ${statusChirho.latinSymbolAcceptancePolicyChirho.staleAcceptedPolicyItemCountChirho}`,
+    `- Duplicate accepted policy items: ${statusChirho.latinSymbolAcceptancePolicyChirho.duplicateAcceptedPolicyItemCountChirho}`,
+    `- Shape errors: ${statusChirho.latinSymbolAcceptancePolicyChirho.shapeErrorsChirho.length === 0 ? "none" : statusChirho.latinSymbolAcceptancePolicyChirho.shapeErrorsChirho.join("; ")}`,
     "",
     "## Remaining Work",
     "",
