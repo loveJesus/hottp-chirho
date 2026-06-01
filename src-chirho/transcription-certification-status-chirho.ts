@@ -18,7 +18,7 @@ import { PROGRESS_DB_PATH_CHIRHO, PROJECT_ROOT_CHIRHO } from "./config-chirho.ts
 import {
   countByScriptChirho,
   hashTextChirho,
-  latinSymbolVisionLiveItemsChirho,
+  latinSymbolVisionLiveSnapshotChirho,
   type LatinSymbolVisionLiveItemChirho,
 } from "./latin-symbol-vision-live-items-chirho.ts";
 import { scanNonNfcSpanTextFieldsChirho } from "./span-nfc-chirho.ts";
@@ -216,6 +216,7 @@ interface CertificationStatusChirho {
     completeVisionCountsChirho: Record<string, number>;
   };
   latinSymbolVisionChirho: {
+    d1ReadErrorChirho: string | null;
     explicitVisionItemCountChirho: number;
     explicitVisionCountsChirho: Record<string, number>;
     d1DerivedVisionWordCountChirho: number;
@@ -526,7 +527,9 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     completeVisionItemCountChirho: expertManifestChirho.completeVisionItemsChirho?.length ?? 0,
     completeVisionCountsChirho: expertManifestChirho.completeVisionCountsChirho ?? {},
   };
-  const latinSymbolLiveItemsChirho = latinSymbolVisionLiveItemsChirho();
+  const latinSymbolLiveSnapshotChirho = latinSymbolVisionLiveSnapshotChirho();
+  const latinSymbolLiveItemsChirho = latinSymbolLiveSnapshotChirho.itemsChirho;
+  const latinSymbolD1ReadErrorChirho = latinSymbolLiveSnapshotChirho.d1ReadErrorChirho;
   const explicitLatinSymbolLiveItemsChirho = latinSymbolLiveItemsChirho.filter(
     (itemChirho) => itemChirho.itemKindChirho === "span-chirho"
   );
@@ -573,10 +576,13 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       return liveItemChirho !== undefined && liveItemChirho.textChirho === itemChirho.textChirho;
     });
   const latinSymbolRemainingDecisionCountChirho =
-    latinSymbolReviewPacketTextMatchesCurrentChirho
+    latinSymbolD1ReadErrorChirho !== null
+      ? Math.max(currentLatinSymbolDecisionCountChirho, latinSymbolPacketItemsChirho.length)
+      : latinSymbolReviewPacketTextMatchesCurrentChirho
       ? Math.max(0, currentLatinSymbolDecisionCountChirho - latinSymbolReviewSummaryChirho.validReviewedCleanRowsChirho)
       : currentLatinSymbolDecisionCountChirho;
   const latinSymbolVisionChirho = {
+    d1ReadErrorChirho: latinSymbolD1ReadErrorChirho,
     explicitVisionItemCountChirho: sumCountsChirho(latinSymbolVisionCountsResultChirho),
     explicitVisionCountsChirho: latinSymbolVisionCountsResultChirho,
     d1DerivedVisionWordCountChirho: sumCountsChirho(d1DerivedLatinSymbolVisionCountsResultChirho),
@@ -607,6 +613,9 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   }
   if (currentLatinSymbolDecisionCountChirho !== 0 && !latinSymbolPackManifestExistsChirho) {
     remainingWorkChirho.push("Latin/symbol vision review packet is missing; run make-latin-symbol-vision-pack-chirho");
+  }
+  if (latinSymbolD1ReadErrorChirho !== null) {
+    remainingWorkChirho.push(`D1-derived Latin/symbol vision word scan failed: ${latinSymbolD1ReadErrorChirho}`);
   }
   if (exportReportExistsChirho && !exportReportShapeOkChirho) {
     remainingWorkChirho.push("strict export report is malformed; regenerate export-markdown-chirho --all --strict");
@@ -647,6 +656,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     remainingWorkChirho.push(`${visionTierChirho.completeVisionItemCountChirho} vision-tier non-Latin span(s) still need expert/human confirmation`);
   }
   if (
+    latinSymbolD1ReadErrorChirho === null &&
     currentLatinSymbolDecisionCountChirho !== 0 &&
     latinSymbolPackManifestExistsChirho &&
     latinSymbolPackManifestShapeOkChirho &&
@@ -655,6 +665,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     remainingWorkChirho.push("Latin/symbol vision review packet count does not match current span/D1 state; regenerate make-latin-symbol-vision-pack-chirho");
   }
   if (
+    latinSymbolD1ReadErrorChirho === null &&
     currentLatinSymbolDecisionCountChirho !== 0 &&
     latinSymbolPackManifestExistsChirho &&
     latinSymbolPackManifestShapeOkChirho &&
@@ -664,6 +675,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     remainingWorkChirho.push("Latin/symbol vision review packet item IDs do not match current span/D1 state; regenerate make-latin-symbol-vision-pack-chirho");
   }
   if (
+    latinSymbolD1ReadErrorChirho === null &&
     currentLatinSymbolDecisionCountChirho !== 0 &&
     latinSymbolPackManifestExistsChirho &&
     latinSymbolPackManifestShapeOkChirho &&
@@ -793,6 +805,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "These spans are not in the non-Latin expert pack, but they still matter for a project-wide flawless-transcription claim.",
     "",
     `- Included in completion gate: ${statusChirho.latinSymbolVisionChirho.includedInCompletionGateChirho}`,
+    `- D1 scan error: ${statusChirho.latinSymbolVisionChirho.d1ReadErrorChirho ?? "none"}`,
     `- Explicit vision-tier Latin/symbol items: ${statusChirho.latinSymbolVisionChirho.explicitVisionItemCountChirho}`,
     `- Counts: ${latinSymbolCountsChirho || "none"}`,
     `- D1-derived Latin/symbol vision words: ${statusChirho.latinSymbolVisionChirho.d1DerivedVisionWordCountChirho}`,

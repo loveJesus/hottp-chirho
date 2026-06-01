@@ -67,6 +67,11 @@ export interface LatinSymbolVisionLiveItemChirho {
   sourceChirho: "explicit-span-provenance-chirho" | "d1-current-source-chirho";
 }
 
+export interface LatinSymbolVisionLiveSnapshotChirho {
+  itemsChirho: LatinSymbolVisionLiveItemChirho[];
+  d1ReadErrorChirho: string | null;
+}
+
 export function countByScriptChirho(itemsChirho: LatinSymbolVisionLiveItemChirho[]): Record<string, number> {
   const countsChirho: Record<string, number> = {};
   for (const itemChirho of itemsChirho) {
@@ -245,4 +250,20 @@ function sortItemsChirho(itemsChirho: LatinSymbolVisionLiveItemChirho[]): LatinS
 
 export function latinSymbolVisionLiveItemsChirho(): LatinSymbolVisionLiveItemChirho[] {
   return sortItemsChirho([...explicitSpanItemsChirho(), ...d1WordItemsChirho()]);
+}
+
+export function latinSymbolVisionLiveSnapshotChirho(): LatinSymbolVisionLiveSnapshotChirho {
+  const explicitItemsChirho = explicitSpanItemsChirho();
+  try {
+    return {
+      itemsChirho: sortItemsChirho([...explicitItemsChirho, ...d1WordItemsChirho()]),
+      d1ReadErrorChirho: null,
+    };
+  } catch (errorChirho) {
+    const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
+    return {
+      itemsChirho: sortItemsChirho(explicitItemsChirho),
+      d1ReadErrorChirho: messageChirho,
+    };
+  }
 }
