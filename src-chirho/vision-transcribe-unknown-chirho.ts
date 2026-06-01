@@ -23,12 +23,13 @@
  */
 
 import { Database } from "bun:sqlite";
-import { createHash as createHashChirho } from "crypto";
 import { spawnSync } from "child_process";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
 import { PROGRESS_DB_PATH_CHIRHO, PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { normalizeSpanLineTextFieldsChirho } from "./span-nfc-chirho.ts";
+import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "vision-transcribe-unknown-chirho";
 const SPANS_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
@@ -72,9 +73,6 @@ interface VerdictChirho {
 function argChirho(argsChirho: string[], nameChirho: string): string | undefined {
   const pChirho = `--${nameChirho}=`;
   return argsChirho.find((aChirho) => aChirho.startsWith(pChirho))?.slice(pChirho.length);
-}
-function hashTextChirho(tChirho: string): string {
-  return createHashChirho("sha256").update(tChirho, "utf8").digest("hex");
 }
 function lineFilePathChirho(volChirho: number, pageChirho: number, lineChirho: number): string {
   return join(SPANS_DIR_CHIRHO, `vol-${volChirho}-chirho`, `page-${String(pageChirho).padStart(4, "0")}-chirho`, `line-${String(lineChirho).padStart(3, "0")}-chirho.json`);
@@ -163,17 +161,21 @@ function applyModeChirho(verdictsPathChirho: string, applyChirho: boolean, revie
     const spanChirho = lineObjChirho.spansChirho.find((sChirho) => sChirho.segmentIndexChirho === vChirho.segmentIndexChirho);
     if (!spanChirho) { console.log(`[error] ${keyChirho} segment not found`); errorChirho++; continue; }
     // staleness guard: the span text must still equal the garble we cropped
-    if (spanChirho.utf8TextChirho !== vChirho.garbleTextChirho) {
+    if (
+      normalizeTextForStorageChirho(spanChirho.utf8TextChirho) !==
+      normalizeTextForStorageChirho(vChirho.garbleTextChirho)
+    ) {
       console.log(`[error] ${keyChirho} span text drifted since crop; refusing`); errorChirho++; continue;
     }
-    const newTextChirho = vChirho.utf8TextChirho ?? "";
+    const newTextChirho = normalizeTextForStorageChirho(vChirho.utf8TextChirho ?? "");
     console.log(`[${applyChirho ? "applied" : "planned"}] ${keyChirho} ${vChirho.scriptChirho} "${spanChirho.utf8TextChirho}" -> "${newTextChirho}"`);
     if (applyChirho) {
-      const origChirho = spanChirho.utf8TextChirho;
+      const origChirho = normalizeTextForStorageChirho(spanChirho.utf8TextChirho);
       spanChirho.scriptChirho = vChirho.scriptChirho;
       spanChirho.utf8TextChirho = newTextChirho;
       spanChirho.provenanceChirho = "vision-chirho";
       spanChirho.visionTranscribedAtChirho = nowChirho;
+      normalizeSpanLineTextFieldsChirho(lineObjChirho);
       writeFileSync(linePathChirho, `${JSON.stringify(lineObjChirho, null, 2)}\n`);
       insertChirho.run(vChirho.volumeChirho, vChirho.pageChirho, vChirho.lineIndexChirho, vChirho.segmentIndexChirho, origChirho, hashTextChirho(origChirho), vChirho.scriptChirho, newTextChirho, vChirho.notesChirho ?? null, reviewerChirho, nowChirho, nowChirho, linePathChirho);
       appliedChirho++;

@@ -32,6 +32,7 @@ import {
 import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO, VOLUMES_CHIRHO } from "./config-chirho.ts";
+import { isNfcTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "export-markdown-chirho";
 const SPANS_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
@@ -467,7 +468,7 @@ function hebrewTokenSkeletonsChirho(textChirho: string): string[] {
 }
 
 function normalizedExactTextChirho(textChirho: string): string {
-  return textChirho.trim().normalize("NFC");
+  return normalizeTextForStorageChirho(textChirho.trim());
 }
 
 function addCountChirho(countsChirho: Record<string, number>, keyChirho: string): void {
@@ -997,8 +998,16 @@ function validateLineChirho(
         spanChirho.segmentIndexChirho
       );
     }
-    if (spanChirho.utf8TextChirho !== spanChirho.utf8TextChirho.normalize("NFC")) {
+    if (!isNfcTextChirho(spanChirho.utf8TextChirho)) {
       nonNfcSpanCountChirho++;
+      addIssueChirho(
+        issuesChirho,
+        "warning-chirho",
+        "non-nfc-text-chirho",
+        `Span text is not Unicode NFC-normalized: ${JSON.stringify(spanChirho.utf8TextChirho)}`,
+        lineChirho.lineIndexChirho,
+        spanChirho.segmentIndexChirho
+      );
     }
 
     spanAuditChirho.push({

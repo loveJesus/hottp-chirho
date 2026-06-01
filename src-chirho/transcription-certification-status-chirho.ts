@@ -21,6 +21,7 @@ import {
   latinSymbolVisionLiveItemsChirho,
   type LatinSymbolVisionLiveItemChirho,
 } from "./latin-symbol-vision-live-items-chirho.ts";
+import { scanNonNfcSpanTextFieldsChirho } from "./span-nfc-chirho.ts";
 
 const MODULE_CHIRHO = "transcription-certification-status-chirho";
 const EXPORT_REPORT_PATH_CHIRHO = join(
@@ -62,6 +63,7 @@ interface ExportReportChirho {
   strictPassedChirho?: boolean;
   issueCountChirho?: number;
   unknownSpanCountChirho?: number;
+  nonNfcSpanCountChirho?: number;
   hebrewSpanCountChirho?: number;
   passCOcrHebrewSpanCountChirho?: number;
   crnnValidatedHebrewSpanCountChirho?: number;
@@ -189,6 +191,7 @@ interface CertificationStatusChirho {
     strictPassedChirho: boolean;
     issueCountChirho: number;
     unknownSpanCountChirho: number;
+    nonNfcSpanCountChirho: number;
     d1GapPageCountChirho: number;
     hebrewSpanCountChirho: number;
     passCOcrHebrewSpanCountChirho: number;
@@ -226,6 +229,10 @@ interface CertificationStatusChirho {
     staleReviewCountChirho: number;
     remainingDecisionCountChirho: number;
     includedInCompletionGateChirho: boolean;
+  };
+  normalizationChirho: {
+    liveNonNfcSpanTextFieldCountChirho: number;
+    liveNonNfcSpanFileCountChirho: number;
   };
   humanValidationDbChirho: HumanValidationSummaryChirho;
   latinSymbolReviewDbChirho: LatinSymbolReviewSummaryChirho;
@@ -462,6 +469,10 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO,
     {}
   );
+  const nonNfcSpanTextFieldsChirho = scanNonNfcSpanTextFieldsChirho();
+  const nonNfcSpanFilesChirho = new Set(
+    nonNfcSpanTextFieldsChirho.map((findingChirho) => findingChirho.relativePathChirho)
+  );
   const exportReportShapeOkChirho =
     !exportReportExistsChirho ||
     (typeof exportReportChirho.strictPassedChirho === "boolean" &&
@@ -490,6 +501,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     strictPassedChirho: exportReportChirho.strictPassedChirho === true,
     issueCountChirho: exportReportChirho.issueCountChirho ?? 0,
     unknownSpanCountChirho: exportReportChirho.unknownSpanCountChirho ?? 0,
+    nonNfcSpanCountChirho: exportReportChirho.nonNfcSpanCountChirho ?? 0,
     d1GapPageCountChirho: exportReportChirho.d1PagesWithoutSpansChirho?.length ?? 0,
     hebrewSpanCountChirho: exportReportChirho.hebrewSpanCountChirho ?? 0,
     passCOcrHebrewSpanCountChirho: exportReportChirho.passCOcrHebrewSpanCountChirho ?? 0,
@@ -579,6 +591,10 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     remainingDecisionCountChirho: latinSymbolRemainingDecisionCountChirho,
     includedInCompletionGateChirho: true,
   };
+  const normalizationChirho = {
+    liveNonNfcSpanTextFieldCountChirho: nonNfcSpanTextFieldsChirho.length,
+    liveNonNfcSpanFileCountChirho: nonNfcSpanFilesChirho.size,
+  };
   const remainingWorkChirho: string[] = [];
   if (!exportReportExistsChirho) {
     remainingWorkChirho.push("strict export report is missing; run export-markdown-chirho --all --strict");
@@ -612,6 +628,14 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   }
   if (structuralChirho.unknownSpanCountChirho !== 0) {
     remainingWorkChirho.push(`${structuralChirho.unknownSpanCountChirho} unknown span(s) remain`);
+  }
+  if (structuralChirho.nonNfcSpanCountChirho !== 0) {
+    remainingWorkChirho.push(`${structuralChirho.nonNfcSpanCountChirho} non-NFC span(s) remain in the latest export report`);
+  }
+  if (normalizationChirho.liveNonNfcSpanTextFieldCountChirho !== 0) {
+    remainingWorkChirho.push(
+      `${normalizationChirho.liveNonNfcSpanTextFieldCountChirho} live span text field(s) are not NFC-normalized`
+    );
   }
   if (structuralChirho.d1GapPageCountChirho !== 0) {
     remainingWorkChirho.push(`${structuralChirho.d1GapPageCountChirho} D1 page gap(s) remain`);
@@ -683,6 +707,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     rawHebrewChirho,
     visionTierChirho,
     latinSymbolVisionChirho,
+    normalizationChirho,
     humanValidationDbChirho: humanSummaryChirho,
     latinSymbolReviewDbChirho: latinSymbolReviewSummaryChirho,
     latinSymbolReviewBackupChirho: latinSymbolReviewBackupSummaryChirho,
@@ -724,9 +749,15 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Strict passed: ${statusChirho.structuralChirho.strictPassedChirho}`,
     `- Issues: ${statusChirho.structuralChirho.issueCountChirho}`,
     `- Unknown spans: ${statusChirho.structuralChirho.unknownSpanCountChirho}`,
+    `- Non-NFC spans in export report: ${statusChirho.structuralChirho.nonNfcSpanCountChirho}`,
     `- D1 gap pages: ${statusChirho.structuralChirho.d1GapPageCountChirho}`,
     `- Hebrew spans: ${statusChirho.structuralChirho.hebrewSpanCountChirho}`,
     `- Raw Pass-C Hebrew spans: ${statusChirho.structuralChirho.passCOcrHebrewSpanCountChirho}`,
+    "",
+    "## Unicode Normalization",
+    "",
+    `- Live non-NFC span text fields: ${statusChirho.normalizationChirho.liveNonNfcSpanTextFieldCountChirho}`,
+    `- Live files with non-NFC span text: ${statusChirho.normalizationChirho.liveNonNfcSpanFileCountChirho}`,
     "",
     "## Raw Hebrew Human Queue",
     "",
@@ -817,6 +848,7 @@ function mainChirho(): void {
       `strictExport=${statusChirho.structuralChirho.strictPassedChirho} ` +
       `rawHebrew=${statusChirho.structuralChirho.passCOcrHebrewSpanCountChirho} ` +
       `visionTier=${statusChirho.visionTierChirho.completeVisionItemCountChirho} ` +
+      `liveNonNfc=${statusChirho.normalizationChirho.liveNonNfcSpanTextFieldCountChirho} ` +
       `report=${join(outDirChirho, "status-chirho.md")}`
   );
   if (strictChirho && !statusChirho.certificationCompleteChirho) process.exitCode = 1;

@@ -2,11 +2,13 @@
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
 import { Database } from "bun:sqlite";
-import { createHash as createHashChirho } from "crypto";
 import { existsSync, readFileSync, readdirSync, statSync } from "fs";
 import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
+
+export { hashTextChirho } from "./text-normalization-chirho.ts";
 
 const SPANS_ROOT_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
 const LOCAL_D1_DIR_CHIRHO = join(
@@ -65,10 +67,6 @@ export interface LatinSymbolVisionLiveItemChirho {
   sourceChirho: "explicit-span-provenance-chirho" | "d1-current-source-chirho";
 }
 
-export function hashTextChirho(textChirho: string): string {
-  return createHashChirho("sha256").update(textChirho, "utf8").digest("hex");
-}
-
 export function countByScriptChirho(itemsChirho: LatinSymbolVisionLiveItemChirho[]): Record<string, number> {
   const countsChirho: Record<string, number> = {};
   for (const itemChirho of itemsChirho) {
@@ -106,7 +104,7 @@ function lineFilePathChirho(volumeChirho: number, pageChirho: number, lineChirho
 function lineTextChirho(lineChirho: SpanLineChirho): string {
   return [...lineChirho.spansChirho]
     .sort((aChirho, bChirho) => aChirho.segmentIndexChirho - bChirho.segmentIndexChirho)
-    .map((spanChirho) => spanChirho.utf8TextChirho)
+    .map((spanChirho) => normalizeTextForStorageChirho(spanChirho.utf8TextChirho))
     .join("");
 }
 
@@ -162,7 +160,7 @@ function explicitSpanItemsChirho(): LatinSymbolVisionLiveItemChirho[] {
         segmentIndexChirho: spanChirho.segmentIndexChirho,
         wordIndexChirho: null,
         scriptChirho: spanChirho.scriptChirho,
-        textChirho: spanChirho.utf8TextChirho,
+        textChirho: normalizeTextForStorageChirho(spanChirho.utf8TextChirho),
         lineTextChirho: textChirho,
         sourceChirho: "explicit-span-provenance-chirho",
       });
@@ -219,7 +217,7 @@ function d1WordItemsChirho(): LatinSymbolVisionLiveItemChirho[] {
         segmentIndexChirho: null,
         wordIndexChirho: wordChirho.wordIndexChirho,
         scriptChirho,
-        textChirho: wordChirho.textChirho ?? "",
+        textChirho: normalizeTextForStorageChirho(wordChirho.textChirho ?? ""),
         lineTextChirho: lineTextChirho(lineChirho),
         sourceChirho: "d1-current-source-chirho",
       };

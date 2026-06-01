@@ -12,11 +12,11 @@
  */
 
 import { Database } from "bun:sqlite";
-import { createHash as createHashChirho } from "crypto";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "pass-c-human-validate-server-chirho";
 const DEFAULT_PORT_CHIRHO = 8766;
@@ -300,10 +300,6 @@ function spanKeyChirho(spanChirho: Pick<ReportSpanChirho, "volumeChirho" | "page
   ].join(":");
 }
 
-function hashTextChirho(textChirho: string): string {
-  return createHashChirho("sha256").update(textChirho, "utf8").digest("hex");
-}
-
 function hebrewSkeletonChirho(textChirho: string): string {
   return textChirho
     .normalize("NFKD")
@@ -557,7 +553,8 @@ function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): Queue
       if (!spanGeometryChirho) {
         throw new Error(`Missing span geometry for ${spanKeyChirho(spanChirho)}`);
       }
-      const liveSpanTextChirho = spanGeometryChirho.utf8TextChirho;
+      const liveSpanTextChirho = normalizeTextForStorageChirho(spanGeometryChirho.utf8TextChirho);
+      const reportTextChirho = normalizeTextForStorageChirho(spanChirho.textChirho);
       const currentScriptChirho = spanChirho.scriptChirho ?? spanGeometryChirho.scriptChirho;
       const candidateWordsChirho = candidateWordsForSpanChirho(
         spanChirho,
@@ -586,7 +583,7 @@ function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): Queue
         keyChirho: spanKeyChirho(spanChirho),
         currentScriptChirho,
         liveSpanTextChirho,
-        hasLiveSpanTextDriftChirho: liveSpanTextChirho !== spanChirho.textChirho,
+        hasLiveSpanTextDriftChirho: liveSpanTextChirho !== reportTextChirho,
         candidateWordsChirho,
         scriptHintSummaryChirho: hintSummaryChirho,
         defaultScriptVerdictChirho: defaultScriptVerdictChirho(spanChirho.validationStatusChirho, hintSummaryChirho),
@@ -1423,7 +1420,9 @@ Bun.serve({
       const scriptVerdictChirho = queueModeChirho === "unknown-script-chirho"
         ? sanitizeScriptVerdictChirho(bodyChirho.scriptVerdictChirho)
         : null;
-      const editedTextChirho = bodyChirho.correctedTextChirho ?? itemChirho.liveSpanTextChirho;
+      const editedTextChirho = normalizeTextForStorageChirho(
+        bodyChirho.correctedTextChirho ?? itemChirho.liveSpanTextChirho
+      );
       const hasEditedTextChirho = editedTextChirho !== itemChirho.liveSpanTextChirho;
       if (itemChirho.hasLiveSpanTextDriftChirho && issueFlagsChirho.length === 0) {
         return jsonResponseChirho({

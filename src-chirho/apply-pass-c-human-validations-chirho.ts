@@ -8,11 +8,12 @@
  */
 
 import { Database } from "bun:sqlite";
-import { createHash as createHashChirho } from "crypto";
 import { existsSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
 import { PROGRESS_DB_PATH_CHIRHO, PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { normalizeSpanLineTextFieldsChirho } from "./span-nfc-chirho.ts";
+import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "apply-pass-c-human-validations-chirho";
 const SPANS_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
@@ -87,10 +88,6 @@ function parseArgValueChirho(argsChirho: string[], nameChirho: string): string |
   return argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho))?.slice(prefixChirho.length);
 }
 
-function hashTextChirho(textChirho: string): string {
-  return createHashChirho("sha256").update(textChirho, "utf8").digest("hex");
-}
-
 function parseIssueFlagsChirho(issueFlagsChirho: string | null): string[] {
   if (!issueFlagsChirho) return [];
   try {
@@ -134,6 +131,7 @@ function loadSpanLineChirho(pathChirho: string): SpanLineChirho {
 }
 
 function writeSpanLineChirho(pathChirho: string, lineChirho: SpanLineChirho): void {
+  normalizeSpanLineTextFieldsChirho(lineChirho);
   writeFileSync(pathChirho, `${JSON.stringify(lineChirho, null, 2)}\n`);
 }
 
@@ -257,7 +255,9 @@ function applyRowChirho(
       if (scriptVerdictChirho) spanChirho.scriptChirho = scriptVerdictChirho;
       spanChirho.humanReviewStatusChirho = rowChirho.verdict_chirho;
       spanChirho.humanIssueFlagsChirho = issueFlagsChirho;
-      if (rowChirho.corrected_text_chirho?.trim()) spanChirho.humanSuggestedTextChirho = rowChirho.corrected_text_chirho;
+      if (rowChirho.corrected_text_chirho?.trim()) {
+        spanChirho.humanSuggestedTextChirho = normalizeTextForStorageChirho(rowChirho.corrected_text_chirho);
+      }
       if (issueFlagsChirho.includes("segmentation-chirho")) spanChirho.badSegmentationChirho = true;
       if (issueFlagsChirho.includes("missing-hebrew-chirho")) spanChirho.needsSourceChirho = true;
     }
