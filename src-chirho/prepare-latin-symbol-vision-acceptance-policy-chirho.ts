@@ -6,7 +6,9 @@
  *
  * Default is a dry-run JSON preview with decisionChirho=draft-chirho. Writing an
  * accepted policy requires explicit --decision-chirho=accepted-clean-policy-chirho
- * plus reviewer and rationale.
+ * plus reviewer and rationale. Symbol-labeled items that are not trivial
+ * punctuation are excluded by --safe-symbols-only-chirho and cannot be accepted
+ * in bulk without an explicit override.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
@@ -23,6 +25,8 @@ import {
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "prepare-latin-symbol-vision-acceptance-policy-chirho";
+const ORDINARY_SCRIPT_LETTER_RE_CHIRHO = /[A-Za-z\u00C0-\u024F\u0370-\u03FF\u1F00-\u1FFF\u0590-\u05FF\uFB1D-\uFB4F\u0600-\u06FF\u0700-\u074F\u{1D400}-\u{1D7FF}]/u;
+const TRIVIAL_SYMBOL_TEXT_RE_CHIRHO = /^[\s/+:≠()]+$/u;
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
   const prefixChirho = `--${nameChirho}=`;
@@ -41,6 +45,18 @@ function slugChirho(valueChirho: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
+}
+
+function isMixedSymbolTextChirho(itemChirho: { scriptChirho: string; textChirho: string }): boolean {
+  return itemChirho.scriptChirho === "symbol-chirho" && ORDINARY_SCRIPT_LETTER_RE_CHIRHO.test(itemChirho.textChirho);
+}
+
+function isNontrivialSymbolTextChirho(itemChirho: { scriptChirho: string; textChirho: string }): boolean {
+  return itemChirho.scriptChirho === "symbol-chirho" && !TRIVIAL_SYMBOL_TEXT_RE_CHIRHO.test(itemChirho.textChirho);
+}
+
+function shortItemLabelChirho(itemChirho: { idChirho: string; textChirho: string }): string {
+  return `${itemChirho.idChirho}=${JSON.stringify(itemChirho.textChirho)}`;
 }
 
 function loadPolicyFileChirho(pathChirho: string): LatinSymbolAcceptancePolicyFileChirho {
@@ -64,6 +80,10 @@ function writePolicyFileChirho(pathChirho: string, fileChirho: LatinSymbolAccept
 function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const writeChirho = argsChirho.includes("--write-chirho");
+  const safeSymbolsOnlyChirho = argsChirho.includes("--safe-symbols-only-chirho");
+  const allowNontrivialSymbolTextChirho =
+    argsChirho.includes("--allow-nontrivial-symbol-text-chirho") ||
+    argsChirho.includes("--allow-mixed-symbol-text-chirho");
   const scriptFiltersChirho = new Set(splitCsvChirho(parseArgValueChirho(argsChirho, "script-chirho")));
   const kindFiltersChirho = new Set(splitCsvChirho(parseArgValueChirho(argsChirho, "kind-chirho")));
   const decisionChirho = parseArgValueChirho(argsChirho, "decision-chirho") ?? LATIN_SYMBOL_POLICY_DECISION_DRAFT_CHIRHO;
@@ -73,6 +93,7 @@ function mainChirho(): void {
   const scopePartsChirho = [
     scriptFiltersChirho.size === 0 ? "all-scripts-chirho" : [...scriptFiltersChirho].sort().join("-"),
     kindFiltersChirho.size === 0 ? "all-kinds-chirho" : [...kindFiltersChirho].sort().join("-"),
+    safeSymbolsOnlyChirho ? "safe-symbols-only-chirho" : "all-symbol-text-chirho",
   ];
   const policyIdChirho =
     parseArgValueChirho(argsChirho, "policy-id-chirho") ??
@@ -90,16 +111,31 @@ function mainChirho(): void {
   }
 
   const liveItemsChirho = latinSymbolVisionLiveItemsChirho();
+  const nontrivialSymbolItemsChirho = liveItemsChirho.filter(isNontrivialSymbolTextChirho);
+  const mixedScriptSymbolItemsChirho = liveItemsChirho.filter(isMixedSymbolTextChirho);
   const selectedItemsChirho = liveItemsChirho.filter((itemChirho) => {
     const scriptOkChirho = scriptFiltersChirho.size === 0 || scriptFiltersChirho.has(itemChirho.scriptChirho);
     const kindOkChirho = kindFiltersChirho.size === 0 || kindFiltersChirho.has(itemChirho.itemKindChirho);
-    return scriptOkChirho && kindOkChirho;
+    const symbolSafetyOkChirho = !safeSymbolsOnlyChirho || !isNontrivialSymbolTextChirho(itemChirho);
+    return scriptOkChirho && kindOkChirho && symbolSafetyOkChirho;
   });
+  const selectedNontrivialSymbolItemsChirho = selectedItemsChirho.filter(isNontrivialSymbolTextChirho);
+  if (
+    decisionChirho === LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO &&
+    selectedNontrivialSymbolItemsChirho.length !== 0 &&
+    !allowNontrivialSymbolTextChirho
+  ) {
+    throw new Error(
+      "Refusing accepted policy with non-trivial symbol item(s): " +
+        selectedNontrivialSymbolItemsChirho.slice(0, 8).map(shortItemLabelChirho).join(", ") +
+        ". Use --safe-symbols-only-chirho to keep only trivial punctuation, or --allow-nontrivial-symbol-text-chirho after explicit item review."
+    );
+  }
   const nowChirho = new Date().toISOString();
   const policyChirho: LatinSymbolAcceptancePolicyChirho = {
     policyIdChirho,
     decisionChirho,
-    scopeChirho: `script=${scriptFiltersChirho.size === 0 ? "all-chirho" : [...scriptFiltersChirho].sort().join(",")}; kind=${kindFiltersChirho.size === 0 ? "all-chirho" : [...kindFiltersChirho].sort().join(",")}`,
+    scopeChirho: `script=${scriptFiltersChirho.size === 0 ? "all-chirho" : [...scriptFiltersChirho].sort().join(",")}; kind=${kindFiltersChirho.size === 0 ? "all-chirho" : [...kindFiltersChirho].sort().join(",")}; safeSymbolsOnly=${safeSymbolsOnlyChirho}`,
     itemCountChirho: selectedItemsChirho.length,
     itemsChirho: selectedItemsChirho.map((itemChirho) => ({
       itemIdChirho: itemChirho.idChirho,
@@ -117,6 +153,13 @@ function mainChirho(): void {
 
   if (!writeChirho) {
     console.log(JSON.stringify(policyChirho, null, 2));
+    if (nontrivialSymbolItemsChirho.length !== 0) {
+      console.error(
+        `[${MODULE_CHIRHO}] non-trivial symbol item(s) in live set: ${nontrivialSymbolItemsChirho.length}; ` +
+          `mixed-script=${mixedScriptSymbolItemsChirho.length}; selected=${selectedNontrivialSymbolItemsChirho.length}; ` +
+          `use --safe-symbols-only-chirho for only trivial punctuation`
+      );
+    }
     console.error(
       `[${MODULE_CHIRHO}] previewed ${selectedItemsChirho.length} item(s); add --write-chirho to merge into ${outPathChirho}`
     );
