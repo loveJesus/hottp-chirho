@@ -59,12 +59,33 @@ const EXPERT_PACK_MANIFEST_PATH_CHIRHO = join(
   "2026-05-31-chirho",
   "manifest-chirho.json"
 );
+const EXPERT_PACK_INDEX_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "expert-confirm-pack-chirho",
+  "2026-05-31-chirho",
+  "index-chirho.md"
+);
+const RAW_HEBREW_PACK_INDEX_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "pass-c-hebrew-human-pack-chirho",
+  "2026-05-31-chirho",
+  "index-chirho.md"
+);
 const LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "workspace-chirho",
   "latin-symbol-vision-pack-chirho",
   "2026-05-31-chirho",
   "manifest-chirho.json"
+);
+const LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "latin-symbol-vision-pack-chirho",
+  "2026-05-31-chirho",
+  "index-chirho.md"
 );
 const LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -521,6 +542,12 @@ function summarizeIssueChirho(issueChirho: ExportIssueChirho): string {
   ].join(" ");
   const messageChirho = issueChirho.messageChirho ?? "";
   return `${locationChirho.length === 0 ? "no-location-chirho" : locationChirho}: ${prefixChirho}${messageChirho.length === 0 ? "" : ` - ${messageChirho}`}`;
+}
+
+function relativeProjectPathChirho(pathChirho: string): string {
+  return pathChirho.startsWith(PROJECT_ROOT_CHIRHO)
+    ? pathChirho.slice(PROJECT_ROOT_CHIRHO.length + 1)
+    : pathChirho;
 }
 
 function summarizeLatinSymbolReviewsChirho(
@@ -1046,6 +1073,15 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `Generated: ${statusChirho.generatedAtChirho}`,
     "",
     `Certification complete: ${statusChirho.certificationCompleteChirho ? "yes" : "no"}`,
+    "",
+    "## Review Entry Points",
+    "",
+    `- Raw Hebrew live validator: http://localhost:8766/ (${statusChirho.rawHebrewChirho.reportSpanCountChirho} span(s); command: \`bun run pass-c-human-validate-chirho\`)`,
+    `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
+    `- Latin/symbol live reviewer: http://localhost:8770/ (${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} remaining decision(s); command: \`bun run latin-symbol-vision-review-chirho\`)`,
+    `- Latin/symbol image packet: \`${relativeProjectPathChirho(LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO)}\``,
+    `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,
+    "- Guarded WLC correction command after explicit human confirmation: `bun run apply-human-suggested-corrections-chirho -- --apply --certify-human`",
     "",
     "## Structural Export",
     "",
