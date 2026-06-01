@@ -29,6 +29,8 @@ const NON_LATIN_EXPERT_SCRIPT_VALUES_CHIRHO = new Set([
   "arabic-chirho",
   "syriac-chirho",
 ]);
+export const ORDINARY_SYMBOL_SCRIPT_LETTER_RE_CHIRHO = /[A-Za-z\u00C0-\u024F\u0370-\u03FF\u1F00-\u1FFF\u0590-\u05FF\uFB1D-\uFB4F\u0600-\u06FF\u0700-\u074F\u{1D400}-\u{1D7FF}]/u;
+export const TRIVIAL_SYMBOL_TEXT_RE_CHIRHO = /^[\s/+:≠()]+$/u;
 
 interface SpanChirho {
   segmentIndexChirho: number;
@@ -72,12 +74,41 @@ export interface LatinSymbolVisionLiveSnapshotChirho {
   d1ReadErrorChirho: string | null;
 }
 
+export interface LatinSymbolVisionSymbolRiskSummaryChirho {
+  totalSymbolItemsChirho: number;
+  trivialPunctuationSymbolItemsChirho: number;
+  nontrivialSymbolItemsChirho: number;
+  mixedScriptSymbolItemsChirho: number;
+}
+
 export function countByScriptChirho(itemsChirho: LatinSymbolVisionLiveItemChirho[]): Record<string, number> {
   const countsChirho: Record<string, number> = {};
   for (const itemChirho of itemsChirho) {
     countsChirho[itemChirho.scriptChirho] = (countsChirho[itemChirho.scriptChirho] ?? 0) + 1;
   }
   return countsChirho;
+}
+
+export function isMixedSymbolTextChirho(itemChirho: Pick<LatinSymbolVisionLiveItemChirho, "scriptChirho" | "textChirho">): boolean {
+  return itemChirho.scriptChirho === "symbol-chirho" && ORDINARY_SYMBOL_SCRIPT_LETTER_RE_CHIRHO.test(itemChirho.textChirho);
+}
+
+export function isNontrivialSymbolTextChirho(itemChirho: Pick<LatinSymbolVisionLiveItemChirho, "scriptChirho" | "textChirho">): boolean {
+  return itemChirho.scriptChirho === "symbol-chirho" && !TRIVIAL_SYMBOL_TEXT_RE_CHIRHO.test(itemChirho.textChirho);
+}
+
+export function summarizeSymbolRiskChirho(
+  itemsChirho: LatinSymbolVisionLiveItemChirho[]
+): LatinSymbolVisionSymbolRiskSummaryChirho {
+  const symbolItemsChirho = itemsChirho.filter((itemChirho) => itemChirho.scriptChirho === "symbol-chirho");
+  return {
+    totalSymbolItemsChirho: symbolItemsChirho.length,
+    trivialPunctuationSymbolItemsChirho: symbolItemsChirho.filter(
+      (itemChirho) => !isNontrivialSymbolTextChirho(itemChirho)
+    ).length,
+    nontrivialSymbolItemsChirho: symbolItemsChirho.filter(isNontrivialSymbolTextChirho).length,
+    mixedScriptSymbolItemsChirho: symbolItemsChirho.filter(isMixedSymbolTextChirho).length,
+  };
 }
 
 function paddedPageChirho(pageChirho: number): string {

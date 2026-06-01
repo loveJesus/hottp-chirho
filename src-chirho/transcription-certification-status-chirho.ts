@@ -24,7 +24,9 @@ import {
   countByScriptChirho,
   hashTextChirho,
   latinSymbolVisionLiveSnapshotChirho,
+  summarizeSymbolRiskChirho,
   type LatinSymbolVisionLiveItemChirho,
+  type LatinSymbolVisionSymbolRiskSummaryChirho,
 } from "./latin-symbol-vision-live-items-chirho.ts";
 import { scanNonNfcSpanTextFieldsChirho } from "./span-nfc-chirho.ts";
 import {
@@ -276,6 +278,7 @@ interface CertificationStatusChirho {
     explicitVisionCountsChirho: Record<string, number>;
     d1DerivedVisionWordCountChirho: number;
     d1DerivedVisionCountsChirho: Record<string, number>;
+    symbolRiskSummaryChirho: LatinSymbolVisionSymbolRiskSummaryChirho;
     reviewPacketItemCountChirho: number;
     reviewPacketCountMatchesCurrentChirho: boolean;
     reviewPacketIdsMatchCurrentChirho: boolean;
@@ -686,6 +689,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   );
   const latinSymbolVisionCountsResultChirho = countByScriptChirho(explicitLatinSymbolLiveItemsChirho);
   const d1DerivedLatinSymbolVisionCountsResultChirho = countByScriptChirho(d1DerivedLatinSymbolLiveItemsChirho);
+  const latinSymbolRiskSummaryChirho = summarizeSymbolRiskChirho(latinSymbolLiveItemsChirho);
   const currentLatinSymbolDecisionCountChirho =
     sumCountsChirho(latinSymbolVisionCountsResultChirho) + sumCountsChirho(d1DerivedLatinSymbolVisionCountsResultChirho);
   const latinSymbolPacketItemsChirho = latinSymbolPackManifestShapeOkChirho
@@ -759,6 +763,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     explicitVisionCountsChirho: latinSymbolVisionCountsResultChirho,
     d1DerivedVisionWordCountChirho: sumCountsChirho(d1DerivedLatinSymbolVisionCountsResultChirho),
     d1DerivedVisionCountsChirho: d1DerivedLatinSymbolVisionCountsResultChirho,
+    symbolRiskSummaryChirho: latinSymbolRiskSummaryChirho,
     reviewPacketItemCountChirho: latinSymbolPacketItemsChirho.length,
     reviewPacketCountMatchesCurrentChirho: latinSymbolReviewPacketCountMatchesCurrentChirho,
     reviewPacketIdsMatchCurrentChirho: latinSymbolReviewPacketIdsMatchCurrentChirho,
@@ -1070,6 +1075,10 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Counts: ${latinSymbolCountsChirho || "none"}`,
     `- D1-derived Latin/symbol vision words: ${statusChirho.latinSymbolVisionChirho.d1DerivedVisionWordCountChirho}`,
     `- D1-derived counts: ${d1LatinSymbolCountsChirho || "none"}`,
+    `- Symbol items total: ${statusChirho.latinSymbolVisionChirho.symbolRiskSummaryChirho.totalSymbolItemsChirho}`,
+    `- Symbol items safe-symbols-only: ${statusChirho.latinSymbolVisionChirho.symbolRiskSummaryChirho.trivialPunctuationSymbolItemsChirho}`,
+    `- Symbol items requiring review/override: ${statusChirho.latinSymbolVisionChirho.symbolRiskSummaryChirho.nontrivialSymbolItemsChirho}`,
+    `- Symbol items containing script letters/sigla: ${statusChirho.latinSymbolVisionChirho.symbolRiskSummaryChirho.mixedScriptSymbolItemsChirho}`,
     `- Review packet exists: ${statusChirho.artifactsChirho.latinSymbolPackManifestExistsChirho}`,
     `- Review packet shape OK: ${statusChirho.artifactsChirho.latinSymbolPackManifestShapeOkChirho}`,
     `- Review packet items: ${statusChirho.latinSymbolVisionChirho.reviewPacketItemCountChirho}`,

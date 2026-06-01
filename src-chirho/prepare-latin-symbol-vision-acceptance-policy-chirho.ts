@@ -14,7 +14,11 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname } from "path";
 
-import { latinSymbolVisionLiveItemsChirho } from "./latin-symbol-vision-live-items-chirho.ts";
+import {
+  isMixedSymbolTextChirho,
+  isNontrivialSymbolTextChirho,
+  latinSymbolVisionLiveItemsChirho,
+} from "./latin-symbol-vision-live-items-chirho.ts";
 import {
   LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO,
   LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO,
@@ -25,8 +29,6 @@ import {
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "prepare-latin-symbol-vision-acceptance-policy-chirho";
-const ORDINARY_SCRIPT_LETTER_RE_CHIRHO = /[A-Za-z\u00C0-\u024F\u0370-\u03FF\u1F00-\u1FFF\u0590-\u05FF\uFB1D-\uFB4F\u0600-\u06FF\u0700-\u074F\u{1D400}-\u{1D7FF}]/u;
-const TRIVIAL_SYMBOL_TEXT_RE_CHIRHO = /^[\s/+:≠()]+$/u;
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
   const prefixChirho = `--${nameChirho}=`;
@@ -45,14 +47,6 @@ function slugChirho(valueChirho: string): string {
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, "-")
     .replace(/^-+|-+$/g, "");
-}
-
-function isMixedSymbolTextChirho(itemChirho: { scriptChirho: string; textChirho: string }): boolean {
-  return itemChirho.scriptChirho === "symbol-chirho" && ORDINARY_SCRIPT_LETTER_RE_CHIRHO.test(itemChirho.textChirho);
-}
-
-function isNontrivialSymbolTextChirho(itemChirho: { scriptChirho: string; textChirho: string }): boolean {
-  return itemChirho.scriptChirho === "symbol-chirho" && !TRIVIAL_SYMBOL_TEXT_RE_CHIRHO.test(itemChirho.textChirho);
 }
 
 function shortItemLabelChirho(itemChirho: { idChirho: string; textChirho: string }): string {
