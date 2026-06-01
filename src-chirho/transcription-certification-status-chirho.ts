@@ -27,6 +27,15 @@ import {
   type LatinSymbolVisionLiveItemChirho,
 } from "./latin-symbol-vision-live-items-chirho.ts";
 import { scanNonNfcSpanTextFieldsChirho } from "./span-nfc-chirho.ts";
+import {
+  readVisionTierExpertConfirmationFileChirho,
+  summarizeVisionTierExpertConfirmationsChirho,
+  VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO,
+} from "./vision-tier-expert-confirmation-policy-chirho.ts";
+import {
+  countVisionTierExpertByScriptChirho,
+  visionTierExpertLiveSnapshotChirho,
+} from "./vision-tier-expert-live-items-chirho.ts";
 
 const MODULE_CHIRHO = "transcription-certification-status-chirho";
 const EXPORT_REPORT_PATH_CHIRHO = join(
@@ -101,7 +110,14 @@ interface ExpertPackManifestChirho {
   generatedAtChirho?: string;
   priorityItemsChirho?: unknown[];
   completeVisionCountsChirho?: Record<string, number>;
-  completeVisionItemsChirho?: unknown[];
+  completeVisionItemsChirho?: ExpertPackVisionItemChirho[];
+}
+
+interface ExpertPackVisionItemChirho {
+  idChirho: string;
+  scriptChirho: string;
+  visionSourceChirho: string;
+  currentTextChirho: string;
 }
 
 interface LatinSymbolPackItemChirho {
@@ -152,6 +168,17 @@ interface LatinSymbolPolicySummaryForStatusChirho {
   shapeErrorsChirho: string[];
 }
 
+interface VisionTierExpertConfirmationSummaryForStatusChirho {
+  policyFileExistsChirho: boolean;
+  policyFileShapeOkChirho: boolean;
+  confirmedPolicyCountChirho: number;
+  confirmedPolicyItemCountChirho: number;
+  validConfirmedPolicyItemCountChirho: number;
+  staleConfirmedPolicyItemCountChirho: number;
+  duplicateConfirmedPolicyItemCountChirho: number;
+  shapeErrorsChirho: string[];
+}
+
 interface LatinSymbolReviewRowChirho {
   itemIdChirho: string;
   currentTextHashChirho: string;
@@ -194,12 +221,14 @@ interface CertificationStatusChirho {
     exportReportExistsChirho: boolean;
     rawHebrewReportExistsChirho: boolean;
     expertPackManifestExistsChirho: boolean;
+    visionTierExpertConfirmationPolicyExistsChirho: boolean;
     latinSymbolPackManifestExistsChirho: boolean;
     latinSymbolReviewBackupExistsChirho: boolean;
     latinSymbolAcceptancePolicyExistsChirho: boolean;
     exportReportShapeOkChirho: boolean;
     rawHebrewReportShapeOkChirho: boolean;
     expertPackManifestShapeOkChirho: boolean;
+    visionTierExpertConfirmationPolicyShapeOkChirho: boolean;
     latinSymbolPackManifestShapeOkChirho: boolean;
     latinSymbolReviewBackupShapeOkChirho: boolean;
     latinSymbolAcceptancePolicyShapeOkChirho: boolean;
@@ -228,10 +257,18 @@ interface CertificationStatusChirho {
     exportPassCOcrMatchesReportChirho: boolean;
   };
   visionTierChirho: {
+    d1ReadErrorChirho: string | null;
     manifestGeneratedAtChirho: string | null;
     priorityItemCountChirho: number;
     completeVisionItemCountChirho: number;
     completeVisionCountsChirho: Record<string, number>;
+    liveVisionItemCountChirho: number;
+    liveVisionCountsChirho: Record<string, number>;
+    manifestCountMatchesCurrentChirho: boolean;
+    manifestIdsMatchCurrentChirho: boolean;
+    manifestTextMatchesCurrentChirho: boolean;
+    confirmedByPolicyCountChirho: number;
+    remainingConfirmationCountChirho: number;
   };
   latinSymbolVisionChirho: {
     d1ReadErrorChirho: string | null;
@@ -256,6 +293,7 @@ interface CertificationStatusChirho {
     liveNonNfcSpanFileCountChirho: number;
   };
   humanValidationDbChirho: HumanValidationSummaryChirho;
+  visionTierExpertConfirmationPolicyChirho: VisionTierExpertConfirmationSummaryForStatusChirho;
   latinSymbolReviewDbChirho: LatinSymbolReviewSummaryChirho;
   latinSymbolReviewBackupChirho: LatinSymbolReviewBackupSummaryChirho;
   latinSymbolAcceptancePolicyChirho: LatinSymbolPolicySummaryForStatusChirho;
@@ -496,12 +534,14 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const exportReportExistsChirho = existsSync(EXPORT_REPORT_PATH_CHIRHO);
   const rawHebrewReportExistsChirho = existsSync(RAW_HEBREW_REPORT_PATH_CHIRHO);
   const expertPackManifestExistsChirho = existsSync(EXPERT_PACK_MANIFEST_PATH_CHIRHO);
+  const visionTierExpertConfirmationPolicyExistsChirho = existsSync(VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO);
   const latinSymbolPackManifestExistsChirho = existsSync(LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO);
   const latinSymbolReviewBackupExistsChirho = existsSync(LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO);
   const latinSymbolAcceptancePolicyExistsChirho = existsSync(LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO);
   const exportReportChirho = readJsonFileChirho<ExportReportChirho>(EXPORT_REPORT_PATH_CHIRHO, {});
   const rawReportChirho = readJsonFileChirho<RawHebrewReportChirho>(RAW_HEBREW_REPORT_PATH_CHIRHO, {});
   const expertManifestChirho = readJsonFileChirho<ExpertPackManifestChirho>(EXPERT_PACK_MANIFEST_PATH_CHIRHO, {});
+  const visionTierExpertConfirmationFileChirho = readVisionTierExpertConfirmationFileChirho();
   const latinSymbolManifestChirho = readJsonFileChirho<LatinSymbolPackManifestChirho>(
     LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO,
     {}
@@ -526,7 +566,14 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const expertPackManifestShapeOkChirho =
     !expertPackManifestExistsChirho ||
     (Array.isArray(expertManifestChirho.completeVisionItemsChirho) &&
-      Array.isArray(expertManifestChirho.priorityItemsChirho));
+      Array.isArray(expertManifestChirho.priorityItemsChirho) &&
+      expertManifestChirho.completeVisionItemsChirho.every(
+        (itemChirho) =>
+          typeof itemChirho.idChirho === "string" &&
+          typeof itemChirho.scriptChirho === "string" &&
+          typeof itemChirho.visionSourceChirho === "string" &&
+          typeof itemChirho.currentTextChirho === "string"
+      ));
   const latinSymbolPackManifestShapeOkChirho =
     !latinSymbolPackManifestExistsChirho ||
     (Array.isArray(latinSymbolManifestChirho.itemsChirho) &&
@@ -562,11 +609,71 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     exportPassCOcrMatchesReportChirho:
       structuralChirho.passCOcrHebrewSpanCountChirho === (rawReportChirho.spanCountChirho ?? rawSpansChirho.length),
   };
+  const visionTierLiveSnapshotChirho = visionTierExpertLiveSnapshotChirho();
+  const visionTierLiveItemsChirho = visionTierLiveSnapshotChirho.itemsChirho;
+  const visionTierLiveItemsByIdChirho = new Map(
+    visionTierLiveItemsChirho.map((itemChirho) => [itemChirho.idChirho, itemChirho])
+  );
+  const expertManifestItemsChirho = expertPackManifestShapeOkChirho
+    ? expertManifestChirho.completeVisionItemsChirho ?? []
+    : [];
+  const expertManifestItemIdsChirho = new Set(expertManifestItemsChirho.map((itemChirho) => itemChirho.idChirho));
+  const visionTierManifestCountMatchesCurrentChirho =
+    expertManifestItemsChirho.length === visionTierLiveItemsChirho.length;
+  const visionTierManifestIdsMatchCurrentChirho =
+    visionTierManifestCountMatchesCurrentChirho &&
+    expertManifestItemsChirho.every((itemChirho) => visionTierLiveItemsByIdChirho.has(itemChirho.idChirho)) &&
+    visionTierLiveItemsChirho.every((itemChirho) => expertManifestItemIdsChirho.has(itemChirho.idChirho));
+  const visionTierManifestTextMatchesCurrentChirho =
+    visionTierManifestIdsMatchCurrentChirho &&
+    expertManifestItemsChirho.every((itemChirho) => {
+      const liveItemChirho = visionTierLiveItemsByIdChirho.get(itemChirho.idChirho);
+      return (
+        liveItemChirho !== undefined &&
+        liveItemChirho.scriptChirho === itemChirho.scriptChirho &&
+        liveItemChirho.visionSourceChirho === itemChirho.visionSourceChirho &&
+        liveItemChirho.currentTextChirho === itemChirho.currentTextChirho
+      );
+    });
+  const visionTierConfirmationSummaryChirho = summarizeVisionTierExpertConfirmationsChirho(
+    visionTierExpertConfirmationFileChirho,
+    visionTierExpertConfirmationPolicyExistsChirho,
+    visionTierLiveItemsChirho
+  );
+  const visionTierCurrentDecisionCountChirho =
+    visionTierLiveSnapshotChirho.d1ReadErrorChirho !== null
+      ? Math.max(visionTierLiveItemsChirho.length, expertManifestItemsChirho.length)
+      : visionTierLiveItemsChirho.length;
+  const visionTierRemainingConfirmationCountChirho =
+    visionTierLiveSnapshotChirho.d1ReadErrorChirho !== null
+      ? visionTierCurrentDecisionCountChirho
+      : Math.max(
+          0,
+          visionTierCurrentDecisionCountChirho - visionTierConfirmationSummaryChirho.confirmedItemIdsChirho.size
+        );
+  const visionTierConfirmationSummaryForStatusChirho = {
+    policyFileExistsChirho: visionTierConfirmationSummaryChirho.policyFileExistsChirho,
+    policyFileShapeOkChirho: visionTierConfirmationSummaryChirho.policyFileShapeOkChirho,
+    confirmedPolicyCountChirho: visionTierConfirmationSummaryChirho.confirmedPolicyCountChirho,
+    confirmedPolicyItemCountChirho: visionTierConfirmationSummaryChirho.confirmedPolicyItemCountChirho,
+    validConfirmedPolicyItemCountChirho: visionTierConfirmationSummaryChirho.validConfirmedPolicyItemCountChirho,
+    staleConfirmedPolicyItemCountChirho: visionTierConfirmationSummaryChirho.staleConfirmedPolicyItemCountChirho,
+    duplicateConfirmedPolicyItemCountChirho: visionTierConfirmationSummaryChirho.duplicateConfirmedPolicyItemCountChirho,
+    shapeErrorsChirho: visionTierConfirmationSummaryChirho.shapeErrorsChirho,
+  };
   const visionTierChirho = {
+    d1ReadErrorChirho: visionTierLiveSnapshotChirho.d1ReadErrorChirho,
     manifestGeneratedAtChirho: expertManifestChirho.generatedAtChirho ?? null,
     priorityItemCountChirho: expertManifestChirho.priorityItemsChirho?.length ?? 0,
-    completeVisionItemCountChirho: expertManifestChirho.completeVisionItemsChirho?.length ?? 0,
+    completeVisionItemCountChirho: expertManifestItemsChirho.length,
     completeVisionCountsChirho: expertManifestChirho.completeVisionCountsChirho ?? {},
+    liveVisionItemCountChirho: visionTierLiveItemsChirho.length,
+    liveVisionCountsChirho: countVisionTierExpertByScriptChirho(visionTierLiveItemsChirho),
+    manifestCountMatchesCurrentChirho: visionTierManifestCountMatchesCurrentChirho,
+    manifestIdsMatchCurrentChirho: visionTierManifestIdsMatchCurrentChirho,
+    manifestTextMatchesCurrentChirho: visionTierManifestTextMatchesCurrentChirho,
+    confirmedByPolicyCountChirho: visionTierConfirmationSummaryChirho.validConfirmedPolicyItemCountChirho,
+    remainingConfirmationCountChirho: visionTierRemainingConfirmationCountChirho,
   };
   const latinSymbolLiveSnapshotChirho = latinSymbolVisionLiveSnapshotChirho();
   const latinSymbolLiveItemsChirho = latinSymbolLiveSnapshotChirho.itemsChirho;
@@ -693,6 +800,12 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   if (expertPackManifestExistsChirho && !expertPackManifestShapeOkChirho) {
     remainingWorkChirho.push("expert confirmation manifest is malformed; regenerate make-expert-confirm-pack-chirho");
   }
+  if (
+    visionTierExpertConfirmationPolicyExistsChirho &&
+    !visionTierConfirmationSummaryChirho.policyFileShapeOkChirho
+  ) {
+    remainingWorkChirho.push("vision-tier expert confirmation policy is malformed; fix or regenerate prepare-vision-tier-expert-confirmation-policy-chirho");
+  }
   if (latinSymbolPackManifestExistsChirho && !latinSymbolPackManifestShapeOkChirho) {
     remainingWorkChirho.push("Latin/symbol vision review packet is malformed; regenerate make-latin-symbol-vision-pack-chirho");
   }
@@ -722,8 +835,47 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   if (structuralChirho.passCOcrHebrewSpanCountChirho !== 0) {
     remainingWorkChirho.push(`${structuralChirho.passCOcrHebrewSpanCountChirho} raw Pass-C Hebrew span(s) still need human certification`);
   }
-  if (visionTierChirho.completeVisionItemCountChirho !== 0) {
-    remainingWorkChirho.push(`${visionTierChirho.completeVisionItemCountChirho} vision-tier non-Latin span(s) still need expert/human confirmation`);
+  if (visionTierLiveSnapshotChirho.d1ReadErrorChirho !== null) {
+    remainingWorkChirho.push(`D1-derived vision-tier expert item scan failed: ${visionTierLiveSnapshotChirho.d1ReadErrorChirho}`);
+  }
+  if (
+    visionTierLiveSnapshotChirho.d1ReadErrorChirho === null &&
+    expertPackManifestExistsChirho &&
+    expertPackManifestShapeOkChirho &&
+    !visionTierManifestCountMatchesCurrentChirho
+  ) {
+    remainingWorkChirho.push("expert confirmation manifest count does not match current vision-tier span/D1 state; regenerate make-expert-confirm-pack-chirho");
+  }
+  if (
+    visionTierLiveSnapshotChirho.d1ReadErrorChirho === null &&
+    expertPackManifestExistsChirho &&
+    expertPackManifestShapeOkChirho &&
+    visionTierManifestCountMatchesCurrentChirho &&
+    !visionTierManifestIdsMatchCurrentChirho
+  ) {
+    remainingWorkChirho.push("expert confirmation manifest item IDs do not match current vision-tier span/D1 state; regenerate make-expert-confirm-pack-chirho");
+  }
+  if (
+    visionTierLiveSnapshotChirho.d1ReadErrorChirho === null &&
+    expertPackManifestExistsChirho &&
+    expertPackManifestShapeOkChirho &&
+    visionTierManifestIdsMatchCurrentChirho &&
+    !visionTierManifestTextMatchesCurrentChirho
+  ) {
+    remainingWorkChirho.push("expert confirmation manifest text does not match current live vision-tier span text; regenerate make-expert-confirm-pack-chirho");
+  }
+  if (visionTierConfirmationSummaryChirho.staleConfirmedPolicyItemCountChirho !== 0) {
+    remainingWorkChirho.push(
+      `${visionTierConfirmationSummaryChirho.staleConfirmedPolicyItemCountChirho} vision-tier expert confirmation item(s) are stale against current live span text`
+    );
+  }
+  if (visionTierConfirmationSummaryChirho.duplicateConfirmedPolicyItemCountChirho !== 0) {
+    remainingWorkChirho.push(
+      `${visionTierConfirmationSummaryChirho.duplicateConfirmedPolicyItemCountChirho} duplicate vision-tier expert confirmation item(s) need cleanup`
+    );
+  }
+  if (visionTierRemainingConfirmationCountChirho !== 0) {
+    remainingWorkChirho.push(`${visionTierRemainingConfirmationCountChirho} vision-tier non-Latin span(s) still need expert/human confirmation`);
   }
   if (
     latinSymbolD1ReadErrorChirho === null &&
@@ -787,12 +939,14 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       exportReportExistsChirho,
       rawHebrewReportExistsChirho,
       expertPackManifestExistsChirho,
+      visionTierExpertConfirmationPolicyExistsChirho,
       latinSymbolPackManifestExistsChirho,
       latinSymbolReviewBackupExistsChirho,
       latinSymbolAcceptancePolicyExistsChirho,
       exportReportShapeOkChirho,
       rawHebrewReportShapeOkChirho,
       expertPackManifestShapeOkChirho,
+      visionTierExpertConfirmationPolicyShapeOkChirho: visionTierConfirmationSummaryChirho.policyFileShapeOkChirho,
       latinSymbolPackManifestShapeOkChirho,
       latinSymbolReviewBackupShapeOkChirho,
       latinSymbolAcceptancePolicyShapeOkChirho: latinSymbolPolicySummaryChirho.policyFileShapeOkChirho,
@@ -803,6 +957,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     latinSymbolVisionChirho,
     normalizationChirho,
     humanValidationDbChirho: humanSummaryChirho,
+    visionTierExpertConfirmationPolicyChirho: visionTierConfirmationSummaryForStatusChirho,
     latinSymbolReviewDbChirho: latinSymbolReviewSummaryChirho,
     latinSymbolReviewBackupChirho: latinSymbolReviewBackupSummaryChirho,
     latinSymbolAcceptancePolicyChirho: latinSymbolPolicySummaryForStatusChirho,
@@ -816,6 +971,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     ? ["- None."]
     : statusChirho.remainingWorkChirho.map((itemChirho) => `- ${itemChirho}`);
   const visionCountsChirho = Object.entries(statusChirho.visionTierChirho.completeVisionCountsChirho)
+    .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
+    .join(", ");
+  const liveVisionCountsChirho = Object.entries(statusChirho.visionTierChirho.liveVisionCountsChirho)
     .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
     .join(", ");
   const sourceCountsChirho = Object.entries(statusChirho.rawHebrewChirho.sourceCountsChirho)
@@ -879,9 +1037,28 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     `- Expert manifest exists: ${statusChirho.artifactsChirho.expertPackManifestExistsChirho}`,
     `- Expert manifest shape OK: ${statusChirho.artifactsChirho.expertPackManifestShapeOkChirho}`,
+    `- D1 scan error: ${statusChirho.visionTierChirho.d1ReadErrorChirho ?? "none"}`,
     `- Priority items: ${statusChirho.visionTierChirho.priorityItemCountChirho}`,
     `- Complete vision-tier items: ${statusChirho.visionTierChirho.completeVisionItemCountChirho}`,
     `- Counts: ${visionCountsChirho || "none"}`,
+    `- Live vision-tier items: ${statusChirho.visionTierChirho.liveVisionItemCountChirho}`,
+    `- Live counts: ${liveVisionCountsChirho || "none"}`,
+    `- Manifest count matches current state: ${statusChirho.visionTierChirho.manifestCountMatchesCurrentChirho}`,
+    `- Manifest IDs match current state: ${statusChirho.visionTierChirho.manifestIdsMatchCurrentChirho}`,
+    `- Manifest text matches current state: ${statusChirho.visionTierChirho.manifestTextMatchesCurrentChirho}`,
+    `- Confirmed by explicit policy: ${statusChirho.visionTierChirho.confirmedByPolicyCountChirho}`,
+    `- Remaining confirmations: ${statusChirho.visionTierChirho.remainingConfirmationCountChirho}`,
+    "",
+    "## Vision-Tier Expert Confirmation Policy",
+    "",
+    `- Policy exists: ${statusChirho.visionTierExpertConfirmationPolicyChirho.policyFileExistsChirho}`,
+    `- Policy shape OK: ${statusChirho.visionTierExpertConfirmationPolicyChirho.policyFileShapeOkChirho}`,
+    `- Confirmed policies: ${statusChirho.visionTierExpertConfirmationPolicyChirho.confirmedPolicyCountChirho}`,
+    `- Confirmed policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.confirmedPolicyItemCountChirho}`,
+    `- Valid confirmed policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.validConfirmedPolicyItemCountChirho}`,
+    `- Stale confirmed policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.staleConfirmedPolicyItemCountChirho}`,
+    `- Duplicate confirmed policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.duplicateConfirmedPolicyItemCountChirho}`,
+    `- Shape errors: ${statusChirho.visionTierExpertConfirmationPolicyChirho.shapeErrorsChirho.length === 0 ? "none" : statusChirho.visionTierExpertConfirmationPolicyChirho.shapeErrorsChirho.join("; ")}`,
     "",
     "## Latin/Symbol Vision Scope",
     "",

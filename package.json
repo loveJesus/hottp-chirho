@@ -25,6 +25,7 @@
     "latin-symbol-vision-review-chirho": "bun run src-chirho/latin-symbol-vision-review-server-chirho.ts",
     "record-latin-symbol-vision-review-chirho": "bun run src-chirho/record-latin-symbol-vision-review-chirho.ts",
     "prepare-latin-symbol-vision-acceptance-policy-chirho": "bun run src-chirho/prepare-latin-symbol-vision-acceptance-policy-chirho.ts",
+    "prepare-vision-tier-expert-confirmation-policy-chirho": "bun run src-chirho/prepare-vision-tier-expert-confirmation-policy-chirho.ts",
     "vision-transcribe-unknown-chirho": "bun run src-chirho/vision-transcribe-unknown-chirho.ts",
     "upload-chirho": "bun run src-chirho/upload-chirho.ts"
   },
