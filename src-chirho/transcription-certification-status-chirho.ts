@@ -1080,6 +1080,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Latin/symbol live reviewer: http://localhost:8770/ (${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} remaining decision(s); command: \`bun run latin-symbol-vision-review-chirho\`)`,
     `- Latin/symbol image packet: \`${relativeProjectPathChirho(LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO)}\``,
+    `- Expert non-Latin live reviewer: http://localhost:8771/ (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s); command: \`bun run vision-tier-expert-review-chirho\`)`,
     `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,
     "- Guarded WLC correction command after explicit human confirmation: `bun run apply-human-suggested-corrections-chirho -- --apply --certify-human`",
     "",
