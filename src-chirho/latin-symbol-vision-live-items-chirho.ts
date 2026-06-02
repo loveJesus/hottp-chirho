@@ -81,6 +81,12 @@ export interface LatinSymbolVisionSymbolRiskSummaryChirho {
   mixedScriptSymbolItemsChirho: number;
 }
 
+export type LatinSymbolVisionSymbolRiskChirho =
+  | "not-symbol-chirho"
+  | "trivial-punctuation-chirho"
+  | "script-or-siglum-symbol-chirho"
+  | "nontrivial-symbol-chirho";
+
 export function countByScriptChirho(itemsChirho: LatinSymbolVisionLiveItemChirho[]): Record<string, number> {
   const countsChirho: Record<string, number> = {};
   for (const itemChirho of itemsChirho) {
@@ -97,6 +103,15 @@ export function isNontrivialSymbolTextChirho(itemChirho: Pick<LatinSymbolVisionL
   return itemChirho.scriptChirho === "symbol-chirho" && !TRIVIAL_SYMBOL_TEXT_RE_CHIRHO.test(itemChirho.textChirho);
 }
 
+export function symbolRiskForItemChirho(
+  itemChirho: Pick<LatinSymbolVisionLiveItemChirho, "scriptChirho" | "textChirho">
+): LatinSymbolVisionSymbolRiskChirho {
+  if (itemChirho.scriptChirho !== "symbol-chirho") return "not-symbol-chirho";
+  if (!isNontrivialSymbolTextChirho(itemChirho)) return "trivial-punctuation-chirho";
+  if (isMixedSymbolTextChirho(itemChirho)) return "script-or-siglum-symbol-chirho";
+  return "nontrivial-symbol-chirho";
+}
+
 export function summarizeSymbolRiskChirho(
   itemsChirho: LatinSymbolVisionLiveItemChirho[]
 ): LatinSymbolVisionSymbolRiskSummaryChirho {
@@ -104,10 +119,14 @@ export function summarizeSymbolRiskChirho(
   return {
     totalSymbolItemsChirho: symbolItemsChirho.length,
     trivialPunctuationSymbolItemsChirho: symbolItemsChirho.filter(
-      (itemChirho) => !isNontrivialSymbolTextChirho(itemChirho)
+      (itemChirho) => symbolRiskForItemChirho(itemChirho) === "trivial-punctuation-chirho"
     ).length,
-    nontrivialSymbolItemsChirho: symbolItemsChirho.filter(isNontrivialSymbolTextChirho).length,
-    mixedScriptSymbolItemsChirho: symbolItemsChirho.filter(isMixedSymbolTextChirho).length,
+    nontrivialSymbolItemsChirho: symbolItemsChirho.filter(
+      (itemChirho) => symbolRiskForItemChirho(itemChirho) !== "trivial-punctuation-chirho"
+    ).length,
+    mixedScriptSymbolItemsChirho: symbolItemsChirho.filter(
+      (itemChirho) => symbolRiskForItemChirho(itemChirho) === "script-or-siglum-symbol-chirho"
+    ).length,
   };
 }
 

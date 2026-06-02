@@ -14,10 +14,10 @@ import { resolve } from "path";
 
 import { PROGRESS_DB_PATH_CHIRHO } from "./config-chirho.ts";
 import {
-  isMixedSymbolTextChirho,
-  isNontrivialSymbolTextChirho,
   latinSymbolVisionLiveItemsChirho,
+  symbolRiskForItemChirho,
   type LatinSymbolVisionLiveItemChirho,
+  type LatinSymbolVisionSymbolRiskChirho,
 } from "./latin-symbol-vision-live-items-chirho.ts";
 import {
   assertLatinSymbolManifestMatchesLiveChirho,
@@ -62,14 +62,8 @@ interface ReviewRequestChirho {
   reviewerChirho?: string;
 }
 
-type SymbolRiskChirho =
-  | "not-symbol-chirho"
-  | "trivial-punctuation-chirho"
-  | "script-or-siglum-symbol-chirho"
-  | "nontrivial-symbol-chirho";
-
 interface LatinSymbolReviewItemChirho extends LatinSymbolPacketItemChirho {
-  symbolRiskChirho: SymbolRiskChirho;
+  symbolRiskChirho: LatinSymbolVisionSymbolRiskChirho;
 }
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
@@ -104,15 +98,6 @@ function jsonResponseChirho(dataChirho: unknown, statusChirho = 200): Response {
     status: statusChirho,
     headers: { "Content-Type": "application/json; charset=utf-8" },
   });
-}
-
-function symbolRiskForItemChirho(
-  itemChirho: Pick<LatinSymbolPacketItemChirho, "scriptChirho" | "textChirho">
-): SymbolRiskChirho {
-  if (itemChirho.scriptChirho !== "symbol-chirho") return "not-symbol-chirho";
-  if (!isNontrivialSymbolTextChirho(itemChirho)) return "trivial-punctuation-chirho";
-  if (isMixedSymbolTextChirho(itemChirho)) return "script-or-siglum-symbol-chirho";
-  return "nontrivial-symbol-chirho";
 }
 
 function reviewItemsForManifestChirho(manifestChirho: LatinSymbolPacketManifestChirho): LatinSymbolReviewItemChirho[] {
