@@ -14,6 +14,8 @@ import { resolve } from "path";
 
 import { PROGRESS_DB_PATH_CHIRHO } from "./config-chirho.ts";
 import {
+  isMixedSymbolTextChirho,
+  isNontrivialSymbolTextChirho,
   latinSymbolVisionLiveItemsChirho,
   type LatinSymbolVisionLiveItemChirho,
 } from "./latin-symbol-vision-live-items-chirho.ts";
@@ -28,11 +30,19 @@ import {
   saveLatinSymbolReviewChirho,
   verdictForLatinSymbolIssueFlagsChirho,
   writeLatinSymbolReviewBackupChirho,
+  type LatinSymbolPacketItemChirho,
   type LatinSymbolPacketManifestChirho,
 } from "./latin-symbol-vision-review-store-chirho.ts";
 
 const MODULE_CHIRHO = "latin-symbol-vision-review-server-chirho";
 const DEFAULT_PORT_CHIRHO = 8770;
+const SYMBOL_RISK_OPTIONS_CHIRHO = [
+  { valueChirho: "all-chirho", labelChirho: "All risk classes" },
+  { valueChirho: "trivial-punctuation-chirho", labelChirho: "Trivial punctuation" },
+  { valueChirho: "script-or-siglum-symbol-chirho", labelChirho: "Script/siglum symbol" },
+  { valueChirho: "nontrivial-symbol-chirho", labelChirho: "Nontrivial symbol" },
+  { valueChirho: "not-symbol-chirho", labelChirho: "Not symbol" },
+] as const;
 const ISSUE_FLAG_OPTIONS_CHIRHO = [
   { valueChirho: "letters-chirho", labelChirho: "Letters" },
   { valueChirho: "punctuation-chirho", labelChirho: "Punctuation" },
@@ -50,6 +60,16 @@ interface ReviewRequestChirho {
   issueFlagsChirho?: unknown;
   notesChirho?: string;
   reviewerChirho?: string;
+}
+
+type SymbolRiskChirho =
+  | "not-symbol-chirho"
+  | "trivial-punctuation-chirho"
+  | "script-or-siglum-symbol-chirho"
+  | "nontrivial-symbol-chirho";
+
+interface LatinSymbolReviewItemChirho extends LatinSymbolPacketItemChirho {
+  symbolRiskChirho: SymbolRiskChirho;
 }
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
@@ -84,6 +104,22 @@ function jsonResponseChirho(dataChirho: unknown, statusChirho = 200): Response {
     status: statusChirho,
     headers: { "Content-Type": "application/json; charset=utf-8" },
   });
+}
+
+function symbolRiskForItemChirho(
+  itemChirho: Pick<LatinSymbolPacketItemChirho, "scriptChirho" | "textChirho">
+): SymbolRiskChirho {
+  if (itemChirho.scriptChirho !== "symbol-chirho") return "not-symbol-chirho";
+  if (!isNontrivialSymbolTextChirho(itemChirho)) return "trivial-punctuation-chirho";
+  if (isMixedSymbolTextChirho(itemChirho)) return "script-or-siglum-symbol-chirho";
+  return "nontrivial-symbol-chirho";
+}
+
+function reviewItemsForManifestChirho(manifestChirho: LatinSymbolPacketManifestChirho): LatinSymbolReviewItemChirho[] {
+  return (manifestChirho.itemsChirho ?? []).map((itemChirho) => ({
+    ...itemChirho,
+    symbolRiskChirho: symbolRiskForItemChirho(itemChirho),
+  }));
 }
 
 function htmlChirho(): string {
@@ -152,6 +188,10 @@ function htmlChirho(): string {
         <option value="latin-non-french-chirho">Latin non-French</option>
         <option value="symbol-chirho">Symbol</option>
       </select>
+      <label class="label-chirho" for="symbol-risk-filter-chirho">Symbol risk</label>
+      <select id="symbol-risk-filter-chirho">
+        ${SYMBOL_RISK_OPTIONS_CHIRHO.map((optionChirho) => `<option value="${optionChirho.valueChirho}">${optionChirho.labelChirho}</option>`).join("")}
+      </select>
       <button type="button" id="prev-chirho">Previous</button>
       <button type="button" id="next-chirho">Skip</button>
     </div>
@@ -159,10 +199,12 @@ function htmlChirho(): string {
   </main>
   <script>
     const issueFlagOptionsChirho = ${scriptJsonChirho(ISSUE_FLAG_OPTIONS_CHIRHO)};
+    const symbolRiskOptionsChirho = ${scriptJsonChirho(SYMBOL_RISK_OPTIONS_CHIRHO)};
     let itemsChirho = [];
     let reviewsChirho = new Map();
     let indexChirho = 0;
     let scriptFilterChirho = "all-chirho";
+    let symbolRiskFilterChirho = "all-chirho";
 
     function textNodeChirho(valueChirho) { return document.createTextNode(valueChirho == null ? "" : String(valueChirho)); }
     function elChirho(tagChirho, attrsChirho = {}, childrenChirho = []) {
@@ -188,11 +230,16 @@ function htmlChirho(): string {
       const acceptedChirho = acceptedCleanIdsChirho();
       return itemsChirho.filter((itemChirho) =>
         !acceptedChirho.has(itemChirho.idChirho) &&
-        (scriptFilterChirho === "all-chirho" || itemChirho.scriptChirho === scriptFilterChirho)
+        (scriptFilterChirho === "all-chirho" || itemChirho.scriptChirho === scriptFilterChirho) &&
+        (symbolRiskFilterChirho === "all-chirho" || itemChirho.symbolRiskChirho === symbolRiskFilterChirho)
       );
     }
     function currentItemChirho() { return activeItemsChirho()[indexChirho]; }
     function imageSrcChirho(pathChirho) { return "/asset-chirho?path=" + encodeURIComponent(pathChirho); }
+    function symbolRiskLabelChirho(valueChirho) {
+      const optionChirho = symbolRiskOptionsChirho.find((candidateChirho) => candidateChirho.valueChirho === valueChirho);
+      return optionChirho ? optionChirho.labelChirho : valueChirho;
+    }
     async function loadStateChirho() {
       const responseChirho = await fetch("/api-chirho/state-chirho");
       const dataChirho = await responseChirho.json();
@@ -240,6 +287,7 @@ function htmlChirho(): string {
         ["Location", "vol " + itemChirho.volumeChirho + " p" + itemChirho.pageChirho + " L" + itemChirho.lineIndexChirho],
         ["Kind", itemChirho.itemKindChirho],
         ["Script", itemChirho.scriptChirho],
+        ["Symbol risk", symbolRiskLabelChirho(itemChirho.symbolRiskChirho)],
         ["Source", itemChirho.sourceChirho],
         ["Review", reviewChirho ? reviewChirho.verdictChirho : "none"]
       ]) {
@@ -303,6 +351,11 @@ function htmlChirho(): string {
       indexChirho = 0;
       renderChirho();
     });
+    document.getElementById("symbol-risk-filter-chirho").addEventListener("change", (eventChirho) => {
+      symbolRiskFilterChirho = eventChirho.target.value;
+      indexChirho = 0;
+      renderChirho();
+    });
     document.getElementById("prev-chirho").addEventListener("click", () => {
       indexChirho = Math.max(0, indexChirho - 1);
       renderChirho();
@@ -356,7 +409,7 @@ Bun.serve({
         return jsonResponseChirho({
           okChirho: true,
           generatedAtChirho: manifestChirho.generatedAtChirho ?? null,
-          itemsChirho: manifestChirho.itemsChirho ?? [],
+          itemsChirho: reviewItemsForManifestChirho(manifestChirho),
           reviewsChirho: publicLatinSymbolReviewRowsChirho(dbChirho),
         });
       }
