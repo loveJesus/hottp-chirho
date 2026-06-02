@@ -87,6 +87,12 @@ const LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO = join(
   "2026-05-31-chirho",
   "index-chirho.md"
 );
+const REVIEWER_SCOPE_GUIDE_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "reviewer-scope-and-primer-2026-06-02-chirho.md"
+);
 const LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -1082,6 +1088,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Latin/symbol image packet: \`${relativeProjectPathChirho(LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Expert non-Latin live reviewer: http://localhost:8771/ (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s); command: \`bun run vision-tier-expert-review-chirho\`)`,
     `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,
+    `- Reviewer scope and primer guide: \`${relativeProjectPathChirho(REVIEWER_SCOPE_GUIDE_PATH_CHIRHO)}\``,
     "- Guarded WLC correction command after explicit human confirmation: `bun run apply-human-suggested-corrections-chirho -- --apply --certify-human`",
     "",
     "## Structural Export",
