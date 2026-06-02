@@ -216,6 +216,11 @@ interface VisionTierExpertConfirmationSummaryForStatusChirho {
   validConfirmedPolicyItemCountChirho: number;
   staleConfirmedPolicyItemCountChirho: number;
   duplicateConfirmedPolicyItemCountChirho: number;
+  reviewedIssuePolicyCountChirho: number;
+  reviewedIssuePolicyItemCountChirho: number;
+  validReviewedIssuePolicyItemCountChirho: number;
+  staleReviewedIssuePolicyItemCountChirho: number;
+  duplicateReviewedIssuePolicyItemCountChirho: number;
   shapeErrorsChirho: string[];
 }
 
@@ -310,6 +315,7 @@ interface CertificationStatusChirho {
     manifestIdsMatchCurrentChirho: boolean;
     manifestTextMatchesCurrentChirho: boolean;
     confirmedByPolicyCountChirho: number;
+    reviewedIssueByPolicyCountChirho: number;
     remainingConfirmationCountChirho: number;
   };
   latinSymbolVisionChirho: {
@@ -736,6 +742,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     validConfirmedPolicyItemCountChirho: visionTierConfirmationSummaryChirho.validConfirmedPolicyItemCountChirho,
     staleConfirmedPolicyItemCountChirho: visionTierConfirmationSummaryChirho.staleConfirmedPolicyItemCountChirho,
     duplicateConfirmedPolicyItemCountChirho: visionTierConfirmationSummaryChirho.duplicateConfirmedPolicyItemCountChirho,
+    reviewedIssuePolicyCountChirho: visionTierConfirmationSummaryChirho.reviewedIssuePolicyCountChirho,
+    reviewedIssuePolicyItemCountChirho: visionTierConfirmationSummaryChirho.reviewedIssuePolicyItemCountChirho,
+    validReviewedIssuePolicyItemCountChirho: visionTierConfirmationSummaryChirho.validReviewedIssuePolicyItemCountChirho,
+    staleReviewedIssuePolicyItemCountChirho: visionTierConfirmationSummaryChirho.staleReviewedIssuePolicyItemCountChirho,
+    duplicateReviewedIssuePolicyItemCountChirho: visionTierConfirmationSummaryChirho.duplicateReviewedIssuePolicyItemCountChirho,
     shapeErrorsChirho: visionTierConfirmationSummaryChirho.shapeErrorsChirho,
   };
   const visionTierChirho = {
@@ -750,6 +761,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     manifestIdsMatchCurrentChirho: visionTierManifestIdsMatchCurrentChirho,
     manifestTextMatchesCurrentChirho: visionTierManifestTextMatchesCurrentChirho,
     confirmedByPolicyCountChirho: visionTierConfirmationSummaryChirho.validConfirmedPolicyItemCountChirho,
+    reviewedIssueByPolicyCountChirho: visionTierConfirmationSummaryChirho.validReviewedIssuePolicyItemCountChirho,
     remainingConfirmationCountChirho: visionTierRemainingConfirmationCountChirho,
   };
   const latinSymbolLiveSnapshotChirho = latinSymbolVisionLiveSnapshotChirho();
@@ -953,6 +965,16 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       `${visionTierConfirmationSummaryChirho.duplicateConfirmedPolicyItemCountChirho} duplicate vision-tier expert confirmation item(s) need cleanup`
     );
   }
+  if (visionTierConfirmationSummaryChirho.staleReviewedIssuePolicyItemCountChirho !== 0) {
+    remainingWorkChirho.push(
+      `${visionTierConfirmationSummaryChirho.staleReviewedIssuePolicyItemCountChirho} vision-tier expert issue record item(s) are stale against current live span text`
+    );
+  }
+  if (visionTierConfirmationSummaryChirho.duplicateReviewedIssuePolicyItemCountChirho !== 0) {
+    remainingWorkChirho.push(
+      `${visionTierConfirmationSummaryChirho.duplicateReviewedIssuePolicyItemCountChirho} duplicate vision-tier expert issue record item(s) need cleanup`
+    );
+  }
   if (visionTierRemainingConfirmationCountChirho !== 0) {
     remainingWorkChirho.push(`${visionTierRemainingConfirmationCountChirho} vision-tier non-Latin span(s) still need expert/human confirmation`);
   }
@@ -1150,6 +1172,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Manifest IDs match current state: ${statusChirho.visionTierChirho.manifestIdsMatchCurrentChirho}`,
     `- Manifest text matches current state: ${statusChirho.visionTierChirho.manifestTextMatchesCurrentChirho}`,
     `- Confirmed by explicit policy: ${statusChirho.visionTierChirho.confirmedByPolicyCountChirho}`,
+    `- Reviewed issues by explicit policy: ${statusChirho.visionTierChirho.reviewedIssueByPolicyCountChirho}`,
     `- Remaining confirmations: ${statusChirho.visionTierChirho.remainingConfirmationCountChirho}`,
     "",
     "## Vision-Tier Expert Confirmation Policy",
@@ -1161,6 +1184,11 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Valid confirmed policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.validConfirmedPolicyItemCountChirho}`,
     `- Stale confirmed policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.staleConfirmedPolicyItemCountChirho}`,
     `- Duplicate confirmed policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.duplicateConfirmedPolicyItemCountChirho}`,
+    `- Reviewed-issue policies: ${statusChirho.visionTierExpertConfirmationPolicyChirho.reviewedIssuePolicyCountChirho}`,
+    `- Reviewed-issue policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.reviewedIssuePolicyItemCountChirho}`,
+    `- Valid reviewed-issue policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.validReviewedIssuePolicyItemCountChirho}`,
+    `- Stale reviewed-issue policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.staleReviewedIssuePolicyItemCountChirho}`,
+    `- Duplicate reviewed-issue policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.duplicateReviewedIssuePolicyItemCountChirho}`,
     `- Shape errors: ${statusChirho.visionTierExpertConfirmationPolicyChirho.shapeErrorsChirho.length === 0 ? "none" : statusChirho.visionTierExpertConfirmationPolicyChirho.shapeErrorsChirho.join("; ")}`,
     "",
     "## Latin/Symbol Vision Scope",
