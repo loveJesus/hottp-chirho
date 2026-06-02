@@ -18,6 +18,10 @@ This guide keeps the certification boundary honest: use primers to orient your e
 - Raw Hebrew validator: `bun run pass-c-human-validate-chirho` then open `http://localhost:8766/`.
 - Latin/symbol reviewer: `bun run latin-symbol-vision-review-chirho` then open `http://localhost:8770/`.
 - Non-Latin expert reviewer: `bun run vision-tier-expert-review-chirho` then open `http://localhost:8771/`.
+- Hallelujah’s Hebrew vision lane: `http://localhost:8771/?script-chirho=hebrew-chirho`.
+- Hallelujah’s Greek vision lane: `http://localhost:8771/?script-chirho=greek-chirho`.
+- Syriac expert lane: `http://localhost:8771/?script-chirho=syriac-chirho`.
+- Arabist lane: `http://localhost:8771/?script-chirho=arabic-chirho`.
 - Static raw Hebrew packet: `workspace-chirho/pass-c-hebrew-human-pack-chirho/2026-05-31-chirho/index-chirho.md`.
 - Static expert packet: `workspace-chirho/expert-confirm-pack-chirho/2026-05-31-chirho/index-chirho.md`.
 

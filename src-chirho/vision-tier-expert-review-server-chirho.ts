@@ -331,8 +331,9 @@ function htmlChirho(): string {
   <script>
     let itemsChirho = [];
     let indexChirho = 0;
-    let scriptFilterChirho = "all-chirho";
-    let priorityFilterChirho = "all-chirho";
+    const queryChirho = new URLSearchParams(window.location.search);
+    let scriptFilterChirho = queryChirho.get("script-chirho") || "all-chirho";
+    let priorityFilterChirho = queryChirho.get("priority-chirho") || "all-chirho";
 
     function elChirho(tagChirho, attrsChirho = {}, childrenChirho = []) {
       const nodeChirho = document.createElement(tagChirho);
@@ -346,6 +347,13 @@ function htmlChirho(): string {
     }
     function clearChirho(nodeChirho) { while (nodeChirho.firstChild) nodeChirho.removeChild(nodeChirho.firstChild); }
     function setStatusChirho(messageChirho) { document.getElementById("status-chirho").textContent = messageChirho; }
+    function selectHasValueChirho(idChirho, valueChirho) {
+      return [...document.getElementById(idChirho).options].some((optionChirho) => optionChirho.value === valueChirho);
+    }
+    if (!selectHasValueChirho("script-filter-chirho", scriptFilterChirho)) scriptFilterChirho = "all-chirho";
+    if (!selectHasValueChirho("priority-filter-chirho", priorityFilterChirho)) priorityFilterChirho = "all-chirho";
+    document.getElementById("script-filter-chirho").value = scriptFilterChirho;
+    document.getElementById("priority-filter-chirho").value = priorityFilterChirho;
     function activeItemsChirho() {
       return itemsChirho.filter((itemChirho) =>
         !itemChirho.confirmedChirho &&
@@ -410,6 +418,10 @@ function htmlChirho(): string {
       }
       metaChirho.appendChild(metaGridChirho);
       sideChirho.appendChild(metaChirho);
+      sideChirho.appendChild(elChirho("div", {
+        classChirho: "warning-chirho",
+        textChirho: "Confirm only if you can certify this script's exact letters and relevant marks against the printed line. If this is outside your competence or uncertain, use Skip."
+      }));
 
       const formChirho = elChirho("div", { classChirho: "box-chirho input-grid-chirho" });
       formChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "reviewer-chirho", textChirho: "Reviewer" }));
