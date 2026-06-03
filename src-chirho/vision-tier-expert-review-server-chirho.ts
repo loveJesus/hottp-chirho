@@ -74,6 +74,7 @@ interface ConfirmRequestChirho {
   reviewerChirho?: string;
   reviewerRoleChirho?: string;
   rationaleChirho?: string;
+  certifyExactChirho?: boolean;
 }
 
 interface IssueRequestChirho extends ConfirmRequestChirho {
@@ -477,9 +478,12 @@ function htmlChirho(): string {
     .issue-option-chirho { display: flex; gap: 7px; align-items: center; border: 1px solid #d6d9dd; padding: 8px; min-height: 38px; box-sizing: border-box; cursor: pointer; }
     .issue-option-chirho input { width: auto; margin: 0; }
     .issue-option-chirho:has(input:checked) { border-color: #bd7a1b; background: #fff7e8; }
+    .certify-option-chirho { display: flex; gap: 8px; align-items: flex-start; border: 1px solid #b8d5ca; background: #f2fbf7; padding: 10px; font-size: 13px; line-height: 1.35; cursor: pointer; }
+    .certify-option-chirho input { width: auto; margin: 3px 0 0; }
     .actions-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .actions-chirho button, .toolbar-chirho button { border: 1px solid #aab1b9; background: white; padding: 10px; cursor: pointer; min-height: 42px; }
     .actions-chirho button:hover, .toolbar-chirho button:hover { background: #edf1f4; }
+    .actions-chirho button:disabled, .actions-chirho button:disabled:hover { color: #8a9199; border-color: #cfd4d9 !important; background: #f0f2f4; cursor: not-allowed; }
     .confirm-chirho { color: #116149; border-color: #499b7f !important; font-weight: 750; }
     .issue-chirho { color: #704000; border-color: #bd7a1b !important; font-weight: 750; }
     .warning-chirho { border-left: 4px solid #bd7a1b; background: #fff7e8; padding: 10px; font-size: 13px; color: #704000; }
@@ -568,6 +572,9 @@ function htmlChirho(): string {
       const savedRoleChirho = localStorage.getItem("expertReviewerRoleChirho") || "";
       return savedRoleChirho === itemChirho.reviewerChirho ? savedRoleChirho : itemChirho.reviewerChirho;
     }
+    function certifyExactCheckedChirho() {
+      return document.getElementById("certify-exact-chirho")?.checked === true;
+    }
     function saveReviewerFieldsChirho() {
       localStorage.setItem("expertReviewerChirho", fieldValueChirho("reviewer-chirho"));
       localStorage.setItem("expertReviewerRoleChirho", fieldValueChirho("reviewer-role-chirho"));
@@ -653,6 +660,12 @@ function htmlChirho(): string {
       formChirho.appendChild(elChirho("input", { id: "reviewer-role-chirho", value: reviewerRoleValueChirho(itemChirho) }));
       formChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "rationale-chirho", textChirho: "Rationale" }));
       formChirho.appendChild(elChirho("textarea", { id: "rationale-chirho", textChirho: localStorage.getItem("expertRationaleChirho") || "" }));
+      const certifyInputChirho = elChirho("input", { id: "certify-exact-chirho", type: "checkbox" });
+      const certifyLabelChirho = elChirho("label", { classChirho: "certify-option-chirho", for: "certify-exact-chirho" }, [
+        certifyInputChirho,
+        document.createTextNode("I can certify this item's exact printed letters and relevant marks for the displayed script.")
+      ]);
+      formChirho.appendChild(certifyLabelChirho);
       formChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Issue flags" }));
       const issueGridChirho = elChirho("div", { classChirho: "issue-grid-chirho" });
       for (const optionChirho of issueFlagOptionsChirho) {
@@ -663,6 +676,10 @@ function htmlChirho(): string {
       formChirho.appendChild(issueGridChirho);
       const actionsChirho = elChirho("div", { classChirho: "actions-chirho" });
       const confirmChirho = elChirho("button", { classChirho: "confirm-chirho", type: "button", textChirho: "Confirm" });
+      confirmChirho.disabled = true;
+      certifyInputChirho.addEventListener("change", () => {
+        confirmChirho.disabled = !certifyExactCheckedChirho();
+      });
       confirmChirho.addEventListener("click", () => confirmCurrentChirho(itemChirho));
       const issueChirho = elChirho("button", { classChirho: "issue-chirho", type: "button", textChirho: "Report issue" });
       issueChirho.addEventListener("click", () => reportIssueCurrentChirho(itemChirho));
@@ -677,6 +694,10 @@ function htmlChirho(): string {
       appChirho.appendChild(sideChirho);
     }
     async function confirmCurrentChirho(itemChirho) {
+      if (!certifyExactCheckedChirho()) {
+        setStatusChirho("Check the exact-certification box before confirming this item.");
+        return;
+      }
       saveReviewerFieldsChirho();
       setStatusChirho("Saving...");
       const responseChirho = await fetch("/api-chirho/confirm-chirho", {
@@ -686,7 +707,8 @@ function htmlChirho(): string {
           idChirho: itemChirho.idChirho,
           reviewerChirho: fieldValueChirho("reviewer-chirho"),
           reviewerRoleChirho: fieldValueChirho("reviewer-role-chirho"),
-          rationaleChirho: fieldValueChirho("rationale-chirho")
+          rationaleChirho: fieldValueChirho("rationale-chirho"),
+          certifyExactChirho: certifyExactCheckedChirho()
         })
       });
       const dataChirho = await responseChirho.json();
@@ -791,6 +813,9 @@ Bun.serve({
         const reviewerRoleChirho = nonEmptyTrimmedChirho(bodyChirho.reviewerRoleChirho);
         const rationaleChirho = nonEmptyTrimmedChirho(bodyChirho.rationaleChirho);
         if (itemIdChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "missing idChirho" }, 400);
+        if (bodyChirho.certifyExactChirho !== true) {
+          return jsonResponseChirho({ okChirho: false, errorChirho: "certifyExactChirho acknowledgement is required" }, 400);
+        }
         if (reviewerChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
         if (reviewerRoleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerRoleChirho is required" }, 400);
         if (rationaleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "rationaleChirho is required" }, 400);
