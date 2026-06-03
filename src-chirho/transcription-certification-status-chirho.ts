@@ -369,6 +369,10 @@ interface CertificationStatusChirho {
     completeVisionCountsChirho: Record<string, number>;
     liveVisionItemCountChirho: number;
     liveVisionCountsChirho: Record<string, number>;
+    pendingVisionItemCountChirho: number;
+    pendingVisionCountsChirho: Record<string, number>;
+    pendingPriorityItemCountChirho: number;
+    pendingAppendixItemCountChirho: number;
     manifestCountMatchesCurrentChirho: boolean;
     manifestIdsMatchCurrentChirho: boolean;
     manifestTextMatchesCurrentChirho: boolean;
@@ -906,6 +910,12 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     visionTierLiveSnapshotChirho.d1ReadErrorChirho !== null
       ? Math.max(visionTierLiveItemsChirho.length, expertManifestItemsChirho.length)
       : visionTierLiveItemsChirho.length;
+  const pendingVisionTierLiveItemsChirho = visionTierLiveItemsChirho.filter(
+    (itemChirho) => !visionTierConfirmationSummaryChirho.confirmedItemIdsChirho.has(itemChirho.idChirho)
+  );
+  const pendingExpertManifestItemsChirho = expertManifestItemsChirho.filter(
+    (itemChirho) => !visionTierConfirmationSummaryChirho.confirmedItemIdsChirho.has(itemChirho.idChirho)
+  );
   const visionTierRemainingConfirmationCountChirho =
     visionTierLiveSnapshotChirho.d1ReadErrorChirho !== null
       ? visionTierCurrentDecisionCountChirho
@@ -938,6 +948,10 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     completeVisionCountsChirho: expertManifestChirho.completeVisionCountsChirho ?? {},
     liveVisionItemCountChirho: visionTierLiveItemsChirho.length,
     liveVisionCountsChirho: countVisionTierExpertByScriptChirho(visionTierLiveItemsChirho),
+    pendingVisionItemCountChirho: pendingVisionTierLiveItemsChirho.length,
+    pendingVisionCountsChirho: countVisionTierExpertByScriptChirho(pendingVisionTierLiveItemsChirho),
+    pendingPriorityItemCountChirho: pendingExpertManifestItemsChirho.filter((itemChirho) => itemChirho.priorityMatchChirho).length,
+    pendingAppendixItemCountChirho: pendingExpertManifestItemsChirho.filter((itemChirho) => !itemChirho.priorityMatchChirho).length,
     manifestCountMatchesCurrentChirho: visionTierManifestCountMatchesCurrentChirho,
     manifestIdsMatchCurrentChirho: visionTierManifestIdsMatchCurrentChirho,
     manifestTextMatchesCurrentChirho: visionTierManifestTextMatchesCurrentChirho,
@@ -1317,6 +1331,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     statusChirho.latinSymbolVisionChirho.symbolRiskSummaryChirho.mixedScriptSymbolItemsChirho;
   const expertScriptCountChirho = (scriptChirho: string): number =>
     statusChirho.visionTierChirho.liveVisionCountsChirho[scriptChirho] ?? 0;
+  const pendingExpertScriptCountChirho = (scriptChirho: string): number =>
+    statusChirho.visionTierChirho.pendingVisionCountsChirho[scriptChirho] ?? 0;
   const expertPriorityCountChirho = statusChirho.visionTierChirho.priorityItemCountChirho;
   const expertAppendixCountChirho = Math.max(
     0,
@@ -1336,11 +1352,11 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     );
   const hallelujahReviewCountChirho =
     statusChirho.rawHebrewChirho.livePendingSpanCountChirho +
-    expertScriptCountChirho("hebrew-chirho") +
-    expertScriptCountChirho("greek-chirho");
+    pendingExpertScriptCountChirho("hebrew-chirho") +
+    pendingExpertScriptCountChirho("greek-chirho");
   const externalExpertReviewCountChirho =
-    expertScriptCountChirho("syriac-chirho") +
-    expertScriptCountChirho("arabic-chirho");
+    pendingExpertScriptCountChirho("syriac-chirho") +
+    pendingExpertScriptCountChirho("arabic-chirho");
   return [
     "<!-- For God so loved the world that he gave his only begotten Son,",
     "that whoever believes in him should not perish but have eternal life. John 3:16 -->",
@@ -1367,12 +1383,12 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Latin/symbol nontrivial-symbol lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "nontrivial-symbol-chirho")} (${latinSymbolNontrivialSymbolCountChirho} item(s))`,
     `- Latin/symbol image packet: \`${relativeProjectPathChirho(LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Expert non-Latin live reviewer: http://localhost:8771/ (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s); command: \`bun run vision-tier-expert-review-chirho\`)`,
-    `- Expert priority lane: ${expertReviewUrlChirho(undefined, "priority-chirho")} (${expertPriorityCountChirho} item(s))`,
-    `- Expert appendix lane: ${expertReviewUrlChirho(undefined, "appendix-chirho")} (${expertAppendixCountChirho} item(s))`,
-    `- Expert Hebrew/WLC lane: ${expertReviewUrlChirho("hebrew-chirho")} (${expertScriptCountChirho("hebrew-chirho")} item(s))`,
-    `- Expert Greek lane: ${expertReviewUrlChirho("greek-chirho")} (${expertScriptCountChirho("greek-chirho")} item(s))`,
-    `- Expert Syriac reader lane: ${expertReviewUrlChirho("syriac-chirho")} (${expertScriptCountChirho("syriac-chirho")} item(s))`,
-    `- Expert Arabist lane: ${expertReviewUrlChirho("arabic-chirho")} (${expertScriptCountChirho("arabic-chirho")} item(s))`,
+    `- Expert priority lane: ${expertReviewUrlChirho(undefined, "priority-chirho")} (${statusChirho.visionTierChirho.pendingPriorityItemCountChirho} pending of ${expertPriorityCountChirho} item(s))`,
+    `- Expert appendix lane: ${expertReviewUrlChirho(undefined, "appendix-chirho")} (${statusChirho.visionTierChirho.pendingAppendixItemCountChirho} pending of ${expertAppendixCountChirho} item(s))`,
+    `- Expert Hebrew/WLC lane: ${expertReviewUrlChirho("hebrew-chirho")} (${pendingExpertScriptCountChirho("hebrew-chirho")} pending of ${expertScriptCountChirho("hebrew-chirho")} item(s))`,
+    `- Expert Greek lane: ${expertReviewUrlChirho("greek-chirho")} (${pendingExpertScriptCountChirho("greek-chirho")} pending of ${expertScriptCountChirho("greek-chirho")} item(s))`,
+    `- Expert Syriac reader lane: ${expertReviewUrlChirho("syriac-chirho")} (${pendingExpertScriptCountChirho("syriac-chirho")} pending of ${expertScriptCountChirho("syriac-chirho")} item(s))`,
+    `- Expert Arabist lane: ${expertReviewUrlChirho("arabic-chirho")} (${pendingExpertScriptCountChirho("arabic-chirho")} pending of ${expertScriptCountChirho("arabic-chirho")} item(s))`,
     `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,
     `- Reviewer scope and primer guide: \`${relativeProjectPathChirho(REVIEWER_SCOPE_GUIDE_PATH_CHIRHO)}\``,
     `- Zechariah tipcha decision aid: \`${relativeProjectPathChirho(ZECHARIAH_TIPCHA_CONFIRMATION_AID_PATH_CHIRHO)}\``,
@@ -1451,6 +1467,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Counts: ${visionCountsChirho || "none"}`,
     `- Live vision-tier items: ${statusChirho.visionTierChirho.liveVisionItemCountChirho}`,
     `- Live counts: ${liveVisionCountsChirho || "none"}`,
+    `- Live pending items: ${statusChirho.visionTierChirho.pendingVisionItemCountChirho}`,
+    `- Live pending counts: ${Object.entries(statusChirho.visionTierChirho.pendingVisionCountsChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
     `- Manifest count matches current state: ${statusChirho.visionTierChirho.manifestCountMatchesCurrentChirho}`,
     `- Manifest IDs match current state: ${statusChirho.visionTierChirho.manifestIdsMatchCurrentChirho}`,
     `- Manifest text matches current state: ${statusChirho.visionTierChirho.manifestTextMatchesCurrentChirho}`,
