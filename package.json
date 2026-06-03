@@ -12,6 +12,7 @@
     "ocr-chirho": "bun run src-chirho/ocr-snippets-chirho.ts",
     "export-markdown-chirho": "bun run src-chirho/export-markdown-chirho.ts",
     "apply-pass-c-human-validations-chirho": "bun run src-chirho/apply-pass-c-human-validations-chirho.ts",
+    "backup-pass-c-human-validations-chirho": "bun run src-chirho/pass-c-human-validation-backup-chirho.ts",
     "apply-human-suggested-corrections-chirho": "bun run src-chirho/apply-human-suggested-corrections-chirho.ts",
     "pass-c-human-validate-chirho": "bun run src-chirho/pass-c-human-validate-server-chirho.ts",
     "pass-c-suspect-validate-chirho": "bun run src-chirho/pass-c-human-validate-server-chirho.ts --queue=suspect-text-chirho",

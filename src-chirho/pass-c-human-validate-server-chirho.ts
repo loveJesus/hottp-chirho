@@ -16,6 +16,7 @@ import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { writePassCHumanValidationBackupChirho } from "./pass-c-human-validation-backup-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "pass-c-human-validate-server-chirho";
@@ -727,6 +728,7 @@ const argsChirho = process.argv.slice(2);
 const queueModeChirho = parseQueueModeChirho(parseArgValueChirho(argsChirho, "queue"));
 const portChirho = defaultPortForQueueChirho(queueModeChirho, parseArgValueChirho(argsChirho, "port"));
 const dbPathChirho = parseArgValueChirho(argsChirho, "db") ?? DEFAULT_DB_PATH_CHIRHO;
+const backupPathChirho = parseArgValueChirho(argsChirho, "backup");
 const dbChirho = new Database(dbPathChirho);
 const loadedQueueChirho = loadQueueForModeChirho(queueModeChirho);
 const queueGeneratedAtChirho = loadedQueueChirho.queueGeneratedAtChirho;
@@ -1461,6 +1463,7 @@ Bun.serve({
         bodyChirho.notesChirho,
         currentChirho?.id_chirho ?? null
       );
+      writePassCHumanValidationBackupChirho(dbChirho, backupPathChirho);
       const nowChirho = new Date().toISOString();
       logStepStmtChirho.run(
         MODULE_CHIRHO,
@@ -1500,6 +1503,7 @@ Bun.serve({
         "undo latest validation",
         latestChirho.id_chirho
       );
+      writePassCHumanValidationBackupChirho(dbChirho, backupPathChirho);
       return jsonResponseChirho({ okChirho: true, rowChirho });
     }
     return new Response("not found", { status: 404 });

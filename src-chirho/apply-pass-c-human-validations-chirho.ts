@@ -12,6 +12,7 @@ import { existsSync, readFileSync, writeFileSync } from "fs";
 import { join } from "path";
 
 import { PROGRESS_DB_PATH_CHIRHO, PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { writePassCHumanValidationBackupChirho } from "./pass-c-human-validation-backup-chirho.ts";
 import { normalizeSpanLineTextFieldsChirho } from "./span-nfc-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
@@ -308,6 +309,7 @@ function mainChirho(): void {
   const resultsChirho = rowsChirho.map((rowChirho) =>
     applyRowChirho(rowChirho, spansDirChirho, applyChirho, appliedAtChirho, updateAppliedStmtChirho)
   );
+  if (applyChirho) writePassCHumanValidationBackupChirho(dbChirho);
 
   console.log(`[${MODULE_CHIRHO}] mode=${applyChirho ? "apply-chirho" : "dry-run-chirho"} rowCount=${rowsChirho.length}`);
   for (const resultChirho of resultsChirho) {

@@ -28,6 +28,14 @@ import {
   type LatinSymbolVisionLiveItemChirho,
   type LatinSymbolVisionSymbolRiskSummaryChirho,
 } from "./latin-symbol-vision-live-items-chirho.ts";
+import {
+  countPassCHumanValidationRowsMissingFromBackupChirho,
+  passCHumanValidationBackupRowsChirho,
+  passCHumanValidationBackupRowsFromDbPathChirho,
+  passCHumanValidationBackupShapeOkChirho,
+  PASS_C_HUMAN_VALIDATION_BACKUP_PATH_CHIRHO,
+  readPassCHumanValidationBackupFileChirho,
+} from "./pass-c-human-validation-backup-chirho.ts";
 import { scanNonNfcSpanTextFieldsChirho } from "./span-nfc-chirho.ts";
 import {
   readVisionTierExpertConfirmationFileChirho,
@@ -247,6 +255,12 @@ interface HumanValidationSummaryChirho {
   legacyCurrentRowsChirho: number;
 }
 
+interface PassCHumanValidationBackupSummaryChirho {
+  backupRowsChirho: number;
+  dbRowsChirho: number;
+  localRowsMissingFromBackupChirho: number;
+}
+
 interface LatinSymbolReviewSummaryChirho {
   currentRowsChirho: number;
   validReviewedCleanRowsChirho: number;
@@ -266,6 +280,7 @@ interface CertificationStatusChirho {
   artifactsChirho: {
     exportReportExistsChirho: boolean;
     rawHebrewReportExistsChirho: boolean;
+    passCHumanValidationBackupExistsChirho: boolean;
     expertPackManifestExistsChirho: boolean;
     visionTierExpertConfirmationPolicyExistsChirho: boolean;
     latinSymbolPackManifestExistsChirho: boolean;
@@ -273,6 +288,7 @@ interface CertificationStatusChirho {
     latinSymbolAcceptancePolicyExistsChirho: boolean;
     exportReportShapeOkChirho: boolean;
     rawHebrewReportShapeOkChirho: boolean;
+    passCHumanValidationBackupShapeOkChirho: boolean;
     expertPackManifestShapeOkChirho: boolean;
     visionTierExpertConfirmationPolicyShapeOkChirho: boolean;
     latinSymbolPackManifestShapeOkChirho: boolean;
@@ -343,6 +359,7 @@ interface CertificationStatusChirho {
     liveNonNfcSpanFileCountChirho: number;
   };
   humanValidationDbChirho: HumanValidationSummaryChirho;
+  passCHumanValidationBackupChirho: PassCHumanValidationBackupSummaryChirho;
   visionTierExpertConfirmationPolicyChirho: VisionTierExpertConfirmationSummaryForStatusChirho;
   latinSymbolReviewDbChirho: LatinSymbolReviewSummaryChirho;
   latinSymbolReviewBackupChirho: LatinSymbolReviewBackupSummaryChirho;
@@ -615,6 +632,7 @@ function validLatinSymbolReviewIdsChirho(
 function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const exportReportExistsChirho = existsSync(EXPORT_REPORT_PATH_CHIRHO);
   const rawHebrewReportExistsChirho = existsSync(RAW_HEBREW_REPORT_PATH_CHIRHO);
+  const passCHumanValidationBackupExistsChirho = existsSync(PASS_C_HUMAN_VALIDATION_BACKUP_PATH_CHIRHO);
   const expertPackManifestExistsChirho = existsSync(EXPERT_PACK_MANIFEST_PATH_CHIRHO);
   const visionTierExpertConfirmationPolicyExistsChirho = existsSync(VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO);
   const latinSymbolPackManifestExistsChirho = existsSync(LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO);
@@ -622,6 +640,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const latinSymbolAcceptancePolicyExistsChirho = existsSync(LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO);
   const exportReportChirho = readJsonFileChirho<ExportReportChirho>(EXPORT_REPORT_PATH_CHIRHO, {});
   const rawReportChirho = readJsonFileChirho<RawHebrewReportChirho>(RAW_HEBREW_REPORT_PATH_CHIRHO, {});
+  const passCHumanValidationBackupFileChirho = readPassCHumanValidationBackupFileChirho();
   const expertManifestChirho = readJsonFileChirho<ExpertPackManifestChirho>(EXPERT_PACK_MANIFEST_PATH_CHIRHO, {});
   const visionTierExpertConfirmationFileChirho = readVisionTierExpertConfirmationFileChirho();
   const latinSymbolManifestChirho = readJsonFileChirho<LatinSymbolPackManifestChirho>(
@@ -645,6 +664,10 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     !rawHebrewReportExistsChirho ||
     (Array.isArray(rawReportChirho.spansChirho) &&
       typeof rawReportChirho.sourceFilterChirho === "string");
+  const passCHumanValidationBackupShapeOkResultChirho = passCHumanValidationBackupShapeOkChirho(
+    passCHumanValidationBackupFileChirho,
+    passCHumanValidationBackupExistsChirho
+  );
   const expertPackManifestShapeOkChirho =
     !expertPackManifestExistsChirho ||
     (Array.isArray(expertManifestChirho.completeVisionItemsChirho) &&
@@ -666,7 +689,23 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     (latinSymbolReviewBackupFileChirho.schemaVersionChirho === 1 &&
       Array.isArray(latinSymbolReviewBackupFileChirho.reviewsChirho));
   const rawSpansChirho = rawReportChirho.spansChirho ?? [];
-  const humanSummaryChirho = summarizeHumanValidationsChirho(validationRowsChirho(dbPathChirho), rawSpansChirho);
+  const humanValidationRowsChirho = validationRowsChirho(dbPathChirho);
+  const humanSummaryChirho = summarizeHumanValidationsChirho(humanValidationRowsChirho, rawSpansChirho);
+  const passCHumanValidationDbBackupRowsChirho = passCHumanValidationBackupRowsFromDbPathChirho(dbPathChirho);
+  const passCHumanValidationBackupRowsResultChirho = passCHumanValidationBackupRowsChirho(
+    passCHumanValidationBackupFileChirho,
+    passCHumanValidationBackupShapeOkResultChirho
+  );
+  const passCHumanValidationLocalRowsMissingFromBackupChirho =
+    countPassCHumanValidationRowsMissingFromBackupChirho(
+      passCHumanValidationDbBackupRowsChirho,
+      passCHumanValidationBackupRowsResultChirho
+    );
+  const passCHumanValidationBackupSummaryChirho = {
+    backupRowsChirho: passCHumanValidationBackupRowsResultChirho.length,
+    dbRowsChirho: passCHumanValidationDbBackupRowsChirho.length,
+    localRowsMissingFromBackupChirho: passCHumanValidationLocalRowsMissingFromBackupChirho,
+  };
   const structuralChirho = {
     exportGeneratedAtChirho: exportReportChirho.generatedAtChirho ?? null,
     strictPassedChirho: exportReportChirho.strictPassedChirho === true,
@@ -891,6 +930,9 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   if (rawHebrewReportExistsChirho && !rawHebrewReportShapeOkChirho) {
     remainingWorkChirho.push("raw Hebrew validation report is malformed; regenerate validate-pass-c-hebrew-chirho --all");
   }
+  if (passCHumanValidationBackupExistsChirho && !passCHumanValidationBackupShapeOkResultChirho) {
+    remainingWorkChirho.push("Pass-C human validation backup is malformed; regenerate backup-pass-c-human-validations-chirho");
+  }
   if (expertPackManifestExistsChirho && !expertPackManifestShapeOkChirho) {
     remainingWorkChirho.push("expert confirmation manifest is malformed; regenerate make-expert-confirm-pack-chirho");
   }
@@ -1041,12 +1083,21 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   if (!rawHebrewChirho.exportPassCOcrMatchesReportChirho) {
     remainingWorkChirho.push("raw Hebrew validation report count does not match the latest export report; regenerate validation artifacts");
   }
+  if (passCHumanValidationDbBackupRowsChirho.length !== 0 && !passCHumanValidationBackupExistsChirho) {
+    remainingWorkChirho.push("Pass-C human validation backup is missing; run backup-pass-c-human-validations-chirho");
+  }
+  if (passCHumanValidationLocalRowsMissingFromBackupChirho !== 0) {
+    remainingWorkChirho.push(
+      `${passCHumanValidationLocalRowsMissingFromBackupChirho} local Pass-C human validation row(s) need backup before certification can complete on a fresh checkout`
+    );
+  }
   const certificationCompleteChirho = remainingWorkChirho.length === 0;
   return {
     generatedAtChirho: new Date().toISOString(),
     artifactsChirho: {
       exportReportExistsChirho,
       rawHebrewReportExistsChirho,
+      passCHumanValidationBackupExistsChirho,
       expertPackManifestExistsChirho,
       visionTierExpertConfirmationPolicyExistsChirho,
       latinSymbolPackManifestExistsChirho,
@@ -1054,6 +1105,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       latinSymbolAcceptancePolicyExistsChirho,
       exportReportShapeOkChirho,
       rawHebrewReportShapeOkChirho,
+      passCHumanValidationBackupShapeOkChirho: passCHumanValidationBackupShapeOkResultChirho,
       expertPackManifestShapeOkChirho,
       visionTierExpertConfirmationPolicyShapeOkChirho: visionTierConfirmationSummaryChirho.policyFileShapeOkChirho,
       latinSymbolPackManifestShapeOkChirho,
@@ -1066,6 +1118,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     latinSymbolVisionChirho,
     normalizationChirho,
     humanValidationDbChirho: humanSummaryChirho,
+    passCHumanValidationBackupChirho: passCHumanValidationBackupSummaryChirho,
     visionTierExpertConfirmationPolicyChirho: visionTierConfirmationSummaryForStatusChirho,
     latinSymbolReviewDbChirho: latinSymbolReviewSummaryChirho,
     latinSymbolReviewBackupChirho: latinSymbolReviewBackupSummaryChirho,
@@ -1165,6 +1218,14 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw queue issue rows: ${statusChirho.humanValidationDbChirho.rawQueueIssueRowsChirho}`,
     `- Raw queue applied rows: ${statusChirho.humanValidationDbChirho.rawQueueAppliedRowsChirho}`,
     `- Legacy current rows ignored by apply/certification: ${statusChirho.humanValidationDbChirho.legacyCurrentRowsChirho}`,
+    "",
+    "## Pass-C Human Validation Backup",
+    "",
+    `- Backup exists: ${statusChirho.artifactsChirho.passCHumanValidationBackupExistsChirho}`,
+    `- Backup shape OK: ${statusChirho.artifactsChirho.passCHumanValidationBackupShapeOkChirho}`,
+    `- Local DB rows: ${statusChirho.passCHumanValidationBackupChirho.dbRowsChirho}`,
+    `- Backup rows: ${statusChirho.passCHumanValidationBackupChirho.backupRowsChirho}`,
+    `- Local rows missing from backup: ${statusChirho.passCHumanValidationBackupChirho.localRowsMissingFromBackupChirho}`,
     "",
     "## Vision-Tier Expert Queue",
     "",
