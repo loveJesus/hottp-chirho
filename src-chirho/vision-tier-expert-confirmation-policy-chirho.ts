@@ -195,7 +195,6 @@ function validateConfirmationShapeChirho(fileChirho: VisionTierExpertConfirmatio
       ) {
         errorsChirho.push(`${policyIdChirho}: reviewed-issues policy requires valid issueFlagsChirho`);
       }
-      errorsChirho.push(...reviewerRoleShapeErrorsChirho(policyChirho));
     }
     for (const itemChirho of policyChirho.itemsChirho) {
       if (!nonEmptyStringChirho(itemChirho.itemIdChirho)) {

@@ -650,7 +650,7 @@ function htmlChirho(): string {
       }
       sideChirho.appendChild(elChirho("div", {
         classChirho: "warning-chirho",
-        textChirho: "Confirm only if you can certify this script's exact letters and relevant marks against the printed line. If this is outside your competence or uncertain, use Skip."
+        textChirho: "Confirm only if you can certify this script's exact letters and relevant marks against the printed line. If this is outside your competence or uncertain, use Report issue for crop/source/segmentation problems or Skip."
       }));
 
       const formChirho = elChirho("div", { classChirho: "box-chirho input-grid-chirho" });
@@ -850,8 +850,6 @@ Bun.serve({
         const { manifestChirho, liveItemsChirho, liveByIdChirho } = loadCurrentStateChirho(policyPathChirho);
         const liveItemChirho = liveByIdChirho.get(itemIdChirho);
         if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);
-        const roleErrorChirho = reviewerRoleErrorChirho(liveItemChirho, reviewerRoleChirho);
-        if (roleErrorChirho !== null) return jsonResponseChirho({ okChirho: false, errorChirho: roleErrorChirho }, 400);
         const policyChirho = saveReviewedIssueChirho({
           policyPathChirho,
           manifestChirho,
