@@ -24,6 +24,7 @@ import {
   VISION_TIER_EXPERT_ISSUE_FLAGS_CHIRHO,
   VISION_TIER_EXPERT_ISSUE_FLAG_VALUES_CHIRHO,
   type VisionTierExpertConfirmationFileChirho,
+  type VisionTierExpertConfirmationItemChirho,
   type VisionTierExpertConfirmationPolicyChirho,
 } from "./vision-tier-expert-confirmation-policy-chirho.ts";
 import {
@@ -65,6 +66,7 @@ interface ExpertPackManifestChirho {
 interface ExpertReviewItemChirho extends ExpertPackItemChirho {
   confirmedChirho: boolean;
   issueReportedChirho: boolean;
+  openIssueChirho: ExpertOpenIssueChirho | null;
 }
 
 interface ConfirmRequestChirho {
@@ -76,6 +78,15 @@ interface ConfirmRequestChirho {
 
 interface IssueRequestChirho extends ConfirmRequestChirho {
   issueFlagsChirho?: unknown;
+}
+
+interface ExpertOpenIssueChirho {
+  policyIdChirho: string;
+  reviewerChirho: string;
+  reviewerRoleChirho: string;
+  reviewedAtChirho: string;
+  rationaleChirho: string;
+  issueFlagsChirho: string[];
 }
 
 const ISSUE_FLAG_OPTIONS_CHIRHO = [
@@ -207,6 +218,58 @@ function policyIdForItemChirho(itemChirho: VisionTierExpertLiveItemChirho): stri
 
 function issuePolicyIdForItemChirho(itemChirho: VisionTierExpertLiveItemChirho): string {
   return `expert-issue-${slugChirho(itemChirho.idChirho)}-chirho`;
+}
+
+function policyItemMatchesLiveChirho(
+  itemChirho: VisionTierExpertConfirmationItemChirho,
+  liveItemChirho: VisionTierExpertLiveItemChirho
+): boolean {
+  return liveItemChirho.scriptChirho === itemChirho.scriptChirho &&
+    liveItemChirho.visionSourceChirho === itemChirho.visionSourceChirho &&
+    liveItemChirho.currentTextChirho === itemChirho.currentTextChirho &&
+    hashTextChirho(liveItemChirho.currentTextChirho) === itemChirho.currentTextHashChirho;
+}
+
+function openIssueDetailsByIdChirho(paramsChirho: {
+  policyFileChirho: VisionTierExpertConfirmationFileChirho;
+  reviewedIssueIdsChirho: Set<string>;
+  liveByIdChirho: Map<string, VisionTierExpertLiveItemChirho>;
+}): Map<string, ExpertOpenIssueChirho> {
+  const detailsByIdChirho = new Map<string, ExpertOpenIssueChirho>();
+  for (const policyChirho of paramsChirho.policyFileChirho.policiesChirho ?? []) {
+    if (policyChirho.decisionChirho !== VISION_TIER_EXPERT_CONFIRMATION_REVIEWED_ISSUES_CHIRHO) continue;
+    if (
+      typeof policyChirho.policyIdChirho !== "string" ||
+      typeof policyChirho.reviewerChirho !== "string" ||
+      typeof policyChirho.reviewerRoleChirho !== "string" ||
+      typeof policyChirho.reviewedAtChirho !== "string" ||
+      typeof policyChirho.rationaleChirho !== "string" ||
+      !Array.isArray(policyChirho.issueFlagsChirho)
+    ) {
+      continue;
+    }
+    for (const itemChirho of policyChirho.itemsChirho ?? []) {
+      const itemIdChirho = itemChirho.itemIdChirho;
+      if (
+        typeof itemIdChirho !== "string" ||
+        !paramsChirho.reviewedIssueIdsChirho.has(itemIdChirho) ||
+        detailsByIdChirho.has(itemIdChirho)
+      ) {
+        continue;
+      }
+      const liveItemChirho = paramsChirho.liveByIdChirho.get(itemIdChirho);
+      if (liveItemChirho === undefined || !policyItemMatchesLiveChirho(itemChirho, liveItemChirho)) continue;
+      detailsByIdChirho.set(itemIdChirho, {
+        policyIdChirho: policyChirho.policyIdChirho,
+        reviewerChirho: policyChirho.reviewerChirho,
+        reviewerRoleChirho: policyChirho.reviewerRoleChirho,
+        reviewedAtChirho: policyChirho.reviewedAtChirho,
+        rationaleChirho: policyChirho.rationaleChirho,
+        issueFlagsChirho: policyChirho.issueFlagsChirho.filter((flagChirho) => VISION_TIER_EXPERT_ISSUE_FLAG_VALUES_CHIRHO.has(flagChirho)),
+      });
+    }
+  }
+  return detailsByIdChirho;
 }
 
 function confirmedPolicyForItemChirho(paramsChirho: {
@@ -342,6 +405,7 @@ function loadCurrentStateChirho(policyPathChirho: string): {
   liveByIdChirho: Map<string, VisionTierExpertLiveItemChirho>;
   confirmedIdsChirho: Set<string>;
   reviewedIssueIdsChirho: Set<string>;
+  openIssueDetailsByIdChirho: Map<string, ExpertOpenIssueChirho>;
 } {
   const manifestChirho = loadExpertPackManifestChirho();
   const liveItemsChirho = visionTierExpertLiveItemsChirho();
@@ -349,24 +413,32 @@ function loadCurrentStateChirho(policyPathChirho: string): {
   const policyExistsChirho = existsSync(policyPathChirho);
   const policyFileChirho = readVisionTierExpertConfirmationFileChirho(policyPathChirho);
   const summaryChirho = summarizeVisionTierExpertConfirmationsChirho(policyFileChirho, policyExistsChirho, liveItemsChirho);
+  const openIssueDetailsChirho = openIssueDetailsByIdChirho({
+    policyFileChirho,
+    reviewedIssueIdsChirho: summaryChirho.reviewedIssueItemIdsChirho,
+    liveByIdChirho,
+  });
   return {
     manifestChirho,
     liveItemsChirho,
     liveByIdChirho,
     confirmedIdsChirho: summaryChirho.confirmedItemIdsChirho,
     reviewedIssueIdsChirho: summaryChirho.reviewedIssueItemIdsChirho,
+    openIssueDetailsByIdChirho: openIssueDetailsChirho,
   };
 }
 
 function reviewItemsForStateChirho(
   manifestChirho: ExpertPackManifestChirho,
   confirmedIdsChirho: Set<string>,
-  reviewedIssueIdsChirho: Set<string>
+  reviewedIssueIdsChirho: Set<string>,
+  openIssueDetailsByIdChirho: Map<string, ExpertOpenIssueChirho>
 ): ExpertReviewItemChirho[] {
   return (manifestChirho.completeVisionItemsChirho ?? []).map((itemChirho) => ({
     ...itemChirho,
     confirmedChirho: confirmedIdsChirho.has(itemChirho.idChirho),
     issueReportedChirho: reviewedIssueIdsChirho.has(itemChirho.idChirho),
+    openIssueChirho: openIssueDetailsByIdChirho.get(itemChirho.idChirho) ?? null,
   }));
 }
 
@@ -541,6 +613,25 @@ function htmlChirho(): string {
       }
       metaChirho.appendChild(metaGridChirho);
       sideChirho.appendChild(metaChirho);
+      if (itemChirho.openIssueChirho) {
+        const issueBoxChirho = elChirho("div", { classChirho: "box-chirho" });
+        issueBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Open issue" }));
+        const issueMetaChirho = elChirho("div", { classChirho: "meta-grid-chirho" });
+        for (const [labelChirho, valueChirho] of [
+          ["Policy", itemChirho.openIssueChirho.policyIdChirho],
+          ["Reviewer", itemChirho.openIssueChirho.reviewerChirho],
+          ["Role", itemChirho.openIssueChirho.reviewerRoleChirho],
+          ["Reviewed", itemChirho.openIssueChirho.reviewedAtChirho],
+          ["Flags", itemChirho.openIssueChirho.issueFlagsChirho.join(", ")]
+        ]) {
+          issueMetaChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: labelChirho }));
+          issueMetaChirho.appendChild(elChirho("div", { classChirho: "mono-chirho", textChirho: valueChirho }));
+        }
+        issueBoxChirho.appendChild(issueMetaChirho);
+        issueBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Rationale" }));
+        issueBoxChirho.appendChild(elChirho("div", { classChirho: "text-box-chirho", textChirho: itemChirho.openIssueChirho.rationaleChirho }));
+        sideChirho.appendChild(issueBoxChirho);
+      }
       sideChirho.appendChild(elChirho("div", {
         classChirho: "warning-chirho",
         textChirho: "Confirm only if you can certify this script's exact letters and relevant marks against the printed line. If this is outside your competence or uncertain, use Skip."
@@ -668,11 +759,16 @@ Bun.serve({
         return new Response(Bun.file(assetPathChirho));
       }
       if (urlChirho.pathname === "/api-chirho/state-chirho") {
-        const { manifestChirho, confirmedIdsChirho, reviewedIssueIdsChirho } = loadCurrentStateChirho(policyPathChirho);
+        const { manifestChirho, confirmedIdsChirho, reviewedIssueIdsChirho, openIssueDetailsByIdChirho } = loadCurrentStateChirho(policyPathChirho);
         return jsonResponseChirho({
           okChirho: true,
           generatedAtChirho: manifestChirho.generatedAtChirho ?? null,
-          itemsChirho: reviewItemsForStateChirho(manifestChirho, confirmedIdsChirho, reviewedIssueIdsChirho),
+          itemsChirho: reviewItemsForStateChirho(
+            manifestChirho,
+            confirmedIdsChirho,
+            reviewedIssueIdsChirho,
+            openIssueDetailsByIdChirho
+          ),
         });
       }
       if (urlChirho.pathname === "/api-chirho/confirm-chirho" && reqChirho.method === "POST") {
