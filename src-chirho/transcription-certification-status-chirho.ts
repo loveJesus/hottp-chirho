@@ -36,7 +36,13 @@ import {
   PASS_C_HUMAN_VALIDATION_BACKUP_PATH_CHIRHO,
   readPassCHumanValidationBackupFileChirho,
 } from "./pass-c-human-validation-backup-chirho.ts";
-import { scanNonNfcSpanTextFieldsChirho } from "./span-nfc-chirho.ts";
+import {
+  scanNonNfcSpanTextFieldsChirho,
+  scanSpanLinePathsChirho,
+  type SpanLineLikeChirho,
+  type SpanLikeChirho,
+} from "./span-nfc-chirho.ts";
+import { normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 import {
   readVisionTierExpertConfirmationFileChirho,
   summarizeVisionTierExpertConfirmationsChirho,
@@ -136,6 +142,24 @@ interface ExportIssueChirho {
   pageChirho?: number;
   lineIndexChirho?: number;
   segmentIndexChirho?: number;
+}
+
+interface GuardedWlcCorrectionCommandChirho {
+  locationChirho: string;
+  humanValidationIdChirho: number;
+  suggestedTextChirho: string;
+  commandChirho: string;
+}
+
+interface SuggestedCorrectionSpanChirho extends SpanLikeChirho {
+  humanReviewStatusChirho?: string;
+  humanIssueFlagsChirho?: string[];
+  humanValidationIdChirho?: number;
+  wlcSuggestionSourceChirho?: string;
+}
+
+interface SuggestedCorrectionLineChirho extends SpanLineLikeChirho {
+  spansChirho?: SuggestedCorrectionSpanChirho[];
 }
 
 interface RawHebrewSpanChirho {
@@ -307,6 +331,7 @@ interface CertificationStatusChirho {
     issueCountChirho: number;
     issueCodeCountsChirho: Record<string, number>;
     issueSummariesChirho: string[];
+    guardedWlcCorrectionCommandsChirho: GuardedWlcCorrectionCommandChirho[];
     unknownSpanCountChirho: number;
     nonNfcSpanCountChirho: number;
     d1GapPageCountChirho: number;
@@ -377,6 +402,38 @@ interface CertificationStatusChirho {
 function readJsonFileChirho<TChirho>(pathChirho: string, fallbackChirho: TChirho): TChirho {
   if (!existsSync(pathChirho)) return fallbackChirho;
   return JSON.parse(readFileSync(pathChirho, "utf8")) as TChirho;
+}
+
+function shellSingleQuoteChirho(valueChirho: string): string {
+  return `'${valueChirho.replace(/'/g, `'\\''`)}'`;
+}
+
+function guardedWlcCorrectionCommandsChirho(): GuardedWlcCorrectionCommandChirho[] {
+  const commandsChirho: GuardedWlcCorrectionCommandChirho[] = [];
+  for (const linePathChirho of scanSpanLinePathsChirho()) {
+    const lineChirho = JSON.parse(readFileSync(linePathChirho, "utf8")) as SuggestedCorrectionLineChirho;
+    for (const spanChirho of lineChirho.spansChirho ?? []) {
+      if (spanChirho.humanReviewStatusChirho !== "reviewed-issues-chirho") continue;
+      if (spanChirho.scriptChirho !== "hebrew-chirho") continue;
+      if (typeof spanChirho.humanValidationIdChirho !== "number") continue;
+      if (typeof spanChirho.wlcSuggestedTextChirho !== "string") continue;
+      if (typeof spanChirho.wlcSuggestionSourceChirho !== "string" || !spanChirho.wlcSuggestionSourceChirho.startsWith("WLC ")) continue;
+      const suggestedTextChirho = normalizeTextForStorageChirho(spanChirho.wlcSuggestedTextChirho);
+      const locationChirho =
+        `vol ${lineChirho.volumeChirho ?? 0} p${lineChirho.pageChirho ?? 0} ` +
+        `line ${lineChirho.lineIndexChirho ?? 0} seg ${spanChirho.segmentIndexChirho ?? -1}`;
+      commandsChirho.push({
+        locationChirho,
+        humanValidationIdChirho: spanChirho.humanValidationIdChirho,
+        suggestedTextChirho,
+        commandChirho:
+          "bun run apply-human-suggested-corrections-chirho -- --apply --certify-human " +
+          `--validation-id-chirho=${spanChirho.humanValidationIdChirho} ` +
+          `--suggested-text-chirho=${shellSingleQuoteChirho(suggestedTextChirho)}`,
+      });
+    }
+  }
+  return commandsChirho.sort((aChirho, bChirho) => aChirho.humanValidationIdChirho - bChirho.humanValidationIdChirho);
 }
 
 function spanKeyChirho(spanChirho: Pick<RawHebrewSpanChirho, "volumeChirho" | "pageChirho" | "lineIndexChirho" | "segmentIndexChirho">): string {
@@ -718,6 +775,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     issueCountChirho: exportReportChirho.issueCountChirho ?? 0,
     issueCodeCountsChirho: countIssueCodesChirho(exportReportChirho.issuesChirho ?? []),
     issueSummariesChirho: (exportReportChirho.issuesChirho ?? []).slice(0, 12).map(summarizeIssueChirho),
+    guardedWlcCorrectionCommandsChirho: guardedWlcCorrectionCommandsChirho(),
     unknownSpanCountChirho: exportReportChirho.unknownSpanCountChirho ?? 0,
     nonNfcSpanCountChirho: exportReportChirho.nonNfcSpanCountChirho ?? 0,
     d1GapPageCountChirho: exportReportChirho.d1PagesWithoutSpansChirho?.length ?? 0,
@@ -1159,6 +1217,12 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   const issueSummaryLinesChirho = statusChirho.structuralChirho.issueSummariesChirho.length === 0
     ? ["- None."]
     : statusChirho.structuralChirho.issueSummariesChirho.map((issueChirho) => `- ${issueChirho}`);
+  const guardedWlcCorrectionCommandLinesChirho = statusChirho.structuralChirho.guardedWlcCorrectionCommandsChirho.length === 0
+    ? ["- Guarded WLC correction command after explicit human confirmation: none currently available"]
+    : statusChirho.structuralChirho.guardedWlcCorrectionCommandsChirho.map(
+      (commandChirho) =>
+        `- Guarded WLC correction command after explicit human confirmation (${commandChirho.locationChirho}): \`${commandChirho.commandChirho}\``
+    );
   return [
     "<!-- For God so loved the world that he gave his only begotten Son,",
     "that whoever believes in him should not perish but have eternal life. John 3:16 -->",
@@ -1181,7 +1245,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,
     `- Reviewer scope and primer guide: \`${relativeProjectPathChirho(REVIEWER_SCOPE_GUIDE_PATH_CHIRHO)}\``,
     `- Zechariah tipcha decision aid: \`${relativeProjectPathChirho(ZECHARIAH_TIPCHA_CONFIRMATION_AID_PATH_CHIRHO)}\``,
-    "- Guarded WLC correction command after explicit human confirmation: `bun run apply-human-suggested-corrections-chirho -- --apply --certify-human --validation-id-chirho=3 --suggested-text-chirho='וְגַם־חֲמָ֖ת'`",
+    ...guardedWlcCorrectionCommandLinesChirho,
     "",
     "## Structural Export",
     "",
