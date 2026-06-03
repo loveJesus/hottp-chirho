@@ -414,6 +414,16 @@ function shellSingleQuoteChirho(valueChirho: string): string {
   return `'${valueChirho.replace(/'/g, `'\\''`)}'`;
 }
 
+function urlQueryChirho(entriesChirho: Array<[string, string]>): string {
+  return new URLSearchParams(entriesChirho).toString();
+}
+
+function latinSymbolReviewUrlChirho(scriptChirho: string, symbolRiskChirho?: string): string {
+  const entriesChirho: Array<[string, string]> = [["script-chirho", scriptChirho]];
+  if (symbolRiskChirho !== undefined) entriesChirho.push(["symbol-risk-chirho", symbolRiskChirho]);
+  return `http://localhost:8770/?${urlQueryChirho(entriesChirho)}`;
+}
+
 function hebrewSkeletonChirho(textChirho: string): string {
   return textChirho
     .normalize("NFKD")
@@ -1252,6 +1262,18 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   const d1LatinSymbolCountsChirho = Object.entries(statusChirho.latinSymbolVisionChirho.d1DerivedVisionCountsChirho)
     .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
     .join(", ");
+  const latinSymbolScriptCountChirho = (scriptChirho: string) =>
+    (statusChirho.latinSymbolVisionChirho.explicitVisionCountsChirho[scriptChirho] ?? 0) +
+    (statusChirho.latinSymbolVisionChirho.d1DerivedVisionCountsChirho[scriptChirho] ?? 0);
+  const latinSymbolFrenchCountChirho = latinSymbolScriptCountChirho("french-chirho");
+  const latinSymbolNonFrenchCountChirho = latinSymbolScriptCountChirho("latin-non-french-chirho");
+  const latinSymbolTrivialSymbolCountChirho =
+    statusChirho.latinSymbolVisionChirho.symbolRiskSummaryChirho.trivialPunctuationSymbolItemsChirho;
+  const latinSymbolSiglumSymbolCountChirho =
+    statusChirho.latinSymbolVisionChirho.symbolRiskSummaryChirho.mixedScriptSymbolItemsChirho;
+  const latinSymbolNontrivialSymbolCountChirho =
+    statusChirho.latinSymbolVisionChirho.symbolRiskSummaryChirho.nontrivialSymbolItemsChirho -
+    statusChirho.latinSymbolVisionChirho.symbolRiskSummaryChirho.mixedScriptSymbolItemsChirho;
   const issueCodeCountsChirho = Object.entries(statusChirho.structuralChirho.issueCodeCountsChirho)
     .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
     .join(", ");
@@ -1279,6 +1301,11 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw Hebrew live validator: http://localhost:8766/ (${statusChirho.rawHebrewChirho.reportSpanCountChirho} span(s); command: \`bun run pass-c-human-validate-chirho\`)`,
     `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Latin/symbol live reviewer: http://localhost:8770/ (${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} remaining decision(s); command: \`bun run latin-symbol-vision-review-chirho\`)`,
+    `- Latin/symbol French lane: ${latinSymbolReviewUrlChirho("french-chirho")} (${latinSymbolFrenchCountChirho} item(s))`,
+    `- Latin/symbol non-French lane: ${latinSymbolReviewUrlChirho("latin-non-french-chirho")} (${latinSymbolNonFrenchCountChirho} item(s))`,
+    `- Latin/symbol trivial punctuation lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "trivial-punctuation-chirho")} (${latinSymbolTrivialSymbolCountChirho} item(s))`,
+    `- Latin/symbol witness-sigla/script-symbol lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "script-or-siglum-symbol-chirho")} (${latinSymbolSiglumSymbolCountChirho} item(s))`,
+    `- Latin/symbol nontrivial-symbol lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "nontrivial-symbol-chirho")} (${latinSymbolNontrivialSymbolCountChirho} item(s))`,
     `- Latin/symbol image packet: \`${relativeProjectPathChirho(LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Expert non-Latin live reviewer: http://localhost:8771/ (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s); command: \`bun run vision-tier-expert-review-chirho\`)`,
     "- Expert Hebrew lane: http://localhost:8771/?script-chirho=hebrew-chirho",

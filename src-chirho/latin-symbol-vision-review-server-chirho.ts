@@ -188,8 +188,7 @@ function htmlChirho(): string {
     let itemsChirho = [];
     let reviewsChirho = new Map();
     let indexChirho = 0;
-    let scriptFilterChirho = "all-chirho";
-    let symbolRiskFilterChirho = "all-chirho";
+    const initialSearchParamsChirho = new URLSearchParams(window.location.search);
 
     function textNodeChirho(valueChirho) { return document.createTextNode(valueChirho == null ? "" : String(valueChirho)); }
     function elChirho(tagChirho, attrsChirho = {}, childrenChirho = []) {
@@ -204,6 +203,32 @@ function htmlChirho(): string {
     }
     function clearChirho(nodeChirho) { while (nodeChirho.firstChild) nodeChirho.removeChild(nodeChirho.firstChild); }
     function setStatusChirho(messageChirho) { document.getElementById("status-chirho").textContent = messageChirho; }
+    function selectValueOrDefaultChirho(selectIdChirho, valueChirho, defaultChirho) {
+      const selectChirho = document.getElementById(selectIdChirho);
+      if (typeof valueChirho !== "string") return defaultChirho;
+      return [...selectChirho.options].some((optionChirho) => optionChirho.value === valueChirho) ? valueChirho : defaultChirho;
+    }
+    let scriptFilterChirho = selectValueOrDefaultChirho(
+      "script-filter-chirho",
+      initialSearchParamsChirho.get("script-chirho"),
+      "all-chirho"
+    );
+    let symbolRiskFilterChirho = selectValueOrDefaultChirho(
+      "symbol-risk-filter-chirho",
+      initialSearchParamsChirho.get("symbol-risk-chirho"),
+      "all-chirho"
+    );
+    function syncFilterControlsChirho() {
+      document.getElementById("script-filter-chirho").value = scriptFilterChirho;
+      document.getElementById("symbol-risk-filter-chirho").value = symbolRiskFilterChirho;
+    }
+    function syncUrlChirho() {
+      const paramsChirho = new URLSearchParams();
+      if (scriptFilterChirho !== "all-chirho") paramsChirho.set("script-chirho", scriptFilterChirho);
+      if (symbolRiskFilterChirho !== "all-chirho") paramsChirho.set("symbol-risk-chirho", symbolRiskFilterChirho);
+      const queryChirho = paramsChirho.toString();
+      window.history.replaceState(null, "", queryChirho ? window.location.pathname + "?" + queryChirho : window.location.pathname);
+    }
     function acceptedCleanIdsChirho() {
       const idsChirho = new Set();
       for (const reviewChirho of reviewsChirho.values()) {
@@ -334,11 +359,13 @@ function htmlChirho(): string {
     document.getElementById("script-filter-chirho").addEventListener("change", (eventChirho) => {
       scriptFilterChirho = eventChirho.target.value;
       indexChirho = 0;
+      syncUrlChirho();
       renderChirho();
     });
     document.getElementById("symbol-risk-filter-chirho").addEventListener("change", (eventChirho) => {
       symbolRiskFilterChirho = eventChirho.target.value;
       indexChirho = 0;
+      syncUrlChirho();
       renderChirho();
     });
     document.getElementById("prev-chirho").addEventListener("click", () => {
@@ -349,6 +376,8 @@ function htmlChirho(): string {
       indexChirho = Math.min(indexChirho + 1, Math.max(0, activeItemsChirho().length - 1));
       renderChirho();
     });
+    syncFilterControlsChirho();
+    syncUrlChirho();
     loadStateChirho().catch((errorChirho) => setStatusChirho(String(errorChirho)));
   </script>
 </body>
