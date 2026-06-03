@@ -120,6 +120,11 @@ const LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO = join(
   "latin-symbol-vision-reviews-backup-2026-05-31-chirho.json"
 );
 const OUT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "certification-status-chirho");
+const ALLOWED_WLC_CORRECTION_FLAGS_CHIRHO = new Set([
+  "accents-chirho",
+  "vowels-chirho",
+  "hebrew-punctuation-chirho",
+]);
 
 interface ExportReportChirho {
   generatedAtChirho?: string;
@@ -408,6 +413,19 @@ function shellSingleQuoteChirho(valueChirho: string): string {
   return `'${valueChirho.replace(/'/g, `'\\''`)}'`;
 }
 
+function hebrewSkeletonChirho(textChirho: string): string {
+  return textChirho
+    .normalize("NFKD")
+    .replace(/[\u0591-\u05C7]/g, "")
+    .replace(/[^\u05D0-\u05EA]/g, "");
+}
+
+function allowedWlcCorrectionFlagsChirho(flagsChirho: unknown): boolean {
+  return Array.isArray(flagsChirho) &&
+    flagsChirho.length > 0 &&
+    flagsChirho.every((flagChirho) => typeof flagChirho === "string" && ALLOWED_WLC_CORRECTION_FLAGS_CHIRHO.has(flagChirho));
+}
+
 function guardedWlcCorrectionCommandsChirho(): GuardedWlcCorrectionCommandChirho[] {
   const commandsChirho: GuardedWlcCorrectionCommandChirho[] = [];
   for (const linePathChirho of scanSpanLinePathsChirho()) {
@@ -416,9 +434,14 @@ function guardedWlcCorrectionCommandsChirho(): GuardedWlcCorrectionCommandChirho
       if (spanChirho.humanReviewStatusChirho !== "reviewed-issues-chirho") continue;
       if (spanChirho.scriptChirho !== "hebrew-chirho") continue;
       if (typeof spanChirho.humanValidationIdChirho !== "number") continue;
+      if (!allowedWlcCorrectionFlagsChirho(spanChirho.humanIssueFlagsChirho)) continue;
+      if (typeof spanChirho.utf8TextChirho !== "string") continue;
       if (typeof spanChirho.wlcSuggestedTextChirho !== "string") continue;
       if (typeof spanChirho.wlcSuggestionSourceChirho !== "string" || !spanChirho.wlcSuggestionSourceChirho.startsWith("WLC ")) continue;
+      const currentTextChirho = normalizeTextForStorageChirho(spanChirho.utf8TextChirho);
       const suggestedTextChirho = normalizeTextForStorageChirho(spanChirho.wlcSuggestedTextChirho);
+      if (currentTextChirho === suggestedTextChirho) continue;
+      if (hebrewSkeletonChirho(currentTextChirho) !== hebrewSkeletonChirho(suggestedTextChirho)) continue;
       const locationChirho =
         `vol ${lineChirho.volumeChirho ?? 0} p${lineChirho.pageChirho ?? 0} ` +
         `line ${lineChirho.lineIndexChirho ?? 0} seg ${spanChirho.segmentIndexChirho ?? -1}`;
