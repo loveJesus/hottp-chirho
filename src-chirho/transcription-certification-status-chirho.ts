@@ -386,6 +386,7 @@ interface CertificationStatusChirho {
     reviewedIssueCountChirho: number;
     acceptedByPolicyCountChirho: number;
     totalAcceptedDecisionCountChirho: number;
+    issueOverriddenAcceptedDecisionCountChirho: number;
     staleReviewCountChirho: number;
     remainingDecisionCountChirho: number;
     includedInCompletionGateChirho: boolean;
@@ -926,6 +927,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     latinSymbolLiveItemsChirho,
     "accepted-clean-chirho"
   );
+  const latinSymbolReviewedIssueIdsChirho = validLatinSymbolReviewIdsChirho(
+    latinSymbolMergedRowsChirho,
+    latinSymbolLiveItemsChirho,
+    "reviewed-issues-chirho"
+  );
   const latinSymbolPolicySummaryChirho = summarizeLatinSymbolAcceptancePolicyChirho(
     latinSymbolAcceptancePolicyFileChirho,
     latinSymbolAcceptancePolicyExistsChirho,
@@ -935,6 +941,12 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     ...latinSymbolAcceptedReviewIdsChirho,
     ...latinSymbolPolicySummaryChirho.acceptedItemIdsChirho,
   ]);
+  let latinSymbolIssueOverriddenAcceptedDecisionCountChirho = 0;
+  for (const itemIdChirho of latinSymbolReviewedIssueIdsChirho) {
+    if (latinSymbolAcceptedDecisionIdsChirho.delete(itemIdChirho)) {
+      latinSymbolIssueOverriddenAcceptedDecisionCountChirho += 1;
+    }
+  }
   const latinSymbolPolicySummaryForStatusChirho = {
     policyFileExistsChirho: latinSymbolPolicySummaryChirho.policyFileExistsChirho,
     policyFileShapeOkChirho: latinSymbolPolicySummaryChirho.policyFileShapeOkChirho,
@@ -987,6 +999,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     reviewedIssueCountChirho: latinSymbolReviewSummaryChirho.validReviewedIssueRowsChirho,
     acceptedByPolicyCountChirho: latinSymbolPolicySummaryChirho.validAcceptedPolicyItemCountChirho,
     totalAcceptedDecisionCountChirho: latinSymbolAcceptedDecisionIdsChirho.size,
+    issueOverriddenAcceptedDecisionCountChirho: latinSymbolIssueOverriddenAcceptedDecisionCountChirho,
     staleReviewCountChirho: latinSymbolReviewSummaryChirho.staleRowsChirho,
     remainingDecisionCountChirho: latinSymbolRemainingDecisionCountChirho,
     includedInCompletionGateChirho: true,
@@ -1160,6 +1173,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   if (latinSymbolPolicySummaryChirho.duplicateAcceptedPolicyItemCountChirho !== 0) {
     remainingWorkChirho.push(
       `${latinSymbolPolicySummaryChirho.duplicateAcceptedPolicyItemCountChirho} duplicate Latin/symbol policy item(s) need cleanup`
+    );
+  }
+  if (latinSymbolIssueOverriddenAcceptedDecisionCountChirho !== 0) {
+    remainingWorkChirho.push(
+      `${latinSymbolIssueOverriddenAcceptedDecisionCountChirho} Latin/symbol accepted decision(s) are overridden by open issue review(s)`
     );
   }
   if (latinSymbolRemainingDecisionCountChirho !== 0) {
@@ -1379,6 +1397,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Reviewed-issues rows: ${statusChirho.latinSymbolVisionChirho.reviewedIssueCountChirho}`,
     `- Accepted by explicit policy: ${statusChirho.latinSymbolVisionChirho.acceptedByPolicyCountChirho}`,
     `- Total accepted decisions: ${statusChirho.latinSymbolVisionChirho.totalAcceptedDecisionCountChirho}`,
+    `- Accepted decisions overridden by open issues: ${statusChirho.latinSymbolVisionChirho.issueOverriddenAcceptedDecisionCountChirho}`,
     `- Stale review rows: ${statusChirho.latinSymbolVisionChirho.staleReviewCountChirho}`,
     `- Remaining decisions: ${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho}`,
     "",
