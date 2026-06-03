@@ -84,8 +84,20 @@ function mainChirho(): void {
   const reviewerChirho = parseArgValueChirho(argsChirho, "reviewer-chirho") ?? "";
   const rationaleChirho = parseArgValueChirho(argsChirho, "rationale-chirho") ?? "";
   const outPathChirho = parseArgValueChirho(argsChirho, "out-chirho") ?? LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO;
+  const scriptScopeLabelChirho =
+    safeSymbolsOnlyChirho && scriptFiltersChirho.size === 0
+      ? "symbol-chirho"
+      : scriptFiltersChirho.size === 0
+        ? "all-scripts-chirho"
+        : [...scriptFiltersChirho].sort().join("-");
+  const policyScriptScopeChirho =
+    safeSymbolsOnlyChirho && scriptFiltersChirho.size === 0
+      ? "symbol-chirho"
+      : scriptFiltersChirho.size === 0
+        ? "all-chirho"
+        : [...scriptFiltersChirho].sort().join(",");
   const scopePartsChirho = [
-    scriptFiltersChirho.size === 0 ? "all-scripts-chirho" : [...scriptFiltersChirho].sort().join("-"),
+    scriptScopeLabelChirho,
     kindFiltersChirho.size === 0 ? "all-kinds-chirho" : [...kindFiltersChirho].sort().join("-"),
     safeSymbolsOnlyChirho ? "safe-symbols-only-chirho" : "all-symbol-text-chirho",
   ];
@@ -110,7 +122,9 @@ function mainChirho(): void {
   const selectedItemsChirho = liveItemsChirho.filter((itemChirho) => {
     const scriptOkChirho = scriptFiltersChirho.size === 0 || scriptFiltersChirho.has(itemChirho.scriptChirho);
     const kindOkChirho = kindFiltersChirho.size === 0 || kindFiltersChirho.has(itemChirho.itemKindChirho);
-    const symbolSafetyOkChirho = !safeSymbolsOnlyChirho || !isNontrivialSymbolTextChirho(itemChirho);
+    const symbolSafetyOkChirho =
+      !safeSymbolsOnlyChirho ||
+      (itemChirho.scriptChirho === "symbol-chirho" && !isNontrivialSymbolTextChirho(itemChirho));
     return scriptOkChirho && kindOkChirho && symbolSafetyOkChirho;
   });
   const selectedNontrivialSymbolItemsChirho = selectedItemsChirho.filter(isNontrivialSymbolTextChirho);
@@ -129,7 +143,7 @@ function mainChirho(): void {
   const policyChirho: LatinSymbolAcceptancePolicyChirho = {
     policyIdChirho,
     decisionChirho,
-    scopeChirho: `script=${scriptFiltersChirho.size === 0 ? "all-chirho" : [...scriptFiltersChirho].sort().join(",")}; kind=${kindFiltersChirho.size === 0 ? "all-chirho" : [...kindFiltersChirho].sort().join(",")}; safeSymbolsOnly=${safeSymbolsOnlyChirho}`,
+    scopeChirho: `script=${policyScriptScopeChirho}; kind=${kindFiltersChirho.size === 0 ? "all-chirho" : [...kindFiltersChirho].sort().join(",")}; safeSymbolsOnly=${safeSymbolsOnlyChirho}`,
     itemCountChirho: selectedItemsChirho.length,
     itemsChirho: selectedItemsChirho.map((itemChirho) => ({
       itemIdChirho: itemChirho.idChirho,
