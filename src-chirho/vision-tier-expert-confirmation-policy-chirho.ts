@@ -76,6 +76,7 @@ export interface VisionTierExpertConfirmationSummaryChirho {
   validConfirmedPolicyItemCountChirho: number;
   staleConfirmedPolicyItemCountChirho: number;
   duplicateConfirmedPolicyItemCountChirho: number;
+  issueOverriddenConfirmedPolicyItemCountChirho: number;
   reviewedIssuePolicyCountChirho: number;
   reviewedIssuePolicyItemCountChirho: number;
   validReviewedIssuePolicyItemCountChirho: number;
@@ -197,6 +198,7 @@ export function summarizeVisionTierExpertConfirmationsChirho(
       validConfirmedPolicyItemCountChirho: 0,
       staleConfirmedPolicyItemCountChirho: 0,
       duplicateConfirmedPolicyItemCountChirho: 0,
+      issueOverriddenConfirmedPolicyItemCountChirho: 0,
       reviewedIssuePolicyCountChirho: 0,
       reviewedIssuePolicyItemCountChirho: 0,
       validReviewedIssuePolicyItemCountChirho: 0,
@@ -251,6 +253,13 @@ export function summarizeVisionTierExpertConfirmationsChirho(
     }
   }
 
+  let issueOverriddenConfirmedPolicyItemCountChirho = 0;
+  for (const itemIdChirho of reviewedIssueItemIdsChirho) {
+    if (confirmedItemIdsChirho.delete(itemIdChirho)) {
+      issueOverriddenConfirmedPolicyItemCountChirho += 1;
+    }
+  }
+
   return {
     policyFileExistsChirho,
     policyFileShapeOkChirho,
@@ -259,6 +268,7 @@ export function summarizeVisionTierExpertConfirmationsChirho(
     validConfirmedPolicyItemCountChirho: confirmedItemIdsChirho.size,
     staleConfirmedPolicyItemCountChirho,
     duplicateConfirmedPolicyItemCountChirho,
+    issueOverriddenConfirmedPolicyItemCountChirho,
     reviewedIssuePolicyCountChirho,
     reviewedIssuePolicyItemCountChirho,
     validReviewedIssuePolicyItemCountChirho: reviewedIssueItemIdsChirho.size,

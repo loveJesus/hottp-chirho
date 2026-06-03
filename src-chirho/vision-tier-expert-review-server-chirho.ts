@@ -278,8 +278,11 @@ function saveConfirmationChirho(paramsChirho: {
   const fileChirho = loadPolicyFileForWriteChirho(paramsChirho.policyPathChirho);
   fileChirho.schemaVersionChirho = 1;
   fileChirho.generatedAtChirho = new Date().toISOString();
+  const issuePolicyIdChirho = issuePolicyIdForItemChirho(paramsChirho.liveItemChirho);
   fileChirho.policiesChirho = (fileChirho.policiesChirho ?? []).filter(
-    (existingChirho) => existingChirho.policyIdChirho !== policyChirho.policyIdChirho
+    (existingChirho) =>
+      existingChirho.policyIdChirho !== policyChirho.policyIdChirho &&
+      existingChirho.policyIdChirho !== issuePolicyIdChirho
   );
   fileChirho.policiesChirho.push(policyChirho);
   writePolicyFileAtomicChirho(paramsChirho.policyPathChirho, fileChirho);
@@ -307,8 +310,11 @@ function saveReviewedIssueChirho(paramsChirho: {
   const fileChirho = loadPolicyFileForWriteChirho(paramsChirho.policyPathChirho);
   fileChirho.schemaVersionChirho = 1;
   fileChirho.generatedAtChirho = new Date().toISOString();
+  const confirmationPolicyIdChirho = policyIdForItemChirho(paramsChirho.liveItemChirho);
   fileChirho.policiesChirho = (fileChirho.policiesChirho ?? []).filter(
-    (existingChirho) => existingChirho.policyIdChirho !== policyChirho.policyIdChirho
+    (existingChirho) =>
+      existingChirho.policyIdChirho !== policyChirho.policyIdChirho &&
+      existingChirho.policyIdChirho !== confirmationPolicyIdChirho
   );
   fileChirho.policiesChirho.push(policyChirho);
   writePolicyFileAtomicChirho(paramsChirho.policyPathChirho, fileChirho);

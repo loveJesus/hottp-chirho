@@ -216,6 +216,7 @@ interface VisionTierExpertConfirmationSummaryForStatusChirho {
   validConfirmedPolicyItemCountChirho: number;
   staleConfirmedPolicyItemCountChirho: number;
   duplicateConfirmedPolicyItemCountChirho: number;
+  issueOverriddenConfirmedPolicyItemCountChirho: number;
   reviewedIssuePolicyCountChirho: number;
   reviewedIssuePolicyItemCountChirho: number;
   validReviewedIssuePolicyItemCountChirho: number;
@@ -742,6 +743,8 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     validConfirmedPolicyItemCountChirho: visionTierConfirmationSummaryChirho.validConfirmedPolicyItemCountChirho,
     staleConfirmedPolicyItemCountChirho: visionTierConfirmationSummaryChirho.staleConfirmedPolicyItemCountChirho,
     duplicateConfirmedPolicyItemCountChirho: visionTierConfirmationSummaryChirho.duplicateConfirmedPolicyItemCountChirho,
+    issueOverriddenConfirmedPolicyItemCountChirho:
+      visionTierConfirmationSummaryChirho.issueOverriddenConfirmedPolicyItemCountChirho,
     reviewedIssuePolicyCountChirho: visionTierConfirmationSummaryChirho.reviewedIssuePolicyCountChirho,
     reviewedIssuePolicyItemCountChirho: visionTierConfirmationSummaryChirho.reviewedIssuePolicyItemCountChirho,
     validReviewedIssuePolicyItemCountChirho: visionTierConfirmationSummaryChirho.validReviewedIssuePolicyItemCountChirho,
@@ -965,6 +968,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       `${visionTierConfirmationSummaryChirho.duplicateConfirmedPolicyItemCountChirho} duplicate vision-tier expert confirmation item(s) need cleanup`
     );
   }
+  if (visionTierConfirmationSummaryChirho.issueOverriddenConfirmedPolicyItemCountChirho !== 0) {
+    remainingWorkChirho.push(
+      `${visionTierConfirmationSummaryChirho.issueOverriddenConfirmedPolicyItemCountChirho} vision-tier expert confirmation item(s) are overridden by open expert issue record(s)`
+    );
+  }
   if (visionTierConfirmationSummaryChirho.staleReviewedIssuePolicyItemCountChirho !== 0) {
     remainingWorkChirho.push(
       `${visionTierConfirmationSummaryChirho.staleReviewedIssuePolicyItemCountChirho} vision-tier expert issue record item(s) are stale against current live span text`
@@ -1184,6 +1192,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Valid confirmed policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.validConfirmedPolicyItemCountChirho}`,
     `- Stale confirmed policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.staleConfirmedPolicyItemCountChirho}`,
     `- Duplicate confirmed policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.duplicateConfirmedPolicyItemCountChirho}`,
+    `- Confirmed policy items overridden by open issues: ${statusChirho.visionTierExpertConfirmationPolicyChirho.issueOverriddenConfirmedPolicyItemCountChirho}`,
     `- Reviewed-issue policies: ${statusChirho.visionTierExpertConfirmationPolicyChirho.reviewedIssuePolicyCountChirho}`,
     `- Reviewed-issue policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.reviewedIssuePolicyItemCountChirho}`,
     `- Valid reviewed-issue policy items: ${statusChirho.visionTierExpertConfirmationPolicyChirho.validReviewedIssuePolicyItemCountChirho}`,
