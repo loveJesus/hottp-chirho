@@ -14,6 +14,11 @@ import { resolve } from "path";
 
 import { PROGRESS_DB_PATH_CHIRHO } from "./config-chirho.ts";
 import {
+  LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO,
+  readLatinSymbolAcceptancePolicyFileChirho,
+  summarizeLatinSymbolAcceptancePolicyChirho,
+} from "./latin-symbol-vision-acceptance-policy-chirho.ts";
+import {
   latinSymbolVisionLiveItemsChirho,
   symbolRiskForItemChirho,
   type LatinSymbolVisionLiveItemChirho,
@@ -187,6 +192,7 @@ function htmlChirho(): string {
     const symbolRiskOptionsChirho = ${scriptJsonChirho(SYMBOL_RISK_OPTIONS_CHIRHO)};
     let itemsChirho = [];
     let reviewsChirho = new Map();
+    let acceptedPolicyIdsChirho = new Set();
     let indexChirho = 0;
     const initialSearchParamsChirho = new URLSearchParams(window.location.search);
 
@@ -229,15 +235,17 @@ function htmlChirho(): string {
       const queryChirho = paramsChirho.toString();
       window.history.replaceState(null, "", queryChirho ? window.location.pathname + "?" + queryChirho : window.location.pathname);
     }
-    function acceptedCleanIdsChirho() {
+    function acceptedDecisionIdsChirho() {
       const idsChirho = new Set();
+      for (const itemIdChirho of acceptedPolicyIdsChirho) idsChirho.add(itemIdChirho);
       for (const reviewChirho of reviewsChirho.values()) {
         if (reviewChirho.verdictChirho === "accepted-clean-chirho") idsChirho.add(reviewChirho.itemIdChirho);
+        if (reviewChirho.verdictChirho === "reviewed-issues-chirho") idsChirho.delete(reviewChirho.itemIdChirho);
       }
       return idsChirho;
     }
     function activeItemsChirho() {
-      const acceptedChirho = acceptedCleanIdsChirho();
+      const acceptedChirho = acceptedDecisionIdsChirho();
       return itemsChirho.filter((itemChirho) =>
         !acceptedChirho.has(itemChirho.idChirho) &&
         (scriptFilterChirho === "all-chirho" || itemChirho.scriptChirho === scriptFilterChirho) &&
@@ -256,14 +264,15 @@ function htmlChirho(): string {
       if (!dataChirho.okChirho) throw new Error(dataChirho.errorChirho || "state failed");
       itemsChirho = dataChirho.itemsChirho;
       reviewsChirho = new Map(dataChirho.reviewsChirho.map((reviewChirho) => [reviewChirho.itemIdChirho, reviewChirho]));
+      acceptedPolicyIdsChirho = new Set(dataChirho.acceptedPolicyItemIdsChirho || []);
       if (indexChirho >= activeItemsChirho().length) indexChirho = Math.max(0, activeItemsChirho().length - 1);
       renderChirho();
     }
     function renderSummaryChirho() {
-      const acceptedChirho = acceptedCleanIdsChirho().size;
+      const acceptedChirho = acceptedDecisionIdsChirho().size;
       const activeChirho = activeItemsChirho().length;
       document.getElementById("summary-chirho").textContent =
-        activeChirho + " pending in filter, " + acceptedChirho + " accepted-clean, " + reviewsChirho.size + " current review rows";
+        activeChirho + " pending in filter, " + acceptedChirho + " accepted decision(s), " + reviewsChirho.size + " current review rows";
     }
     function renderChirho() {
       const appChirho = document.getElementById("app-chirho");
@@ -392,6 +401,7 @@ const argsChirho = process.argv.slice(2);
 const portChirho = parsePortChirho(argsChirho);
 const dbPathChirho = parseArgValueChirho(argsChirho, "db") ?? PROGRESS_DB_PATH_CHIRHO;
 const backupPathChirho = parseArgValueChirho(argsChirho, "backup") ?? LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO;
+const policyPathChirho = parseArgValueChirho(argsChirho, "policy") ?? LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO;
 const reviewerChirho = parseArgValueChirho(argsChirho, "reviewer") ?? "human-chirho";
 const dbChirho = new Database(dbPathChirho);
 ensureLatinSymbolReviewSchemaChirho(dbChirho);
@@ -423,12 +433,18 @@ Bun.serve({
         return new Response(Bun.file(assetPathChirho));
       }
       if (urlChirho.pathname === "/api-chirho/state-chirho") {
-        const { manifestChirho } = loadCurrentStateChirho();
+        const { manifestChirho, liveItemsChirho } = loadCurrentStateChirho();
+        const policySummaryChirho = summarizeLatinSymbolAcceptancePolicyChirho(
+          readLatinSymbolAcceptancePolicyFileChirho(policyPathChirho),
+          existsSync(policyPathChirho),
+          liveItemsChirho
+        );
         return jsonResponseChirho({
           okChirho: true,
           generatedAtChirho: manifestChirho.generatedAtChirho ?? null,
           itemsChirho: reviewItemsForManifestChirho(manifestChirho),
           reviewsChirho: publicLatinSymbolReviewRowsChirho(dbChirho),
+          acceptedPolicyItemIdsChirho: [...policySummaryChirho.acceptedItemIdsChirho],
         });
       }
       if (urlChirho.pathname === "/api-chirho/review-chirho" && reqChirho.method === "POST") {

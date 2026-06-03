@@ -397,6 +397,11 @@ interface CertificationStatusChirho {
     totalAcceptedDecisionCountChirho: number;
     issueOverriddenAcceptedDecisionCountChirho: number;
     staleReviewCountChirho: number;
+    pendingDecisionCountChirho: number;
+    pendingDecisionCountsChirho: Record<string, number>;
+    pendingTrivialPunctuationSymbolItemCountChirho: number;
+    pendingMixedScriptSymbolItemCountChirho: number;
+    pendingNontrivialSymbolItemCountChirho: number;
     remainingDecisionCountChirho: number;
     includedInCompletionGateChirho: boolean;
   };
@@ -1012,6 +1017,10 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       latinSymbolIssueOverriddenAcceptedDecisionCountChirho += 1;
     }
   }
+  const pendingLatinSymbolLiveItemsChirho = latinSymbolLiveItemsChirho.filter(
+    (itemChirho) => !latinSymbolAcceptedDecisionIdsChirho.has(itemChirho.idChirho)
+  );
+  const pendingLatinSymbolRiskSummaryChirho = summarizeSymbolRiskChirho(pendingLatinSymbolLiveItemsChirho);
   const latinSymbolPolicySummaryForStatusChirho = {
     policyFileExistsChirho: latinSymbolPolicySummaryChirho.policyFileExistsChirho,
     policyFileShapeOkChirho: latinSymbolPolicySummaryChirho.policyFileShapeOkChirho,
@@ -1066,6 +1075,14 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     totalAcceptedDecisionCountChirho: latinSymbolAcceptedDecisionIdsChirho.size,
     issueOverriddenAcceptedDecisionCountChirho: latinSymbolIssueOverriddenAcceptedDecisionCountChirho,
     staleReviewCountChirho: latinSymbolReviewSummaryChirho.staleRowsChirho,
+    pendingDecisionCountChirho: pendingLatinSymbolLiveItemsChirho.length,
+    pendingDecisionCountsChirho: countByScriptChirho(pendingLatinSymbolLiveItemsChirho),
+    pendingTrivialPunctuationSymbolItemCountChirho:
+      pendingLatinSymbolRiskSummaryChirho.trivialPunctuationSymbolItemsChirho,
+    pendingMixedScriptSymbolItemCountChirho: pendingLatinSymbolRiskSummaryChirho.mixedScriptSymbolItemsChirho,
+    pendingNontrivialSymbolItemCountChirho:
+      pendingLatinSymbolRiskSummaryChirho.nontrivialSymbolItemsChirho -
+      pendingLatinSymbolRiskSummaryChirho.mixedScriptSymbolItemsChirho,
     remainingDecisionCountChirho: latinSymbolRemainingDecisionCountChirho,
     includedInCompletionGateChirho: true,
   };
@@ -1320,6 +1337,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   const latinSymbolScriptCountChirho = (scriptChirho: string) =>
     (statusChirho.latinSymbolVisionChirho.explicitVisionCountsChirho[scriptChirho] ?? 0) +
     (statusChirho.latinSymbolVisionChirho.d1DerivedVisionCountsChirho[scriptChirho] ?? 0);
+  const pendingLatinSymbolScriptCountChirho = (scriptChirho: string) =>
+    statusChirho.latinSymbolVisionChirho.pendingDecisionCountsChirho[scriptChirho] ?? 0;
   const latinSymbolFrenchCountChirho = latinSymbolScriptCountChirho("french-chirho");
   const latinSymbolNonFrenchCountChirho = latinSymbolScriptCountChirho("latin-non-french-chirho");
   const latinSymbolTrivialSymbolCountChirho =
@@ -1376,11 +1395,12 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "- Raw Hebrew pending counts match the live validator; report totals include already-saved rows.",
     `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Latin/symbol live reviewer: http://localhost:8770/ (${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} remaining decision(s); command: \`bun run latin-symbol-vision-review-chirho\`)`,
-    `- Latin/symbol French lane: ${latinSymbolReviewUrlChirho("french-chirho")} (${latinSymbolFrenchCountChirho} item(s))`,
-    `- Latin/symbol non-French lane: ${latinSymbolReviewUrlChirho("latin-non-french-chirho")} (${latinSymbolNonFrenchCountChirho} item(s))`,
-    `- Latin/symbol trivial punctuation lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "trivial-punctuation-chirho")} (${latinSymbolTrivialSymbolCountChirho} item(s))`,
-    `- Latin/symbol witness-sigla/script-symbol lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "script-or-siglum-symbol-chirho")} (${latinSymbolSiglumSymbolCountChirho} item(s))`,
-    `- Latin/symbol nontrivial-symbol lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "nontrivial-symbol-chirho")} (${latinSymbolNontrivialSymbolCountChirho} item(s))`,
+    `- Latin/symbol French lane: ${latinSymbolReviewUrlChirho("french-chirho")} (${pendingLatinSymbolScriptCountChirho("french-chirho")} pending of ${latinSymbolFrenchCountChirho} item(s))`,
+    `- Latin/symbol non-French lane: ${latinSymbolReviewUrlChirho("latin-non-french-chirho")} (${pendingLatinSymbolScriptCountChirho("latin-non-french-chirho")} pending of ${latinSymbolNonFrenchCountChirho} item(s))`,
+    `- Latin/symbol trivial punctuation lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "trivial-punctuation-chirho")} (${statusChirho.latinSymbolVisionChirho.pendingTrivialPunctuationSymbolItemCountChirho} pending of ${latinSymbolTrivialSymbolCountChirho} item(s))`,
+    `- Latin/symbol witness-sigla/script-symbol lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "script-or-siglum-symbol-chirho")} (${statusChirho.latinSymbolVisionChirho.pendingMixedScriptSymbolItemCountChirho} pending of ${latinSymbolSiglumSymbolCountChirho} item(s))`,
+    `- Latin/symbol nontrivial-symbol lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "nontrivial-symbol-chirho")} (${statusChirho.latinSymbolVisionChirho.pendingNontrivialSymbolItemCountChirho} pending of ${latinSymbolNontrivialSymbolCountChirho} item(s))`,
+    "- Latin/symbol pending counts subtract accepted-clean reviews and accepted explicit policies; open issue reviews keep items pending.",
     `- Latin/symbol image packet: \`${relativeProjectPathChirho(LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Expert non-Latin live reviewer: http://localhost:8771/ (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s); command: \`bun run vision-tier-expert-review-chirho\`)`,
     `- Expert priority lane: ${expertReviewUrlChirho(undefined, "priority-chirho")} (${statusChirho.visionTierChirho.pendingPriorityItemCountChirho} pending of ${expertPriorityCountChirho} item(s))`,
@@ -1519,6 +1539,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Total accepted decisions: ${statusChirho.latinSymbolVisionChirho.totalAcceptedDecisionCountChirho}`,
     `- Accepted decisions overridden by open issues: ${statusChirho.latinSymbolVisionChirho.issueOverriddenAcceptedDecisionCountChirho}`,
     `- Stale review rows: ${statusChirho.latinSymbolVisionChirho.staleReviewCountChirho}`,
+    `- Live pending decisions: ${statusChirho.latinSymbolVisionChirho.pendingDecisionCountChirho}`,
+    `- Live pending counts: ${Object.entries(statusChirho.latinSymbolVisionChirho.pendingDecisionCountsChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
     `- Remaining decisions: ${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho}`,
     "",
     "## Latin/Symbol Review Store",
