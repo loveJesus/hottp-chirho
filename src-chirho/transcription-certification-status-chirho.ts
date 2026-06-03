@@ -1306,6 +1306,13 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
       (commandChirho) =>
         `- Guarded WLC correction command after explicit human confirmation (${commandChirho.locationChirho}): \`${commandChirho.commandChirho}\``
     );
+  const hallelujahReviewCountChirho =
+    statusChirho.rawHebrewChirho.reportSpanCountChirho +
+    expertScriptCountChirho("hebrew-chirho") +
+    expertScriptCountChirho("greek-chirho");
+  const externalExpertReviewCountChirho =
+    expertScriptCountChirho("syriac-chirho") +
+    expertScriptCountChirho("arabic-chirho");
   return [
     "<!-- For God so loved the world that he gave his only begotten Son,",
     "that whoever believes in him should not perish but have eternal life. John 3:16 -->",
@@ -1342,6 +1349,14 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Reviewer scope and primer guide: \`${relativeProjectPathChirho(REVIEWER_SCOPE_GUIDE_PATH_CHIRHO)}\``,
     `- Zechariah tipcha decision aid: \`${relativeProjectPathChirho(ZECHARIAH_TIPCHA_CONFIRMATION_AID_PATH_CHIRHO)}\``,
     ...guardedWlcCorrectionCommandLinesChirho,
+    "",
+    "## Suggested Review Routing",
+    "",
+    `- Hallelujah starting lanes: raw Hebrew + Hebrew/WLC vision + Greek vision (${hallelujahReviewCountChirho} review target(s)). Start with raw Hebrew unvalidated, then raw Hebrew partial, then Hebrew/WLC vision and Greek vision; flag or skip Hebrew-script Aramaic/Targum details outside your competence.`,
+    `- External script-expert lanes: Syriac reader + Arabist (${externalExpertReviewCountChirho} item(s)). A non-reader can flag crop or segmentation problems, but should not confirm exact letters, dots, vowels, or punctuation.`,
+    "- Hebrew-script Aramaic/Targum: confirm consonants only when the print is clear; route exact Aramaic vocalization, dagesh/shin-dot details, and Targum wording to a Targum/Aramaic reviewer.",
+    `- Latin/symbol proofing: ${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} item(s) remain. Use the symbol-risk lanes because witness sigla, references, and ornament guesses are not blanket-safe.`,
+    "- Apply the guarded WLC correction only after the displayed print-confirmation question is explicitly settled.",
     "",
     "## Structural Export",
     "",
