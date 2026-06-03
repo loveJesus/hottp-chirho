@@ -218,11 +218,11 @@ export function passCHumanValidationDurabilityKeyChirho(
   reviewChirho: PassCHumanValidationBackupReviewChirho
 ): string {
   return JSON.stringify({
-    dbIdChirho: reviewChirho.dbIdChirho,
     volumeChirho: reviewChirho.volumeChirho,
     pageChirho: reviewChirho.pageChirho,
     lineIndexChirho: reviewChirho.lineIndexChirho,
     segmentIndexChirho: reviewChirho.segmentIndexChirho,
+    originalTextChirho: reviewChirho.originalTextChirho,
     originalTextHashChirho: reviewChirho.originalTextHashChirho,
     verdictChirho: reviewChirho.verdictChirho,
     correctedTextChirho: reviewChirho.correctedTextChirho,
@@ -232,10 +232,6 @@ export function passCHumanValidationDurabilityKeyChirho(
     wlcSuggestionSourceChirho: reviewChirho.wlcSuggestionSourceChirho ?? null,
     notesChirho: reviewChirho.notesChirho,
     reviewerChirho: reviewChirho.reviewerChirho,
-    createdAtChirho: reviewChirho.createdAtChirho,
-    updatedAtChirho: reviewChirho.updatedAtChirho,
-    appliedAtChirho: reviewChirho.appliedAtChirho,
-    appliedToFileChirho: reviewChirho.appliedToFileChirho,
     schemaVersionChirho: reviewChirho.schemaVersionChirho,
   });
 }
