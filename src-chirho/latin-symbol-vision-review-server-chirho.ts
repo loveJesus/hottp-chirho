@@ -314,12 +314,16 @@ function htmlChirho(): string {
       const issueGridChirho = elChirho("div", { classChirho: "issue-grid-chirho" });
       for (const optionChirho of issueFlagOptionsChirho) {
         const inputChirho = elChirho("input", { type: "checkbox", value: optionChirho.valueChirho });
+        if (reviewChirho?.issueFlagsChirho?.includes(optionChirho.valueChirho)) {
+          inputChirho.checked = true;
+        }
         const labelChirho = elChirho("label", { classChirho: "issue-option-chirho" }, [inputChirho, textNodeChirho(optionChirho.labelChirho)]);
         issueGridChirho.appendChild(labelChirho);
       }
       formChirho.appendChild(issueGridChirho);
       formChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Notes" }));
       const notesChirho = elChirho("textarea", { classChirho: "notes-chirho", id: "notes-chirho" });
+      notesChirho.value = reviewChirho?.notesChirho ?? "";
       formChirho.appendChild(notesChirho);
       const actionsChirho = elChirho("div", { classChirho: "actions-chirho" });
       const continueChirho = elChirho("button", { classChirho: "continue-chirho", type: "button", textChirho: "Continue" });
