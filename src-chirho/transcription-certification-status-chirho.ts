@@ -424,6 +424,10 @@ function latinSymbolReviewUrlChirho(scriptChirho: string, symbolRiskChirho?: str
   return `http://localhost:8770/?${urlQueryChirho(entriesChirho)}`;
 }
 
+function rawHebrewReviewUrlChirho(validationStatusChirho: string): string {
+  return `http://localhost:8766/?${urlQueryChirho([["validation-status-chirho", validationStatusChirho]])}`;
+}
+
 function hebrewSkeletonChirho(textChirho: string): string {
   return textChirho
     .normalize("NFKD")
@@ -1299,6 +1303,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "## Review Entry Points",
     "",
     `- Raw Hebrew live validator: http://localhost:8766/ (${statusChirho.rawHebrewChirho.reportSpanCountChirho} span(s); command: \`bun run pass-c-human-validate-chirho\`)`,
+    `- Raw Hebrew unvalidated lane: ${rawHebrewReviewUrlChirho("unvalidated-chirho")} (${statusChirho.rawHebrewChirho.unvalidatedSpanCountChirho} report span(s))`,
+    `- Raw Hebrew partial-validation lane: ${rawHebrewReviewUrlChirho("partial-token-validated-chirho")} (${statusChirho.rawHebrewChirho.partialValidatedSpanCountChirho} report span(s))`,
+    `- Raw Hebrew all-token spot-check lane: ${rawHebrewReviewUrlChirho("all-token-validated-chirho")} (${statusChirho.rawHebrewChirho.allTokenValidatedSpanCountChirho} report span(s))`,
     `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Latin/symbol live reviewer: http://localhost:8770/ (${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} remaining decision(s); command: \`bun run latin-symbol-vision-review-chirho\`)`,
     `- Latin/symbol French lane: ${latinSymbolReviewUrlChirho("french-chirho")} (${latinSymbolFrenchCountChirho} item(s))`,

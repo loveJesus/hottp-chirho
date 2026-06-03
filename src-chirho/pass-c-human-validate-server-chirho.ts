@@ -1001,6 +1001,8 @@ function pageHtmlChirho(): string {
     .typewriter-button-chirho { min-width: 38px; height: 34px; border: 1px solid #aab1b9; background: #fff; cursor: pointer; font-size: 20px; line-height: 1; }
     .typewriter-button-chirho:hover { background: #edf1f4; }
     .typewriter-button-chirho:focus-visible { outline: 2px solid #bd7a1b; outline-offset: 1px; }
+    .toolbar-chirho { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+    .toolbar-chirho select, .toolbar-chirho button { border: 1px solid #aab1b9; background: #fff; min-height: 34px; padding: 5px 8px; }
     .side-chirho { display: flex; flex-direction: column; gap: 12px; }
     .box-chirho { border: 1px solid #d6d9dd; background: #fff; padding: 12px; }
     .meta-grid-chirho { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 13px; }
@@ -1038,6 +1040,24 @@ function pageHtmlChirho(): string {
       </div>
       <div class="status-chirho" id="status-chirho"></div>
     </div>
+    <div class="toolbar-chirho">
+      <label class="label-chirho" for="validation-status-filter-chirho">Status</label>
+      <select id="validation-status-filter-chirho">
+        <option value="all-chirho">All</option>
+        <option value="unvalidated-chirho">Unvalidated</option>
+        <option value="partial-token-validated-chirho">Partial</option>
+        <option value="all-token-validated-chirho">All-token spot check</option>
+      </select>
+      <label class="label-chirho" for="tier-filter-chirho">Tier</label>
+      <select id="tier-filter-chirho">
+        <option value="all-chirho">All</option>
+        <option value="primary-vols-3-5-chirho">Primary vols 3-5</option>
+        <option value="primary-vol-2-chirho">Primary vol 2</option>
+        <option value="spot-check-chirho">Spot check</option>
+        <option value="suspect-text-chirho">Suspect text</option>
+        <option value="unknown-script-chirho">Unknown script</option>
+      </select>
+    </div>
     <section class="main-chirho" id="app-chirho"></section>
   </main>
   <script>
@@ -1047,6 +1067,7 @@ function pageHtmlChirho(): string {
     const scriptVerdictOptionsChirho = ${scriptJsonChirho(SCRIPT_VERDICT_OPTIONS_CHIRHO)};
     let validationsChirho = new Map();
     let indexChirho = 0;
+    const initialSearchParamsChirho = new URLSearchParams(window.location.search);
 
     function textChirho(valueChirho) { return document.createTextNode(valueChirho); }
     function elChirho(tagChirho, attrsChirho = {}, childrenChirho = []) {
@@ -1060,7 +1081,39 @@ function pageHtmlChirho(): string {
       return nodeChirho;
     }
     function clearChirho(nodeChirho) { while (nodeChirho.firstChild) nodeChirho.removeChild(nodeChirho.firstChild); }
-    function activeQueueChirho() { return queueChirho.filter((itemChirho) => !validationsChirho.has(itemChirho.keyChirho)); }
+    function selectValueOrDefaultChirho(selectIdChirho, valueChirho, defaultChirho) {
+      const selectChirho = document.getElementById(selectIdChirho);
+      if (typeof valueChirho !== "string") return defaultChirho;
+      return [...selectChirho.options].some((optionChirho) => optionChirho.value === valueChirho) ? valueChirho : defaultChirho;
+    }
+    let validationStatusFilterChirho = selectValueOrDefaultChirho(
+      "validation-status-filter-chirho",
+      initialSearchParamsChirho.get("validation-status-chirho"),
+      "all-chirho"
+    );
+    let tierFilterChirho = selectValueOrDefaultChirho(
+      "tier-filter-chirho",
+      initialSearchParamsChirho.get("tier-chirho"),
+      "all-chirho"
+    );
+    function syncFilterControlsChirho() {
+      document.getElementById("validation-status-filter-chirho").value = validationStatusFilterChirho;
+      document.getElementById("tier-filter-chirho").value = tierFilterChirho;
+    }
+    function syncUrlChirho() {
+      const paramsChirho = new URLSearchParams();
+      if (validationStatusFilterChirho !== "all-chirho") paramsChirho.set("validation-status-chirho", validationStatusFilterChirho);
+      if (tierFilterChirho !== "all-chirho") paramsChirho.set("tier-chirho", tierFilterChirho);
+      const queryChirho = paramsChirho.toString();
+      window.history.replaceState(null, "", queryChirho ? window.location.pathname + "?" + queryChirho : window.location.pathname);
+    }
+    function activeQueueChirho() {
+      return queueChirho.filter((itemChirho) =>
+        !validationsChirho.has(itemChirho.keyChirho) &&
+        (validationStatusFilterChirho === "all-chirho" || itemChirho.validationStatusChirho === validationStatusFilterChirho) &&
+        (tierFilterChirho === "all-chirho" || itemChirho.tierChirho === tierFilterChirho)
+      );
+    }
     function currentItemChirho() { return activeQueueChirho()[indexChirho]; }
     const hebrewTypewriterMarksChirho = [
       { labelChirho: "◌ֽ", valueChirho: "ֽ", titleChirho: "Meteg U+05BD" },
@@ -1090,7 +1143,7 @@ function pageHtmlChirho(): string {
     function renderSummaryChirho() {
       const remainingChirho = activeQueueChirho().length;
       document.getElementById("summary-chirho").textContent =
-        remainingChirho + " remaining of " + queueChirho.length + " review spans, " + validationsChirho.size + " saved";
+        remainingChirho + " remaining in filter of " + queueChirho.length + " review spans, " + validationsChirho.size + " saved";
     }
     function witnessTextChirho(tokenChirho) {
       if (tokenChirho.witnessesChirho.length === 0) return "none";
@@ -1345,6 +1398,20 @@ function pageHtmlChirho(): string {
       if (keyChirho === "arrowright") { indexChirho = Math.min(activeQueueChirho().length - 1, indexChirho + 1); renderChirho(); }
       if (keyChirho === "arrowleft") { indexChirho = Math.max(0, indexChirho - 1); renderChirho(); }
     });
+    document.getElementById("validation-status-filter-chirho").addEventListener("change", (eventChirho) => {
+      validationStatusFilterChirho = eventChirho.target.value;
+      indexChirho = 0;
+      syncUrlChirho();
+      renderChirho();
+    });
+    document.getElementById("tier-filter-chirho").addEventListener("change", (eventChirho) => {
+      tierFilterChirho = eventChirho.target.value;
+      indexChirho = 0;
+      syncUrlChirho();
+      renderChirho();
+    });
+    syncFilterControlsChirho();
+    syncUrlChirho();
     loadValidationsChirho().then(renderChirho);
   </script>
 </body>
