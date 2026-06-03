@@ -14,7 +14,9 @@ import { dirname, join, resolve } from "path";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 import {
+  expectedVisionTierReviewerRoleChirho,
   readVisionTierExpertConfirmationFileChirho,
+  reviewerRoleMatchesScriptChirho,
   summarizeVisionTierExpertConfirmationsChirho,
   VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO,
   VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO,
@@ -117,6 +119,12 @@ function nonEmptyTrimmedChirho(valueChirho: unknown): string | null {
   if (typeof valueChirho !== "string") return null;
   const trimmedChirho = valueChirho.trim();
   return trimmedChirho.length === 0 ? null : trimmedChirho;
+}
+
+function reviewerRoleErrorChirho(itemChirho: VisionTierExpertLiveItemChirho, reviewerRoleChirho: string): string | null {
+  if (reviewerRoleMatchesScriptChirho(itemChirho.scriptChirho, reviewerRoleChirho)) return null;
+  const expectedRoleChirho = expectedVisionTierReviewerRoleChirho(itemChirho.scriptChirho);
+  return `reviewerRoleChirho must be "${expectedRoleChirho ?? "<no-role-chirho>"}" for ${itemChirho.scriptChirho}`;
 }
 
 function parseIssueFlagsChirho(valueChirho: unknown): string[] {
@@ -475,6 +483,10 @@ function htmlChirho(): string {
     function currentItemChirho() { return activeItemsChirho()[indexChirho]; }
     function imageSrcChirho(pathChirho) { return "/asset-chirho?path=" + encodeURIComponent(pathChirho); }
     function fieldValueChirho(idChirho) { return document.getElementById(idChirho)?.value ?? ""; }
+    function reviewerRoleValueChirho(itemChirho) {
+      const savedRoleChirho = localStorage.getItem("expertReviewerRoleChirho") || "";
+      return savedRoleChirho === itemChirho.reviewerChirho ? savedRoleChirho : itemChirho.reviewerChirho;
+    }
     function saveReviewerFieldsChirho() {
       localStorage.setItem("expertReviewerChirho", fieldValueChirho("reviewer-chirho"));
       localStorage.setItem("expertReviewerRoleChirho", fieldValueChirho("reviewer-role-chirho"));
@@ -538,7 +550,7 @@ function htmlChirho(): string {
       formChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "reviewer-chirho", textChirho: "Reviewer" }));
       formChirho.appendChild(elChirho("input", { id: "reviewer-chirho", value: localStorage.getItem("expertReviewerChirho") || "" }));
       formChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "reviewer-role-chirho", textChirho: "Role" }));
-      formChirho.appendChild(elChirho("input", { id: "reviewer-role-chirho", value: localStorage.getItem("expertReviewerRoleChirho") || itemChirho.reviewerChirho || "" }));
+      formChirho.appendChild(elChirho("input", { id: "reviewer-role-chirho", value: reviewerRoleValueChirho(itemChirho) }));
       formChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "rationale-chirho", textChirho: "Rationale" }));
       formChirho.appendChild(elChirho("textarea", { id: "rationale-chirho", textChirho: localStorage.getItem("expertRationaleChirho") || "" }));
       formChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Issue flags" }));
@@ -676,6 +688,8 @@ Bun.serve({
         const { manifestChirho, liveItemsChirho, liveByIdChirho } = loadCurrentStateChirho(policyPathChirho);
         const liveItemChirho = liveByIdChirho.get(itemIdChirho);
         if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);
+        const roleErrorChirho = reviewerRoleErrorChirho(liveItemChirho, reviewerRoleChirho);
+        if (roleErrorChirho !== null) return jsonResponseChirho({ okChirho: false, errorChirho: roleErrorChirho }, 400);
         const policyChirho = saveConfirmationChirho({
           policyPathChirho,
           manifestChirho,
@@ -702,6 +716,8 @@ Bun.serve({
         const { manifestChirho, liveItemsChirho, liveByIdChirho } = loadCurrentStateChirho(policyPathChirho);
         const liveItemChirho = liveByIdChirho.get(itemIdChirho);
         if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);
+        const roleErrorChirho = reviewerRoleErrorChirho(liveItemChirho, reviewerRoleChirho);
+        if (roleErrorChirho !== null) return jsonResponseChirho({ okChirho: false, errorChirho: roleErrorChirho }, 400);
         const policyChirho = saveReviewedIssueChirho({
           policyPathChirho,
           manifestChirho,

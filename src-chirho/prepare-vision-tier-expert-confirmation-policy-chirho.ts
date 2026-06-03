@@ -14,6 +14,8 @@ import { dirname } from "path";
 
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 import {
+  expectedVisionTierReviewerRoleChirho,
+  reviewerRoleMatchesScriptChirho,
   VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO,
   VISION_TIER_EXPERT_CONFIRMATION_DRAFT_CHIRHO,
   VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO,
@@ -61,6 +63,18 @@ function writePolicyFileChirho(pathChirho: string, fileChirho: VisionTierExpertC
   writeFileSync(pathChirho, `${JSON.stringify(fileChirho, null, 2)}\n`);
 }
 
+function assertReviewerRoleMatchesSelectedItemsChirho(selectedItemsChirho: { scriptChirho: string }[], reviewerRoleChirho: string): void {
+  const scriptsChirho = [...new Set(selectedItemsChirho.map((itemChirho) => itemChirho.scriptChirho))].sort();
+  for (const scriptChirho of scriptsChirho) {
+    const expectedRoleChirho = expectedVisionTierReviewerRoleChirho(scriptChirho);
+    if (expectedRoleChirho === null || !reviewerRoleMatchesScriptChirho(scriptChirho, reviewerRoleChirho)) {
+      throw new Error(
+        `--reviewer-role-chirho must be "${expectedRoleChirho ?? "<no-role-chirho>"}" for ${scriptChirho}; split multi-script confirmations by --script-chirho`
+      );
+    }
+  }
+}
+
 function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const writeChirho = argsChirho.includes("--write-chirho");
@@ -97,6 +111,9 @@ function mainChirho(): void {
     const idOkChirho = idFiltersChirho.size === 0 || idFiltersChirho.has(itemChirho.idChirho);
     return scriptOkChirho && idOkChirho;
   });
+  if (decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO) {
+    assertReviewerRoleMatchesSelectedItemsChirho(selectedItemsChirho, reviewerRoleChirho);
+  }
   const nowChirho = new Date().toISOString();
   const policyChirho: VisionTierExpertConfirmationPolicyChirho = {
     policyIdChirho,

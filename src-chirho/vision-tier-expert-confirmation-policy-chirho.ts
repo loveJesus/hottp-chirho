@@ -14,7 +14,10 @@ import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
-import { type VisionTierExpertLiveItemChirho } from "./vision-tier-expert-live-items-chirho.ts";
+import {
+  VISION_TIER_EXPERT_REVIEWER_LABELS_CHIRHO,
+  type VisionTierExpertLiveItemChirho,
+} from "./vision-tier-expert-live-items-chirho.ts";
 
 export const VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -98,6 +101,39 @@ function nonEmptyStringChirho(valueChirho: unknown): valueChirho is string {
   return typeof valueChirho === "string" && valueChirho.trim().length > 0;
 }
 
+export function expectedVisionTierReviewerRoleChirho(scriptChirho: string): string | null {
+  return VISION_TIER_EXPERT_REVIEWER_LABELS_CHIRHO[scriptChirho] ?? null;
+}
+
+export function reviewerRoleMatchesScriptChirho(scriptChirho: string, reviewerRoleChirho: string): boolean {
+  const expectedRoleChirho = expectedVisionTierReviewerRoleChirho(scriptChirho);
+  return expectedRoleChirho !== null && reviewerRoleChirho.trim() === expectedRoleChirho;
+}
+
+function reviewerRoleShapeErrorsChirho(policyChirho: VisionTierExpertConfirmationPolicyChirho): string[] {
+  const errorsChirho: string[] = [];
+  const policyIdChirho = policyChirho.policyIdChirho ?? "<missing-policy-id-chirho>";
+  if (!nonEmptyStringChirho(policyChirho.reviewerRoleChirho) || !Array.isArray(policyChirho.itemsChirho)) {
+    return errorsChirho;
+  }
+  const checkedScriptsChirho = new Set<string>();
+  for (const itemChirho of policyChirho.itemsChirho) {
+    if (!nonEmptyStringChirho(itemChirho.scriptChirho) || checkedScriptsChirho.has(itemChirho.scriptChirho)) continue;
+    checkedScriptsChirho.add(itemChirho.scriptChirho);
+    const expectedRoleChirho = expectedVisionTierReviewerRoleChirho(itemChirho.scriptChirho);
+    if (expectedRoleChirho === null) {
+      errorsChirho.push(`${policyIdChirho}: ${itemChirho.scriptChirho} has no expected reviewerRoleChirho`);
+      continue;
+    }
+    if (policyChirho.reviewerRoleChirho.trim() !== expectedRoleChirho) {
+      errorsChirho.push(
+        `${policyIdChirho}: reviewerRoleChirho must be "${expectedRoleChirho}" for ${itemChirho.scriptChirho}`
+      );
+    }
+  }
+  return errorsChirho;
+}
+
 function validateConfirmationShapeChirho(fileChirho: VisionTierExpertConfirmationFileChirho): string[] {
   const errorsChirho: string[] = [];
   if (fileChirho.schemaVersionChirho !== 1) errorsChirho.push("schemaVersionChirho must be 1");
@@ -137,6 +173,7 @@ function validateConfirmationShapeChirho(fileChirho: VisionTierExpertConfirmatio
       if (!nonEmptyStringChirho(policyChirho.rationaleChirho)) {
         errorsChirho.push(`${policyIdChirho}: confirmed policy requires rationaleChirho`);
       }
+      errorsChirho.push(...reviewerRoleShapeErrorsChirho(policyChirho));
     }
     if (policyChirho.decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_REVIEWED_ISSUES_CHIRHO) {
       if (!nonEmptyStringChirho(policyChirho.reviewerChirho)) {
@@ -158,6 +195,7 @@ function validateConfirmationShapeChirho(fileChirho: VisionTierExpertConfirmatio
       ) {
         errorsChirho.push(`${policyIdChirho}: reviewed-issues policy requires valid issueFlagsChirho`);
       }
+      errorsChirho.push(...reviewerRoleShapeErrorsChirho(policyChirho));
     }
     for (const itemChirho of policyChirho.itemsChirho) {
       if (!nonEmptyStringChirho(itemChirho.itemIdChirho)) {
