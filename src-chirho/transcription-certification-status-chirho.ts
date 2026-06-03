@@ -1181,7 +1181,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,
     `- Reviewer scope and primer guide: \`${relativeProjectPathChirho(REVIEWER_SCOPE_GUIDE_PATH_CHIRHO)}\``,
     `- Zechariah tipcha decision aid: \`${relativeProjectPathChirho(ZECHARIAH_TIPCHA_CONFIRMATION_AID_PATH_CHIRHO)}\``,
-    "- Guarded WLC correction command after explicit human confirmation: `bun run apply-human-suggested-corrections-chirho -- --apply --certify-human`",
+    "- Guarded WLC correction command after explicit human confirmation: `bun run apply-human-suggested-corrections-chirho -- --apply --certify-human --validation-id-chirho=3 --suggested-text-chirho='וְגַם־חֲמָ֖ת'`",
     "",
     "## Structural Export",
     "",

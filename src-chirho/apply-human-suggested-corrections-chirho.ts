@@ -69,7 +69,13 @@ interface CorrectionResultChirho {
   suggestedHashChirho: string | null;
   issueFlagsChirho: string[];
   suggestionSourceChirho: string | null;
+  humanValidationIdChirho: number | null;
   messageChirho: string;
+}
+
+interface ApplyOptionsChirho {
+  targetValidationIdChirho: number | null;
+  targetSuggestedTextChirho: string | null;
 }
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
@@ -95,6 +101,15 @@ function allowedIssueFlagsChirho(flagsChirho: string[]): boolean {
     flagsChirho.every((flagChirho) => ALLOWED_WLC_CORRECTION_FLAGS_CHIRHO.has(flagChirho));
 }
 
+function parseIntegerArgChirho(valueChirho: string | undefined, nameChirho: string): number | null {
+  if (valueChirho === undefined) return null;
+  const parsedChirho = Number.parseInt(valueChirho, 10);
+  if (!Number.isInteger(parsedChirho) || parsedChirho <= 0 || String(parsedChirho) !== valueChirho) {
+    throw new Error(`--${nameChirho} must be a positive integer; got ${valueChirho}`);
+  }
+  return parsedChirho;
+}
+
 function resultBaseChirho(
   linePathChirho: string,
   lineChirho: CorrectableLineChirho,
@@ -116,17 +131,22 @@ function resultBaseChirho(
     suggestedHashChirho: suggestedTextChirho === null ? null : hashTextChirho(suggestedTextChirho),
     issueFlagsChirho: spanChirho.humanIssueFlagsChirho ?? [],
     suggestionSourceChirho: spanChirho.wlcSuggestionSourceChirho ?? null,
+    humanValidationIdChirho: spanChirho.humanValidationIdChirho ?? null,
   };
 }
 
 function evaluateCorrectionChirho(
   linePathChirho: string,
   lineChirho: CorrectableLineChirho,
-  spanChirho: CorrectableSpanChirho
+  spanChirho: CorrectableSpanChirho,
+  optionsChirho: ApplyOptionsChirho
 ): CorrectionResultChirho | null {
   if (spanChirho.humanReviewStatusChirho !== "reviewed-issues-chirho") return null;
   if (!Array.isArray(spanChirho.humanIssueFlagsChirho) || spanChirho.humanIssueFlagsChirho.length === 0) return null;
   const baseChirho = resultBaseChirho(linePathChirho, lineChirho, spanChirho);
+  if (optionsChirho.targetValidationIdChirho !== null && baseChirho.humanValidationIdChirho !== optionsChirho.targetValidationIdChirho) {
+    return null;
+  }
   if (spanChirho.scriptChirho !== "hebrew-chirho") {
     return { ...baseChirho, statusChirho: "blocked-chirho", messageChirho: "not a Hebrew span" };
   }
@@ -138,6 +158,9 @@ function evaluateCorrectionChirho(
   }
   if (!allowedIssueFlagsChirho(baseChirho.issueFlagsChirho)) {
     return { ...baseChirho, statusChirho: "blocked-chirho", messageChirho: "issue flags are not limited to vowels/accents/Hebrew punctuation" };
+  }
+  if (optionsChirho.targetSuggestedTextChirho !== null && baseChirho.suggestedTextChirho !== optionsChirho.targetSuggestedTextChirho) {
+    return { ...baseChirho, statusChirho: "blocked-chirho", messageChirho: "suggested text does not match the explicit confirmation text" };
   }
   if (hebrewSkeletonChirho(baseChirho.originalTextChirho) !== hebrewSkeletonChirho(baseChirho.suggestedTextChirho)) {
     return { ...baseChirho, statusChirho: "blocked-chirho", messageChirho: "suggestion changes Hebrew consonantal skeleton" };
@@ -171,6 +194,18 @@ function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const applyChirho = argsChirho.includes("--apply");
   const certifyHumanChirho = argsChirho.includes("--certify-human");
+  const targetValidationIdChirho = parseIntegerArgChirho(parseArgValueChirho(argsChirho, "validation-id-chirho"), "validation-id-chirho");
+  const targetSuggestedTextArgChirho = parseArgValueChirho(argsChirho, "suggested-text-chirho");
+  const targetSuggestedTextChirho = targetSuggestedTextArgChirho === undefined
+    ? null
+    : normalizeTextForStorageChirho(targetSuggestedTextArgChirho);
+  if (applyChirho && (targetValidationIdChirho === null || targetSuggestedTextChirho === null)) {
+    throw new Error("--apply requires --validation-id-chirho and --suggested-text-chirho for exact human-confirmed targeting");
+  }
+  const optionsChirho: ApplyOptionsChirho = {
+    targetValidationIdChirho,
+    targetSuggestedTextChirho,
+  };
   const reportPathChirho = parseArgValueChirho(argsChirho, "report") ?? DEFAULT_REPORT_PATH_CHIRHO;
   const appliedAtChirho = new Date().toISOString();
   const resultsChirho: CorrectionResultChirho[] = [];
@@ -180,7 +215,7 @@ function mainChirho(): void {
     const lineChirho = JSON.parse(readFileSync(linePathChirho, "utf8")) as CorrectableLineChirho;
     let lineChangedChirho = false;
     for (const spanChirho of lineChirho.spansChirho ?? []) {
-      const resultChirho = evaluateCorrectionChirho(linePathChirho, lineChirho, spanChirho);
+      const resultChirho = evaluateCorrectionChirho(linePathChirho, lineChirho, spanChirho, optionsChirho);
       if (resultChirho === null) continue;
       if (applyChirho && resultChirho.statusChirho === "planned-chirho") {
         applyCorrectionChirho(spanChirho, resultChirho, appliedAtChirho, certifyHumanChirho);
@@ -205,6 +240,8 @@ function mainChirho(): void {
     generatedAtChirho: appliedAtChirho,
     appliedChirho: applyChirho,
     certifyHumanChirho,
+    targetValidationIdChirho,
+    targetSuggestedTextChirho,
     allowedIssueFlagsChirho: [...ALLOWED_WLC_CORRECTION_FLAGS_CHIRHO],
     candidateCountChirho: resultsChirho.length,
     appliedCountChirho,
@@ -222,6 +259,10 @@ function mainChirho(): void {
       `report=${reportPathChirho}`
   );
   if (applyChirho && reportChirho.blockedCountChirho > 0) process.exitCode = 1;
+  if (applyChirho && resultsChirho.length === 0) {
+    console.error(`[${MODULE_CHIRHO}] no matching correction candidate for validation ${targetValidationIdChirho}`);
+    process.exitCode = 1;
+  }
 }
 
 if (import.meta.main) mainChirho();

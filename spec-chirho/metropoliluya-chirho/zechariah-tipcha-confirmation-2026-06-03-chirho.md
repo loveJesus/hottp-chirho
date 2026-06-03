@@ -12,7 +12,7 @@ This is a read-only decision aid for the one current strict export issue. It doe
 - Current span text: `וְגַםחֲמָת`
 - Stored suggested correction: `וְגַם־חֲמָ֖ת`
 - Stored source: `WLC Zechariah 9:2`
-- Current strict issue: `human-review-issues-chirho`, flags `accents-chirho` and `hebrew-punctuation-chirho`
+- Current strict issue: `human-review-issues-chirho`, validation id `3`, flags `accents-chirho` and `hebrew-punctuation-chirho`
 
 ## Local Images
 
@@ -70,7 +70,7 @@ Specifically:
 
 After explicit confirmation, the guarded path is:
 
-1. `bun run apply-human-suggested-corrections-chirho -- --apply --certify-human`
+1. `bun run apply-human-suggested-corrections-chirho -- --apply --certify-human --validation-id-chirho=3 --suggested-text-chirho='וְגַם־חֲמָ֖ת'`
 2. `bun run spec-chirho/metropoliluya-chirho/repair-vol3-p148-l59-zechariah-quote-2026-06-01-chirho.ts -- --apply`
 
 Do not run either step from this note alone.
