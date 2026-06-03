@@ -353,6 +353,10 @@ interface CertificationStatusChirho {
     unvalidatedSpanCountChirho: number;
     partialValidatedSpanCountChirho: number;
     allTokenValidatedSpanCountChirho: number;
+    livePendingSpanCountChirho: number;
+    livePendingUnvalidatedSpanCountChirho: number;
+    livePendingPartialValidatedSpanCountChirho: number;
+    livePendingAllTokenValidatedSpanCountChirho: number;
     validatedTokenCountChirho: number;
     sourceCountsChirho: Record<string, number>;
     exportPassCOcrMatchesReportChirho: boolean;
@@ -654,6 +658,19 @@ function summarizeHumanValidationsChirho(
   };
 }
 
+function rawPendingSpansChirho(
+  rawSpansChirho: RawHebrewSpanChirho[],
+  rowsChirho: HumanValidationDbRowChirho[]
+): RawHebrewSpanChirho[] {
+  const rawKeysChirho = new Set(rawSpansChirho.map(spanKeyChirho));
+  const savedRawKeysChirho = new Set(
+    rowsChirho
+      .filter((rowChirho) => rowChirho.schema_version_chirho >= 2 && rawKeysChirho.has(rowKeyChirho(rowChirho)))
+      .map(rowKeyChirho)
+  );
+  return rawSpansChirho.filter((spanChirho) => !savedRawKeysChirho.has(spanKeyChirho(spanChirho)));
+}
+
 function sumCountsChirho(countsChirho: Record<string, number>): number {
   return Object.values(countsChirho).reduce((sumChirho, countChirho) => sumChirho + countChirho, 0);
 }
@@ -801,6 +818,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const rawSpansChirho = rawReportChirho.spansChirho ?? [];
   const humanValidationRowsChirho = validationRowsChirho(dbPathChirho);
   const humanSummaryChirho = summarizeHumanValidationsChirho(humanValidationRowsChirho, rawSpansChirho);
+  const livePendingRawSpansChirho = rawPendingSpansChirho(rawSpansChirho, humanValidationRowsChirho);
   const passCHumanValidationDbBackupRowsChirho = passCHumanValidationBackupRowsFromDbPathChirho(dbPathChirho);
   const passCHumanValidationBackupRowsResultChirho = passCHumanValidationBackupRowsChirho(
     passCHumanValidationBackupFileChirho,
@@ -838,6 +856,16 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     unvalidatedSpanCountChirho: rawReportChirho.unvalidatedSpanCountChirho ?? 0,
     partialValidatedSpanCountChirho: rawReportChirho.partialTokenValidatedSpanCountChirho ?? 0,
     allTokenValidatedSpanCountChirho: rawReportChirho.allTokenValidatedSpanCountChirho ?? 0,
+    livePendingSpanCountChirho: livePendingRawSpansChirho.length,
+    livePendingUnvalidatedSpanCountChirho: livePendingRawSpansChirho.filter(
+      (spanChirho) => spanChirho.validationStatusChirho === "unvalidated-chirho"
+    ).length,
+    livePendingPartialValidatedSpanCountChirho: livePendingRawSpansChirho.filter(
+      (spanChirho) => spanChirho.validationStatusChirho === "partial-token-validated-chirho"
+    ).length,
+    livePendingAllTokenValidatedSpanCountChirho: livePendingRawSpansChirho.filter(
+      (spanChirho) => spanChirho.validationStatusChirho === "all-token-validated-chirho"
+    ).length,
     validatedTokenCountChirho: rawReportChirho.validatedTokenCountChirho ?? 0,
     sourceCountsChirho: rawReportChirho.sourceCountsChirho ?? {},
     exportPassCOcrMatchesReportChirho:
@@ -1307,7 +1335,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
         `- Guarded WLC correction command after explicit human confirmation (${commandChirho.locationChirho}): \`${commandChirho.commandChirho}\``
     );
   const hallelujahReviewCountChirho =
-    statusChirho.rawHebrewChirho.reportSpanCountChirho +
+    statusChirho.rawHebrewChirho.livePendingSpanCountChirho +
     expertScriptCountChirho("hebrew-chirho") +
     expertScriptCountChirho("greek-chirho");
   const externalExpertReviewCountChirho =
@@ -1325,11 +1353,11 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     "## Review Entry Points",
     "",
-    `- Raw Hebrew live validator: http://localhost:8766/ (${statusChirho.rawHebrewChirho.reportSpanCountChirho} span(s); command: \`bun run pass-c-human-validate-chirho\`)`,
-    `- Raw Hebrew unvalidated lane: ${rawHebrewReviewUrlChirho("unvalidated-chirho")} (${statusChirho.rawHebrewChirho.unvalidatedSpanCountChirho} report span(s))`,
-    `- Raw Hebrew partial-validation lane: ${rawHebrewReviewUrlChirho("partial-token-validated-chirho")} (${statusChirho.rawHebrewChirho.partialValidatedSpanCountChirho} report span(s))`,
-    `- Raw Hebrew all-token spot-check lane: ${rawHebrewReviewUrlChirho("all-token-validated-chirho")} (${statusChirho.rawHebrewChirho.allTokenValidatedSpanCountChirho} report span(s))`,
-    "- Raw Hebrew lane counts are report totals; the live validator hides already-saved rows.",
+    `- Raw Hebrew live validator: http://localhost:8766/ (${statusChirho.rawHebrewChirho.livePendingSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.reportSpanCountChirho} report span(s); command: \`bun run pass-c-human-validate-chirho\`)`,
+    `- Raw Hebrew unvalidated lane: ${rawHebrewReviewUrlChirho("unvalidated-chirho")} (${statusChirho.rawHebrewChirho.livePendingUnvalidatedSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.unvalidatedSpanCountChirho} report span(s))`,
+    `- Raw Hebrew partial-validation lane: ${rawHebrewReviewUrlChirho("partial-token-validated-chirho")} (${statusChirho.rawHebrewChirho.livePendingPartialValidatedSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.partialValidatedSpanCountChirho} report span(s))`,
+    `- Raw Hebrew all-token spot-check lane: ${rawHebrewReviewUrlChirho("all-token-validated-chirho")} (${statusChirho.rawHebrewChirho.livePendingAllTokenValidatedSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.allTokenValidatedSpanCountChirho} report span(s))`,
+    "- Raw Hebrew pending counts match the live validator; report totals include already-saved rows.",
     `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Latin/symbol live reviewer: http://localhost:8770/ (${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} remaining decision(s); command: \`bun run latin-symbol-vision-review-chirho\`)`,
     `- Latin/symbol French lane: ${latinSymbolReviewUrlChirho("french-chirho")} (${latinSymbolFrenchCountChirho} item(s))`,
@@ -1352,7 +1380,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     "## Suggested Review Routing",
     "",
-    `- Hallelujah starting lanes: raw Hebrew + Hebrew/WLC vision + Greek vision (${hallelujahReviewCountChirho} review target(s)). Start with raw Hebrew unvalidated, then raw Hebrew partial, then Hebrew/WLC vision and Greek vision; flag or skip Hebrew-script Aramaic/Targum details outside your competence.`,
+    `- Hallelujah starting lanes: pending raw Hebrew + Hebrew/WLC vision + Greek vision (${hallelujahReviewCountChirho} review target(s)). Start with raw Hebrew unvalidated, then raw Hebrew partial, then Hebrew/WLC vision and Greek vision; flag or skip Hebrew-script Aramaic/Targum details outside your competence.`,
     `- External script-expert lanes: Syriac reader + Arabist (${externalExpertReviewCountChirho} item(s)). A non-reader can flag crop or segmentation problems, but should not confirm exact letters, dots, vowels, or punctuation.`,
     "- Hebrew-script Aramaic/Targum: confirm consonants only when the print is clear; route exact Aramaic vocalization, dagesh/shin-dot details, and Targum wording to a Targum/Aramaic reviewer.",
     `- Latin/symbol proofing: ${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} item(s) remain. Use the symbol-risk lanes because witness sigla, references, and ornament guesses are not blanket-safe.`,
@@ -1385,10 +1413,14 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw Hebrew report exists: ${statusChirho.artifactsChirho.rawHebrewReportExistsChirho}`,
     `- Raw Hebrew report shape OK: ${statusChirho.artifactsChirho.rawHebrewReportShapeOkChirho}`,
     `- Report spans: ${statusChirho.rawHebrewChirho.reportSpanCountChirho}`,
+    `- Live pending spans: ${statusChirho.rawHebrewChirho.livePendingSpanCountChirho}`,
     `- Tokens: ${statusChirho.rawHebrewChirho.reportTokenCountChirho}`,
     `- Unvalidated spans: ${statusChirho.rawHebrewChirho.unvalidatedSpanCountChirho}`,
+    `- Live pending unvalidated spans: ${statusChirho.rawHebrewChirho.livePendingUnvalidatedSpanCountChirho}`,
     `- Partial spans: ${statusChirho.rawHebrewChirho.partialValidatedSpanCountChirho}`,
+    `- Live pending partial spans: ${statusChirho.rawHebrewChirho.livePendingPartialValidatedSpanCountChirho}`,
     `- All-token spot checks: ${statusChirho.rawHebrewChirho.allTokenValidatedSpanCountChirho}`,
+    `- Live pending all-token spot checks: ${statusChirho.rawHebrewChirho.livePendingAllTokenValidatedSpanCountChirho}`,
     `- Source counts before filter: ${sourceCountsChirho || "none"}`,
     `- Export/report count match: ${statusChirho.rawHebrewChirho.exportPassCOcrMatchesReportChirho}`,
     "",
