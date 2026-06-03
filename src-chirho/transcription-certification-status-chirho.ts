@@ -201,6 +201,7 @@ interface ExpertPackVisionItemChirho {
   scriptChirho: string;
   visionSourceChirho: string;
   currentTextChirho: string;
+  priorityMatchChirho?: boolean;
 }
 
 interface LatinSymbolPackItemChirho {
@@ -426,6 +427,14 @@ function latinSymbolReviewUrlChirho(scriptChirho: string, symbolRiskChirho?: str
 
 function rawHebrewReviewUrlChirho(validationStatusChirho: string): string {
   return `http://localhost:8766/?${urlQueryChirho([["validation-status-chirho", validationStatusChirho]])}`;
+}
+
+function expertReviewUrlChirho(scriptChirho?: string, priorityChirho?: string): string {
+  const entriesChirho: Array<[string, string]> = [];
+  if (scriptChirho !== undefined) entriesChirho.push(["script-chirho", scriptChirho]);
+  if (priorityChirho !== undefined) entriesChirho.push(["priority-chirho", priorityChirho]);
+  const queryChirho = urlQueryChirho(entriesChirho);
+  return queryChirho.length === 0 ? "http://localhost:8771/" : `http://localhost:8771/?${queryChirho}`;
 }
 
 function hebrewSkeletonChirho(textChirho: string): string {
@@ -896,7 +905,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const visionTierChirho = {
     d1ReadErrorChirho: visionTierLiveSnapshotChirho.d1ReadErrorChirho,
     manifestGeneratedAtChirho: expertManifestChirho.generatedAtChirho ?? null,
-    priorityItemCountChirho: expertManifestChirho.priorityItemsChirho?.length ?? 0,
+    priorityItemCountChirho: expertManifestItemsChirho.filter((itemChirho) => itemChirho.priorityMatchChirho).length,
     completeVisionItemCountChirho: expertManifestItemsChirho.length,
     completeVisionCountsChirho: expertManifestChirho.completeVisionCountsChirho ?? {},
     liveVisionItemCountChirho: visionTierLiveItemsChirho.length,
@@ -1278,6 +1287,13 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   const latinSymbolNontrivialSymbolCountChirho =
     statusChirho.latinSymbolVisionChirho.symbolRiskSummaryChirho.nontrivialSymbolItemsChirho -
     statusChirho.latinSymbolVisionChirho.symbolRiskSummaryChirho.mixedScriptSymbolItemsChirho;
+  const expertScriptCountChirho = (scriptChirho: string): number =>
+    statusChirho.visionTierChirho.liveVisionCountsChirho[scriptChirho] ?? 0;
+  const expertPriorityCountChirho = statusChirho.visionTierChirho.priorityItemCountChirho;
+  const expertAppendixCountChirho = Math.max(
+    0,
+    statusChirho.visionTierChirho.liveVisionItemCountChirho - expertPriorityCountChirho
+  );
   const issueCodeCountsChirho = Object.entries(statusChirho.structuralChirho.issueCodeCountsChirho)
     .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
     .join(", ");
@@ -1316,8 +1332,12 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Latin/symbol nontrivial-symbol lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "nontrivial-symbol-chirho")} (${latinSymbolNontrivialSymbolCountChirho} item(s))`,
     `- Latin/symbol image packet: \`${relativeProjectPathChirho(LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Expert non-Latin live reviewer: http://localhost:8771/ (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s); command: \`bun run vision-tier-expert-review-chirho\`)`,
-    "- Expert Hebrew lane: http://localhost:8771/?script-chirho=hebrew-chirho",
-    "- Expert Greek lane: http://localhost:8771/?script-chirho=greek-chirho",
+    `- Expert priority lane: ${expertReviewUrlChirho(undefined, "priority-chirho")} (${expertPriorityCountChirho} item(s))`,
+    `- Expert appendix lane: ${expertReviewUrlChirho(undefined, "appendix-chirho")} (${expertAppendixCountChirho} item(s))`,
+    `- Expert Hebrew/WLC lane: ${expertReviewUrlChirho("hebrew-chirho")} (${expertScriptCountChirho("hebrew-chirho")} item(s))`,
+    `- Expert Greek lane: ${expertReviewUrlChirho("greek-chirho")} (${expertScriptCountChirho("greek-chirho")} item(s))`,
+    `- Expert Syriac reader lane: ${expertReviewUrlChirho("syriac-chirho")} (${expertScriptCountChirho("syriac-chirho")} item(s))`,
+    `- Expert Arabist lane: ${expertReviewUrlChirho("arabic-chirho")} (${expertScriptCountChirho("arabic-chirho")} item(s))`,
     `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,
     `- Reviewer scope and primer guide: \`${relativeProjectPathChirho(REVIEWER_SCOPE_GUIDE_PATH_CHIRHO)}\``,
     `- Zechariah tipcha decision aid: \`${relativeProjectPathChirho(ZECHARIAH_TIPCHA_CONFIRMATION_AID_PATH_CHIRHO)}\``,

@@ -541,8 +541,17 @@ function htmlChirho(): string {
     }
     if (!selectHasValueChirho("script-filter-chirho", scriptFilterChirho)) scriptFilterChirho = "all-chirho";
     if (!selectHasValueChirho("priority-filter-chirho", priorityFilterChirho)) priorityFilterChirho = "all-chirho";
-    document.getElementById("script-filter-chirho").value = scriptFilterChirho;
-    document.getElementById("priority-filter-chirho").value = priorityFilterChirho;
+    function syncFilterControlsChirho() {
+      document.getElementById("script-filter-chirho").value = scriptFilterChirho;
+      document.getElementById("priority-filter-chirho").value = priorityFilterChirho;
+    }
+    function syncUrlChirho() {
+      const paramsChirho = new URLSearchParams();
+      if (scriptFilterChirho !== "all-chirho") paramsChirho.set("script-chirho", scriptFilterChirho);
+      if (priorityFilterChirho !== "all-chirho") paramsChirho.set("priority-chirho", priorityFilterChirho);
+      const queryStringChirho = paramsChirho.toString();
+      window.history.replaceState(null, "", queryStringChirho ? window.location.pathname + "?" + queryStringChirho : window.location.pathname);
+    }
     function activeItemsChirho() {
       return itemsChirho.filter((itemChirho) =>
         !itemChirho.confirmedChirho &&
@@ -718,11 +727,13 @@ function htmlChirho(): string {
     document.getElementById("script-filter-chirho").addEventListener("change", (eventChirho) => {
       scriptFilterChirho = eventChirho.target.value;
       indexChirho = 0;
+      syncUrlChirho();
       renderChirho();
     });
     document.getElementById("priority-filter-chirho").addEventListener("change", (eventChirho) => {
       priorityFilterChirho = eventChirho.target.value;
       indexChirho = 0;
+      syncUrlChirho();
       renderChirho();
     });
     document.getElementById("prev-chirho").addEventListener("click", () => {
@@ -733,6 +744,8 @@ function htmlChirho(): string {
       indexChirho = Math.min(indexChirho + 1, Math.max(0, activeItemsChirho().length - 1));
       renderChirho();
     });
+    syncFilterControlsChirho();
+    syncUrlChirho();
     loadStateChirho().catch((errorChirho) => setStatusChirho(String(errorChirho)));
   </script>
 </body>
