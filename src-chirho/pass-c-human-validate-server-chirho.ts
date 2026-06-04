@@ -107,6 +107,8 @@ interface SpanLineFileChirho {
     widthPxChirho: number;
     scriptChirho: string;
     utf8TextChirho: string;
+    wlcSuggestedTextChirho?: string;
+    wlcSuggestionSourceChirho?: string;
   }>;
 }
 
@@ -140,6 +142,8 @@ interface QueueItemChirho extends ReportSpanChirho {
   currentScriptChirho: string;
   liveSpanTextChirho: string;
   hasLiveSpanTextDriftChirho: boolean;
+  wlcSuggestedTextChirho?: string;
+  wlcSuggestionSourceChirho?: string;
   candidateWordsChirho: QueueCandidateWordChirho[];
   scriptHintSummaryChirho: string;
   defaultScriptVerdictChirho: string | null;
@@ -589,6 +593,8 @@ function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): Queue
         currentScriptChirho,
         liveSpanTextChirho,
         hasLiveSpanTextDriftChirho: liveSpanTextChirho !== reportTextChirho,
+        wlcSuggestedTextChirho: spanGeometryChirho.wlcSuggestedTextChirho,
+        wlcSuggestionSourceChirho: spanGeometryChirho.wlcSuggestionSourceChirho,
         candidateWordsChirho,
         scriptHintSummaryChirho: hintSummaryChirho,
         defaultScriptVerdictChirho: defaultScriptVerdictChirho(spanChirho.validationStatusChirho, hintSummaryChirho),
@@ -1285,6 +1291,15 @@ function pageHtmlChirho(): string {
           classChirho: "warning-chirho",
           textChirho: "Saved issue row shown read-only. Inspect the crop and use the guarded status-report correction command only after explicit confirmation."
         }));
+        if (typeof itemChirho.wlcSuggestedTextChirho === "string" && itemChirho.wlcSuggestedTextChirho.length > 0) {
+          const suggestionBoxChirho = elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
+            elChirho("div", { textChirho: "WLC suggestion" }),
+            elChirho("div", { classChirho: spanTextClassChirho(itemChirho), textChirho: itemChirho.wlcSuggestedTextChirho }),
+            elChirho("div", { textChirho: "Source" }),
+            elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.wlcSuggestionSourceChirho ?? "unknown-chirho" })
+          ]);
+          sideChirho.appendChild(suggestionBoxChirho);
+        }
       }
       const metaChirho = elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
         elChirho("div", { textChirho: "Location" }),
