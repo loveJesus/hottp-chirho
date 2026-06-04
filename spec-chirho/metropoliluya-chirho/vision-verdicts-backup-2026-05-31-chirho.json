@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T09:00:00.148Z",
+  "generatedAtChirho": "2026-06-04T09:14:47.006Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 798,
+  "countChirho": 799,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7983,6 +7983,16 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "תחרימו",
       "notesChirho": "Recovered the M V S T witness reading from the hidden `1770n` OCR tail on vol 1 p150 L32. Claude second-witnessed the consonants as תחרימו and withdrew the earlier מחמד-family read; local page OCR reads `תַּחֲרִימוּ`, matching the Joshua 6:18 חרם context. Stored consonantal `תחרימו` as vision-chirho only because exact printed vowels/marks and segmentation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 1,
+      "pageChirho": 149,
+      "lineIndexChirho": 36,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "a 17722 772 122",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "בְּעבְרוֹ בַּיַּרְדֵּן נִכְרְתוּ מֵי הַיַּרְדֵּן,",
+      "notesChirho": "Expanded the too-narrow vol 1 p149 line 36 Hebrew span: Codex visually confirmed that the scanline prints the full phrase `בְּעבְרוֹ בַּיַּרְדֵּן נִכְרְתוּ מֵי הַיַּרְדֵּן` across x260..690, while the old S1 box covered only an interior slice and the old S2 text `a 17722 772 122` was the remaining Hebrew pixels mis-OCR'd as digits. The comma is attached to the widened span so the rendered French continuation reads cleanly. Stored as vision-chirho; exact printed vowels/marks, comma placement, and segmentation remain Hebrew/WLC expert-confirmation tier."
     }
   ]
 }

@@ -31,6 +31,8 @@ const HEBREW_CHAR_RE_CHIRHO = /[\u0590-\u05ff]/u;
 const HEBREW_SCRIPT_RE_CHIRHO = /^hebrew-chirho$/;
 const DIGIT_CLUSTER_RE_CHIRHO = /(?:^|[\s([{])(?:[A-Za-z]?\d{3,}[A-Za-z]?|\d{2,}[}?][A-Za-z0-9]?|[+*#]\s*\d{2,}|[}\]]\s*\d{2,})(?=$|[\s,.;:)\]}])/u;
 const SYMBOL_DIGIT_RE_CHIRHO = /(?:[+*#]\s*\d+|\d+\s*[}?]|\}\s*\d+)/u;
+const DIGIT_CLUSTER_SCAN_RE_CHIRHO = new RegExp(DIGIT_CLUSTER_RE_CHIRHO.source, "gu");
+const SYMBOL_DIGIT_SCAN_RE_CHIRHO = new RegExp(SYMBOL_DIGIT_RE_CHIRHO.source, "gu");
 const ORDINAL_GARBAGE_RE_CHIRHO = /(?:^|[\s([{])["“”']?[nN][°º]\d+/u;
 const REPEATED_UPPER_GARBAGE_RE_CHIRHO = /(?:^|[\s([{])["“”']?[A-Z]\.?\s+["“”']?[A-Z]{2}(?=$|[\s,.;:)])/u;
 const APPARATUS_WITNESS_LIST_RE_CHIRHO =
@@ -41,7 +43,7 @@ const BRACKETED_SINGLE_CAPITAL_SIGLUM_RE_CHIRHO = /^[{\[][A-Z][}\]]$/u;
 const SCRIPTURE_REF_RE_CHIRHO =
   /\b(?:Gn|Ex|Lv|Nb|Dt|Jos|Jg|1\s*S|2\s*S|1\s*R|2\s*R|Is|Jr|Ez|Éz|Ha|Hab|Za|Zach?|Ps|Jb|Job|Qo|Pr)\s*\d/u;
 const BENIGN_NUMERIC_CONTEXT_RE_CHIRHO =
-  /\b(?:BH|BHS|BH3|BH23|CT\d*|ms|mss|Opuscules|Kitab|Herméneutique|Syntax|Frensdorff|Esteban|Erub|Qumr[aä]n|QMelchisédec)\b/u;
+  /(?:\b(?:BH|BHS|BH3|BH23|CT\d*|ms|mss|Mss|Opuscules|Syntax|Frensdorff|Esteban|Erub|Hev|J\d{2,3}|Luma|Cpl|rel|BL|Add|Vat|ebr|London|Cortona|XII|XIII|XIV)\b|Kit[aâ]b|ḤAYYUJ|Herméneutique|Qumr[aä]n|QMelchisédec|Würzburg)/u;
 
 interface SpanChirho {
   segmentIndexChirho: number;
@@ -120,14 +122,26 @@ function compactTextChirho(textChirho: string): string {
   return normalizeTextForStorageChirho(textChirho).replace(/\s+/g, " ").trim();
 }
 
+function hasNonBenignNumericMatchChirho(textChirho: string, patternChirho: RegExp): boolean {
+  patternChirho.lastIndex = 0;
+  for (const matchChirho of textChirho.matchAll(patternChirho)) {
+    const indexChirho = matchChirho.index ?? 0;
+    const contextChirho = textChirho.slice(Math.max(0, indexChirho - 18), Math.min(textChirho.length, indexChirho + matchChirho[0].length + 18));
+    if (!BENIGN_NUMERIC_CONTEXT_RE_CHIRHO.test(contextChirho)) return true;
+  }
+  return false;
+}
+
 function spanReasonsChirho(spanChirho: SpanChirho, lineChirho: SpanLineChirho, spansChirho: SpanChirho[], indexChirho: number): string[] {
   const textChirho = compactTextChirho(spanChirho.utf8TextChirho);
   const reasonsChirho: string[] = [];
   if (!REVIEWABLE_SCRIPT_SET_CHIRHO.has(spanChirho.scriptChirho)) return reasonsChirho;
-  if (DIGIT_CLUSTER_RE_CHIRHO.test(textChirho) && !BENIGN_NUMERIC_CONTEXT_RE_CHIRHO.test(textChirho)) {
+  if (hasNonBenignNumericMatchChirho(textChirho, DIGIT_CLUSTER_SCAN_RE_CHIRHO)) {
     reasonsChirho.push("dense-digit-cluster-chirho");
   }
-  if (SYMBOL_DIGIT_RE_CHIRHO.test(textChirho)) reasonsChirho.push("symbol-digit-garble-chirho");
+  if (hasNonBenignNumericMatchChirho(textChirho, SYMBOL_DIGIT_SCAN_RE_CHIRHO)) {
+    reasonsChirho.push("symbol-digit-garble-chirho");
+  }
   if (ORDINAL_GARBAGE_RE_CHIRHO.test(textChirho)) reasonsChirho.push("ordinal-garble-chirho");
   if (
     REPEATED_UPPER_GARBAGE_RE_CHIRHO.test(textChirho) &&
