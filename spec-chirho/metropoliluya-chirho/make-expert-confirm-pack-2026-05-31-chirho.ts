@@ -14,11 +14,13 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  renameSync,
   statSync,
-  writeFileSync,
 } from "fs";
-import { join, relative } from "path";
+import { dirname, join, relative } from "path";
 import { Database } from "bun:sqlite";
+
+import { writeJsonAtomicChirho, writeTextAtomicChirho } from "../../src-chirho/atomic-json-chirho.ts";
 
 const PROJECT_ROOT_CHIRHO = "/Users/hallelujah/dev-chirho/friends-chirho/andrewbeth-chirho/hottp-chirho";
 const SPANS_ROOT_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
@@ -234,7 +236,10 @@ function copyLineImageChirho(volumeChirho: number, pageChirho: number, lineChirh
     throw new Error(`missing scanline image: ${sourcePathChirho}`);
   }
   if (!existsSync(packetPathChirho)) {
-    copyFileSync(sourcePathChirho, packetPathChirho);
+    const tempPathChirho = `${packetPathChirho}.tmp-chirho-${process.pid}-${Date.now()}`;
+    mkdirSync(dirname(packetPathChirho), { recursive: true });
+    copyFileSync(sourcePathChirho, tempPathChirho);
+    renameSync(tempPathChirho, packetPathChirho);
   }
   return {
     lineIndexChirho: lineChirho,
@@ -625,8 +630,8 @@ function generatePacketChirho(): void {
     completeVisionItemsChirho,
   };
 
-  writeFileSync(join(OUT_DIR_CHIRHO, "manifest-chirho.json"), `${JSON.stringify(manifestChirho, null, 2)}\n`);
-  writeFileSync(join(OUT_DIR_CHIRHO, "index-chirho.md"), `${markdownChirho.trimEnd()}\n`);
+  writeJsonAtomicChirho(join(OUT_DIR_CHIRHO, "manifest-chirho.json"), manifestChirho);
+  writeTextAtomicChirho(join(OUT_DIR_CHIRHO, "index-chirho.md"), `${markdownChirho.trimEnd()}\n`);
   console.log(
     `wrote ${priorityItemsChirho.length} priority item(s) and ${completeVisionItemsChirho.length} complete vision item(s) to ${OUT_DIR_CHIRHO}`
   );

@@ -12,10 +12,10 @@ import {
   readFileSync,
   readdirSync,
   statSync,
-  writeFileSync,
 } from "fs";
 import { join, relative } from "path";
 
+import { writeJsonAtomicChirho, writeTextAtomicChirho } from "../../src-chirho/atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "../../src-chirho/config-chirho.ts";
 import {
   packetImageHashesChirho,
@@ -538,8 +538,8 @@ function generatePackChirho(): void {
     countsChirho,
     itemsChirho,
   };
-  writeFileSync(join(OUT_DIR_CHIRHO, "manifest-chirho.json"), `${JSON.stringify(manifestChirho, null, 2)}\n`);
-  writeFileSync(join(OUT_DIR_CHIRHO, "index-chirho.md"), markdownChirho(itemsChirho, countsChirho));
+  writeJsonAtomicChirho(join(OUT_DIR_CHIRHO, "manifest-chirho.json"), manifestChirho);
+  writeTextAtomicChirho(join(OUT_DIR_CHIRHO, "index-chirho.md"), markdownChirho(itemsChirho, countsChirho));
   console.log(
     `wrote ${itemsChirho.length} Latin/symbol vision review item(s) ` +
       `(${explicitItemsChirho.length} explicit span, ${d1ItemsChirho.length} D1 word) to ${OUT_DIR_CHIRHO}`
