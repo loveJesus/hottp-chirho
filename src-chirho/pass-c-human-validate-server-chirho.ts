@@ -31,6 +31,7 @@ import {
   RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO,
   rawHebrewReviewTierForSpanChirho,
 } from "./raw-hebrew-review-tier-chirho.ts";
+import { explicitReviewerAttributionErrorChirho } from "./reviewer-attribution-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
@@ -1164,6 +1165,14 @@ function pageHtmlChirho(): string {
       const inputChirho = document.getElementById("reviewer-chirho");
       return (inputChirho ? inputChirho.value : reviewerChirho).trim();
     }
+    function reviewerAttributionErrorChirho(valueChirho) {
+      const trimmedChirho = String(valueChirho || "").trim();
+      if (trimmedChirho.length === 0) return "Reviewer is required";
+      if (trimmedChirho === "human-chirho" || trimmedChirho === "unknown-reviewer-chirho") {
+        return "Reviewer must identify the explicit reviewer, not " + trimmedChirho;
+      }
+      return null;
+    }
     function selectValueOrDefaultChirho(selectIdChirho, valueChirho, defaultChirho) {
       const selectChirho = document.getElementById(selectIdChirho);
       if (typeof valueChirho !== "string") return defaultChirho;
@@ -1716,8 +1725,9 @@ function pageHtmlChirho(): string {
       const issueFlagsChirho = Array.from(document.querySelectorAll(".issue-checkbox-chirho:checked"))
         .map((inputChirho) => inputChirho.value);
       const scriptVerdictChirho = document.querySelector("input[name='script-verdict-chirho']:checked")?.value ?? "";
-      if (reviewerValueChirho.length === 0) {
-        setStatusChirho("Reviewer is required");
+      const reviewerErrorChirho = reviewerAttributionErrorChirho(reviewerValueChirho);
+      if (reviewerErrorChirho !== null) {
+        setStatusChirho(reviewerErrorChirho);
         return;
       }
       if (pendingReviewWouldBeCleanChirho(itemChirho) && !cleanReviewAcknowledgedChirho()) {
@@ -1922,6 +1932,10 @@ Bun.serve({
         : reviewerChirho;
       if (effectiveReviewerChirho.length === 0) {
         return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
+      }
+      const reviewerErrorChirho = explicitReviewerAttributionErrorChirho(effectiveReviewerChirho);
+      if (reviewerErrorChirho !== null) {
+        return jsonResponseChirho({ okChirho: false, errorChirho: reviewerErrorChirho }, 400);
       }
       const verdictChirho = cleanReviewChirho
         ? "reviewed-clean-chirho"

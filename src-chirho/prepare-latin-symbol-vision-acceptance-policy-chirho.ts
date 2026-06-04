@@ -26,6 +26,7 @@ import {
   type LatinSymbolAcceptancePolicyChirho,
   type LatinSymbolAcceptancePolicyFileChirho,
 } from "./latin-symbol-vision-acceptance-policy-chirho.ts";
+import { assertExplicitReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "prepare-latin-symbol-vision-acceptance-policy-chirho";
@@ -114,6 +115,7 @@ function mainChirho(): void {
   }
   if (decisionChirho === LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO) {
     if (reviewerChirho.trim().length === 0) throw new Error("--reviewer-chirho is required for accepted policy");
+    assertExplicitReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
     if (rationaleChirho.trim().length === 0) throw new Error("--rationale-chirho is required for accepted policy");
     if (!acceptCleanChirho) {
       throw new Error(

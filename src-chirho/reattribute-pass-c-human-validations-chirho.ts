@@ -16,6 +16,10 @@ import {
   PASS_C_HUMAN_VALIDATION_BACKUP_PATH_CHIRHO,
   writePassCHumanValidationBackupChirho,
 } from "./pass-c-human-validation-backup-chirho.ts";
+import {
+  assertExplicitReviewerAttributionChirho,
+  isGenericReviewerAttributionChirho,
+} from "./reviewer-attribution-chirho.ts";
 
 const MODULE_CHIRHO = "reattribute-pass-c-human-validations-chirho";
 
@@ -102,17 +106,6 @@ function parseValidationIdsChirho(argsChirho: string[]): number[] {
     return idChirho;
   });
   return [...new Set(idsChirho)];
-}
-
-function isGenericReviewerChirho(reviewerChirho: string): boolean {
-  const trimmedChirho = reviewerChirho.trim();
-  return trimmedChirho.length === 0 || trimmedChirho === "human-chirho" || trimmedChirho === "unknown-reviewer-chirho";
-}
-
-function assertExplicitReviewerChirho(reviewerChirho: string): void {
-  if (isGenericReviewerChirho(reviewerChirho)) {
-    throw new Error("--reviewer-chirho must be an explicit reviewer id, not human-chirho/blank");
-  }
 }
 
 function keyForRowChirho(rowChirho: PassCHumanValidationRowChirho): string {
@@ -204,7 +197,7 @@ function assertRowsEligibleChirho(rowsChirho: PassCHumanValidationRowChirho[], r
   for (const rowChirho of rowsChirho) {
     if (rowChirho.is_current_chirho !== 1) throw new Error(`validation id ${rowChirho.id_chirho} is not current`);
     if (rowChirho.schema_version_chirho < 2) throw new Error(`validation id ${rowChirho.id_chirho} is not schema-v2`);
-    if (!isGenericReviewerChirho(rowChirho.reviewer_chirho)) {
+    if (!isGenericReviewerAttributionChirho(rowChirho.reviewer_chirho)) {
       throw new Error(`validation id ${rowChirho.id_chirho} already has explicit reviewer ${rowChirho.reviewer_chirho}`);
     }
   }
@@ -304,7 +297,7 @@ function mainChirho(): void {
   }
   if (!allGenericChirho && validationIdsChirho.length === 0) throw new Error(usageChirho());
   const reviewerChirho = requiredArgValueChirho(argsChirho, "reviewer-chirho");
-  assertExplicitReviewerChirho(reviewerChirho);
+  assertExplicitReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
   const rationaleChirho = requiredArgValueChirho(argsChirho, "rationale-chirho");
   const dbPathChirho = parseArgValueChirho(argsChirho, "db-chirho") ?? PROGRESS_DB_PATH_CHIRHO;
   const backupPathChirho =

@@ -67,6 +67,7 @@ import {
   RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO,
   rawHebrewReviewTierForSpanChirho,
 } from "./raw-hebrew-review-tier-chirho.ts";
+import { isGenericReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
 import { sourceFingerprintForPathsChirho, spanSourceFingerprintForTargetsChirho, type SourceFingerprintChirho } from "./source-fingerprint-chirho.ts";
 import {
   scanNonNfcSpanTextFieldsChirho,
@@ -433,6 +434,7 @@ interface ExpertSuppliedVisionTextBackupSummaryChirho {
   backupRecordsMissingLiveSpanChirho: number;
   liveAppliedSpansMissingBackupChirho: number;
   staleBackupRecordCountChirho: number;
+  genericReviewerRecordCountChirho: number;
   shapeErrorsChirho: string[];
   driftSamplesChirho: string[];
 }
@@ -454,6 +456,7 @@ interface LatinSymbolPackManifestChirho {
 }
 
 interface HumanValidationDbRowChirho {
+  id_chirho: number;
   volume_chirho: number;
   page_chirho: number;
   line_index_chirho: number;
@@ -462,6 +465,9 @@ interface HumanValidationDbRowChirho {
   original_text_hash_chirho: string;
   verdict_chirho: string;
   certify_clean_chirho: number;
+  corrected_text_chirho: string | null;
+  issue_flags_chirho: string | null;
+  script_verdict_chirho: string | null;
   applied_at_chirho: string | null;
   reviewer_chirho: string;
   schema_version_chirho: number;
@@ -472,6 +478,7 @@ interface LatinSymbolReviewBackupReviewChirho {
   currentTextHashChirho?: string;
   verdictChirho?: string;
   acceptCleanChirho?: boolean;
+  reviewerChirho?: string;
   appliedAtChirho?: string | null;
   schemaVersionChirho?: number;
   updatedAtChirho?: string;
@@ -518,6 +525,7 @@ interface LatinSymbolReviewRowChirho {
   appliedAtChirho: string | null;
   schemaVersionChirho: number;
   updatedAtChirho: string;
+  reviewerChirho: string;
   rowSourceChirho: "db-chirho" | "backup-chirho";
 }
 
@@ -532,6 +540,23 @@ interface HumanValidationSummaryChirho {
   rawQueueAppliedRowsChirho: number;
   legacyCurrentRowsChirho: number;
   genericReviewerRowsChirho: number;
+  genericReviewerRowDetailsChirho: GenericHumanValidationReviewerRowChirho[];
+}
+
+interface GenericHumanValidationReviewerRowChirho {
+  idChirho: number;
+  locationChirho: string;
+  volumeChirho: number;
+  pageChirho: number;
+  lineIndexChirho: number;
+  segmentIndexChirho: number;
+  verdictChirho: string;
+  reviewerChirho: string;
+  originalTextChirho: string;
+  correctedTextChirho: string | null;
+  issueFlagsChirho: string[];
+  scriptVerdictChirho: string | null;
+  appliedAtChirho: string | null;
 }
 
 interface PassCHumanValidationBackupSummaryChirho {
@@ -546,6 +571,7 @@ interface LatinSymbolReviewSummaryChirho {
   validReviewedIssueRowsChirho: number;
   staleRowsChirho: number;
   appliedRowsChirho: number;
+  genericReviewerRowsChirho: number;
 }
 
 interface LatinSymbolReviewBackupSummaryChirho {
@@ -1797,6 +1823,9 @@ function expertSuppliedVisionTextRecordShapeErrorsChirho(
     errorsChirho.push(`${prefixChirho}.reviewerRoleChirho does not match scriptChirho`);
   }
   if (recordChirho.reviewerChirho!.trim().length === 0) errorsChirho.push(`${prefixChirho}.reviewerChirho is empty`);
+  if (isGenericReviewerAttributionChirho(recordChirho.reviewerChirho!)) {
+    errorsChirho.push(`${prefixChirho}.reviewerChirho must identify the explicit reviewer`);
+  }
   if (recordChirho.rationaleChirho!.trim().length === 0) errorsChirho.push(`${prefixChirho}.rationaleChirho is empty`);
   return errorsChirho;
 }
@@ -1886,8 +1915,12 @@ function summarizeExpertSuppliedVisionTextBackupChirho(paramsChirho: {
   let backupRecordsMissingLiveSpanChirho = 0;
   let liveAppliedSpansMissingBackupChirho = 0;
   let staleBackupRecordCountChirho = 0;
+  let genericReviewerRecordCountChirho = 0;
 
   for (const recordChirho of backupRecordsByIdChirho.values()) {
+    if (isGenericReviewerAttributionChirho(recordChirho.reviewerChirho)) {
+      genericReviewerRecordCountChirho += 1;
+    }
     const liveAppliedChirho = liveAppliedByIdChirho.get(recordChirho.itemIdChirho);
     const liveItemChirho = paramsChirho.liveItemsByIdChirho.get(recordChirho.itemIdChirho);
     const manifestItemChirho = paramsChirho.manifestItemsByIdChirho.get(recordChirho.itemIdChirho);
@@ -1970,6 +2003,7 @@ function summarizeExpertSuppliedVisionTextBackupChirho(paramsChirho: {
     backupRecordsMissingLiveSpanChirho,
     liveAppliedSpansMissingBackupChirho,
     staleBackupRecordCountChirho,
+    genericReviewerRecordCountChirho,
     shapeErrorsChirho: paramsChirho.shapeErrorsChirho,
     driftSamplesChirho: driftSamplesChirho.slice(0, 8),
   };
@@ -1982,6 +2016,36 @@ function rowKeyChirho(rowChirho: Pick<HumanValidationDbRowChirho, "volume_chirho
     rowChirho.line_index_chirho,
     rowChirho.segment_index_chirho,
   ].join(":");
+}
+
+function issueFlagsFromDbTextChirho(issueFlagsTextChirho: string | null): string[] {
+  if (issueFlagsTextChirho === null || issueFlagsTextChirho.trim().length === 0) return [];
+  try {
+    const parsedChirho = JSON.parse(issueFlagsTextChirho) as unknown;
+    return Array.isArray(parsedChirho) && parsedChirho.every((flagChirho) => typeof flagChirho === "string")
+      ? parsedChirho
+      : ["malformed-issue-flags-chirho"];
+  } catch {
+    return ["malformed-issue-flags-chirho"];
+  }
+}
+
+function genericReviewerRowDetailChirho(rowChirho: HumanValidationDbRowChirho): GenericHumanValidationReviewerRowChirho {
+  return {
+    idChirho: rowChirho.id_chirho,
+    locationChirho: rowKeyChirho(rowChirho),
+    volumeChirho: rowChirho.volume_chirho,
+    pageChirho: rowChirho.page_chirho,
+    lineIndexChirho: rowChirho.line_index_chirho,
+    segmentIndexChirho: rowChirho.segment_index_chirho,
+    verdictChirho: rowChirho.verdict_chirho,
+    reviewerChirho: rowChirho.reviewer_chirho.trim().length === 0 ? "<blank-reviewer-chirho>" : rowChirho.reviewer_chirho,
+    originalTextChirho: rowChirho.original_text_chirho,
+    correctedTextChirho: rowChirho.corrected_text_chirho,
+    issueFlagsChirho: issueFlagsFromDbTextChirho(rowChirho.issue_flags_chirho),
+    scriptVerdictChirho: rowChirho.script_verdict_chirho,
+    appliedAtChirho: rowChirho.applied_at_chirho,
+  };
 }
 
 function tableExistsChirho(dbChirho: Database, tableNameChirho: string): boolean {
@@ -2007,16 +2071,24 @@ function validationRowsChirho(dbPathChirho: string): HumanValidationDbRowChirho[
     const hasSchemaVersionChirho = columnsChirho.has("schema_version_chirho");
     const hasAppliedAtChirho = columnsChirho.has("applied_at_chirho");
     const hasCertifyCleanChirho = columnsChirho.has("certify_clean_chirho");
+    const hasCorrectedTextChirho = columnsChirho.has("corrected_text_chirho");
+    const hasIdChirho = columnsChirho.has("id_chirho");
+    const hasIssueFlagsChirho = columnsChirho.has("issue_flags_chirho");
     const hasOriginalTextChirho = columnsChirho.has("original_text_chirho");
     const hasOriginalTextHashChirho = columnsChirho.has("original_text_hash_chirho");
     const hasReviewerChirho = columnsChirho.has("reviewer_chirho");
+    const hasScriptVerdictChirho = columnsChirho.has("script_verdict_chirho");
     return dbChirho
       .query(`
-        SELECT volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
+        SELECT ${hasIdChirho ? "id_chirho" : "rowid AS id_chirho"},
+               volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
                ${hasOriginalTextChirho ? "original_text_chirho" : "'' AS original_text_chirho"},
                ${hasOriginalTextHashChirho ? "original_text_hash_chirho" : "'' AS original_text_hash_chirho"},
                verdict_chirho,
                ${hasCertifyCleanChirho ? "certify_clean_chirho" : "0 AS certify_clean_chirho"},
+               ${hasCorrectedTextChirho ? "corrected_text_chirho" : "NULL AS corrected_text_chirho"},
+               ${hasIssueFlagsChirho ? "issue_flags_chirho" : "NULL AS issue_flags_chirho"},
+               ${hasScriptVerdictChirho ? "script_verdict_chirho" : "NULL AS script_verdict_chirho"},
                ${hasAppliedAtChirho ? "applied_at_chirho" : "NULL AS applied_at_chirho"},
                ${hasReviewerChirho ? "reviewer_chirho" : "'unknown-reviewer-chirho' AS reviewer_chirho"},
                ${hasSchemaVersionChirho ? "schema_version_chirho" : "1 AS schema_version_chirho"}
@@ -2039,10 +2111,12 @@ function latinSymbolReviewRowsChirho(dbPathChirho: string): LatinSymbolReviewRow
     const hasAppliedAtChirho = columnsChirho.has("applied_at_chirho");
     const hasSchemaVersionChirho = columnsChirho.has("schema_version_chirho");
     const hasAcceptCleanChirho = columnsChirho.has("accept_clean_chirho");
+    const hasReviewerChirho = columnsChirho.has("reviewer_chirho");
     const rowsChirho = dbChirho
       .query(`
         SELECT item_id_chirho, current_text_hash_chirho, verdict_chirho, updated_at_chirho,
                ${hasAcceptCleanChirho ? "accept_clean_chirho" : "0 AS accept_clean_chirho"},
+               ${hasReviewerChirho ? "reviewer_chirho" : "'unknown-reviewer-chirho' AS reviewer_chirho"},
                ${hasAppliedAtChirho ? "applied_at_chirho" : "NULL AS applied_at_chirho"},
                ${hasSchemaVersionChirho ? "schema_version_chirho" : "1 AS schema_version_chirho"}
           FROM latin_symbol_vision_reviews_chirho
@@ -2054,6 +2128,7 @@ function latinSymbolReviewRowsChirho(dbPathChirho: string): LatinSymbolReviewRow
         current_text_hash_chirho: string;
         verdict_chirho: string;
         accept_clean_chirho: number;
+        reviewer_chirho: string;
         updated_at_chirho: string;
         applied_at_chirho: string | null;
         schema_version_chirho: number;
@@ -2066,6 +2141,7 @@ function latinSymbolReviewRowsChirho(dbPathChirho: string): LatinSymbolReviewRow
       appliedAtChirho: rowChirho.applied_at_chirho,
       schemaVersionChirho: rowChirho.schema_version_chirho,
       updatedAtChirho: rowChirho.updated_at_chirho,
+      reviewerChirho: rowChirho.reviewer_chirho,
       rowSourceChirho: "db-chirho",
     }));
   } finally {
@@ -2085,6 +2161,7 @@ function latinSymbolReviewBackupRowsChirho(
         typeof rowChirho.currentTextHashChirho === "string" &&
         typeof rowChirho.verdictChirho === "string" &&
         typeof rowChirho.acceptCleanChirho === "boolean" &&
+        typeof rowChirho.reviewerChirho === "string" &&
         (rowChirho.verdictChirho !== "accepted-clean-chirho" || rowChirho.acceptCleanChirho === true) &&
         typeof rowChirho.updatedAtChirho === "string"
     )
@@ -2096,6 +2173,7 @@ function latinSymbolReviewBackupRowsChirho(
       appliedAtChirho: rowChirho.appliedAtChirho ?? null,
       schemaVersionChirho: rowChirho.schemaVersionChirho ?? 1,
       updatedAtChirho: rowChirho.updatedAtChirho!,
+      reviewerChirho: rowChirho.reviewerChirho!,
       rowSourceChirho: "backup-chirho",
     }));
 }
@@ -2106,6 +2184,7 @@ function reviewDurabilityKeyChirho(rowChirho: LatinSymbolReviewRowChirho): strin
     rowChirho.currentTextHashChirho,
     rowChirho.verdictChirho,
     rowChirho.acceptCleanChirho ? "accept-clean-chirho" : "no-clean-ack-chirho",
+    rowChirho.reviewerChirho,
     rowChirho.updatedAtChirho,
   ].join("\u0000");
 }
@@ -2140,9 +2219,11 @@ function summarizeHumanValidationsChirho(
   const rawKeysChirho = new Set(rawSpansChirho.map(spanKeyChirho));
   const schema2RowsChirho = rowsChirho.filter((rowChirho) => rowChirho.schema_version_chirho >= 2);
   const rawRowsChirho = schema2RowsChirho.filter((rowChirho) => rawKeysChirho.has(rowKeyChirho(rowChirho)));
-  const genericReviewerRowsChirho = schema2RowsChirho.filter(
-    (rowChirho) => rowChirho.reviewer_chirho.trim().length === 0 || rowChirho.reviewer_chirho === "human-chirho"
-  ).length;
+  const genericReviewerRowsChirho = schema2RowsChirho
+    .filter((rowChirho) => isGenericReviewerAttributionChirho(rowChirho.reviewer_chirho));
+  const genericReviewerRowDetailsChirho = genericReviewerRowsChirho
+    .map(genericReviewerRowDetailChirho)
+    .sort((aChirho, bChirho) => aChirho.idChirho - bChirho.idChirho);
   return {
     currentSchema2RowsChirho: schema2RowsChirho.length,
     reviewedCleanRowsChirho: schema2RowsChirho.filter((rowChirho) => rowChirho.verdict_chirho === "reviewed-clean-chirho").length,
@@ -2153,7 +2234,8 @@ function summarizeHumanValidationsChirho(
     rawQueueIssueRowsChirho: rawRowsChirho.filter((rowChirho) => rowChirho.verdict_chirho === "reviewed-issues-chirho").length,
     rawQueueAppliedRowsChirho: rawRowsChirho.filter((rowChirho) => rowChirho.applied_at_chirho !== null).length,
     legacyCurrentRowsChirho: rowsChirho.filter((rowChirho) => rowChirho.schema_version_chirho < 2).length,
-    genericReviewerRowsChirho,
+    genericReviewerRowsChirho: genericReviewerRowsChirho.length,
+    genericReviewerRowDetailsChirho,
   };
 }
 
@@ -2164,6 +2246,7 @@ function rawPendingSpansChirho(
   const rawSpansByKeyChirho = new Map(rawSpansChirho.map((spanChirho) => [spanKeyChirho(spanChirho), spanChirho]));
   const rowCountsAsSavedChirho = (rowChirho: HumanValidationDbRowChirho): boolean => {
     if (rowChirho.schema_version_chirho < 2) return false;
+    if (isGenericReviewerAttributionChirho(rowChirho.reviewer_chirho)) return false;
     const spanChirho = rawSpansByKeyChirho.get(rowKeyChirho(rowChirho));
     if (spanChirho === undefined) return false;
     if (rowChirho.original_text_chirho !== spanChirho.textChirho) return false;
@@ -2237,7 +2320,12 @@ function summarizeLatinSymbolReviewsChirho(
   let validReviewedIssueRowsChirho = 0;
   let staleRowsChirho = 0;
   let appliedRowsChirho = 0;
+  let genericReviewerRowsChirho = 0;
   for (const rowChirho of schemaRowsChirho) {
+    const genericReviewerChirho = isGenericReviewerAttributionChirho(rowChirho.reviewerChirho);
+    if (genericReviewerChirho) {
+      genericReviewerRowsChirho += 1;
+    }
     const currentHashChirho = hashByIdChirho.get(rowChirho.itemIdChirho);
     const currentAndFreshChirho =
       currentHashChirho !== undefined && currentHashChirho === rowChirho.currentTextHashChirho;
@@ -2245,6 +2333,7 @@ function summarizeLatinSymbolReviewsChirho(
       staleRowsChirho += 1;
       continue;
     }
+    if (genericReviewerChirho) continue;
     if (rowChirho.verdictChirho === "accepted-clean-chirho" && rowChirho.acceptCleanChirho) {
       validReviewedCleanRowsChirho += 1;
     }
@@ -2257,6 +2346,7 @@ function summarizeLatinSymbolReviewsChirho(
     validReviewedIssueRowsChirho,
     staleRowsChirho,
     appliedRowsChirho,
+    genericReviewerRowsChirho,
   };
 }
 
@@ -2270,6 +2360,7 @@ function validLatinSymbolReviewIdsChirho(
   );
   const idsChirho = new Set<string>();
   for (const rowChirho of rowsChirho) {
+    if (isGenericReviewerAttributionChirho(rowChirho.reviewerChirho)) continue;
     if (rowChirho.verdictChirho !== verdictChirho) continue;
     if (rowChirho.verdictChirho === "accepted-clean-chirho" && !rowChirho.acceptCleanChirho) continue;
     const currentHashChirho = hashByIdChirho.get(rowChirho.itemIdChirho);
@@ -2427,7 +2518,15 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const latinSymbolReviewBackupShapeOkChirho =
     !latinSymbolReviewBackupExistsChirho ||
     (latinSymbolReviewBackupFileChirho.schemaVersionChirho === 1 &&
-      Array.isArray(latinSymbolReviewBackupFileChirho.reviewsChirho));
+      Array.isArray(latinSymbolReviewBackupFileChirho.reviewsChirho) &&
+      latinSymbolReviewBackupFileChirho.reviewsChirho.every((rowChirho) =>
+        typeof rowChirho.itemIdChirho === "string" &&
+        typeof rowChirho.currentTextHashChirho === "string" &&
+        typeof rowChirho.verdictChirho === "string" &&
+        typeof rowChirho.acceptCleanChirho === "boolean" &&
+        typeof rowChirho.reviewerChirho === "string" &&
+        typeof rowChirho.updatedAtChirho === "string"
+      ));
   const rawSpansChirho = rawHebrewReportShapeOkChirho ? rawReportChirho.spansChirho ?? [] : [];
   const rawHebrewPackItemsChirho = rawHebrewPackManifestShapeOkChirho
     ? rawHebrewPackManifestChirho.itemsChirho ?? []
@@ -3238,6 +3337,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   if (latinSymbolReviewSummaryChirho.staleRowsChirho !== 0) {
     remainingWorkChirho.push(`${latinSymbolReviewSummaryChirho.staleRowsChirho} Latin/symbol review row(s) are stale against current live span/D1 text`);
   }
+  if (latinSymbolReviewSummaryChirho.genericReviewerRowsChirho !== 0) {
+    remainingWorkChirho.push(
+      `${latinSymbolReviewSummaryChirho.genericReviewerRowsChirho} Latin/symbol review row(s) use blank/generic reviewer attribution; re-review explicitly before certification`
+    );
+  }
   if (latinSymbolLocalRowsMissingFromBackupChirho !== 0) {
     remainingWorkChirho.push(
       `${latinSymbolLocalRowsMissingFromBackupChirho} local Latin/symbol review row(s) need export-backup before certification can complete on a fresh checkout`
@@ -3591,6 +3695,33 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
             `  - Line: ${markdownInlineCodeChirho(oneLineSnippetChirho(sampleChirho.lineTextChirho, 130))}`,
           ];
         });
+  const genericReviewerDetailLinesChirho =
+    statusChirho.humanValidationDbChirho.genericReviewerRowDetailsChirho.length === 0
+      ? ["- Generic reviewer row details: none"]
+      : [
+          "- Generic reviewer row details:",
+          ...statusChirho.humanValidationDbChirho.genericReviewerRowDetailsChirho.flatMap((rowChirho) => {
+            const flagsChirho = rowChirho.issueFlagsChirho.length === 0 ? "none" : rowChirho.issueFlagsChirho.join(", ");
+            const correctionChirho = rowChirho.correctedTextChirho === null
+              ? "none"
+              : markdownInlineCodeChirho(rowChirho.correctedTextChirho);
+            const scriptVerdictChirho = rowChirho.scriptVerdictChirho ?? "none";
+            const appliedChirho = rowChirho.appliedAtChirho ?? "not-applied-chirho";
+            const commandChirho = [
+              "bun run reattribute-pass-c-human-validations-chirho --",
+              `--validation-id-chirho=${rowChirho.idChirho}`,
+              "--reviewer-chirho=<explicit-reviewer-id-chirho>",
+              "--rationale-chirho='<why this existing row is attributable to that reviewer>'",
+              "--apply-chirho",
+            ].join(" ");
+            return [
+              `  - id ${rowChirho.idChirho} (${rowChirho.locationChirho}; current reviewer ${rowChirho.reviewerChirho})`,
+              `    - Verdict: ${rowChirho.verdictChirho}; applied: ${appliedChirho}; script verdict: ${scriptVerdictChirho}; issue flags: ${flagsChirho}`,
+              `    - Original text: ${markdownInlineCodeChirho(rowChirho.originalTextChirho)}; corrected text: ${correctionChirho}`,
+              `    - Reattribute command: \`${commandChirho}\``,
+            ];
+          }),
+        ];
   return [
     "<!-- For God so loved the world that he gave his only begotten Son,",
     "that whoever believes in him should not perish but have eternal life. John 3:16 -->",
@@ -3763,6 +3894,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Legacy current rows ignored by apply/certification: ${statusChirho.humanValidationDbChirho.legacyCurrentRowsChirho}`,
     `- Generic reviewer rows: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho}`,
     "- Generic reviewer reattribution path: `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho=<id> --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why this existing row is attributable to that reviewer>' --apply-chirho`",
+    "- Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit reviewer.",
+    ...genericReviewerDetailLinesChirho,
     "",
     "## Pass-C Human Validation Backup",
     "",
@@ -3811,6 +3944,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Backup records missing live span: ${statusChirho.expertSuppliedVisionTextBackupChirho.backupRecordsMissingLiveSpanChirho}`,
     `- Live supplied-text spans missing backup: ${statusChirho.expertSuppliedVisionTextBackupChirho.liveAppliedSpansMissingBackupChirho}`,
     `- Stale backup records: ${statusChirho.expertSuppliedVisionTextBackupChirho.staleBackupRecordCountChirho}`,
+    `- Generic reviewer records: ${statusChirho.expertSuppliedVisionTextBackupChirho.genericReviewerRecordCountChirho}`,
     `- Shape errors: ${statusChirho.expertSuppliedVisionTextBackupChirho.shapeErrorsChirho.length === 0 ? "none" : statusChirho.expertSuppliedVisionTextBackupChirho.shapeErrorsChirho.join("; ")}`,
     `- Drift samples: ${statusChirho.expertSuppliedVisionTextBackupChirho.driftSamplesChirho.length === 0 ? "none" : statusChirho.expertSuppliedVisionTextBackupChirho.driftSamplesChirho.join("; ")}`,
     "",
@@ -3884,6 +4018,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Valid reviewed-issues rows: ${statusChirho.latinSymbolReviewDbChirho.validReviewedIssueRowsChirho}`,
     `- Stale rows: ${statusChirho.latinSymbolReviewDbChirho.staleRowsChirho}`,
     `- Applied rows: ${statusChirho.latinSymbolReviewDbChirho.appliedRowsChirho}`,
+    `- Generic reviewer rows: ${statusChirho.latinSymbolReviewDbChirho.genericReviewerRowsChirho}`,
     "",
     "## Latin/Symbol Acceptance Policy",
     "",

@@ -41,6 +41,7 @@ import {
   type LatinSymbolPacketItemChirho,
   type LatinSymbolPacketManifestChirho,
 } from "./latin-symbol-vision-review-store-chirho.ts";
+import { explicitReviewerAttributionErrorChirho } from "./reviewer-attribution-chirho.ts";
 
 const MODULE_CHIRHO = "latin-symbol-vision-review-server-chirho";
 const DEFAULT_PORT_CHIRHO = 8770;
@@ -247,6 +248,14 @@ function htmlChirho(): string {
     function currentReviewerChirho() {
       const inputChirho = document.getElementById("reviewer-chirho");
       return (inputChirho ? inputChirho.value : reviewerChirho).trim();
+    }
+    function reviewerAttributionErrorChirho(valueChirho) {
+      const trimmedChirho = String(valueChirho || "").trim();
+      if (trimmedChirho.length === 0) return "Reviewer is required.";
+      if (trimmedChirho === "human-chirho" || trimmedChirho === "unknown-reviewer-chirho") {
+        return "Reviewer must identify the explicit reviewer, not " + trimmedChirho + ".";
+      }
+      return null;
     }
     function currentPositionTextChirho(activeCountChirho) {
       return activeCountChirho === 0 ? "item 0 of 0" : "item " + (indexChirho + 1) + " of " + activeCountChirho;
@@ -496,8 +505,9 @@ function htmlChirho(): string {
       const flagsChirho = currentIssueFlagsChirho();
       const notesChirho = document.getElementById("notes-chirho").value;
       const reviewerValueChirho = currentReviewerChirho();
-      if (reviewerValueChirho.length === 0) {
-        setStatusChirho("Reviewer is required.");
+      const reviewerErrorChirho = reviewerAttributionErrorChirho(reviewerValueChirho);
+      if (reviewerErrorChirho !== null) {
+        setStatusChirho(reviewerErrorChirho);
         return;
       }
       if (flagsChirho.length === 0 && !cleanAcceptAcknowledgedChirho()) {
@@ -646,6 +656,10 @@ Bun.serve({
           : reviewerChirho;
         if (effectiveReviewerChirho.length === 0) {
           return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
+        }
+        const reviewerErrorChirho = explicitReviewerAttributionErrorChirho(effectiveReviewerChirho);
+        if (reviewerErrorChirho !== null) {
+          return jsonResponseChirho({ okChirho: false, errorChirho: reviewerErrorChirho }, 400);
         }
         const reviewChirho = saveLatinSymbolReviewChirho({
           dbChirho,

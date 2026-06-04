@@ -13,6 +13,7 @@ import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { isGenericReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 import {
   VISION_TIER_EXPERT_REVIEWER_LABELS_CHIRHO,
@@ -164,6 +165,8 @@ function validateConfirmationShapeChirho(fileChirho: VisionTierExpertConfirmatio
     if (policyChirho.decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO) {
       if (!nonEmptyStringChirho(policyChirho.reviewerChirho)) {
         errorsChirho.push(`${policyIdChirho}: confirmed policy requires reviewerChirho`);
+      } else if (isGenericReviewerAttributionChirho(policyChirho.reviewerChirho)) {
+        errorsChirho.push(`${policyIdChirho}: confirmed policy reviewerChirho must identify the explicit reviewer`);
       }
       if (!nonEmptyStringChirho(policyChirho.reviewerRoleChirho)) {
         errorsChirho.push(`${policyIdChirho}: confirmed policy requires reviewerRoleChirho`);
@@ -182,6 +185,8 @@ function validateConfirmationShapeChirho(fileChirho: VisionTierExpertConfirmatio
     if (policyChirho.decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_REVIEWED_ISSUES_CHIRHO) {
       if (!nonEmptyStringChirho(policyChirho.reviewerChirho)) {
         errorsChirho.push(`${policyIdChirho}: reviewed-issues policy requires reviewerChirho`);
+      } else if (isGenericReviewerAttributionChirho(policyChirho.reviewerChirho)) {
+        errorsChirho.push(`${policyIdChirho}: reviewed-issues policy reviewerChirho must identify the explicit reviewer`);
       }
       if (!nonEmptyStringChirho(policyChirho.reviewerRoleChirho)) {
         errorsChirho.push(`${policyIdChirho}: reviewed-issues policy requires reviewerRoleChirho`);

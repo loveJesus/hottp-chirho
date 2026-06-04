@@ -17,6 +17,7 @@ import {
   isNontrivialSymbolTextChirho,
   type LatinSymbolVisionLiveItemChirho,
 } from "./latin-symbol-vision-live-items-chirho.ts";
+import { isGenericReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
 
 export const LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -84,6 +85,7 @@ function policyClaimsSafeSymbolsOnlyChirho(policyChirho: LatinSymbolAcceptancePo
 
 function policyReviewerHasBroadAcceptancePrivilegeChirho(policyChirho: LatinSymbolAcceptancePolicyChirho): boolean {
   const reviewerChirho = policyChirho.reviewerChirho ?? "";
+  if (isGenericReviewerAttributionChirho(reviewerChirho)) return false;
   return /(^hallelujah([_-]|$)|(^|[_-])human([_-]|$))/i.test(reviewerChirho);
 }
 
@@ -119,6 +121,8 @@ function validatePolicyShapeChirho(fileChirho: LatinSymbolAcceptancePolicyFileCh
     if (policyChirho.decisionChirho === LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO) {
       if (!nonEmptyStringChirho(policyChirho.reviewerChirho)) {
         errorsChirho.push(`${policyIdChirho}: accepted policy requires reviewerChirho`);
+      } else if (isGenericReviewerAttributionChirho(policyChirho.reviewerChirho)) {
+        errorsChirho.push(`${policyIdChirho}: accepted policy reviewerChirho must identify the explicit reviewer`);
       }
       if (!nonEmptyStringChirho(policyChirho.acceptedAtChirho)) {
         errorsChirho.push(`${policyIdChirho}: accepted policy requires acceptedAtChirho`);

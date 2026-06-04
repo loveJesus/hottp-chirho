@@ -17,6 +17,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { assertExplicitReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
 import { normalizeSpanLineTextFieldsChirho } from "./span-nfc-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 import {
@@ -248,11 +249,13 @@ function parseOptionsChirho(): ApplyOptionsChirho {
   const argsChirho = process.argv.slice(2);
   const suppliedTextChirho = normalizeTextForStorageChirho(nonEmptyArgChirho(argsChirho, "supplied-text-chirho"));
   if (suppliedTextChirho.trim().length === 0) throw new Error("--supplied-text-chirho must not normalize to empty text");
+  const reviewerChirho = nonEmptyArgChirho(argsChirho, "reviewer-chirho");
+  assertExplicitReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
   return {
     applyChirho: argsChirho.includes("--apply"),
     itemIdChirho: nonEmptyArgChirho(argsChirho, "id-chirho"),
     suppliedTextChirho,
-    reviewerChirho: nonEmptyArgChirho(argsChirho, "reviewer-chirho"),
+    reviewerChirho,
     reviewerRoleChirho: nonEmptyArgChirho(argsChirho, "reviewer-role-chirho"),
     rationaleChirho: nonEmptyArgChirho(argsChirho, "rationale-chirho"),
     backupPathChirho: parseArgValueChirho(argsChirho, "backup-chirho") ?? DEFAULT_BACKUP_PATH_CHIRHO,

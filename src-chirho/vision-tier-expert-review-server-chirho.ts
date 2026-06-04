@@ -12,6 +12,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, join, resolve } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { explicitReviewerAttributionErrorChirho } from "./reviewer-attribution-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 import {
   EXPERT_MARKDOWN_PATH_PAIRS_CHIRHO,
@@ -664,6 +665,14 @@ function htmlChirho(): string {
     function currentItemChirho() { return activeItemsChirho()[indexChirho]; }
     function imageSrcChirho(pathChirho) { return "/asset-chirho?path=" + encodeURIComponent(pathChirho); }
     function fieldValueChirho(idChirho) { return document.getElementById(idChirho)?.value ?? ""; }
+    function reviewerAttributionErrorChirho(valueChirho) {
+      const trimmedChirho = String(valueChirho || "").trim();
+      if (trimmedChirho.length === 0) return "Reviewer is required.";
+      if (trimmedChirho === "human-chirho" || trimmedChirho === "unknown-reviewer-chirho") {
+        return "Reviewer must identify the explicit reviewer, not " + trimmedChirho + ".";
+      }
+      return null;
+    }
     function reviewerRoleValueChirho(itemChirho) {
       const savedRoleChirho = localStorage.getItem("expertReviewerRoleChirho") || "";
       return savedRoleChirho === itemChirho.reviewerChirho ? savedRoleChirho : itemChirho.reviewerChirho;
@@ -812,6 +821,11 @@ function htmlChirho(): string {
         setStatusChirho("Check the exact-certification box before confirming this item.");
         return;
       }
+      const reviewerErrorChirho = reviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho"));
+      if (reviewerErrorChirho !== null) {
+        setStatusChirho(reviewerErrorChirho);
+        return;
+      }
       saveReviewerFieldsChirho();
       setStatusChirho("Saving...");
       const responseChirho = await fetch("/api-chirho/confirm-chirho", {
@@ -837,6 +851,11 @@ function htmlChirho(): string {
     }
     async function reportIssueCurrentChirho(itemChirho) {
       const flagsChirho = [...document.querySelectorAll(".issue-option-chirho input:checked")].map((nodeChirho) => nodeChirho.value);
+      const reviewerErrorChirho = reviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho"));
+      if (reviewerErrorChirho !== null) {
+        setStatusChirho(reviewerErrorChirho);
+        return;
+      }
       saveReviewerFieldsChirho();
       setStatusChirho("Saving issue...");
       const responseChirho = await fetch("/api-chirho/issue-chirho", {
@@ -940,6 +959,8 @@ Bun.serve({
           return jsonResponseChirho({ okChirho: false, errorChirho: "certifyExactChirho acknowledgement is required" }, 400);
         }
         if (reviewerChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
+        const reviewerErrorChirho = explicitReviewerAttributionErrorChirho(reviewerChirho);
+        if (reviewerErrorChirho !== null) return jsonResponseChirho({ okChirho: false, errorChirho: reviewerErrorChirho }, 400);
         if (reviewerRoleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerRoleChirho is required" }, 400);
         if (rationaleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "rationaleChirho is required" }, 400);
         const { manifestChirho, liveItemsChirho, liveByIdChirho } = loadCurrentStateChirho(policyPathChirho);
@@ -970,6 +991,8 @@ Bun.serve({
         const issueFlagsChirho = parseIssueFlagsChirho(bodyChirho.issueFlagsChirho);
         if (itemIdChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "missing idChirho" }, 400);
         if (reviewerChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
+        const reviewerErrorChirho = explicitReviewerAttributionErrorChirho(reviewerChirho);
+        if (reviewerErrorChirho !== null) return jsonResponseChirho({ okChirho: false, errorChirho: reviewerErrorChirho }, 400);
         if (reviewerRoleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerRoleChirho is required" }, 400);
         if (rationaleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "rationaleChirho is required" }, 400);
         if (issueFlagsChirho.length === 0) return jsonResponseChirho({ okChirho: false, errorChirho: "at least one issue flag is required" }, 400);
