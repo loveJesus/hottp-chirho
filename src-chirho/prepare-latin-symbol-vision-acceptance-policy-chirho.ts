@@ -17,6 +17,11 @@ import { existsSync, readFileSync } from "fs";
 
 import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import {
+  assertExpectedItemIdsChirho,
+  expectedItemGuardArgsChirho,
+  parseExpectedItemIdsChirho,
+} from "./expected-item-guard-chirho.ts";
+import {
   isMixedSymbolTextChirho,
   isNontrivialSymbolTextChirho,
   latinSymbolVisionLiveItemsChirho,
@@ -53,36 +58,6 @@ function parseExpectedItemCountChirho(argsChirho: string[]): number | null {
     throw new Error(`--expected-item-count-chirho must be a non-negative integer; got ${valueChirho}`);
   }
   return countChirho;
-}
-
-function parseExpectedItemIdsChirho(argsChirho: string[]): Set<string> {
-  const expectedItemIdsChirho = new Set<string>();
-  const valuesChirho = [
-    ...splitCsvChirho(parseArgValueChirho(argsChirho, "expected-item-ids-chirho")),
-    ...argsChirho
-      .filter((argChirho) => argChirho.startsWith("--expected-item-id-chirho="))
-      .flatMap((argChirho) => splitCsvChirho(argChirho.slice("--expected-item-id-chirho=".length))),
-  ];
-  for (const itemIdChirho of valuesChirho) {
-    if (expectedItemIdsChirho.has(itemIdChirho)) {
-      throw new Error(`duplicate expected item id: ${itemIdChirho}`);
-    }
-    expectedItemIdsChirho.add(itemIdChirho);
-  }
-  return expectedItemIdsChirho;
-}
-
-function assertExpectedItemIdsChirho(selectedItemIdsChirho: string[], expectedItemIdsChirho: Set<string>): void {
-  if (expectedItemIdsChirho.size !== selectedItemIdsChirho.length) {
-    throw new Error(
-      "--expected-item-id-chirho or --expected-item-ids-chirho must name every selected item exactly once"
-    );
-  }
-  const selectedKeyChirho = [...selectedItemIdsChirho].sort().join(",");
-  const expectedKeyChirho = [...expectedItemIdsChirho].sort().join(",");
-  if (selectedKeyChirho !== expectedKeyChirho) {
-    throw new Error(`expected item id set [${expectedKeyChirho}] does not match selected item ids [${selectedKeyChirho}]`);
-  }
 }
 
 function slugChirho(valueChirho: string): string {
@@ -238,6 +213,9 @@ function mainChirho(): void {
     }
     console.error(
       `[${MODULE_CHIRHO}] previewed ${selectedItemsChirho.length} item(s); add --write-chirho to merge into ${outPathChirho}`
+    );
+    console.error(
+      `[${MODULE_CHIRHO}] write guard args: ${expectedItemGuardArgsChirho(selectedItemsChirho.map((itemChirho) => itemChirho.idChirho)).join(" ")}`
     );
     return;
   }
