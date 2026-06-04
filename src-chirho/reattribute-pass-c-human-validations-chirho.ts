@@ -65,15 +65,16 @@ interface ReattributionResultChirho {
 
 function usageChirho(): string {
   return [
-    `Usage: bun run ${MODULE_CHIRHO} -- --validation-id-chirho=<id> [--validation-id-chirho=<id> ...] --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--expected-live-text-chirho=<current-live-text>] [--apply-chirho]`,
+    `Usage: bun run ${MODULE_CHIRHO} -- --validation-id-chirho=<id> [--validation-id-chirho=<id> ...] --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--expected-live-text-chirho=<current-live-text> | --expected-live-text-hash-chirho=<id>:<sha256> ...] [--apply-chirho]`,
     `       bun run ${MODULE_CHIRHO} -- --all-generic-chirho --expected-generic-row-count-chirho=<count> --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--apply-chirho]`,
     "",
     "Dry-run is the default. Applying writes append-only superseding rows and refreshes the Pass-C human validation backup.",
     "Only current schema-v2 rows with blank/generic reviewer attribution can be reattributed.",
     "--expected-generic-row-count-chirho is required for --all-generic-chirho with --apply-chirho; it fails closed if the generic row count changed since the status report was read.",
     "--expected-live-text-hash-chirho is required for every selected row when applying --all-generic-chirho.",
-    "--expected-live-text-chirho is optional and only supported for a single --validation-id-chirho row; it fails closed if the live span text has drifted since the status report was read.",
-    "--expected-live-text-hash-chirho=<id>:<sha256> may be repeated for exact batch reattribution; when present, every selected row must have a matching live text hash.",
+    "Any --apply-chirho write requires a live-text drift guard: --expected-live-text-chirho for a single exact-ID row, or --expected-live-text-hash-chirho=<id>:<sha256> for every selected row.",
+    "--expected-live-text-chirho is only supported for a single --validation-id-chirho row; it fails closed if the live span text has drifted since the status report was read.",
+    "--expected-live-text-hash-chirho=<id>:<sha256> may be repeated; when present, every selected row must have a matching live text hash.",
   ].join("\n");
 }
 
@@ -341,6 +342,20 @@ function assertExpectedGenericRowCountChirho(
   }
 }
 
+function assertApplyHasLiveTextGuardChirho(
+  rowsChirho: PassCHumanValidationRowChirho[],
+  applyChirho: boolean,
+  expectedLiveTextChirho: string | undefined,
+  expectedHashesChirho: Map<number, string>
+): void {
+  if (!applyChirho || rowsChirho.length === 0) return;
+  if (expectedHashesChirho.size > 0) return;
+  if (rowsChirho.length === 1 && expectedLiveTextChirho !== undefined) return;
+  throw new Error(
+    "--apply-chirho requires --expected-live-text-chirho for one selected row or --expected-live-text-hash-chirho for every selected row"
+  );
+}
+
 function reattributionNoteChirho(
   existingNotesChirho: string | null,
   previousReviewerChirho: string,
@@ -451,6 +466,7 @@ function mainChirho(): void {
       : loadRowsByIdChirho(dbChirho, validationIdsChirho);
     assertRowsEligibleChirho(rowsChirho, validationIdsChirho);
     assertExpectedGenericRowCountChirho(rowsChirho, allGenericChirho, applyChirho, expectedGenericRowCountChirho);
+    assertApplyHasLiveTextGuardChirho(rowsChirho, applyChirho, expectedLiveTextChirho, expectedLiveTextHashesChirho);
     assertExpectedLiveTextChirho(rowsChirho, expectedLiveTextChirho, allGenericChirho);
     assertExpectedLiveTextHashesChirho(rowsChirho, expectedLiveTextHashesChirho, allGenericChirho, applyChirho);
     if (rowsChirho.length === 0) {
