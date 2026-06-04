@@ -3183,7 +3183,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     remainingWorkChirho.push("Latin/symbol vision review packet is malformed; regenerate make-latin-symbol-vision-pack-chirho");
   }
   if (latinSymbolReviewBackupExistsChirho && !latinSymbolReviewBackupShapeOkChirho) {
-    remainingWorkChirho.push("Latin/symbol review backup is malformed; regenerate record-latin-symbol-vision-review-chirho --export-backup");
+    remainingWorkChirho.push("Latin/symbol review backup is malformed; regenerate record-latin-symbol-vision-review-chirho -- --export-backup");
   }
   if (latinSymbolAcceptancePolicyExistsChirho && !latinSymbolPolicySummaryChirho.policyFileShapeOkChirho) {
     remainingWorkChirho.push("Latin/symbol acceptance policy is malformed; fix or regenerate prepare-latin-symbol-vision-acceptance-policy-chirho");

@@ -103,8 +103,13 @@ bun run apply-pass-c-human-validations-chirho
 Live writeback, only after review:
 
 ```bash
-bun run apply-pass-c-human-validations-chirho --apply
+bun run apply-pass-c-human-validations-chirho -- --apply --id=<validation-id-chirho> --expected-row-count-chirho=1 --expected-validation-id-chirho=<validation-id-chirho>
 ```
+
+Bulk writeback is only appropriate when every selected row has just been
+reviewed as intended. It must include `--expected-row-count-chirho=<count>` and
+one `--expected-validation-id-chirho=<id>` flag for each selected row, so a
+same-filter command cannot silently apply a different set of rows.
 
 Writeback stamps `reviewed-clean-chirho` spans as `provenanceChirho=human-chirho`
 and `humanReviewStatusChirho=reviewed-clean-chirho`. The exporter suppresses

@@ -5,8 +5,8 @@
  * Record append-only proofread decisions for Latin/symbol vision packet items.
  *
  * Examples:
- *   bun run record-latin-symbol-vision-review-chirho --id=v1-p0148-l036-w6 --verdict=accepted-clean --reviewer=hallelujah-chirho --accept-clean-chirho
- *   bun run record-latin-symbol-vision-review-chirho --id=v3-p0148-l005-s0 --verdict=reviewed-issues --issue-flags=punctuation-chirho --notes="check spacing"
+ *   bun run record-latin-symbol-vision-review-chirho -- --id=v1-p0148-l036-w6 --verdict=accepted-clean --reviewer=hallelujah-chirho --expected-text-hash-chirho=<sha256-current-text-chirho> --accept-clean-chirho
+ *   bun run record-latin-symbol-vision-review-chirho -- --id=v3-p0148-l005-s0 --verdict=reviewed-issues --reviewer=hallelujah-chirho --expected-text-hash-chirho=<sha256-current-text-chirho> --issue-flags=punctuation-chirho --notes="check spacing"
  */
 
 import { Database } from "bun:sqlite";
