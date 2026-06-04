@@ -1373,9 +1373,35 @@ function pageHtmlChirho(): string {
     function cleanReviewAcknowledgedChirho() {
       return document.getElementById("certify-clean-chirho")?.checked === true;
     }
+    function currentScriptVerdictChirho() {
+      return document.querySelector("input[name='script-verdict-chirho']:checked")?.value ?? "";
+    }
+    function rawReviewActionMessagesChirho(itemChirho) {
+      const issueFlagsChirho = pendingReviewIssueFlagsChirho();
+      const hasIssueFlagChirho = issueFlagsChirho.length > 0;
+      const messagesChirho = [];
+      if (pendingReviewWouldBeCleanChirho(itemChirho) && !cleanReviewAcknowledgedChirho()) {
+        messagesChirho.push("clean review needs the clean-certification checkbox");
+      }
+      if (pendingReviewHasEditedTextChirho(itemChirho) && !hasIssueFlagChirho) {
+        messagesChirho.push("text changes need an issue box");
+      }
+      if (itemChirho.hasLiveSpanTextDriftChirho && !hasIssueFlagChirho) {
+        messagesChirho.push("live text drift needs an issue box");
+      }
+      if (
+        queueModeChirho === "unknown-script-chirho" &&
+        currentScriptVerdictChirho().length === 0 &&
+        !hasIssueFlagChirho &&
+        !pendingReviewHasEditedTextChirho(itemChirho)
+      ) {
+        messagesChirho.push("unknown-script review needs a script verdict or issue box");
+      }
+      return messagesChirho;
+    }
     function cleanReviewCanSubmitChirho(itemChirho) {
       return reviewerAttributionErrorChirho(currentReviewerChirho()) === null &&
-        (!pendingReviewWouldBeCleanChirho(itemChirho) || cleanReviewAcknowledgedChirho());
+        rawReviewActionMessagesChirho(itemChirho).length === 0;
     }
     function cleanReviewActionTextChirho(itemChirho) {
       return pendingReviewWouldBeCleanChirho(itemChirho) ? "Accept as clean" : "Save issue";
@@ -1690,19 +1716,31 @@ function pageHtmlChirho(): string {
           classChirho: "warning-chirho",
           textChirho: "A clean save requires the checkbox above. Check an issue box or edit the text if anything is wrong, split, lumped, missing, extra, or uncertain."
         }));
+        const actionStatusChirho = elChirho("div", { classChirho: "label-chirho action-status-chirho", textChirho: "" });
+        sideChirho.appendChild(actionStatusChirho);
         const continueButtonChirho = elChirho("button", { classChirho: "continue-chirho", textChirho: cleanReviewActionTextChirho(itemChirho) });
         const updateReviewerStatusChirho = () => {
           if (!reviewerStatusChirho) return;
           reviewerStatusChirho.textContent = reviewerAttributionErrorChirho(currentReviewerChirho()) ?? "Reviewer attribution OK.";
         };
+        const updateActionStatusChirho = () => {
+          const messagesChirho = rawReviewActionMessagesChirho(itemChirho);
+          actionStatusChirho.textContent = messagesChirho.length === 0
+            ? "Action requirements are currently satisfied."
+            : "Action requirements: " + messagesChirho.join("; ") + ".";
+        };
         const updateContinueButtonChirho = () => {
           updateReviewerStatusChirho();
+          updateActionStatusChirho();
           continueButtonChirho.textContent = cleanReviewActionTextChirho(itemChirho);
           continueButtonChirho.disabled = !cleanReviewCanSubmitChirho(itemChirho);
         };
         editChirho.addEventListener("input", updateContinueButtonChirho);
         for (const checkboxChirho of issueGridChirho.querySelectorAll(".issue-checkbox-chirho")) {
           checkboxChirho.addEventListener("change", updateContinueButtonChirho);
+        }
+        for (const radioChirho of document.querySelectorAll("input[name='script-verdict-chirho']")) {
+          radioChirho.addEventListener("change", updateContinueButtonChirho);
         }
         if (reviewerInputChirho) {
           reviewerInputChirho.addEventListener("input", () => {
