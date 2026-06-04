@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T11:46:54.819Z",
+  "generatedAtChirho": "2026-06-04T11:54:33.366Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 825,
+  "countChirho": 826,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8253,6 +8253,16 @@
       "scriptChirho": "french-chirho",
       "utf8TextChirho": "Cpl et rel.[5]",
       "notesChirho": "Repaired vol 3 p152 line 20 Greek apparatus cluster after scanline review: the print reads `λέγει κύριος .967 ≠ + ὁ θεός Cpl et rel.[5]`. Cleaned the French apparatus tail from `Cplet rel.[5]` into `Cpl et rel.[5]`. Stored as vision-tier for the appropriate Greek or Latin/symbol review lane, not certified."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 151,
+      "lineIndexChirho": 14,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "eten 14 par",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "et en 14 par",
+      "notesChirho": "Cleaned vol 2 p151 line 14 French connector after scanline review: print reads `et en 14 par` between Hebrew `קדשו` and `למקדשא`; current OCR fused it as `eten 14 par`. Stored as french-chirho vision-tier cleanup, not certified."
     }
   ]
 }
