@@ -34,7 +34,6 @@ import {
 } from "./raw-hebrew-review-tier-chirho.ts";
 import {
   certifyingReviewerAttributionErrorChirho,
-  explicitReviewerAttributionErrorChirho,
   GENERIC_REVIEWER_IDS_CHIRHO,
   MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO,
   MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO,
@@ -1609,9 +1608,7 @@ function pageHtmlChirho(): string {
       return messagesChirho;
     }
     function cleanReviewCanSubmitChirho(itemChirho) {
-      const reviewerErrorChirho = pendingReviewWouldBeCleanChirho(itemChirho)
-        ? certifyingReviewerAttributionErrorChirho(currentReviewerChirho())
-        : reviewerAttributionErrorChirho(currentReviewerChirho());
+      const reviewerErrorChirho = certifyingReviewerAttributionErrorChirho(currentReviewerChirho());
       return reviewerErrorChirho === null &&
         rawReviewActionMessagesChirho(itemChirho).length === 0;
     }
@@ -1935,9 +1932,7 @@ function pageHtmlChirho(): string {
         const continueButtonChirho = elChirho("button", { classChirho: "continue-chirho", textChirho: cleanReviewActionTextChirho(itemChirho) });
         const updateReviewerStatusChirho = () => {
           if (!reviewerStatusChirho) return;
-          const reviewerErrorChirho = pendingReviewWouldBeCleanChirho(itemChirho)
-            ? certifyingReviewerAttributionErrorChirho(currentReviewerChirho())
-            : reviewerAttributionErrorChirho(currentReviewerChirho());
+          const reviewerErrorChirho = certifyingReviewerAttributionErrorChirho(currentReviewerChirho());
           reviewerStatusChirho.textContent = reviewerErrorChirho ?? "Reviewer attribution OK.";
         };
         const updateActionStatusChirho = () => {
@@ -1994,9 +1989,7 @@ function pageHtmlChirho(): string {
       const issueFlagsChirho = Array.from(document.querySelectorAll(".issue-checkbox-chirho:checked"))
         .map((inputChirho) => inputChirho.value);
       const scriptVerdictChirho = document.querySelector("input[name='script-verdict-chirho']:checked")?.value ?? "";
-      const reviewerErrorChirho = pendingReviewWouldBeCleanChirho(itemChirho)
-        ? certifyingReviewerAttributionErrorChirho(reviewerValueChirho)
-        : reviewerAttributionErrorChirho(reviewerValueChirho);
+      const reviewerErrorChirho = certifyingReviewerAttributionErrorChirho(reviewerValueChirho);
       if (reviewerErrorChirho !== null) {
         setStatusChirho(reviewerErrorChirho);
         return;
@@ -2220,9 +2213,7 @@ Bun.serve({
       if (effectiveReviewerChirho.length === 0) {
         return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
       }
-      const reviewerErrorChirho = cleanReviewChirho
-        ? certifyingReviewerAttributionErrorChirho(effectiveReviewerChirho)
-        : explicitReviewerAttributionErrorChirho(effectiveReviewerChirho);
+      const reviewerErrorChirho = certifyingReviewerAttributionErrorChirho(effectiveReviewerChirho);
       if (reviewerErrorChirho !== null) {
         return jsonResponseChirho({ okChirho: false, errorChirho: reviewerErrorChirho }, 400);
       }
