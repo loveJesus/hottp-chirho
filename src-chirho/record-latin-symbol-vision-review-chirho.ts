@@ -29,7 +29,10 @@ import {
   writeLatinSymbolReviewBackupChirho,
   type LatinSymbolPacketManifestChirho,
 } from "./latin-symbol-vision-review-store-chirho.ts";
-import { assertExplicitReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
+import {
+  assertCertifyingReviewerAttributionChirho,
+  assertExplicitReviewerAttributionChirho,
+} from "./reviewer-attribution-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "record-latin-symbol-vision-review-chirho";
@@ -164,7 +167,11 @@ function mainChirho(): void {
   }
   assertExpectedTextGuardChirho(argsChirho, liveItemChirho);
   const reviewerChirho = requiredArgValueChirho(argsChirho, "reviewer");
-  assertExplicitReviewerAttributionChirho(reviewerChirho, "--reviewer");
+  if (verdictChirho === "accepted-clean-chirho") {
+    assertCertifyingReviewerAttributionChirho(reviewerChirho, "--reviewer");
+  } else {
+    assertExplicitReviewerAttributionChirho(reviewerChirho, "--reviewer");
+  }
   const notesChirho = parseArgValueChirho(argsChirho, "notes") ?? null;
   const reviewChirho = saveLatinSymbolReviewChirho({
     dbChirho,

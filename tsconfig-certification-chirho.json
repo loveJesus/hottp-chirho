@@ -18,6 +18,7 @@
     "src-chirho/check-certification-chirho.ts",
     "src-chirho/check-reviewer-attribution-chirho.ts",
     "src-chirho/check-expert-supplied-text-guards-chirho.ts",
+    "src-chirho/check-latin-symbol-review-cli-guards-chirho.ts",
     "spec-chirho/metropoliluya-chirho/make-pass-c-hebrew-human-pack-2026-05-31-chirho.ts",
     "spec-chirho/metropoliluya-chirho/make-expert-confirm-pack-2026-05-31-chirho.ts",
     "spec-chirho/metropoliluya-chirho/make-latin-symbol-vision-pack-2026-05-31-chirho.ts"
