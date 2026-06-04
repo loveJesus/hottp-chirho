@@ -34,6 +34,18 @@ This guide keeps the certification boundary honest: use primers to orient your e
 - Targum resources: IOTS points reviewers to CAL and Jastrow for Targumic work: https://targum.info/resources/
 - Arabic romanization/reference boundary: the Library of Congress notes that Arabic romanization decisions use LC tables plus standard dictionaries and expert judgment when uncertain: https://www.loc.gov/catdir/cpso/arabic1.pdf
 
+## Local Orientation Boundaries
+
+These notes are only for orientation and triage. They do not make a non-reader competent to certify the scripts.
+
+| Lane | What a non-reader can safely flag | What requires the expert |
+|---|---|---|
+| Syriac | Wrong script lane, clipped crop, missing box, obvious French/Greek/Hebrew bleed, or a blank span that needs a reader. Syriac is right-to-left and connected; plural dots/other dots can be visible above letters. | Exact letters, joined forms, dots, vowels, punctuation, word spacing, and whether a mark is part of the printed Syriac text. |
+| Arabic | Wrong crop or segmentation, obvious clipping, French punctuation accidentally boxed into Arabic, or Arabic text spilling into a neighboring span. Arabic is right-to-left and connected; dot placement changes letters. | Exact letters, dot counts/positions, vowels, hamza/alif forms, ta marbuta vs ha, tatweel, punctuation, and lexical choice. |
+| Hebrew-script Aramaic/Targum | Clear consonants if the print is legible and the issue is only crop/segmentation. Treat the item as related to Hebrew script, not as ordinary Hebrew vocabulary. | Exact Targum wording, vowels, dagesh, shin/sin dots, shewa choices, final-letter ambiguity, and whether a standard text is being followed or only corroborating the print. |
+
+For the current blank Syriac blocker, use `spec-chirho/metropoliluya-chirho/syriac-blank-transcription-handoff-2026-06-04-chirho.md`. The handoff exists to make the unknown visible and actionable; it is not a proposed transcription.
+
 ## Confirmation Rule
 
 Confirm only when the printed line and stored text agree at the level the queue is asking for. For non-Latin vision-tier items, that means the expert confirms the exact letters and relevant marks against the print, not merely that the word is plausible from a standard text.
