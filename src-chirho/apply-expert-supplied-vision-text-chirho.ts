@@ -5,8 +5,9 @@
  * Apply exact text supplied by an expert for an empty vision-tier span.
  *
  * This is intentionally narrow: it only resolves an explicit vision-tier item
- * whose current live text is empty, and it requires an exact item id, reviewer,
- * reviewer role, rationale, and supplied text. Dry-run is the default.
+ * whose current live text is empty, and it requires an exact item id, explicit
+ * human reviewer, reviewer role, rationale, and supplied text. Dry-run is the
+ * default.
  *
  * Applying text does not certify the item. The span remains vision-chirho so it
  * still needs an explicit expert confirmation policy after the pack is
@@ -23,7 +24,7 @@ import {
   packetMarkdownPathDriftsChirho,
   summarizePacketMarkdownPathDriftChirho,
 } from "./packet-image-fingerprint-chirho.ts";
-import { assertExplicitReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
+import { assertCertifyingReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
 import { normalizeSpanLineTextFieldsChirho } from "./span-nfc-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 import {
@@ -259,7 +260,7 @@ function parseOptionsChirho(): ApplyOptionsChirho {
   const suppliedTextChirho = normalizeTextForStorageChirho(nonEmptyArgChirho(argsChirho, "supplied-text-chirho"));
   if (suppliedTextChirho.trim().length === 0) throw new Error("--supplied-text-chirho must not normalize to empty text");
   const reviewerChirho = nonEmptyArgChirho(argsChirho, "reviewer-chirho");
-  assertExplicitReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
+  assertCertifyingReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
   return {
     applyChirho: argsChirho.includes("--apply"),
     itemIdChirho: nonEmptyArgChirho(argsChirho, "id-chirho"),
