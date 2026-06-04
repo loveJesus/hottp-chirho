@@ -239,19 +239,19 @@ interface LoadedQueueChirho {
 type QueueModeChirho = "hebrew-chirho" | "suspect-text-chirho" | "unknown-script-chirho";
 
 const ISSUE_FLAG_OPTIONS_CHIRHO = [
-  { valueChirho: "letters-chirho", labelChirho: "Letters" },
-  { valueChirho: "vowels-chirho", labelChirho: "Vowels" },
-  { valueChirho: "accents-chirho", labelChirho: "Accents/meteg" },
-  { valueChirho: "hebrew-punctuation-chirho", labelChirho: "Hebrew punct." },
-  { valueChirho: "latin-punctuation-chirho", labelChirho: "Latin punct." },
-  { valueChirho: "missing-hebrew-chirho", labelChirho: "Missing Heb." },
-  { valueChirho: "extra-latin-chirho", labelChirho: "Extra Latin" },
-  { valueChirho: "wrong-script-chirho", labelChirho: "Wrong script" },
-  { valueChirho: "garbled-text-chirho", labelChirho: "Garbled text" },
-  { valueChirho: "missing-greek-chirho", labelChirho: "Missing Greek" },
-  { valueChirho: "extra-symbol-chirho", labelChirho: "Extra symbol" },
-  { valueChirho: "wrong-language-chirho", labelChirho: "Wrong lang." },
-  { valueChirho: "segmentation-chirho", labelChirho: "Segmentation" },
+  { valueChirho: "letters-chirho", labelChirho: "Letters", helpChirho: "Wrong consonant/base letter." },
+  { valueChirho: "vowels-chirho", labelChirho: "Vowels/niqqud", helpChirho: "Vowel points plus dagesh, mappiq, shuruk, and shin/sin dots." },
+  { valueChirho: "accents-chirho", labelChirho: "Accents/meteg", helpChirho: "Cantillation marks and meteg; not dagesh or shin/sin dot." },
+  { valueChirho: "hebrew-punctuation-chirho", labelChirho: "Hebrew punct.", helpChirho: "Maqqef, sof pasuq, Hebrew-side quotes, or Hebrew citation punctuation." },
+  { valueChirho: "latin-punctuation-chirho", labelChirho: "Latin punct.", helpChirho: "French/Latin-side comma, period, parentheses, brackets, or spacing punctuation." },
+  { valueChirho: "missing-hebrew-chirho", labelChirho: "Missing Heb.", helpChirho: "Printed Hebrew is absent from the stored span text." },
+  { valueChirho: "extra-latin-chirho", labelChirho: "Extra Latin", helpChirho: "Latin/OCR garbage is included where the span should be non-Latin." },
+  { valueChirho: "wrong-script-chirho", labelChirho: "Wrong script", helpChirho: "The stored script class is wrong for the printed content." },
+  { valueChirho: "garbled-text-chirho", labelChirho: "Garbled text", helpChirho: "The stored text is unreadable or not the printed content." },
+  { valueChirho: "missing-greek-chirho", labelChirho: "Missing Greek", helpChirho: "Printed Greek is absent from the stored span text." },
+  { valueChirho: "extra-symbol-chirho", labelChirho: "Extra symbol", helpChirho: "Symbol/reference/operator is extra or misclassified." },
+  { valueChirho: "wrong-language-chirho", labelChirho: "Wrong lang.", helpChirho: "The language/script family is correct enough to render, but the content belongs to another review lane." },
+  { valueChirho: "segmentation-chirho", labelChirho: "Segmentation", helpChirho: "Wrong split/merge/box: multiple words lumped, one word split, or punctuation attached to the wrong span." },
 ];
 const ISSUE_FLAG_VALUES_CHIRHO = new Set(ISSUE_FLAG_OPTIONS_CHIRHO.map((optionChirho) => optionChirho.valueChirho));
 const SCRIPT_VERDICT_OPTIONS_CHIRHO = [
@@ -1523,6 +1523,10 @@ function pageHtmlChirho(): string {
 
       const issuesBoxChirho = elChirho("div", { classChirho: "box-chirho" });
       issuesBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Issues" }));
+      issuesBoxChirho.appendChild(elChirho("div", {
+        classChirho: "label-chirho",
+        textChirho: "Dagesh/mappiq/shuruk/shin-dot are Vowels/niqqud; cantillation/meteg are Accents/meteg; wrong splits or lumped words are Segmentation."
+      }));
       const issueGridChirho = elChirho("div", { classChirho: "issue-grid-chirho" });
       for (const optionChirho of issueFlagOptionsChirho) {
         const inputChirho = elChirho("input", {
@@ -1533,7 +1537,12 @@ function pageHtmlChirho(): string {
         });
         if (savedIssueFlagsChirho.has(optionChirho.valueChirho)) inputChirho.checked = true;
         if (reviewStateFilterChirho !== "pending-chirho") inputChirho.disabled = true;
-        issueGridChirho.appendChild(elChirho("label", { classChirho: "issue-option-chirho", for: "issue-" + optionChirho.valueChirho }, [
+        issueGridChirho.appendChild(elChirho("label", {
+          classChirho: "issue-option-chirho",
+          for: "issue-" + optionChirho.valueChirho,
+          title: optionChirho.helpChirho,
+          "aria-label": optionChirho.labelChirho + ": " + optionChirho.helpChirho
+        }, [
           inputChirho,
           elChirho("span", { textChirho: optionChirho.labelChirho })
         ]));
