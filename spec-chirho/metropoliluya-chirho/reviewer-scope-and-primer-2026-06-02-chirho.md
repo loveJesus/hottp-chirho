@@ -26,6 +26,18 @@ This guide keeps the certification boundary honest: use primers to orient your e
 - Static raw Hebrew packet: `workspace-chirho/pass-c-hebrew-human-pack-chirho/2026-05-31-chirho/index-chirho.md`.
 - Static expert packet: `workspace-chirho/expert-confirm-pack-chirho/2026-05-31-chirho/index-chirho.md`.
 
+## Raw Hebrew Validator Semantics
+
+- Use the raw Hebrew validator for spans inside your Hebrew competence, but do not treat machine witnesses as certification. The crop and full line are the authority.
+- `Continue` with no issue flags is a clean certification only when the clean-certification checkbox is also checked. If that checkbox is not checked, the server rejects the save.
+- If anything is uncertain, do not clean-certify it. Either select the relevant issue flag with notes, or skip it for later review.
+- `Letters` means a wrong consonant or base letter.
+- `Vowels/niqqud` includes vowel points plus dagesh, mappiq, shuruk, and shin/sin dots.
+- `Accents/meteg` means cantillation marks and meteg. It does not include dagesh, mappiq, shuruk, or shin/sin dots.
+- `Hebrew punct.` includes maqqef, sof pasuq, Hebrew-side quote marks, and citation punctuation that belongs with the Hebrew span.
+- `Segmentation` includes wrong boxes and wrong split/merge decisions: multiple Hebrew words lumped into one span, one word split across spans, spaces missing inside a span, or punctuation attached to the wrong neighboring span.
+- A dot in the middle of a Hebrew letter is usually dagesh or mappiq; inside vav for `וּ` it is shuruk. These are `Vowels/niqqud`, not `Accents/meteg`.
+
 ## Primer Links
 
 - Syriac script orientation: HMML School’s Serto lesson is useful for shape recognition and distinguishes Serto from Estrangela: https://hmmlschool.org/syriac-serto/
