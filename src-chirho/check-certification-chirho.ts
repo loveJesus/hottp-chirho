@@ -37,6 +37,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
     argsChirho: [process.execPath, "run", "check-latin-symbol-review-cli-guards-chirho"],
   },
   {
+    labelChirho: "Pass-C human apply CLI guards",
+    argsChirho: [process.execPath, "run", "check-pass-c-human-apply-cli-guards-chirho"],
+  },
+  {
     labelChirho: "git diff whitespace hygiene",
     argsChirho: ["git", "diff", "--check"],
   },

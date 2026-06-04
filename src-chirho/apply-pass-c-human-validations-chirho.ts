@@ -16,6 +16,10 @@ import { join } from "path";
 import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROGRESS_DB_PATH_CHIRHO, PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { writePassCHumanValidationBackupChirho } from "./pass-c-human-validation-backup-chirho.ts";
+import {
+  certifyingReviewerAttributionErrorChirho,
+  explicitReviewerAttributionErrorChirho,
+} from "./reviewer-attribution-chirho.ts";
 import { normalizeSpanLineTextFieldsChirho } from "./span-nfc-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
@@ -50,6 +54,7 @@ interface HumanValidationRowChirho {
   script_verdict_chirho: string | null;
   issue_flags_chirho: string | null;
   notes_chirho: string | null;
+  reviewer_chirho: string;
   applied_at_chirho: string | null;
 }
 
@@ -209,7 +214,8 @@ function rowQueryChirho(
   argsChirho: string[],
   hasIssueFlagsColumnChirho: boolean,
   hasScriptVerdictColumnChirho: boolean,
-  hasCertifyCleanColumnChirho: boolean
+  hasCertifyCleanColumnChirho: boolean,
+  hasReviewerColumnChirho: boolean
 ): { sqlChirho: string; paramsChirho: Array<string | number> } {
   const clausesChirho = [
     "is_current_chirho = 1",
@@ -240,7 +246,9 @@ function rowQueryChirho(
              corrected_text_chirho,
              ${hasScriptVerdictColumnChirho ? "script_verdict_chirho" : "NULL AS script_verdict_chirho"},
              ${hasIssueFlagsColumnChirho ? "issue_flags_chirho" : "NULL AS issue_flags_chirho"},
-             notes_chirho, applied_at_chirho
+             notes_chirho,
+             ${hasReviewerColumnChirho ? "reviewer_chirho" : "'unknown-reviewer-chirho' AS reviewer_chirho"},
+             applied_at_chirho
         FROM pass_c_human_validations_chirho
        WHERE ${clausesChirho.join(" AND ")}
        ORDER BY volume_chirho, page_chirho, line_index_chirho, segment_index_chirho, id_chirho`,
@@ -257,6 +265,20 @@ function applyRowChirho(
 ): ApplyResultChirho {
   const keyChirho = spanKeyChirho(rowChirho);
   const filePathChirho = spanLinePathChirho(rowChirho, spansDirChirho);
+  const reviewerErrorChirho = rowChirho.verdict_chirho === "reviewed-clean-chirho"
+    ? certifyingReviewerAttributionErrorChirho(rowChirho.reviewer_chirho, "reviewer_chirho")
+    : explicitReviewerAttributionErrorChirho(rowChirho.reviewer_chirho, "reviewer_chirho");
+  if (reviewerErrorChirho !== null) {
+    return {
+      idChirho: rowChirho.id_chirho,
+      keyChirho,
+      verdictChirho: rowChirho.verdict_chirho,
+      statusChirho: "error-chirho",
+      messageChirho: reviewerErrorChirho,
+      filePathChirho,
+    };
+  }
+
   if (!existsSync(filePathChirho)) {
     return {
       idChirho: rowChirho.id_chirho,
@@ -378,7 +400,8 @@ function mainChirho(): void {
     argsChirho,
     columnsChirho.has("issue_flags_chirho"),
     columnsChirho.has("script_verdict_chirho"),
-    columnsChirho.has("certify_clean_chirho")
+    columnsChirho.has("certify_clean_chirho"),
+    columnsChirho.has("reviewer_chirho")
   );
   const rowsChirho = dbChirho.query(queryChirho.sqlChirho).all(...queryChirho.paramsChirho) as HumanValidationRowChirho[];
   if (applyChirho) {
