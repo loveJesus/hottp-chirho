@@ -418,6 +418,8 @@ interface HumanValidationDbRowChirho {
   page_chirho: number;
   line_index_chirho: number;
   segment_index_chirho: number;
+  original_text_chirho: string;
+  original_text_hash_chirho: string;
   verdict_chirho: string;
   certify_clean_chirho: number;
   applied_at_chirho: string | null;
@@ -1812,9 +1814,13 @@ function validationRowsChirho(dbPathChirho: string): HumanValidationDbRowChirho[
     const hasSchemaVersionChirho = columnsChirho.has("schema_version_chirho");
     const hasAppliedAtChirho = columnsChirho.has("applied_at_chirho");
     const hasCertifyCleanChirho = columnsChirho.has("certify_clean_chirho");
+    const hasOriginalTextChirho = columnsChirho.has("original_text_chirho");
+    const hasOriginalTextHashChirho = columnsChirho.has("original_text_hash_chirho");
     return dbChirho
       .query(`
         SELECT volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
+               ${hasOriginalTextChirho ? "original_text_chirho" : "'' AS original_text_chirho"},
+               ${hasOriginalTextHashChirho ? "original_text_hash_chirho" : "'' AS original_text_hash_chirho"},
                verdict_chirho,
                ${hasCertifyCleanChirho ? "certify_clean_chirho" : "0 AS certify_clean_chirho"},
                ${hasAppliedAtChirho ? "applied_at_chirho" : "NULL AS applied_at_chirho"},
@@ -1956,10 +1962,19 @@ function rawPendingSpansChirho(
   rawSpansChirho: RawHebrewSpanChirho[],
   rowsChirho: HumanValidationDbRowChirho[]
 ): RawHebrewSpanChirho[] {
-  const rawKeysChirho = new Set(rawSpansChirho.map(spanKeyChirho));
+  const rawSpansByKeyChirho = new Map(rawSpansChirho.map((spanChirho) => [spanKeyChirho(spanChirho), spanChirho]));
+  const rowCountsAsSavedChirho = (rowChirho: HumanValidationDbRowChirho): boolean => {
+    if (rowChirho.schema_version_chirho < 2) return false;
+    const spanChirho = rawSpansByKeyChirho.get(rowKeyChirho(rowChirho));
+    if (spanChirho === undefined) return false;
+    if (rowChirho.original_text_chirho !== spanChirho.textChirho) return false;
+    if (rowChirho.original_text_hash_chirho !== hashTextChirho(spanChirho.textChirho)) return false;
+    if (rowChirho.verdict_chirho === "reviewed-clean-chirho") return rowChirho.certify_clean_chirho === 1;
+    return rowChirho.verdict_chirho === "reviewed-issues-chirho";
+  };
   const savedRawKeysChirho = new Set(
     rowsChirho
-      .filter((rowChirho) => rowChirho.schema_version_chirho >= 2 && rawKeysChirho.has(rowKeyChirho(rowChirho)))
+      .filter(rowCountsAsSavedChirho)
       .map(rowKeyChirho)
   );
   return rawSpansChirho.filter((spanChirho) => !savedRawKeysChirho.has(spanKeyChirho(spanChirho)));

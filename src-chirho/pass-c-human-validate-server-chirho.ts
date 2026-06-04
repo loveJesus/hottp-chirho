@@ -1182,13 +1182,27 @@ function pageHtmlChirho(): string {
       const queryChirho = paramsChirho.toString();
       window.history.replaceState(null, "", queryChirho ? window.location.pathname + "?" + queryChirho : window.location.pathname);
     }
+    function validationFreshForItemChirho(rowChirho, itemChirho) {
+      return rowChirho &&
+        rowChirho.original_text_hash_chirho === itemChirho.originalTextHashChirho &&
+        rowChirho.original_text_chirho === itemChirho.liveSpanTextChirho;
+    }
+    function validationCountsAsSavedForItemChirho(rowChirho, itemChirho) {
+      if (!validationFreshForItemChirho(rowChirho, itemChirho)) return false;
+      if (rowChirho.verdict_chirho === "reviewed-clean-chirho") return rowChirho.certify_clean_chirho === 1;
+      return rowChirho.verdict_chirho === "reviewed-issues-chirho";
+    }
+    function validationCountsAsIssueForItemChirho(rowChirho, itemChirho) {
+      return validationFreshForItemChirho(rowChirho, itemChirho) &&
+        rowChirho.verdict_chirho === "reviewed-issues-chirho";
+    }
     function activeQueueChirho() {
       const volumeChirho = volumeFilterNumberChirho();
       return queueChirho.filter((itemChirho) =>
         (
           reviewStateFilterChirho === "pending-chirho"
-            ? !validationsChirho.has(itemChirho.keyChirho)
-            : validationsChirho.get(itemChirho.keyChirho)?.verdict_chirho === "reviewed-issues-chirho"
+            ? !validationCountsAsSavedForItemChirho(validationsChirho.get(itemChirho.keyChirho), itemChirho)
+            : validationCountsAsIssueForItemChirho(validationsChirho.get(itemChirho.keyChirho), itemChirho)
         ) &&
         (validationStatusFilterChirho === "all-chirho" || itemChirho.validationStatusChirho === validationStatusFilterChirho) &&
         (tierFilterChirho === "all-chirho" || itemChirho.tierChirho === tierFilterChirho) &&
