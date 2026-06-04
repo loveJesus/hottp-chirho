@@ -433,6 +433,13 @@ export function saveLatinSymbolReviewChirho(paramsChirho: SaveLatinSymbolReviewP
   if (paramsChirho.verdictChirho === "reviewed-issues-chirho" && issueFlagsChirho.length === 0) {
     throw new Error("reviewed-issues-chirho requires at least one issue flag");
   }
+  const notesChirho =
+    typeof paramsChirho.notesChirho === "string" && paramsChirho.notesChirho.trim().length > 0
+      ? paramsChirho.notesChirho.trim()
+      : null;
+  if (paramsChirho.verdictChirho === "reviewed-issues-chirho" && notesChirho === null) {
+    throw new Error("reviewed-issues-chirho requires notesChirho");
+  }
   const nowChirho = new Date().toISOString();
   const currentChirho = paramsChirho.dbChirho
     .query("SELECT id_chirho FROM latin_symbol_vision_reviews_chirho WHERE item_id_chirho = ? AND is_current_chirho = 1 ORDER BY id_chirho DESC LIMIT 1")
@@ -467,7 +474,7 @@ VALUES
       paramsChirho.verdictChirho,
       paramsChirho.acceptCleanChirho ? 1 : 0,
       JSON.stringify(issueFlagsChirho),
-      paramsChirho.notesChirho,
+      notesChirho,
       paramsChirho.manifestChirho.generatedAtChirho ?? null,
       paramsChirho.reviewerChirho,
       nowChirho,
@@ -480,7 +487,7 @@ VALUES
     verdictChirho: paramsChirho.verdictChirho,
     acceptCleanChirho: paramsChirho.acceptCleanChirho,
     issueFlagsChirho,
-    notesChirho: paramsChirho.notesChirho,
+    notesChirho,
     reviewerChirho: paramsChirho.reviewerChirho,
     currentTextHashChirho,
     updatedAtChirho: nowChirho,

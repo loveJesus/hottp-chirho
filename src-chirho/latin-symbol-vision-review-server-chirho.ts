@@ -418,6 +418,9 @@ function htmlChirho(): string {
     function cleanAcceptAcknowledgedChirho() {
       return document.getElementById("accept-clean-chirho")?.checked === true;
     }
+    function currentNotesChirho() {
+      return document.getElementById("notes-chirho")?.value ?? "";
+    }
     function currentReviewWouldBeCleanChirho() {
       return currentIssueFlagsChirho().length === 0;
     }
@@ -426,7 +429,8 @@ function htmlChirho(): string {
         ? certifyingReviewerAttributionErrorChirho(currentReviewerChirho())
         : reviewerAttributionErrorChirho(currentReviewerChirho());
       return reviewerErrorChirho === null &&
-        (!currentReviewWouldBeCleanChirho() || cleanAcceptAcknowledgedChirho());
+        (!currentReviewWouldBeCleanChirho() || cleanAcceptAcknowledgedChirho()) &&
+        (currentReviewWouldBeCleanChirho() || currentNotesChirho().trim().length > 0);
     }
     function latinSymbolReviewActionMessagesChirho() {
       const messagesChirho = [];
@@ -436,6 +440,9 @@ function htmlChirho(): string {
       if (reviewerErrorChirho !== null) messagesChirho.push(reviewerErrorChirho);
       if (currentReviewWouldBeCleanChirho() && !cleanAcceptAcknowledgedChirho()) {
         messagesChirho.push("clean acceptance checkbox required");
+      }
+      if (!currentReviewWouldBeCleanChirho() && currentNotesChirho().trim().length === 0) {
+        messagesChirho.push("issue saves need an explanatory note");
       }
       return messagesChirho;
     }
@@ -526,7 +533,7 @@ function htmlChirho(): string {
       formChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Issue flags" }));
       formChirho.appendChild(elChirho("div", {
         classChirho: "label-chirho",
-        textChirho: "A clean acceptance requires the checkbox below. Check a flag for any wrong letter/digit/siglum, punctuation, spacing, crop, split, missing text, or extra text."
+        textChirho: "A clean acceptance requires the checkbox below. Check a flag and write a note for any wrong letter/digit/siglum, punctuation, spacing, crop, split, missing text, or extra text."
       }));
       const issueGridChirho = elChirho("div", { classChirho: "issue-grid-chirho" });
       for (const optionChirho of issueFlagOptionsChirho) {
@@ -578,6 +585,7 @@ function htmlChirho(): string {
       for (const checkboxChirho of issueGridChirho.querySelectorAll("input")) {
         checkboxChirho.addEventListener("change", updateContinueButtonChirho);
       }
+      notesChirho.addEventListener("input", updateContinueButtonChirho);
       cleanAcceptInputChirho.addEventListener("change", updateContinueButtonChirho);
       reviewerInputChirho.addEventListener("input", () => {
         reviewerChirho = reviewerInputChirho.value;
@@ -608,6 +616,10 @@ function htmlChirho(): string {
       }
       if (flagsChirho.length === 0 && !cleanAcceptAcknowledgedChirho()) {
         setStatusChirho("Check the clean acceptance box before accepting as clean.");
+        return;
+      }
+      if (flagsChirho.length > 0 && notesChirho.trim().length === 0) {
+        setStatusChirho("Write an explanatory note before saving an issue.");
         return;
       }
       reviewerChirho = reviewerValueChirho;
@@ -769,6 +781,9 @@ Bun.serve({
         const notesChirho = typeof bodyChirho.notesChirho === "string" && bodyChirho.notesChirho.trim().length > 0
           ? bodyChirho.notesChirho.trim()
           : null;
+        if (issueFlagsChirho.length > 0 && notesChirho === null) {
+          return jsonResponseChirho({ okChirho: false, errorChirho: "notesChirho is required for reviewed-issues" }, 400);
+        }
         const effectiveReviewerChirho = typeof bodyChirho.reviewerChirho === "string" && bodyChirho.reviewerChirho.trim().length > 0
           ? bodyChirho.reviewerChirho.trim()
           : reviewerChirho;

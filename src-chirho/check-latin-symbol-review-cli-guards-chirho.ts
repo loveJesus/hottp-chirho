@@ -109,6 +109,27 @@ function recordArgsChirho(
   ];
 }
 
+function issueRecordArgsChirho(
+  dbPathChirho: string,
+  liveItemChirho: LatinSymbolVisionLiveItemChirho,
+  reviewerChirho: string,
+  notesChirho: string
+): string[] {
+  return [
+    process.execPath,
+    "run",
+    RECORD_SCRIPT_CHIRHO,
+    "--",
+    `--db=${dbPathChirho}`,
+    `--id=${liveItemChirho.idChirho}`,
+    "--verdict=reviewed-issues",
+    `--reviewer=${reviewerChirho}`,
+    `--expected-text-hash-chirho=${hashTextChirho(liveItemChirho.textChirho)}`,
+    "--issue-flags=punctuation-chirho",
+    `--notes=${notesChirho}`,
+  ];
+}
+
 function checkMachineAcceptedCleanRejectedChirho(liveItemChirho: LatinSymbolVisionLiveItemChirho): void {
   const tempChirho = tempDbPathChirho();
   try {
@@ -126,6 +147,57 @@ function checkMachineAcceptedCleanRejectedChirho(liveItemChirho: LatinSymbolVisi
     assertCheckChirho(
       reviewRowCountChirho(tempChirho.dbPathChirho) === 0,
       "machine accepted-clean command wrote review rows"
+    );
+  } finally {
+    rmSync(tempChirho.dirChirho, { force: true, recursive: true });
+  }
+}
+
+function checkHumanIssueWithoutNotesRejectedChirho(liveItemChirho: LatinSymbolVisionLiveItemChirho): void {
+  const tempChirho = tempDbPathChirho();
+  try {
+    const argsChirho = issueRecordArgsChirho(
+      tempChirho.dbPathChirho,
+      liveItemChirho,
+      "dr-latin-symbol-cli-guard-chirho",
+      "   "
+    );
+    const resultChirho = runCommandChirho(argsChirho);
+    const combinedOutputChirho = `${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`;
+    assertCheckChirho(
+      resultChirho.exitCodeChirho !== 0,
+      `missing-notes reviewed-issues command unexpectedly succeeded: ${commandTextChirho(argsChirho)}`
+    );
+    assertCheckChirho(
+      combinedOutputChirho.includes("reviewed-issues-chirho requires notesChirho"),
+      `missing-notes reviewed-issues command failed for the wrong reason: ${combinedOutputChirho}`
+    );
+    assertCheckChirho(
+      reviewRowCountChirho(tempChirho.dbPathChirho) === 0,
+      "missing-notes reviewed-issues command wrote review rows"
+    );
+  } finally {
+    rmSync(tempChirho.dirChirho, { force: true, recursive: true });
+  }
+}
+
+function checkHumanIssueWithNotesStillWritesChirho(liveItemChirho: LatinSymbolVisionLiveItemChirho): void {
+  const tempChirho = tempDbPathChirho();
+  try {
+    const argsChirho = issueRecordArgsChirho(
+      tempChirho.dbPathChirho,
+      liveItemChirho,
+      "dr-latin-symbol-cli-guard-chirho",
+      "guard issue explanation chirho"
+    );
+    const resultChirho = runCommandChirho(argsChirho);
+    assertCheckChirho(
+      resultChirho.exitCodeChirho === 0,
+      `human reviewed-issues command failed: ${commandTextChirho(argsChirho)}\n${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`
+    );
+    assertCheckChirho(
+      reviewRowCountChirho(tempChirho.dbPathChirho) === 1,
+      "human reviewed-issues command did not write exactly one temp review row"
     );
   } finally {
     rmSync(tempChirho.dirChirho, { force: true, recursive: true });
@@ -153,6 +225,8 @@ function checkHumanAcceptedCleanStillWritesChirho(liveItemChirho: LatinSymbolVis
 function mainChirho(): void {
   const liveItemChirho = firstLivePacketItemChirho();
   checkMachineAcceptedCleanRejectedChirho(liveItemChirho);
+  checkHumanIssueWithoutNotesRejectedChirho(liveItemChirho);
+  checkHumanIssueWithNotesStillWritesChirho(liveItemChirho);
   checkHumanAcceptedCleanStillWritesChirho(liveItemChirho);
   console.log(`[${MODULE_CHIRHO}] checked live item ${liveItemChirho.idChirho}`);
   console.log(`[${MODULE_CHIRHO}] Latin/symbol review CLI guards passed`);

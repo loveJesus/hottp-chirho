@@ -187,6 +187,37 @@ async function mainChirho(): Promise<void> {
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
       "machine reviewer issue POST persisted a row"
     );
+    const missingNotesResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: ["letters-chirho"],
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "   ",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: false,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const missingNotesDataChirho = (await missingNotesResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      missingNotesResponseChirho.status === 400,
+      `expected missing-notes HTTP 400, got ${missingNotesResponseChirho.status}`
+    );
+    assertCheckChirho(missingNotesDataChirho.okChirho === false, "missing-notes issue POST unexpectedly returned ok");
+    assertCheckChirho(
+      String(missingNotesDataChirho.errorChirho ?? "").includes("notesChirho is required for reviewed-issues"),
+      `missing-notes issue POST failed for the wrong reason: ${String(missingNotesDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "missing-notes issue POST persisted a row"
+    );
   } catch (errorChirho) {
     processChirho.kill();
     await processChirho.exited.catch(() => undefined);

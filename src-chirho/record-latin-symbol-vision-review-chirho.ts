@@ -75,6 +75,7 @@ function usageChirho(): string {
     `Usage: bun run ${MODULE_CHIRHO} --id=<packet-item-id> --verdict=<accepted-clean|reviewed-issues> --reviewer=<reviewer-chirho> (--expected-text-chirho=<text> | --expected-text-hash-chirho=<sha256>) [--accept-clean-chirho] [--issue-flags=a,b] [--notes=text]`,
     "",
     "Accepted-clean writes require --accept-clean-chirho after checking the target crop and full line against the print.",
+    "Reviewed-issues writes require at least one --issue-flags value and non-empty --notes explaining the problem.",
     "Every review write requires --expected-text-chirho or --expected-text-hash-chirho for the exact live item text being reviewed.",
     "Use --export-backup[=path] to write a committable JSON backup of current review rows.",
     "Use --list-pending to print the first unreviewed packet IDs.",

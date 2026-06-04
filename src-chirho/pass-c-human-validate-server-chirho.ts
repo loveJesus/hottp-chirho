@@ -1573,6 +1573,9 @@ function pageHtmlChirho(): string {
       return Array.from(document.querySelectorAll(".issue-checkbox-chirho:checked"))
         .map((inputChirho) => inputChirho.value);
     }
+    function pendingReviewNotesChirho() {
+      return document.getElementById("notes-chirho")?.value ?? "";
+    }
     function pendingReviewHasEditedTextChirho(itemChirho) {
       const editChirho = document.getElementById("edit-chirho");
       return !!editChirho && editChirho.value.normalize("NFC") !== String(itemChirho.liveSpanTextChirho ?? "").normalize("NFC");
@@ -1592,6 +1595,9 @@ function pageHtmlChirho(): string {
       const messagesChirho = [];
       if (pendingReviewWouldBeCleanChirho(itemChirho) && !cleanReviewAcknowledgedChirho()) {
         messagesChirho.push("clean review needs the clean-certification checkbox");
+      }
+      if (hasIssueFlagChirho && pendingReviewNotesChirho().trim().length === 0) {
+        messagesChirho.push("issue saves need an explanatory note");
       }
       if (pendingReviewHasEditedTextChirho(itemChirho) && !hasIssueFlagChirho) {
         messagesChirho.push("text changes need an issue box");
@@ -1927,7 +1933,7 @@ function pageHtmlChirho(): string {
         ]));
         sideChirho.appendChild(elChirho("div", {
           classChirho: "warning-chirho",
-          textChirho: "A clean save requires the checkbox above. Check an issue box or edit the text if anything is wrong, split, lumped, missing, extra, or uncertain."
+          textChirho: "A clean save requires the checkbox above. Check an issue box and write a note if anything is wrong, split, lumped, missing, extra, or uncertain."
         }));
         const actionStatusChirho = elChirho("div", { classChirho: "label-chirho action-status-chirho", textChirho: "" });
         sideChirho.appendChild(actionStatusChirho);
@@ -1956,6 +1962,7 @@ function pageHtmlChirho(): string {
         for (const radioChirho of document.querySelectorAll("input[name='script-verdict-chirho']")) {
           radioChirho.addEventListener("change", updateContinueButtonChirho);
         }
+        notesChirho.addEventListener("input", updateContinueButtonChirho);
         if (reviewerInputChirho) {
           reviewerInputChirho.addEventListener("input", () => {
             reviewerChirho = reviewerInputChirho.value;
@@ -1998,6 +2005,10 @@ function pageHtmlChirho(): string {
       }
       if (pendingReviewWouldBeCleanChirho(itemChirho) && !cleanReviewAcknowledgedChirho()) {
         setStatusChirho("Check the clean certification box before accepting as clean");
+        return;
+      }
+      if (issueFlagsChirho.length > 0 && notesChirho.trim().length === 0) {
+        setStatusChirho("Write an explanatory note before saving an issue");
         return;
       }
       reviewerChirho = reviewerValueChirho;
@@ -2212,6 +2223,13 @@ Bun.serve({
           errorChirho: "certifyCleanChirho acknowledgement is required for reviewed-clean",
         }, 400);
       }
+      const notesChirho = typeof bodyChirho.notesChirho === "string" ? bodyChirho.notesChirho.trim() : "";
+      if (issueFlagsChirho.length > 0 && notesChirho.length === 0) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: "notesChirho is required for reviewed-issues",
+        }, 400);
+      }
       const effectiveReviewerChirho = typeof bodyChirho.reviewerChirho === "string" && bodyChirho.reviewerChirho.trim().length > 0
         ? bodyChirho.reviewerChirho.trim()
         : reviewerChirho;
@@ -2238,7 +2256,7 @@ Bun.serve({
         correctedTextChirho,
         scriptVerdictChirho,
         issueFlagsChirho,
-        bodyChirho.notesChirho,
+        notesChirho.length === 0 ? null : notesChirho,
         currentChirho?.id_chirho ?? null,
         cleanReviewChirho,
         effectiveReviewerChirho
