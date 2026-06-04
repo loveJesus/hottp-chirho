@@ -12,9 +12,10 @@
  *   bun run normalize-span-corpus-nfc-chirho --apply
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from "fs";
-import { dirname, join } from "path";
+import { readFileSync } from "fs";
+import { join } from "path";
 
+import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
   normalizeSpanLineTextFieldsChirho,
@@ -47,7 +48,7 @@ function mainChirho(): void {
     for (const filePathChirho of [...changedFilesChirho].sort()) {
       const lineChirho = JSON.parse(readFileSync(filePathChirho, "utf8")) as SpanLineLikeChirho;
       normalizeSpanLineTextFieldsChirho(lineChirho);
-      writeFileSync(filePathChirho, `${JSON.stringify(lineChirho, null, 2)}\n`);
+      writeJsonAtomicChirho(filePathChirho, lineChirho);
     }
   }
 
@@ -73,8 +74,7 @@ function mainChirho(): void {
     })),
   };
 
-  mkdirSync(dirname(reportPathChirho), { recursive: true });
-  writeFileSync(reportPathChirho, `${JSON.stringify(reportChirho, null, 2)}\n`);
+  writeJsonAtomicChirho(reportPathChirho, reportChirho);
   console.log(
     `[${MODULE_CHIRHO}] applied=${applyChirho} nonNfcFields=${findingsChirho.length} ` +
       `changedFiles=${changedFilesChirho.size} report=${reportPathChirho}`
