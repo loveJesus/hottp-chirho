@@ -3762,6 +3762,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw queue applied rows: ${statusChirho.humanValidationDbChirho.rawQueueAppliedRowsChirho}`,
     `- Legacy current rows ignored by apply/certification: ${statusChirho.humanValidationDbChirho.legacyCurrentRowsChirho}`,
     `- Generic reviewer rows: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho}`,
+    "- Generic reviewer reattribution path: `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho=<id> --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why this existing row is attributable to that reviewer>' --apply-chirho`",
     "",
     "## Pass-C Human Validation Backup",
     "",
