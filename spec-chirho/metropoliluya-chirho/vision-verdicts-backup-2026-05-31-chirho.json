@@ -1,5 +1,5 @@
 {
-  "generatedAtChirho": "2026-06-04T09:40:17.289Z",
+  "generatedAtChirho": "2026-06-04T09:51:50.938Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
   "countChirho": 801,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
@@ -4977,16 +4977,6 @@
     {
       "volumeChirho": 5,
       "pageChirho": 64,
-      "lineIndexChirho": 6,
-      "segmentIndexChirho": 5,
-      "garbleTextChirho": "####",
-      "scriptChirho": "arabic-chirho",
-      "utf8TextChirho": "الـى",
-      "notesChirho": "Arabic الـى — beginning of Saadya's translation, rightmost portion of line 6 (vs 14 translation start)"
-    },
-    {
-      "volumeChirho": 5,
-      "pageChirho": 64,
       "lineIndexChirho": 7,
       "segmentIndexChirho": 1,
       "garbleTextChirho": "% # #",
@@ -8013,6 +8003,16 @@
       "scriptChirho": "syriac-chirho",
       "utf8TextChirho": "",
       "notesChirho": "Pinned the vol 3 p151 line 10 Syrohexapla gloss box at x767..950 after the open parenthesis and before the comma. Claude and Codex second-witnessed the script/geometry as two Syriac words, with visible Syriac letter forms and seyame/plural dots, but neither can responsibly transcribe exact letters at this resolution. The text is intentionally left empty so strict export emits an EMPTY-SPAN marker and remains blocked until a Syriac/Syrohexapla expert supplies the exact printed text."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 64,
+      "lineIndexChirho": 6,
+      "segmentIndexChirho": 5,
+      "garbleTextChirho": "#### + trailing *8 edge artifact",
+      "scriptChirho": "arabic-chirho",
+      "utf8TextChirho": "الـى",
+      "notesChirho": "Cleaned the vol 5 p64 line 6 right edge after visual inspection: the scanline ends with Arabic `الـى`, and the old final S6 French `*8` was a non-existent edge artifact. The Arabic span was widened from x1892..2021 to x1892..2046 to cover the line edge. The Arabic reading remains vision-chirho and still belongs to Arabist expert confirmation for exact orthography."
     }
   ]
 }

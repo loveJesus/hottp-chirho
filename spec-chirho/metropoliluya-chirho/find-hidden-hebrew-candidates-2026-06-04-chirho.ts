@@ -43,7 +43,7 @@ const BRACKETED_SINGLE_CAPITAL_SIGLUM_RE_CHIRHO = /^[{\[][A-Z][}\]]$/u;
 const SCRIPTURE_REF_RE_CHIRHO =
   /\b(?:Gn|Ex|Lv|Nb|Dt|Jos|Jg|1\s*S|2\s*S|1\s*R|2\s*R|Is|Jr|Ez|Éz|Ha|Hab|Za|Zach?|Ps|Jb|Job|Qo|Pr)\s*\d/u;
 const BENIGN_NUMERIC_CONTEXT_RE_CHIRHO =
-  /(?:\b(?:BH|BHS|BH3|BH23|CT\d*|ms|mss|Mss|Opuscules|Syntax|Frensdorff|Esteban|Erub|Hev|J\d{2,3}|Luma|Cpl|rel|BL|Add|Vat|ebr|London|Cortona|XII|XIII|XIV)\b|Kit[aâ]b|ḤAYYUJ|Herméneutique|Qumr[aä]n|QMelchisédec|Würzburg)/u;
+  /(?:\b(?:BH|BHS|BH3|BH23|CT\d*|ms|mss|Mss|Opuscules|Syntax|Frensdorff|Esteban|Erub|Hev|J\d{2,3}|Luma|Cpl|rel|BL|Add|Vat|ebr|London|Cortona|XII|XIII|XIV)\b|Kit[aâ]b\s*,?\s*\d+|ḤAYYUJ|Herméneutique|Qumr[aä]n|QMelchisédec|Würzburg|\b(?:Gn|Ex|Lv|Nb|Dt|Jos|Jg|1\s*S|2\s*S|1\s*R|2\s*R|Is|Jr|Ez|Éz|Ha|Hab|Za|Zach?|Ps|Jb|Job|Qo|Pr)\s*\d+\s*[,.:]\s*\d+|\b(?:dat[eé]|copi[eé]|espagnol)\b.{0,20}\d{3,4})/u;
 
 interface SpanChirho {
   segmentIndexChirho: number;
@@ -122,11 +122,20 @@ function compactTextChirho(textChirho: string): string {
   return normalizeTextForStorageChirho(textChirho).replace(/\s+/g, " ").trim();
 }
 
-function hasNonBenignNumericMatchChirho(textChirho: string, patternChirho: RegExp): boolean {
+function hasNonBenignNumericMatchChirho(
+  textChirho: string,
+  patternChirho: RegExp,
+  contextTextChirho = textChirho,
+  contextStartOffsetChirho = 0
+): boolean {
   patternChirho.lastIndex = 0;
   for (const matchChirho of textChirho.matchAll(patternChirho)) {
     const indexChirho = matchChirho.index ?? 0;
-    const contextChirho = textChirho.slice(Math.max(0, indexChirho - 18), Math.min(textChirho.length, indexChirho + matchChirho[0].length + 18));
+    const contextIndexChirho = contextStartOffsetChirho + indexChirho;
+    const contextChirho = contextTextChirho.slice(
+      Math.max(0, contextIndexChirho - 24),
+      Math.min(contextTextChirho.length, contextIndexChirho + matchChirho[0].length + 24)
+    );
     if (!BENIGN_NUMERIC_CONTEXT_RE_CHIRHO.test(contextChirho)) return true;
   }
   return false;
@@ -134,12 +143,16 @@ function hasNonBenignNumericMatchChirho(textChirho: string, patternChirho: RegEx
 
 function spanReasonsChirho(spanChirho: SpanChirho, lineChirho: SpanLineChirho, spansChirho: SpanChirho[], indexChirho: number): string[] {
   const textChirho = compactTextChirho(spanChirho.utf8TextChirho);
+  const leftContextChirho = compactTextChirho(spansChirho[indexChirho - 1]?.utf8TextChirho ?? "").slice(-40);
+  const rightContextChirho = compactTextChirho(spansChirho[indexChirho + 1]?.utf8TextChirho ?? "").slice(0, 40);
+  const numericContextTextChirho = `${leftContextChirho} ${textChirho} ${rightContextChirho}`;
+  const numericContextStartOffsetChirho = leftContextChirho.length + 1;
   const reasonsChirho: string[] = [];
   if (!REVIEWABLE_SCRIPT_SET_CHIRHO.has(spanChirho.scriptChirho)) return reasonsChirho;
-  if (hasNonBenignNumericMatchChirho(textChirho, DIGIT_CLUSTER_SCAN_RE_CHIRHO)) {
+  if (hasNonBenignNumericMatchChirho(textChirho, DIGIT_CLUSTER_SCAN_RE_CHIRHO, numericContextTextChirho, numericContextStartOffsetChirho)) {
     reasonsChirho.push("dense-digit-cluster-chirho");
   }
-  if (hasNonBenignNumericMatchChirho(textChirho, SYMBOL_DIGIT_SCAN_RE_CHIRHO)) {
+  if (hasNonBenignNumericMatchChirho(textChirho, SYMBOL_DIGIT_SCAN_RE_CHIRHO, numericContextTextChirho, numericContextStartOffsetChirho)) {
     reasonsChirho.push("symbol-digit-garble-chirho");
   }
   if (ORDINAL_GARBAGE_RE_CHIRHO.test(textChirho)) reasonsChirho.push("ordinal-garble-chirho");
