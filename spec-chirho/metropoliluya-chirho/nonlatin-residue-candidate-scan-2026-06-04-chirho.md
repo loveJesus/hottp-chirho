@@ -3,7 +3,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Non-Latin Residue Candidate Scan Chirho
 
-Generated: 2026-06-04T12:45:19.079Z
+Generated: 2026-06-04T13:01:33.646Z
 
 This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, or apparatus residue inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.
 
@@ -12,21 +12,11 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 ## Summary
 
 - Candidate lines: 17
-- High priority: 1
+- High priority: 0
 - Medium priority: 13
-- Low priority included: 3
+- Low priority included: 4
 
 ## Candidates
-
-### high-chirho score 8: vol 5 p0051 L005
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-5-chirho/page-0051-chirho/line-005-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-5-chirho/page-0051-chirho/line-005-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-5-chirho/page-0051-chirho/line-005-chirho.png)
-- Line text: `5,5B מְצָנִים {B} 𝔐 𝔊 // err ponct: m σ′ 𝔙 𝔗 מְ / facil styl: 𝔖`
-- Suspicious spans:
-  - S8 symbol-chirho: `σ′ 𝔙 𝔗 מְ` (greek-chars-in-non-greek-span-chirho:witness-symbol-review-chirho, hebrew-chars-in-non-hebrew-span-chirho:witness-symbol-review-chirho; neighbors french-chirho / french-chirho)
 
 ### medium-chirho score 5: vol 1 p0151 L015
 
@@ -157,6 +147,16 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 - Line text: `auquel se rapporte aussi la particule δέ du 𝔊 et le ἀλλὰ μήν de σ′ , alors`
 - Suspicious spans:
   - S7 symbol-chirho: `σ′` (greek-chars-in-non-greek-span-chirho:witness-symbol-review-chirho; neighbors french-chirho / french-chirho)
+
+### low-chirho score 4: vol 5 p0051 L005
+
+- Reasons: `line-has-suspicious-span-chirho`
+- Span file: `workspace-chirho/spans-chirho/vol-5-chirho/page-0051-chirho/line-005-chirho.json`
+- Scanline: `workspace-chirho/scanlines-chirho/vol-5-chirho/page-0051-chirho/line-005-chirho.png`
+![scanline](../../workspace-chirho/scanlines-chirho/vol-5-chirho/page-0051-chirho/line-005-chirho.png)
+- Line text: `5,5B מְצָנִים {B} 𝔐 𝔊 // err ponct: m σ′ 𝔙 𝔗 מְ / facil styl: 𝔖`
+- Suspicious spans:
+  - S8 symbol-chirho: `σ′ 𝔙 𝔗` (greek-chars-in-non-greek-span-chirho; neighbors french-chirho / hebrew-chirho)
 
 ### low-chirho score 4: vol 5 p0051 L006
 

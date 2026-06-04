@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T12:44:42.373Z",
+  "generatedAtChirho": "2026-06-04T12:58:47.000Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 849,
+  "countChirho": 850,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -511,14 +511,24 @@
       "segmentIndexChirho": 8,
       "garbleTextChirho": "#$ '*-8",
       "scriptChirho": "symbol-chirho",
-      "utf8TextChirho": "σ′ 𝔙 𝔗 מְ",
-      "notesChirho": "Mixed: sigla Symmachus σ′, Vulgate 𝔙, Targum 𝔗, followed by partial Hebrew מְ (beginning of מְצָנִים or similar, cut off at span boundary)"
+      "utf8TextChirho": "σ′ 𝔙 𝔗",
+      "notesChirho": "Split from the old mixed span `σ′ 𝔙 𝔗 מְ`: the Greek/Symmachus siglum σ′ plus Vulgate 𝔙 and Targum 𝔗 witness sigla remain in the Latin/symbol review lane."
     },
     {
       "volumeChirho": 5,
       "pageChirho": 51,
       "lineIndexChirho": 5,
-      "segmentIndexChirho": 11,
+      "segmentIndexChirho": 9,
+      "garbleTextChirho": "Hebrew partial embedded in old S8 `σ′ 𝔙 𝔗 מְ`",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "מְ",
+      "notesChirho": "Split from the old mixed symbol span `σ′ 𝔙 𝔗 מְ`: the scanline shows pointed Hebrew partial `מְ` as a distinct final token after the sigla. Stored as vision-chirho; exact role of the partial form and pointing remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 51,
+      "lineIndexChirho": 5,
+      "segmentIndexChirho": 12,
       "garbleTextChirho": "styl )",
       "scriptChirho": "latin-non-french-chirho",
       "utf8TextChirho": "styl: 𝔖",
