@@ -119,6 +119,20 @@ span was surfaced.
   - Visual precheck: the crop is centered on the word and no obvious segmentation issue is visible.
   - Human check still needed: exact consonants and pointing, especially the `כ/ק` class distinction.
 
+- `vol 5 p150 L11 S4/S6`:
+  `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A150%3A11%3A4`
+  - Live texts: `קְבָרִים` and `קְבָרִים`
+  - Attention reason: low direct-read confidence on both occurrences.
+  - Visual precheck: the line is an "au lieu de" comparison with two separately boxed occurrences of the same Hebrew word. Both target crops are centered on their respective Hebrew words; the surrounding French `et enfin`, `au lieu de`, and `Elle traduit` sit outside the boxes.
+  - Human check still needed: exact vowels/marks for both occurrences, and whether the printed punctuation after the second occurrence is represented in the intended neighboring span.
+
+- `vol 2 p152 L12 S1`:
+  `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=2%3A152%3A12%3A1`
+  - Live text: `בָּהּ`
+  - Attention reason: low direct-read confidence on a short Hebrew word.
+  - Visual precheck: the crop tightly boxes the short Hebrew word after `8,21` and before the apparatus sigla; no adjacent Latin/symbol text appears swallowed into the Hebrew box.
+  - Human check still needed: exact consonants and pointing, especially the final he/mappiq-class detail.
+
 ## Historical Superseded Notes
 
 - `vol 3 p149 L25 S1/S3`:
