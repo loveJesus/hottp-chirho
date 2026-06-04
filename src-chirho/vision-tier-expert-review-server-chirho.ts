@@ -818,7 +818,7 @@ function htmlChirho(): string {
         ["ID", itemChirho.idChirho],
         ["Location", "vol " + itemChirho.volumeChirho + " p" + itemChirho.pageChirho + " L" + itemChirho.lineIndexChirho + " S" + itemChirho.segmentIndexChirho],
         ["Script", itemChirho.scriptChirho],
-        ["Reviewer", itemChirho.reviewerChirho],
+        ["Required role", itemChirho.reviewerChirho],
         ["Source", itemChirho.visionSourceChirho],
         ["Priority", itemChirho.priorityMatchChirho ? "yes" : "no"],
         ["Issue reported", itemChirho.issueReportedChirho ? "yes" : "no"]
