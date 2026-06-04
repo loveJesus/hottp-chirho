@@ -307,6 +307,95 @@ function writeBackupRecordChirho(
   writeJsonAtomicChirho(pathChirho, backupChirho);
 }
 
+function requiredSpanMetadataChirho(spanChirho: SpanChirho, keyChirho: keyof SpanChirho, itemIdChirho: string): string {
+  const valueChirho = spanChirho[keyChirho];
+  if (typeof valueChirho !== "string") {
+    throw new Error(`${itemIdChirho} already-applied span is missing ${String(keyChirho)}`);
+  }
+  return valueChirho;
+}
+
+function appliedMetadataChirho(
+  spanChirho: SpanChirho,
+  optionsChirho: ApplyOptionsChirho
+): {
+  appliedAtChirho: string;
+  previousTextChirho: string;
+  reviewerChirho: string;
+  reviewerRoleChirho: string;
+  rationaleChirho: string;
+} {
+  const appliedAtChirho = requiredSpanMetadataChirho(spanChirho, "expertTranscribedAtChirho", optionsChirho.itemIdChirho);
+  const previousTextChirho = requiredSpanMetadataChirho(
+    spanChirho,
+    "expertTranscriptionPreviousTextChirho",
+    optionsChirho.itemIdChirho
+  );
+  const reviewerChirho = requiredSpanMetadataChirho(
+    spanChirho,
+    "expertTranscriptionReviewerChirho",
+    optionsChirho.itemIdChirho
+  );
+  const reviewerRoleChirho = requiredSpanMetadataChirho(
+    spanChirho,
+    "expertTranscriptionReviewerRoleChirho",
+    optionsChirho.itemIdChirho
+  );
+  const rationaleChirho = requiredSpanMetadataChirho(
+    spanChirho,
+    "expertTranscriptionRationaleChirho",
+    optionsChirho.itemIdChirho
+  );
+  if (reviewerChirho !== optionsChirho.reviewerChirho) {
+    throw new Error(`${optionsChirho.itemIdChirho} already-applied reviewer does not match --reviewer-chirho`);
+  }
+  if (reviewerRoleChirho !== optionsChirho.reviewerRoleChirho) {
+    throw new Error(`${optionsChirho.itemIdChirho} already-applied reviewer role does not match --reviewer-role-chirho`);
+  }
+  if (rationaleChirho !== optionsChirho.rationaleChirho) {
+    throw new Error(`${optionsChirho.itemIdChirho} already-applied rationale does not match --rationale-chirho`);
+  }
+  return {
+    appliedAtChirho,
+    previousTextChirho,
+    reviewerChirho,
+    reviewerRoleChirho,
+    rationaleChirho,
+  };
+}
+
+function backupRecordChirho(paramsChirho: {
+  optionsChirho: ApplyOptionsChirho;
+  parsedChirho: ParsedItemIdChirho;
+  liveItemChirho: VisionTierExpertLiveItemChirho;
+  packItemChirho: ExpertPackItemChirho;
+  linePathChirho: string;
+  previousTextChirho: string;
+  appliedAtChirho: string;
+  reviewerChirho: string;
+  reviewerRoleChirho: string;
+  rationaleChirho: string;
+}): ExpertSuppliedTranscriptionRecordChirho {
+  return {
+    itemIdChirho: paramsChirho.optionsChirho.itemIdChirho,
+    volumeChirho: paramsChirho.parsedChirho.volumeChirho,
+    pageChirho: paramsChirho.parsedChirho.pageChirho,
+    lineIndexChirho: paramsChirho.parsedChirho.lineIndexChirho,
+    segmentIndexChirho: paramsChirho.parsedChirho.segmentIndexChirho,
+    scriptChirho: paramsChirho.liveItemChirho.scriptChirho,
+    previousTextChirho: paramsChirho.previousTextChirho,
+    suppliedTextChirho: paramsChirho.optionsChirho.suppliedTextChirho,
+    suppliedTextHashChirho: hashTextChirho(paramsChirho.optionsChirho.suppliedTextChirho),
+    reviewerChirho: paramsChirho.reviewerChirho,
+    reviewerRoleChirho: paramsChirho.reviewerRoleChirho,
+    rationaleChirho: paramsChirho.rationaleChirho,
+    appliedAtChirho: paramsChirho.appliedAtChirho,
+    sourcePathChirho: paramsChirho.packItemChirho.sourcePathChirho,
+    packetPathChirho: paramsChirho.packItemChirho.packetPathChirho,
+    linePathChirho: paramsChirho.linePathChirho,
+  };
+}
+
 function reportChirho(paramsChirho: {
   optionsChirho: ApplyOptionsChirho;
   statusChirho: ApplyReportChirho["statusChirho"];
@@ -362,7 +451,36 @@ function mainChirho(): void {
     process.exitCode = 1;
     return;
   }
+  const liveItemPresentChirho = liveItemChirho;
+  if (liveItemPresentChirho === undefined) {
+    throw new Error(`${optionsChirho.itemIdChirho} is not in the live vision-tier expert queue`);
+  }
+  if (!reviewerRoleMatchesScriptChirho(liveItemPresentChirho.scriptChirho, optionsChirho.reviewerRoleChirho)) {
+    throw new Error(
+      `--reviewer-role-chirho must be "${expectedVisionTierReviewerRoleChirho(liveItemPresentChirho.scriptChirho)}" for ${liveItemPresentChirho.scriptChirho}`
+    );
+  }
+  const packItemChirho = loadFreshExpertPackItemChirho(optionsChirho.itemIdChirho, liveItemPresentChirho);
   if (currentStateChirho === "already-applied-chirho") {
+    const metadataChirho = appliedMetadataChirho(spanChirho, optionsChirho);
+    if (optionsChirho.applyChirho) {
+      writeBackupRecordChirho(
+        optionsChirho.backupPathChirho,
+        backupRecordChirho({
+          optionsChirho,
+          parsedChirho,
+          liveItemChirho: liveItemPresentChirho,
+          packItemChirho,
+          linePathChirho,
+          previousTextChirho: metadataChirho.previousTextChirho,
+          appliedAtChirho: metadataChirho.appliedAtChirho,
+          reviewerChirho: metadataChirho.reviewerChirho,
+          reviewerRoleChirho: metadataChirho.reviewerRoleChirho,
+          rationaleChirho: metadataChirho.rationaleChirho,
+        }),
+        new Date().toISOString()
+      );
+    }
     console.log(
       JSON.stringify(
         reportChirho({
@@ -370,8 +488,12 @@ function mainChirho(): void {
           statusChirho: "already-applied-chirho",
           linePathChirho,
           scriptChirho: spanChirho.scriptChirho,
-          previousTextChirho: spanChirho.expertTranscriptionPreviousTextChirho ?? "",
-          messagesChirho: ["expert-supplied text is already applied"],
+          previousTextChirho: metadataChirho.previousTextChirho,
+          messagesChirho: [
+            optionsChirho.applyChirho
+              ? "expert-supplied text is already applied; durable backup record reconciled"
+              : "expert-supplied text is already applied",
+          ],
         }),
         null,
         2
@@ -379,13 +501,6 @@ function mainChirho(): void {
     );
     return;
   }
-  const liveItemPresentChirho = liveItemChirho!;
-  if (!reviewerRoleMatchesScriptChirho(liveItemPresentChirho.scriptChirho, optionsChirho.reviewerRoleChirho)) {
-    throw new Error(
-      `--reviewer-role-chirho must be "${expectedVisionTierReviewerRoleChirho(liveItemPresentChirho.scriptChirho)}" for ${liveItemPresentChirho.scriptChirho}`
-    );
-  }
-  const packItemChirho = loadFreshExpertPackItemChirho(optionsChirho.itemIdChirho, liveItemPresentChirho);
   if (liveItemPresentChirho.currentTextChirho.length !== 0) {
     throw new Error(`${optionsChirho.itemIdChirho} is not empty; this tool only resolves blank expert transcription items`);
   }
@@ -425,24 +540,18 @@ function mainChirho(): void {
   writeJsonAtomicChirho(linePathChirho, lineChirho);
   writeBackupRecordChirho(
     optionsChirho.backupPathChirho,
-    {
-      itemIdChirho: optionsChirho.itemIdChirho,
-      volumeChirho: parsedChirho.volumeChirho,
-      pageChirho: parsedChirho.pageChirho,
-      lineIndexChirho: parsedChirho.lineIndexChirho,
-      segmentIndexChirho: parsedChirho.segmentIndexChirho,
-      scriptChirho: liveItemPresentChirho.scriptChirho,
+    backupRecordChirho({
+      optionsChirho,
+      parsedChirho,
+      liveItemChirho: liveItemPresentChirho,
+      packItemChirho,
+      linePathChirho,
       previousTextChirho,
-      suppliedTextChirho: optionsChirho.suppliedTextChirho,
-      suppliedTextHashChirho: hashTextChirho(optionsChirho.suppliedTextChirho),
       reviewerChirho: optionsChirho.reviewerChirho,
       reviewerRoleChirho: optionsChirho.reviewerRoleChirho,
       rationaleChirho: optionsChirho.rationaleChirho,
       appliedAtChirho,
-      sourcePathChirho: packItemChirho.sourcePathChirho,
-      packetPathChirho: packItemChirho.packetPathChirho,
-      linePathChirho,
-    },
+    }),
     appliedAtChirho
   );
   console.log(
