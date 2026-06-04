@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T08:10:19.441Z",
+  "generatedAtChirho": "2026-06-04T08:21:09.503Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 794,
+  "countChirho": 795,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7943,6 +7943,16 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "נקשה ורעב",
       "notesChirho": "Recovered the Isaiah 8:21 expression from a geometry/provenance mismatch: Claude and Codex second-witnessed the scanline as logical text `נקשה ורעב`; the old `1711` is the visually hidden ורעב, while the existing narrow Pass-C Hebrew island already carried the full consonantal phrase. The print appears consonantal here, so no vowels were manufactured. The leading `2` before `le sujet` was an OCR artifact of the mangled Hebrew and was dropped. Stored as vision-chirho; exact printed letters, vowels/marks if any, and segmentation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 1,
+      "pageChirho": 152,
+      "lineIndexChirho": 7,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "7247",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "לגברים",
+      "notesChirho": "Recovered from digit garbage `7247` in the vol 1 p152 line 7 discussion of vs 17b. Claude and Codex second-witnessed the scanline as bare consonantal `לגברים` (lamed-gimel-bet-resh-yod-finalmem). The final measured box is x740..862: the French `à` remains in the preceding span and the Hebrew ל is not clipped. Stored as vision-chirho; exact printed letters, vowels/marks if any, and segmentation remain Hebrew/WLC expert-confirmation tier."
     }
   ]
 }
