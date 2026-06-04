@@ -81,8 +81,9 @@ function policyClaimsSafeSymbolsOnlyChirho(policyChirho: LatinSymbolAcceptancePo
   return typeof policyChirho.scopeChirho === "string" && /\bsafeSymbolsOnly=true\b/.test(policyChirho.scopeChirho);
 }
 
-function policyReviewerIsMachineChirho(policyChirho: LatinSymbolAcceptancePolicyChirho): boolean {
-  return /^(codex|claude|gemini)[-_]/i.test(policyChirho.reviewerChirho ?? "");
+function policyReviewerHasBroadAcceptancePrivilegeChirho(policyChirho: LatinSymbolAcceptancePolicyChirho): boolean {
+  const reviewerChirho = policyChirho.reviewerChirho ?? "";
+  return /(^hallelujah([_-]|$)|(^|[_-])human([_-]|$))/i.test(reviewerChirho);
 }
 
 function validatePolicyShapeChirho(fileChirho: LatinSymbolAcceptancePolicyFileChirho): string[] {
@@ -96,7 +97,8 @@ function validatePolicyShapeChirho(fileChirho: LatinSymbolAcceptancePolicyFileCh
   }
   for (const policyChirho of fileChirho.policiesChirho) {
     const policyIdChirho = policyChirho.policyIdChirho ?? "<missing-policy-id-chirho>";
-    const trivialSymbolOnlyChirho = policyClaimsSafeSymbolsOnlyChirho(policyChirho) || policyReviewerIsMachineChirho(policyChirho);
+    const trivialSymbolOnlyChirho =
+      policyClaimsSafeSymbolsOnlyChirho(policyChirho) || !policyReviewerHasBroadAcceptancePrivilegeChirho(policyChirho);
     if (!nonEmptyStringChirho(policyChirho.policyIdChirho)) {
       errorsChirho.push(`${policyIdChirho}: policyIdChirho must be non-empty`);
     }
@@ -149,7 +151,7 @@ function validatePolicyShapeChirho(fileChirho: LatinSymbolAcceptancePolicyFileCh
             textChirho: itemChirho.currentTextChirho,
           }))
       ) {
-        errorsChirho.push(`${policyIdChirho}: machine or safe-symbol policy item ${itemChirho.itemIdChirho ?? "<missing-item-id-chirho>"} is not trivial symbol punctuation`);
+        errorsChirho.push(`${policyIdChirho}: non-human-privileged or safe-symbol policy item ${itemChirho.itemIdChirho ?? "<missing-item-id-chirho>"} is not trivial symbol punctuation`);
       }
     }
   }
