@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T16:24:45.577Z",
+  "generatedAtChirho": "2026-06-04T16:54:10.439Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 877,
+  "countChirho": 878,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8773,6 +8773,16 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "מן",
       "notesChirho": "Repaired vol 2 p149 line 28 split-through-Hebrew phrase: the scanline prints `מן` after French `avec`, while the old span text over this box was `יסר`. Stored as vision-chirho, not certified; exact letters, vowels/marks, punctuation, and segmentation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 148,
+      "lineIndexChirho": 25,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "אֶלאֱלוֹהַּ דָּלְפָה עֵינִי",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "אֶל־אֱלוֹהַּ דָּלְפָה עֵינִי",
+      "notesChirho": "Repaired vol 5 p148 line 25 segment 3: packet crop shows printed maqqef between `אֶל` and `אֱלוֹהַּ`; old raw Pass-C text glued them as `אֶלאֱלוֹהַּ`. Stored as vision-chirho, not certified; exact vowels/marks, maqqef, and segmentation remain Hebrew/WLC expert-confirmation tier."
     }
   ]
 }

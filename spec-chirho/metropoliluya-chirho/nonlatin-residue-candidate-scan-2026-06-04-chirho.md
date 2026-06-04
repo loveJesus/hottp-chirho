@@ -3,7 +3,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Non-Latin Residue Candidate Scan Chirho
 
-Generated: 2026-06-04T16:25:32.502Z
+Generated: 2026-06-04T16:54:55.982Z
 
 This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, or apparatus residue inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.
 
@@ -14,7 +14,7 @@ Standalone Greek recension sigla inside symbol spans are handled by the Latin/sy
 - Scanner source files: 7
 - Scanner source fingerprint: 09ae11a89d26d20c555b45a4645d0c63a550f490b9d065959df23cbc36a651c3
 - Span source files: 1789
-- Span source fingerprint: e32b8b454e678ec571af661aa9bbb6893606bf9c6570ea8bda139b08a23a86b4
+- Span source fingerprint: 125ebc0a1489dcec5faa50893e9779f453d1398ae9a59d7e63e13ad3f9915527
 - Candidate lines: 0
 - High priority: 0
 - Medium priority: 0

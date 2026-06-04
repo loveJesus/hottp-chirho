@@ -7,7 +7,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 We've built the full machine for turning the Barthélemy PDFs into *flawless* UTF-8 markdown, and it's working: the current 46-page working set (all 5 volumes) is transcribed into structured "spans" with **0 unknown characters, 0 broken characters, and 0 Unicode-normalization issues**, exported to markdown, and watched by a strict gate. The engineering is essentially done — what's left is **human/expert eyes confirming the non-Latin text against the printed page**, which the system now makes safe, attributable, and impossible to fake. To keep us honest, the certification gate is **deliberately RED** and will not turn green until that review actually happens — "the export passes != the text is certified."
 
-The path to production is now mostly **review, not building**. Three review stations are live: raw Hebrew (98 spans), Latin/symbol (560 remaining decisions), and non-Latin expert (445: Hebrew 328, Greek 87, Syriac 17, Arabic 13). Hebrew and Greek are yours to confirm; Syriac/Arabic and exact Aramaic/Targum vocalization route to experts. As each item is confirmed against the print (with the reviewer's name + rationale, anchored to the exact text), the gate counts down; when it reaches zero the **certified flawless markdown is the production artifact** — the published digital critical edition. The supporting web app and OCR suggestions are already deployed; the certified text is the thing we're now reviewing toward.
+The path to production is now mostly **review, not building**. Three review stations are live: raw Hebrew (97 spans), Latin/symbol (560 remaining decisions), and non-Latin expert (446: Hebrew 329, Greek 87, Syriac 17, Arabic 13). Hebrew and Greek are yours to confirm; Syriac/Arabic and exact Aramaic/Targum vocalization route to experts. As each item is confirmed against the print (with the reviewer's name + rationale, anchored to the exact text), the gate counts down; when it reaches zero the **certified flawless markdown is the production artifact** — the published digital critical edition. The supporting web app and OCR suggestions are already deployed; the certified text is the thing we're now reviewing toward.
 
 ---
 
@@ -32,8 +32,8 @@ This report is mostly about (2), because that is where the remaining work is.
 
 | Category | Count | Where |
 |---|---|---|
-| Raw Pass-C Hebrew spans | **98** | live validator `:8766` |
-| Non-Latin vision-tier items | **445** (Hebrew 328 · Greek 87 · Syriac 17 · Arabic 13) | expert reviewer `:8771` |
+| Raw Pass-C Hebrew spans | **97** | live validator `:8766` |
+| Non-Latin vision-tier items | **446** (Hebrew 329 · Greek 87 · Syriac 17 · Arabic 13) | expert reviewer `:8771` |
 | Latin/symbol vision decisions | **560 remaining** (564 total, 4 trivial punctuation accepted by explicit policy) | reviewer `:8770` |
 
 **Review progress so far:** 10 schema-v2 human validation rows exist, including the applied `וְגַם־חֲמָ֖ת` correction; 4 trivial Latin/symbol punctuation items have been accepted by explicit policy; and there are 0 expert confirmations / 0 expert issue records. Large portions of the apparent count movement came from strict-blind repairs and re-routing recovered text into vision-tier queues, not from expert certification. So review has effectively just begun — **~0% certified** — which is exactly why the gate is red.
@@ -66,7 +66,7 @@ All of this was built and cross-audited via the two-witness ("metropoliluya") di
 ## 5. Path to production (remaining work)
 
 1. **Review passes** *(the bulk of the remaining effort)*:
-   - **You:** 98 raw Hebrew (`:8766`) + Hebrew/Greek vision lanes (`:8771?script-chirho=hebrew-chirho` / `=greek-chirho`, 328 + 87).
+   - **You:** 97 raw Hebrew (`:8766`) + Hebrew/Greek vision lanes (`:8771?script-chirho=hebrew-chirho` / `=greek-chirho`, 329 + 87).
    - **Experts:** Syriac (17, including the blank span), Arabic (13), and exact Aramaic/Targum vocalization.
    - **Latin/symbol (560 remaining):** mostly real proofreading — only 4 items have been accepted as trivial punctuation; the witness sigla, references, ornament-guesses, French, and proper nouns each need a look.
 2. **Gate goes green.** When all three categories are certified, `transcription-certification-status-chirho` reports **complete = true**.
