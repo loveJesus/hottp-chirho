@@ -251,8 +251,9 @@ function htmlChirho(): string {
     }
     function reviewerAttributionErrorChirho(valueChirho) {
       const trimmedChirho = String(valueChirho || "").trim();
+      const normalizedChirho = trimmedChirho.toLowerCase();
       if (trimmedChirho.length === 0) return "Reviewer is required.";
-      if (trimmedChirho === "human-chirho" || trimmedChirho === "unknown-reviewer-chirho") {
+      if (normalizedChirho === "human-chirho" || normalizedChirho === "unknown-reviewer-chirho") {
         return "Reviewer must identify the explicit reviewer, not " + trimmedChirho + ".";
       }
       return null;

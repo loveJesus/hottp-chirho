@@ -13,8 +13,12 @@ export const GENERIC_REVIEWER_IDS_CHIRHO = new Set<string>([
   "unknown-reviewer-chirho",
 ]);
 
+function normalizedReviewerIdChirho(reviewerChirho: string): string {
+  return reviewerChirho.trim().toLowerCase();
+}
+
 export function isGenericReviewerAttributionChirho(reviewerChirho: string): boolean {
-  const trimmedChirho = reviewerChirho.trim();
+  const trimmedChirho = normalizedReviewerIdChirho(reviewerChirho);
   return trimmedChirho.length === 0 || GENERIC_REVIEWER_IDS_CHIRHO.has(trimmedChirho);
 }
 
@@ -22,10 +26,11 @@ export function explicitReviewerAttributionErrorChirho(
   reviewerChirho: string,
   fieldNameChirho = "reviewerChirho"
 ): string | null {
-  const trimmedChirho = reviewerChirho.trim();
+  const displayReviewerChirho = reviewerChirho.trim();
+  const trimmedChirho = normalizedReviewerIdChirho(reviewerChirho);
   if (trimmedChirho.length === 0) return `${fieldNameChirho} is required`;
   if (GENERIC_REVIEWER_IDS_CHIRHO.has(trimmedChirho)) {
-    return `${fieldNameChirho} must identify the explicit reviewer, not generic ${trimmedChirho}`;
+    return `${fieldNameChirho} must identify the explicit reviewer, not generic ${displayReviewerChirho}`;
   }
   return null;
 }
