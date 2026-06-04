@@ -10,7 +10,7 @@
  * punctuation. Dry-run is the default.
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from "fs";
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
 import { dirname, join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
@@ -81,6 +81,13 @@ interface ApplyOptionsChirho {
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
   const prefixChirho = `--${nameChirho}=`;
   return argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho))?.slice(prefixChirho.length);
+}
+
+function writeJsonAtomicChirho(pathChirho: string, valueChirho: unknown): void {
+  mkdirSync(dirname(pathChirho), { recursive: true });
+  const tempPathChirho = `${pathChirho}.tmp-chirho-${process.pid}-${Date.now()}`;
+  writeFileSync(tempPathChirho, `${JSON.stringify(valueChirho, null, 2)}\n`);
+  renameSync(tempPathChirho, pathChirho);
 }
 
 function hebrewSkeletonChirho(textChirho: string): string {
@@ -230,7 +237,7 @@ function mainChirho(): void {
     }
     if (lineChangedChirho) {
       normalizeSpanLineTextFieldsChirho(lineChirho);
-      writeFileSync(linePathChirho, `${JSON.stringify(lineChirho, null, 2)}\n`);
+      writeJsonAtomicChirho(linePathChirho, lineChirho);
     }
   }
 
@@ -250,8 +257,7 @@ function mainChirho(): void {
     resultsChirho,
   };
 
-  mkdirSync(dirname(reportPathChirho), { recursive: true });
-  writeFileSync(reportPathChirho, `${JSON.stringify(reportChirho, null, 2)}\n`);
+  writeJsonAtomicChirho(reportPathChirho, reportChirho);
   console.log(
     `[${MODULE_CHIRHO}] mode=${applyChirho ? "apply-chirho" : "dry-run-chirho"} ` +
       `candidates=${resultsChirho.length} applied=${appliedCountChirho} ` +
