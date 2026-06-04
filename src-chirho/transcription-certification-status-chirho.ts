@@ -1538,7 +1538,7 @@ function blankVisionTierSuppliedTextCommandTemplateChirho(
     "bun run apply-expert-supplied-vision-text-chirho --",
     `--id-chirho=${shellSingleQuoteChirho(idChirho)}`,
     "--supplied-text-chirho='<exact printed text>'",
-    "--reviewer-chirho=<reviewer-id-chirho>",
+    "--reviewer-chirho=<explicit-human-reviewer-id-chirho>",
     `--reviewer-role-chirho=${shellSingleQuoteChirho(expectedReviewerRoleChirho ?? "<expected-script-role-chirho>")}`,
     "--rationale-chirho='<why this exact text is supplied>'",
   ];

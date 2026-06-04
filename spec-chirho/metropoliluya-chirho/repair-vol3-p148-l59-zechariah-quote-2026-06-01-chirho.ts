@@ -452,7 +452,7 @@ function mainChirho(): void {
       modeChirho,
       "blocked-chirho",
       [
-        "segment 1 must first be corrected/certified in place via apply-human-suggested-corrections-chirho --apply --certify-human --validation-id-chirho=3 --suggested-text-chirho='וְגַם־חֲמָ֖ת'",
+        "segment 1 must first be corrected/certified in place via apply-human-suggested-corrections-chirho --apply --certify-human --reviewer-chirho=<explicit-human-reviewer-id-chirho> --validation-id-chirho=3 --suggested-text-chirho='וְגַם־חֲמָ֖ת'",
         `current segment 1 text/status: ${JSON.stringify({
           textChirho: reviewedSpanChirho.utf8TextChirho,
           humanReviewStatusChirho: reviewedSpanChirho.humanReviewStatusChirho ?? null,
