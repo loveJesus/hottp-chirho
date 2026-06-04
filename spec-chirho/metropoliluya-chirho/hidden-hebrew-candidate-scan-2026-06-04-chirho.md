@@ -3,50 +3,20 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Hidden Hebrew Candidate Scan Chirho
 
-Generated: 2026-06-04T08:36:33.544Z
+Generated: 2026-06-04T09:00:28.877Z
 
 This is a machine-assisted review queue, not a certification result. It flags lines where OCR may have rendered printed Hebrew as valid-looking French, Latin, symbols, short Latin/bracket garbage, or digit garbage. Every item still needs visual review against the scanline before any span repair.
 
 ## Summary
 
-- Candidate lines: 29
-- High priority: 12
+- Candidate lines: 26
+- High priority: 9
 - Medium priority: 17
 - Low priority included: 0
 
 Priority is heuristic: scripture/citation context, existing Hebrew spans, digit/symbol/short Latin-bracket garbage, and adjacency to Hebrew increase priority. Normal manuscript numbers, citations, and sigla can still appear here as false positives.
 
 ## Candidates
-
-### high-chirho score 10: vol 1 p0150 L032
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-dense-digit-cluster-chirho`, `line-has-repeated-uppercase-garble-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-1-chirho/page-0150-chirho/line-032-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-1-chirho/page-0150-chirho/line-032-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-1-chirho/page-0150-chirho/line-032-chirho.png)
-- Line text: `6,18 cor תֶּחָמְדּוּ [C] G // assim-ctext : M V ST 1770n`
-- Suspicious spans:
-  - S4 french-chirho: `: M V ST 1770n` (dense-digit-cluster-chirho, repeated-uppercase-garble-near-hebrew-line-chirho; neighbors latin-non-french-chirho / none)
-
-### high-chirho score 9: vol 1 p0152 L004
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-repeated-uppercase-garble-chirho`, `suspicious-span-adjacent-to-hebrew-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-1-chirho/page-0152-chirho/line-004-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-1-chirho/page-0152-chirho/line-004-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-1-chirho/page-0152-chirho/line-004-chirho.png)
-- Line text: `7,17A מִשְׁפַּחַת [D] MT // spont : m t plur / schem (assim 14) : G VS clav למשפחות`
-- Suspicious spans:
-  - S2 french-chirho: `[D] MT // spont : m t plur / schem (assim 14) : G VS` (repeated-uppercase-garble-near-hebrew-line-chirho; neighbors hebrew-chirho / latin-non-french-chirho)
-
-### high-chirho score 9: vol 2 p0149 L037
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-repeated-uppercase-garble-chirho`, `suspicious-span-adjacent-to-hebrew-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-2-chirho/page-0149-chirho/line-037-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-2-chirho/page-0149-chirho/line-037-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-2-chirho/page-0149-chirho/line-037-chirho.png)
-- Line text: `8,13 תַקְדִּישׁוּ [A] M 1Q-a 4Q-h G Sym V ST`
-- Suspicious spans:
-  - S2 french-chirho: `[A] M 1Q-a 4Q-h G Sym V ST` (repeated-uppercase-garble-near-hebrew-line-chirho; neighbors hebrew-chirho / none)
 
 ### high-chirho score 9: vol 4 p0150 L013
 

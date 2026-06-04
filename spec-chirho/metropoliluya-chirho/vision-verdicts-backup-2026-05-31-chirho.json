@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T08:36:02.034Z",
+  "generatedAtChirho": "2026-06-04T09:00:00.148Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 796,
+  "countChirho": 798,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7963,6 +7963,26 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "כְּכֹל אֲשֶׁר־צִוָּה מֹשֶׁה אֶת־יְהוֹשֻׁעַ",
       "notesChirho": "Expanded the too-narrow vol 1 p149 line 38 Hebrew span: Claude and Codex second-witnessed that the print reads `כְּכֹל אֲשֶׁר־צִוָּה מֹשֶׁה אֶת־יְהוֹשֻׁעַ` across x89..535, while the old S1 box covered only the left half and `MY Un 723` was the Hebrew right half mis-OCR'd inside the following French span. The two maqafs in אשר־צוה and את־יהושע are visually certain, matching Joshua 4:10, but the span remains vision-chirho; exact printed vowels/marks and segmentation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 1,
+      "pageChirho": 150,
+      "lineIndexChirho": 32,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "old pass-c OCR תֶּחָמְדּוּ",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "תחרמו",
+      "notesChirho": "Corrected the vol 1 p150 L32 raw Pass-C Hebrew island from the current חמד-form OCR to a Joshua 6:18 חרם-form. Claude second-witnessed that the line must be חרם, not חמד; the local page OCR reads `תֵּחָרְמוּ`. Stored consonantal `תחרמו` as vision-chirho only because the exact printed vowels/marks remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 1,
+      "pageChirho": 150,
+      "lineIndexChirho": 32,
+      "segmentIndexChirho": 5,
+      "garbleTextChirho": "1770n",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "תחרימו",
+      "notesChirho": "Recovered the M V S T witness reading from the hidden `1770n` OCR tail on vol 1 p150 L32. Claude second-witnessed the consonants as תחרימו and withdrew the earlier מחמד-family read; local page OCR reads `תַּחֲרִימוּ`, matching the Joshua 6:18 חרם context. Stored consonantal `תחרימו` as vision-chirho only because exact printed vowels/marks and segmentation remain Hebrew/WLC expert-confirmation tier."
     }
   ]
 }

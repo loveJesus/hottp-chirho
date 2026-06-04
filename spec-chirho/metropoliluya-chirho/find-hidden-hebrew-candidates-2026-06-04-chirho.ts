@@ -33,6 +33,8 @@ const DIGIT_CLUSTER_RE_CHIRHO = /(?:^|[\s([{])(?:[A-Za-z]?\d{3,}[A-Za-z]?|\d{2,}
 const SYMBOL_DIGIT_RE_CHIRHO = /(?:[+*#]\s*\d+|\d+\s*[}?]|\}\s*\d+)/u;
 const ORDINAL_GARBAGE_RE_CHIRHO = /(?:^|[\s([{])["“”']?[nN][°º]\d+/u;
 const REPEATED_UPPER_GARBAGE_RE_CHIRHO = /(?:^|[\s([{])["“”']?[A-Z]\.?\s+["“”']?[A-Z]{2}(?=$|[\s,.;:)])/u;
+const APPARATUS_WITNESS_LIST_RE_CHIRHO =
+  /^(?:\s|[:/()[\]{}.,-]|[A-Z]{1,3}|[mgvst]+|MT|MV|VT|ST|VS|GS|Sym|Hev|1Q-[A-Za-z]|4Q-[A-Za-z]|spont|plur|schem|assim|ctext|clav|abr-elus|usu|et|\d{1,2}[A-Za-z]?)+$/u;
 const SHORT_LATIN_SYMBOL_GARBAGE_RE_CHIRHO = /^(?=.{2,12}$)(?=.*[A-Za-z])(?=.*[{}\[\]£?])[A-Za-z0-9{}\[\]£?]+$/u;
 const SHORT_BRACKET_DIGIT_GARBAGE_RE_CHIRHO = /^(?:\d[\]}]|\d{1,2}[A-Za-z]?)$/u;
 const BRACKETED_SINGLE_CAPITAL_SIGLUM_RE_CHIRHO = /^[{\[][A-Z][}\]]$/u;
@@ -127,7 +129,11 @@ function spanReasonsChirho(spanChirho: SpanChirho, lineChirho: SpanLineChirho, s
   }
   if (SYMBOL_DIGIT_RE_CHIRHO.test(textChirho)) reasonsChirho.push("symbol-digit-garble-chirho");
   if (ORDINAL_GARBAGE_RE_CHIRHO.test(textChirho)) reasonsChirho.push("ordinal-garble-chirho");
-  if (REPEATED_UPPER_GARBAGE_RE_CHIRHO.test(textChirho) && hasHebrewSpanChirho(lineChirho)) {
+  if (
+    REPEATED_UPPER_GARBAGE_RE_CHIRHO.test(textChirho) &&
+    hasHebrewSpanChirho(lineChirho) &&
+    !APPARATUS_WITNESS_LIST_RE_CHIRHO.test(textChirho)
+  ) {
     reasonsChirho.push("repeated-uppercase-garble-near-hebrew-line-chirho");
   }
   if (
