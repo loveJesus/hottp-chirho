@@ -368,7 +368,8 @@ function htmlChirho(): string {
       return currentIssueFlagsChirho().length === 0;
     }
     function currentReviewCanSubmitChirho() {
-      return currentReviewerChirho().length > 0 && (!currentReviewWouldBeCleanChirho() || cleanAcceptAcknowledgedChirho());
+      return reviewerAttributionErrorChirho(currentReviewerChirho()) === null &&
+        (!currentReviewWouldBeCleanChirho() || cleanAcceptAcknowledgedChirho());
     }
     function reviewActionTextChirho() {
       return currentIssueFlagsChirho().length === 0 ? "Accept as clean" : "Save issue";

@@ -686,6 +686,20 @@ function htmlChirho(): string {
     function itemTextIsBlankChirho(itemChirho) {
       return typeof itemChirho.currentTextChirho !== "string" || itemChirho.currentTextChirho.trim().length === 0 || itemChirho.textIsBlankChirho === true;
     }
+    function currentIssueFlagsChirho() {
+      return [...document.querySelectorAll(".issue-option-chirho input:checked")].map((nodeChirho) => nodeChirho.value);
+    }
+    function reviewerFieldsCompleteChirho() {
+      return reviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho")) === null &&
+        fieldValueChirho("reviewer-role-chirho").trim().length > 0 &&
+        fieldValueChirho("rationale-chirho").trim().length > 0;
+    }
+    function confirmationCanSubmitChirho(itemChirho) {
+      return !itemTextIsBlankChirho(itemChirho) && certifyExactCheckedChirho() && reviewerFieldsCompleteChirho();
+    }
+    function issueCanSubmitChirho() {
+      return reviewerFieldsCompleteChirho() && currentIssueFlagsChirho().length > 0;
+    }
     function saveReviewerFieldsChirho() {
       localStorage.setItem("expertReviewerChirho", fieldValueChirho("reviewer-chirho"));
       localStorage.setItem("expertReviewerRoleChirho", fieldValueChirho("reviewer-role-chirho"));
@@ -799,14 +813,23 @@ function htmlChirho(): string {
       const actionsChirho = elChirho("div", { classChirho: "actions-chirho" });
       const confirmChirho = elChirho("button", { classChirho: "confirm-chirho", type: "button", textChirho: "Confirm" });
       confirmChirho.disabled = true;
-      certifyInputChirho.addEventListener("change", () => {
-        confirmChirho.disabled = itemTextIsBlankChirho(itemChirho) || !certifyExactCheckedChirho();
-      });
-      confirmChirho.addEventListener("click", () => confirmCurrentChirho(itemChirho));
       const issueChirho = elChirho("button", { classChirho: "issue-chirho", type: "button", textChirho: "Report issue" });
+      const updateActionButtonsChirho = () => {
+        confirmChirho.disabled = !confirmationCanSubmitChirho(itemChirho);
+        issueChirho.disabled = !issueCanSubmitChirho();
+      };
+      certifyInputChirho.addEventListener("change", updateActionButtonsChirho);
+      for (const inputChirho of formChirho.querySelectorAll("#reviewer-chirho, #reviewer-role-chirho, #rationale-chirho")) {
+        inputChirho.addEventListener("input", updateActionButtonsChirho);
+      }
+      for (const inputChirho of issueGridChirho.querySelectorAll("input")) {
+        inputChirho.addEventListener("change", updateActionButtonsChirho);
+      }
+      confirmChirho.addEventListener("click", () => confirmCurrentChirho(itemChirho));
       issueChirho.addEventListener("click", () => reportIssueCurrentChirho(itemChirho));
       const skipChirho = elChirho("button", { type: "button", textChirho: "Skip" });
       skipChirho.addEventListener("click", () => { indexChirho = Math.min(indexChirho + 1, Math.max(0, activeItemsChirho().length - 1)); renderChirho(); });
+      updateActionButtonsChirho();
       actionsChirho.appendChild(confirmChirho);
       actionsChirho.appendChild(issueChirho);
       actionsChirho.appendChild(skipChirho);
@@ -853,7 +876,7 @@ function htmlChirho(): string {
       renderChirho();
     }
     async function reportIssueCurrentChirho(itemChirho) {
-      const flagsChirho = [...document.querySelectorAll(".issue-option-chirho input:checked")].map((nodeChirho) => nodeChirho.value);
+      const flagsChirho = currentIssueFlagsChirho();
       const reviewerErrorChirho = reviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho"));
       if (reviewerErrorChirho !== null) {
         setStatusChirho(reviewerErrorChirho);
