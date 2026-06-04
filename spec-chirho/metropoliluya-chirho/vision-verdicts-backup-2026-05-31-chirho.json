@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-05-31",
+  "generatedAtChirho": "2026-06-04T01:08:22Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 771,
+  "countChirho": 772,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -4608,11 +4608,21 @@
       "volumeChirho": 5,
       "pageChirho": 63,
       "lineIndexChirho": 14,
+      "segmentIndexChirho": 0,
+      "garbleTextChirho": "2 main de",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "2e main de",
+      "notesChirho": "Print crop shows French ordinal phrase \"2e main de\"; restored the missing e. Stored as vision-chirho for Latin/symbol proofing, not human-certified."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 63,
+      "lineIndexChirho": 14,
       "segmentIndexChirho": 1,
       "garbleTextChirho": "@",
       "scriptChirho": "symbol-chirho",
-      "utf8TextChirho": "(",
-      "notesChirho": "Opening parenthesis; image shows '(' in '(qui demeure'"
+      "utf8TextChirho": "5.",
+      "notesChirho": "Corrected prior vision misread: target crop shows \"5.\" between \"2e main de\" and \"Ne\", not an opening parenthesis. Stored as vision-chirho for Latin/symbol proofing, not human-certified."
     },
     {
       "volumeChirho": 5,
