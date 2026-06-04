@@ -474,6 +474,9 @@ interface HebrewDelimiterOrderAuditSummaryChirho {
   renderedHebrewDelimiterSpanCountChirho: number;
   renderedCloseBeforeOpenSuspectCountChirho: number;
   renderedNeighborUnbalancedReviewCountChirho: number;
+  neighborUnbalancedCoveredByReviewCountChirho: number;
+  neighborUnbalancedUncoveredByReviewCountChirho: number;
+  neighborUnbalancedUncoveredSamplesChirho: string[];
   summaryCountsMatchRenderedRowsChirho: boolean;
 }
 
@@ -788,10 +791,45 @@ function delimiterAuditRowCountChirho(markdownChirho: string, statusChirho?: str
   return [...markdownChirho.matchAll(patternChirho)].length;
 }
 
+interface HebrewDelimiterOrderAuditRowChirho {
+  locationKeyChirho: string;
+  locationTextChirho: string;
+  statusChirho: string;
+}
+
+function delimiterAuditRowsChirho(markdownChirho: string): HebrewDelimiterOrderAuditRowChirho[] {
+  const rowsChirho: HebrewDelimiterOrderAuditRowChirho[] = [];
+  const rowReChirho = /^v(\d+) p(\d+) L(\d+) S(\d+) \| ([^|]+) \| /gmu;
+  for (const matchChirho of markdownChirho.matchAll(rowReChirho)) {
+    const volumeChirho = Number.parseInt(matchChirho[1]!, 10);
+    const pageChirho = Number.parseInt(matchChirho[2]!, 10);
+    const lineIndexChirho = Number.parseInt(matchChirho[3]!, 10);
+    const segmentIndexChirho = Number.parseInt(matchChirho[4]!, 10);
+    rowsChirho.push({
+      locationKeyChirho: [volumeChirho, pageChirho, lineIndexChirho, segmentIndexChirho].join(":"),
+      locationTextChirho: `v${volumeChirho} p${pageChirho} L${lineIndexChirho} S${segmentIndexChirho}`,
+      statusChirho: matchChirho[5]!,
+    });
+  }
+  return rowsChirho;
+}
+
+function locationKeyFromVisionItemIdChirho(itemIdChirho: string): string | null {
+  const matchChirho = itemIdChirho.match(/^v(\d+)-p(\d{4})-l(\d{3})-s(\d+)$/);
+  if (matchChirho === null) return null;
+  return [
+    Number.parseInt(matchChirho[1]!, 10),
+    Number.parseInt(matchChirho[2]!, 10),
+    Number.parseInt(matchChirho[3]!, 10),
+    Number.parseInt(matchChirho[4]!, 10),
+  ].join(":");
+}
+
 function hebrewDelimiterOrderAuditSummaryChirho(
   pathChirho: string,
   liveSpanSourceFingerprintChirho: SourceFingerprintChirho,
-  liveScannerSourceFingerprintChirho: SourceFingerprintChirho
+  liveScannerSourceFingerprintChirho: SourceFingerprintChirho,
+  reviewCoverageKeysChirho: Set<string>
 ): HebrewDelimiterOrderAuditSummaryChirho {
   const reportPathChirho = relativeProjectPathChirho(pathChirho);
   if (!existsSync(pathChirho)) {
@@ -812,10 +850,23 @@ function hebrewDelimiterOrderAuditSummaryChirho(
       renderedHebrewDelimiterSpanCountChirho: 0,
       renderedCloseBeforeOpenSuspectCountChirho: 0,
       renderedNeighborUnbalancedReviewCountChirho: 0,
+      neighborUnbalancedCoveredByReviewCountChirho: 0,
+      neighborUnbalancedUncoveredByReviewCountChirho: 0,
+      neighborUnbalancedUncoveredSamplesChirho: [],
       summaryCountsMatchRenderedRowsChirho: false,
     };
   }
   const textChirho = readFileSync(pathChirho, "utf8");
+  const rowsChirho = delimiterAuditRowsChirho(textChirho);
+  const neighborUnbalancedRowsChirho = rowsChirho.filter(
+    (rowChirho) => rowChirho.statusChirho === "neighbor-unbalanced-review-chirho"
+  );
+  const neighborUnbalancedCoveredRowsChirho = neighborUnbalancedRowsChirho.filter((rowChirho) =>
+    reviewCoverageKeysChirho.has(rowChirho.locationKeyChirho)
+  );
+  const neighborUnbalancedUncoveredRowsChirho = neighborUnbalancedRowsChirho.filter(
+    (rowChirho) => !reviewCoverageKeysChirho.has(rowChirho.locationKeyChirho)
+  );
   const generatedAtChirho = textChirho.match(/^Generated: (.+)$/mu)?.[1] ?? null;
   const scannerSourceFileCountChirho = markdownNumberFieldChirho(textChirho, "Scanner source files");
   const scannerSourceFingerprintChirho = markdownTextFieldChirho(textChirho, "Scanner source fingerprint");
@@ -864,6 +915,11 @@ function hebrewDelimiterOrderAuditSummaryChirho(
     renderedHebrewDelimiterSpanCountChirho,
     renderedCloseBeforeOpenSuspectCountChirho,
     renderedNeighborUnbalancedReviewCountChirho,
+    neighborUnbalancedCoveredByReviewCountChirho: neighborUnbalancedCoveredRowsChirho.length,
+    neighborUnbalancedUncoveredByReviewCountChirho: neighborUnbalancedUncoveredRowsChirho.length,
+    neighborUnbalancedUncoveredSamplesChirho: neighborUnbalancedUncoveredRowsChirho
+      .slice(0, 8)
+      .map((rowChirho) => rowChirho.locationTextChirho),
     summaryCountsMatchRenderedRowsChirho,
   };
 }
@@ -889,6 +945,11 @@ function hebrewDelimiterOrderRemainingWorkChirho(
   }
   if ((scanChirho.closeBeforeOpenSuspectCountChirho ?? 0) !== 0) {
     remainingWorkChirho.push(`${scanChirho.closeBeforeOpenSuspectCountChirho} Hebrew close-before-open delimiter suspect(s) remain; visually review and repair or justify before certification`);
+  }
+  if (scanChirho.neighborUnbalancedUncoveredByReviewCountChirho !== 0) {
+    remainingWorkChirho.push(
+      `${scanChirho.neighborUnbalancedUncoveredByReviewCountChirho} Hebrew delimiter neighbor-unbalanced row(s) are not covered by raw/expert review; repair, route, or justify before certification`
+    );
   }
   return remainingWorkChirho;
 }
@@ -2033,6 +2094,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     duplicateReviewedIssuePolicyItemCountChirho: visionTierConfirmationSummaryChirho.duplicateReviewedIssuePolicyItemCountChirho,
     shapeErrorsChirho: visionTierConfirmationSummaryChirho.shapeErrorsChirho,
   };
+  const delimiterAuditReviewCoverageKeysChirho = new Set<string>(rawSpansChirho.map(spanKeyChirho));
+  for (const itemChirho of visionTierLiveItemsChirho) {
+    const locationKeyChirho = locationKeyFromVisionItemIdChirho(itemChirho.idChirho);
+    if (locationKeyChirho !== null) delimiterAuditReviewCoverageKeysChirho.add(locationKeyChirho);
+  }
   const visionTierChirho = {
     d1ReadErrorChirho: visionTierLiveSnapshotChirho.d1ReadErrorChirho,
     manifestGeneratedAtChirho: expertManifestChirho.generatedAtChirho ?? null,
@@ -2234,7 +2300,8 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     hebrewDelimiterOrderChirho: hebrewDelimiterOrderAuditSummaryChirho(
       HEBREW_DELIMITER_ORDER_AUDIT_PATH_CHIRHO,
       strictBlindScannerSpanSourceFingerprintChirho,
-      hebrewDelimiterOrderScannerSourceFingerprintChirho
+      hebrewDelimiterOrderScannerSourceFingerprintChirho,
+      delimiterAuditReviewCoverageKeysChirho
     ),
   };
   const remainingWorkChirho: string[] = [];
@@ -2836,7 +2903,10 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `  - Rendered delimiter rows: ${scanChirho.renderedHebrewDelimiterSpanCountChirho}`,
     `  - Summary counts match rendered rows: ${scanChirho.summaryCountsMatchRenderedRowsChirho}`,
     `  - Close-before-open suspects: ${scanChirho.closeBeforeOpenSuspectCountChirho ?? "unknown"} (rendered ${scanChirho.renderedCloseBeforeOpenSuspectCountChirho})`,
-    `  - Neighbor-unbalanced review rows: ${scanChirho.neighborUnbalancedReviewCountChirho ?? "unknown"} (rendered ${scanChirho.renderedNeighborUnbalancedReviewCountChirho}; covered by raw/expert review, not auto-certified)`,
+    `  - Neighbor-unbalanced review rows: ${scanChirho.neighborUnbalancedReviewCountChirho ?? "unknown"} (rendered ${scanChirho.renderedNeighborUnbalancedReviewCountChirho})`,
+    `  - Neighbor-unbalanced rows covered by raw/expert review: ${scanChirho.neighborUnbalancedCoveredByReviewCountChirho}`,
+    `  - Neighbor-unbalanced rows not covered by raw/expert review: ${scanChirho.neighborUnbalancedUncoveredByReviewCountChirho}`,
+    `  - Neighbor-unbalanced uncovered samples: ${scanChirho.neighborUnbalancedUncoveredSamplesChirho.length === 0 ? "none" : scanChirho.neighborUnbalancedUncoveredSamplesChirho.join(", ")}`,
   ];
   const hallelujahReviewCountChirho =
     statusChirho.rawHebrewChirho.livePendingSpanCountChirho +
@@ -2965,7 +3035,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     "## Strict-Blind Scanner Reports",
     "",
-    "These heuristic reports do not certify text. A missing, malformed, stale, or nonzero hidden/residue candidate report blocks completion because unresolved strict-blind candidates are incompatible with a flawless-transcription claim. The delimiter audit separately blocks stale/malformed reports and close-before-open suspects; neighbor-unbalanced damaged-text rows stay visible and remain covered by the raw/expert review queues.",
+    "These heuristic reports do not certify text. A missing, malformed, stale, or nonzero hidden/residue candidate report blocks completion because unresolved strict-blind candidates are incompatible with a flawless-transcription claim. The delimiter audit separately blocks stale/malformed reports, close-before-open suspects, and neighbor-unbalanced damaged-text rows that are not covered by the raw/expert review queues.",
     "",
     ...candidateScanLinesChirho("Hidden Hebrew detector", statusChirho.strictBlindScansChirho.hiddenHebrewChirho),
     ...candidateScanLinesChirho("Non-Latin residue detector", statusChirho.strictBlindScansChirho.nonLatinResidueChirho),
