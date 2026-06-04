@@ -694,8 +694,14 @@ function htmlChirho(): string {
         fieldValueChirho("reviewer-role-chirho").trim().length > 0 &&
         fieldValueChirho("rationale-chirho").trim().length > 0;
     }
+    function reviewerRoleMatchesItemChirho(itemChirho) {
+      return fieldValueChirho("reviewer-role-chirho").trim() === itemChirho.reviewerChirho;
+    }
     function confirmationCanSubmitChirho(itemChirho) {
-      return !itemTextIsBlankChirho(itemChirho) && certifyExactCheckedChirho() && reviewerFieldsCompleteChirho();
+      return !itemTextIsBlankChirho(itemChirho) &&
+        certifyExactCheckedChirho() &&
+        reviewerFieldsCompleteChirho() &&
+        reviewerRoleMatchesItemChirho(itemChirho);
     }
     function issueCanSubmitChirho() {
       return reviewerFieldsCompleteChirho() && currentIssueFlagsChirho().length > 0;
