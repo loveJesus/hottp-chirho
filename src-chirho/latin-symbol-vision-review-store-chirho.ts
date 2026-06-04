@@ -18,6 +18,10 @@ import {
   hashTextChirho,
   type LatinSymbolVisionLiveItemChirho,
 } from "./latin-symbol-vision-live-items-chirho.ts";
+import {
+  packetImageHashDriftsChirho,
+  type PacketImageHashFieldsChirho,
+} from "./packet-image-fingerprint-chirho.ts";
 
 export const LATIN_SYMBOL_PACK_DIR_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -54,7 +58,7 @@ export const LATIN_SYMBOL_REVIEW_ISSUE_FLAG_VALUES_CHIRHO = new Set<string>(
   LATIN_SYMBOL_REVIEW_ISSUE_FLAGS_CHIRHO
 );
 
-export interface LatinSymbolPacketItemChirho {
+export interface LatinSymbolPacketItemChirho extends PacketImageHashFieldsChirho {
   idChirho: string;
   itemKindChirho: "span-chirho" | "d1-word-chirho";
   volumeChirho: number;
@@ -147,6 +151,16 @@ export function assertLatinSymbolManifestMatchesLiveChirho(
     );
   }
   for (const packetItemChirho of packetItemsChirho) {
+    if (
+      typeof packetItemChirho.sourcePathChirho !== "string" ||
+      typeof packetItemChirho.targetPathChirho !== "string" ||
+      typeof packetItemChirho.linePathChirho !== "string" ||
+      typeof packetItemChirho.sourceImageHashChirho !== "string" ||
+      typeof packetItemChirho.targetImageHashChirho !== "string" ||
+      typeof packetItemChirho.lineImageHashChirho !== "string"
+    ) {
+      throw new Error(`Latin/symbol packet manifest malformed: ${packetItemChirho.idChirho} image hash fields missing; regenerate make-latin-symbol-vision-pack-chirho`);
+    }
     const liveItemChirho = liveByIdChirho.get(packetItemChirho.idChirho);
     if (liveItemChirho === undefined) {
       throw new Error(
@@ -165,6 +179,12 @@ export function assertLatinSymbolManifestMatchesLiveChirho(
     if (liveItemChirho.lineTextChirho !== packetItemChirho.lineTextChirho) {
       throw new Error(`Latin/symbol packet is stale: ${packetItemChirho.idChirho} line text changed; regenerate make-latin-symbol-vision-pack-chirho`);
     }
+  }
+  const imageDriftsChirho = packetImageHashDriftsChirho(packetItemsChirho);
+  if (imageDriftsChirho.length !== 0) {
+    throw new Error(
+      `Latin/symbol packet is stale: ${imageDriftsChirho.length} image hash drift(s); regenerate make-latin-symbol-vision-pack-chirho`
+    );
   }
   return liveByIdChirho;
 }

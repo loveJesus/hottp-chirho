@@ -14,6 +14,10 @@ import {
 import { join, relative } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "../../src-chirho/config-chirho.ts";
+import {
+  packetImageHashesChirho,
+  type PacketImageHashFieldsChirho,
+} from "../../src-chirho/packet-image-fingerprint-chirho.ts";
 
 const REPORT_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -97,7 +101,7 @@ interface SpanLineChirho {
   spansChirho: SpanGeometryChirho[];
 }
 
-interface GeneratedImagesChirho {
+interface GeneratedImagesChirho extends PacketImageHashFieldsChirho {
   targetPathChirho: string;
   targetMarkdownPathChirho: string;
   linePathChirho: string;
@@ -257,6 +261,11 @@ function generateImagesChirho(spanChirho: HebrewSpanValidationChirho, lineChirho
   ]);
 
   return {
+    ...packetImageHashesChirho({
+      sourcePathChirho: sourceImagePathChirho,
+      targetPathChirho: pathsChirho.targetPathChirho,
+      linePathChirho: pathsChirho.linePathChirho,
+    }),
     targetPathChirho: pathsChirho.targetPathChirho,
     targetMarkdownPathChirho: relative(OUT_DIR_CHIRHO, pathsChirho.targetPathChirho),
     linePathChirho: pathsChirho.linePathChirho,

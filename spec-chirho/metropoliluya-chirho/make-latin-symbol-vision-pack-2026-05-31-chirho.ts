@@ -17,6 +17,10 @@ import {
 import { join, relative } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "../../src-chirho/config-chirho.ts";
+import {
+  packetImageHashesChirho,
+  type PacketImageHashFieldsChirho,
+} from "../../src-chirho/packet-image-fingerprint-chirho.ts";
 import { renderSpanLineTextChirho } from "../../src-chirho/span-line-text-chirho.ts";
 
 const SPANS_ROOT_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
@@ -82,7 +86,7 @@ interface D1VisionWordChirho {
   wordYMaxChirho: number;
 }
 
-interface ReviewItemChirho {
+interface ReviewItemChirho extends PacketImageHashFieldsChirho {
   idChirho: string;
   itemKindChirho: "span-chirho" | "d1-word-chirho";
   volumeChirho: number;
@@ -248,7 +252,7 @@ function generateImagesChirho(
   pageChirho: number,
   lineIndexChirho: number,
   geometryChirho: ImageGeometryChirho
-): Pick<ReviewItemChirho, "targetPathChirho" | "targetMarkdownPathChirho" | "linePathChirho" | "lineMarkdownPathChirho"> {
+): Pick<ReviewItemChirho, "sourcePathChirho" | "sourceImageHashChirho" | "targetPathChirho" | "targetImageHashChirho" | "targetMarkdownPathChirho" | "linePathChirho" | "lineImageHashChirho" | "lineMarkdownPathChirho"> {
   const sourceImagePathChirho = scanlinePathChirho(volumeChirho, pageChirho, lineIndexChirho);
   if (!existsSync(sourceImagePathChirho)) {
     throw new Error(`missing scanline image for ${idChirho}: ${sourceImagePathChirho}`);
@@ -290,6 +294,11 @@ function generateImagesChirho(
     pathsChirho.targetPathChirho,
   ]);
   return {
+    ...packetImageHashesChirho({
+      sourcePathChirho: sourceImagePathChirho,
+      targetPathChirho: pathsChirho.targetPathChirho,
+      linePathChirho: pathsChirho.linePathChirho,
+    }),
     targetPathChirho: pathsChirho.targetPathChirho,
     targetMarkdownPathChirho: relative(OUT_DIR_CHIRHO, pathsChirho.targetPathChirho),
     linePathChirho: pathsChirho.linePathChirho,
