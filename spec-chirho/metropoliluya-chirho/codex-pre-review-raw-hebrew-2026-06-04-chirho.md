@@ -34,10 +34,9 @@ Scope checked: all six vol 3 items in the raw Hebrew
   - Human check still needed: exact letters and niqqud, especially because the available machine witness does not validate it.
 
 - `vol 3 p151 L21 S2`:
-  `http://localhost:8766/?validation-status-chirho=unvalidated-chirho&tier-chirho=primary-vols-3-5-chirho&item-chirho=3%3A151%3A21%3A2`
-  - Live text: `“אֶת־עַמִּי`
-  - Visual precheck: crop is centered on the target span. The Hebrew phrase is visible at review resolution, and the left quote/punctuation appears bundled with the Hebrew span.
-  - Human check still needed: exact Hebrew letters/niqqud/marks, and whether the leading quote belongs in this Hebrew span or should be treated as punctuation/segmentation.
+  - Superseded by the hidden-text repair script `repair-vol3-p151-l21-hidden-greek-hebrew-2026-06-04-chirho.ts`.
+  - The old raw Pass-C span was not a clean `אֶת־עַמִּי` target; its crop showed the neighboring Hebrew word. The line now stores `נְשִׂיאֵי אֶת־עַמִּי` as `vision-chirho`, plus the swallowed Greek `μου` and printed period.
+  - Certification remains pending through the expert/vision review lane; this pre-review note should not be used as a raw-Hebrew clean verdict.
 
 - `vol 3 p151 L36 S2`:
   `http://localhost:8766/?validation-status-chirho=unvalidated-chirho&tier-chirho=primary-vols-3-5-chirho&item-chirho=3%3A151%3A36%3A2`

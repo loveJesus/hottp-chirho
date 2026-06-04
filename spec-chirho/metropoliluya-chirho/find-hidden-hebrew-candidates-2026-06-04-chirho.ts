@@ -36,7 +36,7 @@ const REPEATED_UPPER_GARBAGE_RE_CHIRHO = /(?:^|[\s([{])["“”']?[A-Z]\.?\s+["�
 const SCRIPTURE_REF_RE_CHIRHO =
   /\b(?:Gn|Ex|Lv|Nb|Dt|Jos|Jg|1\s*S|2\s*S|1\s*R|2\s*R|Is|Jr|Ez|Éz|Ha|Hab|Za|Zach?|Ps|Jb|Job|Qo|Pr)\s*\d/u;
 const BENIGN_NUMERIC_CONTEXT_RE_CHIRHO =
-  /\b(?:BH|BHS|BH3|BH23|CT|ms|mss|Opuscules|Kitab|Herméneutique|Syntax|Frensdorff|Esteban|Erub|Qumr[aä]n|QMelchisédec)\b/u;
+  /\b(?:BH|BHS|BH3|BH23|CT\d*|ms|mss|Opuscules|Kitab|Herméneutique|Syntax|Frensdorff|Esteban|Erub|Qumr[aä]n|QMelchisédec)\b/u;
 
 interface SpanChirho {
   segmentIndexChirho: number;

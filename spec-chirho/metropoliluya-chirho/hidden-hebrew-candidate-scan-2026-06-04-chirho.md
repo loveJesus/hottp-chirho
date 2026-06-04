@@ -3,14 +3,14 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Hidden Hebrew Candidate Scan Chirho
 
-Generated: 2026-06-04T05:36:57.485Z
+Generated: 2026-06-04T06:04:56.731Z
 
 This is a machine-assisted review queue, not a certification result. It flags lines where OCR may have rendered printed Hebrew as valid-looking French, Latin, symbols, or digit garbage. Every item still needs visual review against the scanline before any span repair.
 
 ## Summary
 
-- Candidate lines: 40
-- High priority: 23
+- Candidate lines: 39
+- High priority: 22
 - Medium priority: 17
 - Low priority included: 0
 
@@ -177,16 +177,6 @@ Priority is heuristic: scripture/citation context, existing Hebrew spans, digit/
 - Line text: `vise à traduire ni] au sens de “émissions d'eau” (553 שִׁלְחוֹת comme l'interprète`
 - Suspicious spans:
   - S0 french-chirho: `vise à traduire ni] au sens de “émissions d'eau” (553` (dense-digit-cluster-chirho; neighbors none / hebrew-chirho)
-
-### high-chirho score 8: vol 3 p0151 L021
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-dense-digit-cluster-chirho`, `suspicious-span-adjacent-to-hebrew-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-3-chirho/page-0151-chirho/line-021-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-3-chirho/page-0151-chirho/line-021-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-3-chirho/page-0151-chirho/line-021-chirho.png)
-- Line text: `Ἰσραὴλ τὸν λαόν Lou pour le M: "32"n8 “אֶת־עַמִּי En CT3 397,17-20, ayant noté que le`
-- Suspicious spans:
-  - S3 french-chirho: `En CT3 397,17-20, ayant noté que le` (dense-digit-cluster-chirho; neighbors hebrew-chirho / none)
 
 ### high-chirho score 8: vol 5 p0051 L014
 
