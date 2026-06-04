@@ -43,6 +43,7 @@ const APPARATUS_WITNESS_LIST_RE_CHIRHO =
 const SHORT_LATIN_SYMBOL_GARBAGE_RE_CHIRHO = /^(?=.{2,12}$)(?=.*[A-Za-z])(?=.*[{}\[\]£?])[A-Za-z0-9{}\[\]£?]+$/u;
 const SHORT_BRACKET_DIGIT_GARBAGE_RE_CHIRHO = /^(?:\d[\]}]|\d{1,2}[A-Za-z]?)$/u;
 const SHORT_LATIN_DIGIT_GARBAGE_IN_LINE_RE_CHIRHO = /(?:^|[\s([{])(?:[A-Za-z]\d[}?]|\d[A-Za-z][}?])(?=$|[\s,.;:)\]}])/u;
+const SHORT_LATIN_QUESTION_GARBAGE_IN_LINE_RE_CHIRHO = /(?:^|[\s([{])(?:[A-Za-z]{1,2}\?)(?=$|[\s,.;:)\]}])/u;
 const BRACKETED_SINGLE_CAPITAL_SIGLUM_RE_CHIRHO = /^[{\[][A-Z][}\]]$/u;
 const SCRIPTURE_REF_RE_CHIRHO =
   /\b(?:Gn|Ex|Lv|Nb|Dt|Jos|Jg|1\s*S|2\s*S|1\s*R|2\s*R|Is|Jr|Ez|Éz|Ha|Hab|Za|Zach?|Ps|Jb|Job|Qo|Pr)\s*\d/u;
@@ -181,6 +182,13 @@ function spanReasonsChirho(spanChirho: SpanChirho, lineChirho: SpanLineChirho, s
   ) {
     reasonsChirho.push("short-latin-digit-garble-near-hebrew-line-chirho");
   }
+  if (
+    isAdjacentToHebrewChirho(spansChirho, indexChirho) &&
+    SHORT_LATIN_QUESTION_GARBAGE_IN_LINE_RE_CHIRHO.test(textChirho) &&
+    !BENIGN_NUMERIC_CONTEXT_RE_CHIRHO.test(numericContextTextChirho)
+  ) {
+    reasonsChirho.push("short-latin-question-garble-adjacent-to-hebrew-chirho");
+  }
   return [...new Set(reasonsChirho)];
 }
 
@@ -205,6 +213,9 @@ function scoreCandidateChirho(lineChirho: SpanLineChirho, lineTextValueChirho: s
   );
   const hasShortLatinDigitGarbleChirho = suspiciousSpansChirho.some((spanChirho) =>
     spanChirho.reasonsChirho.includes("short-latin-digit-garble-near-hebrew-line-chirho")
+  );
+  const hasShortLatinQuestionGarbleChirho = suspiciousSpansChirho.some((spanChirho) =>
+    spanChirho.reasonsChirho.includes("short-latin-question-garble-adjacent-to-hebrew-chirho")
   );
   const hasAdjacentHebrewChirho = suspiciousSpansChirho.some((spanChirho) =>
     spanChirho.leftScriptChirho === "hebrew-chirho" || spanChirho.rightScriptChirho === "hebrew-chirho"
@@ -241,6 +252,10 @@ function scoreCandidateChirho(lineChirho: SpanLineChirho, lineTextValueChirho: s
   if (hasShortLatinDigitGarbleChirho) {
     scoreChirho += 4;
     reasonsChirho.push("line-has-short-latin-digit-garble-chirho");
+  }
+  if (hasShortLatinQuestionGarbleChirho) {
+    scoreChirho += 3;
+    reasonsChirho.push("line-has-short-latin-question-garble-chirho");
   }
   if (hasAdjacentHebrewChirho) {
     scoreChirho += 2;

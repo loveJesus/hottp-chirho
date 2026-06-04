@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T16:12:25.982Z",
+  "generatedAtChirho": "2026-06-04T16:24:45.577Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 874,
+  "countChirho": 877,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8743,6 +8743,36 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "יסר",
       "notesChirho": "Recovered vol 2 p149 line 6 hidden Hebrew root from OCR `1D?`; the scanline prints `יסר` after French `le futur de`. Stored as hebrew-chirho vision-tier, not certified; exact letters, vowels/marks, and punctuation/segmentation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 1,
+      "pageChirho": 150,
+      "lineIndexChirho": 36,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "On? + too-narrow Hebrew span `רשמתם את מחנה ישראל`",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "ורשמתם את מחנה ישראל לחרם.",
+      "notesChirho": "Repaired vol 1 p150 line 36 split-through-Hebrew phrase: the scanline prints the bare Hebrew phrase `ורשמתם את מחנה ישראל לחרם.` after French `ensuite en`; old OCR left `לחרם` in the French span as `On?` and started the Hebrew span at `רשמתם`. Stored as vision-chirho, not certified; exact letters, vowels/marks, punctuation, and segmentation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 149,
+      "lineIndexChirho": 28,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "D?",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "יסר",
+      "notesChirho": "Repaired vol 2 p149 line 28 split-through-Hebrew phrase: the scanline prints `du verbe יסר avec מן`; old OCR stored the first Hebrew word as French `D?`. Stored as vision-chirho, not certified; exact letters, vowels/marks, punctuation, and segmentation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 149,
+      "lineIndexChirho": 28,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "old segment 1 text `יסר` over printed `מן`",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "מן",
+      "notesChirho": "Repaired vol 2 p149 line 28 split-through-Hebrew phrase: the scanline prints `מן` after French `avec`, while the old span text over this box was `יסר`. Stored as vision-chirho, not certified; exact letters, vowels/marks, punctuation, and segmentation remain Hebrew/WLC expert-confirmation tier."
     }
   ]
 }
