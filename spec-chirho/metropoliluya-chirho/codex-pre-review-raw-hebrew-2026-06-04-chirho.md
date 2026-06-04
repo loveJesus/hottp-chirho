@@ -151,6 +151,47 @@ span was surfaced.
   - Visual precheck: the crop tightly boxes the short Hebrew word after `8,21` and before the apparatus sigla; no adjacent Latin/symbol text appears swallowed into the Hebrew box.
   - Human check still needed: exact consonants and pointing, especially the final he/mappiq-class detail.
 
+## Raw Vol 2 Starting-Lane Visual Precheck
+
+These items were checked only as packet crops and line-context aids. They are not
+certification, and they should not be used to carry a verdict from one similar
+word to another.
+
+- `vol 2 p148 L14 S1`:
+  `http://localhost:8766/?volume-chirho=vol-2-chirho&item-chirho=2%3A148%3A14%3A1`
+  - Live text: `וְיַסִּירֵנִי`
+  - Current line text: `lit ici וְיַסִּירֵנִי C'est inexact. Sa leçon est יוסרנו. Il est probable que la confusion yod/`
+  - Visual precheck: the crop is centered on the Hebrew word after `lit ici` and before `C'est`; no obvious clipping, swallowed neighboring text, or hidden-script overflow is visible in the packet crop.
+  - Human check still needed: exact letters, niqqud, and marks against the print. Review this independently from the other `וְיַסִּירֵנִי` occurrence.
+
+- `vol 2 p148 L37 S1`:
+  `http://localhost:8766/?volume-chirho=vol-2-chirho&item-chirho=2%3A148%3A37%3A1`
+  - Live text: `וְיַסִּירֵנִי`
+  - Current line text: `lon moi, וְיַסִּירֵנִי est un futur de יסר dont la première radicale a été insérée dans la`
+  - Visual precheck: the crop is centered between the preceding French comma/context and the following French explanation; no obvious geometry defect or missing neighboring Hebrew word is visible.
+  - Human check still needed: exact letters, niqqud, and marks against the print. Do not auto-copy a verdict from `vol 2 p148 L14 S1`.
+
+- `vol 2 p148 L38 S1`:
+  `http://localhost:8766/?volume-chirho=vol-2-chirho&item-chirho=2%3A148%3A38%3A1`
+  - Live text: `יִצְּרֵהוּ`
+  - Current line text: `deuxième, comme dans יִצְּרֵהוּ (Is 44,12). On en fait d'ordinaire le parfait d’une forme`
+  - Visual precheck: the crop is centered on the Hebrew word before `(Is 44,12)`; the parenthetical citation begins outside the target crop, and no obvious clipping or swallowed text is visible.
+  - Human check still needed: exact consonants, niqqud, dagesh/marks, and whether this line's form matches the print independently from the later repeat.
+
+- `vol 2 p149 L14 S1`:
+  `http://localhost:8766/?volume-chirho=vol-2-chirho&item-chirho=2%3A149%3A14%3A1`
+  - Live text: `יִצְּרֵהוּ`
+  - Current line text: `‘samek’ dagueshé, comme en יִצְּרֵהוּ (Is 44,12)."`
+  - Visual precheck: the crop is centered on the repeated Hebrew word before `(Is 44,12)`; no obvious crop or segmentation issue is visible in the packet crop.
+  - Human check still needed: exact consonants, niqqud, dagesh/marks, and whether this repeat should receive the same judgment only after direct visual confirmation.
+
+- `vol 2 p149 L30 S1`:
+  `http://localhost:8766/?volume-chirho=vol-2-chirho&item-chirho=2%3A149%3A30%3A1`
+  - Live text: `וַיְסִירֵנִי`
+  - Current line text: `La leçon וַיְסִירֵנִי lue ici par Sym, a paru préférable au comité, comme tenant une`
+  - Visual precheck: the crop is centered on the Hebrew word after `La leçon` and before `lue ici`; no neighboring French text or additional Hebrew word appears swallowed into the target crop.
+  - Human check still needed: exact letters, niqqud, and especially the opening vowel/conjunction form. This is distinct from the `וְיַסִּירֵנִי` targets above.
+
 ## Historical Superseded Notes
 
 - `vol 3 p149 L25 S1/S3`:
