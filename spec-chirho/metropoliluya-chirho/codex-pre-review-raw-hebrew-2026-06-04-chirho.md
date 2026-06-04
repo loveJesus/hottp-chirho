@@ -163,6 +163,95 @@ span was surfaced.
   - Visual precheck: the crop tightly boxes the short Hebrew word after `8,21` and before the apparatus sigla; no adjacent Latin/symbol text appears swallowed into the Hebrew box.
   - Human check still needed: exact consonants and pointing, especially the final he/mappiq-class detail.
 
+### Additional Current Attention Coverage
+
+These entries cover the remaining current attention-lane items shown by the
+status report on 2026-06-04. They are visual triage notes only; grouped line
+entries do not transfer a clean verdict from one similar word or phrase to
+another.
+
+- `vol 2 p151 L42 S1`:
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=2%3A151%3A42%3A1`
+  - Live text: `הַזֶּה הָעָם`
+  - Attention reason: multi-token Hebrew span.
+  - Visual precheck: the target crop boxes the two Hebrew words near the right end of the French line after `sous`; no obvious swallowed neighboring French word is visible in the packet crop.
+  - Human check still needed: exact word order, consonants, niqqud, and whether this two-word span should stay grouped in this apparatus sentence.
+
+- `vol 5 p148 L26 S1`:
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A148%3A26%3A1`
+  - Live text: `מְלִיצַי רֵעָי`
+  - Attention reason: multi-token Hebrew span.
+  - Visual precheck: the crop cleanly boxes the two-word Hebrew phrase after `J12 vocalise`; the following French `et, avec` begins outside the target box.
+  - Human check still needed: exact letters, niqqud, and word spacing. Do not carry a verdict automatically from the similar phrase elsewhere.
+
+- `vol 5 p149 L1 S2`:
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A149%3A1%3A2`
+  - Live text: `מְלִיצַי רֵעָי`
+  - Attention reason: multi-token Hebrew span.
+  - Visual precheck: the crop boxes the same two-word phrase in a different line after `au lieu de`; the comma and `[R]NEB` context sit outside the Hebrew target.
+  - Human check still needed: exact letters, niqqud, and whether the print here matches the prior occurrence independently.
+
+- `vol 5 p149 L18 S4/S6`:
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A149%3A18%3A4`
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A149%3A18%3A6`
+  - Item IDs: `v5-p0149-l018-s4`, `v5-p0149-l018-s6`
+  - Live texts: `פְּרַקְלִיטַי חַבְרִי` and `קֳדָם אֱלָהָא זַלְגַת עֵינִי`
+  - Attention reason: multi-token Hebrew-script spans.
+  - Visual precheck: the two target crops sit on either side of the printed slash in a `𝔗` line; each crop contains only its own Hebrew-script phrase, with the colon, slash, and final period outside the respective target boxes.
+  - Human check still needed: exact letters, vowels, and word division. Because this is Targum/Aramaic-style Hebrew-script material, exact wording/vocalization should be checked by a competent Targum/Aramaic reviewer, not inferred from ordinary Hebrew familiarity.
+
+- `vol 5 p150 L8 S3/S5`:
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A150%3A8%3A3`
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A150%3A8%3A5`
+  - Item IDs: `v5-p0150-l008-s3`, `v5-p0150-l008-s5`
+  - Live texts: `רוּחִי חֻבָּלָה` and `יָמַי נִזְעָכוּ`
+  - Attention reason: multi-token Hebrew spans.
+  - Visual precheck: both crops sit in the slash-separated `Le 𝔐 porte pour ce verset` line; the boxes are centered on their respective phrases and do not appear to swallow the neighboring slash separators.
+  - Human check still needed: exact niqqud/marks and word spacing for each phrase independently.
+
+- `vol 5 p151 L1 S3/S5`:
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A1%3A3`
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A1%3A5`
+  - Item IDs: `v5-p0151-l001-s3`, `v5-p0151-l001-s5`
+  - Live texts: `רוּחִ֣י חֻ֭בָּלָה` and `יָמַ֣י נִזְעָ֑כוּ`
+  - Attention reason: multi-token Hebrew spans.
+  - Visual precheck: the target crops are aligned with the same two phrase positions as the prior `𝔐` line, but this line includes accent marks; no obvious crop clipping is visible in the packet.
+  - Human check still needed: exact accents/marks in addition to consonants and vowels. Do not infer the accented form from the nearby unaccented line.
+
+- `vol 5 p151 L18 S3/S5`:
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A18%3A3`
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A18%3A5`
+  - Item IDs: `v5-p0151-l018-s3`, `v5-p0151-l018-s5`
+  - Live texts: `כִּילִבָּם צָפַנְתָּ מִשָּׂכֶל` and `עַלכֵּן לֹא תְרֹמֵם`
+  - Attention reason: multi-token Hebrew spans.
+  - Visual precheck: the line shows two slash-separated Hebrew phrases after `Le 𝔐 porte ici`; the target boxes are separated by the printed slash and do not visibly overlap each other.
+  - Human check still needed: exact word division, especially the `עַלכֵּן` spacing/attachment, plus all vowels and marks.
+
+- `vol 5 p151 L19 S1/S3`:
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A19%3A1`
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A19%3A3`
+  - Item IDs: `v5-p0151-l019-s1`, `v5-p0151-l019-s3`
+  - Live texts: `לֹא תְרוֹמֵם` and `לֹא תְרוּמַם`
+  - Attention reason: multi-token Hebrew spans.
+  - Visual precheck: the two crops sit on opposite sides of the French `J123 conjecture`; the line appears to contrast two near-identical forms, so the vowel distinction is the point rather than a reason to merge the targets.
+  - Human check still needed: exact vowels/marks and whether the two forms are correctly distinguished.
+
+- `vol 5 p152 L13 S3/S5`:
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A3`
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A5`
+  - Item IDs: `v5-p0152-l013-s3`, `v5-p0152-l013-s5`
+  - Live texts: `אֲרוּם לְבְהוֹן אֲטֶשְׁתָּא מִסַּכְּלָתָנוּ` and `מָטוּל הֵיכְנָא לָא תְּרוֹמֵם`
+  - Attention reason: multi-token Hebrew-script spans.
+  - Visual precheck: the two long Hebrew-script targets sit in a `𝔗 traduit` line and are separated by the printed slash; the packet crops show the intended phrase boundaries at review resolution.
+  - Human check still needed: exact Targum/Aramaic wording, vowels, and word division by a competent reviewer. These should not be certified merely as ordinary Hebrew words.
+
+- `vol 2 p151 L15 S1`:
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=2%3A151%3A15%3A1`
+  - Live text: `תימרון קדיש`
+  - Attention reason: multi-token Hebrew span.
+  - Visual precheck: the crop boxes the final two-word Hebrew-script phrase after `en 13 par`; no obvious neighboring French bleed or clipped Hebrew letter is visible.
+  - Human check still needed: exact Targum/Aramaic wording and whether the unpointed spelling is what the print intends.
+
 ## Raw Vol 2 Starting-Lane Visual Precheck
 
 These items were checked only as packet crops and line-context aids. They are not
