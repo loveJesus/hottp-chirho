@@ -111,25 +111,31 @@ function listGlyphsChirho() {
 function quarantineChirho(keyChirho: string): string {
   const srcChirho = join(FONT_DIR_CHIRHO, keyChirho);
   const dstChirho = join(QUARANTINE_DIR_CHIRHO, keyChirho);
-  mkdirSync(dirname(dstChirho), { recursive: true });
-  if (existsSync(srcChirho)) renameSync(srcChirho, dstChirho);
+  moveRequiredFileChirho(srcChirho, dstChirho);
   const sidecarChirho = srcChirho.replace(/\.png$/, ".json");
-  if (existsSync(sidecarChirho)) {
-    renameSync(sidecarChirho, dstChirho.replace(/\.png$/, ".json"));
-  }
+  moveOptionalFileChirho(sidecarChirho, dstChirho.replace(/\.png$/, ".json"));
   return dstChirho;
 }
 
 function restoreChirho(keyChirho: string): string {
   const srcChirho = join(QUARANTINE_DIR_CHIRHO, keyChirho);
   const dstChirho = join(FONT_DIR_CHIRHO, keyChirho);
-  mkdirSync(dirname(dstChirho), { recursive: true });
-  if (existsSync(srcChirho)) renameSync(srcChirho, dstChirho);
+  moveRequiredFileChirho(srcChirho, dstChirho);
   const sidecarChirho = srcChirho.replace(/\.png$/, ".json");
-  if (existsSync(sidecarChirho)) {
-    renameSync(sidecarChirho, dstChirho.replace(/\.png$/, ".json"));
-  }
+  moveOptionalFileChirho(sidecarChirho, dstChirho.replace(/\.png$/, ".json"));
   return dstChirho;
+}
+
+function moveRequiredFileChirho(srcChirho: string, dstChirho: string): void {
+  if (!existsSync(srcChirho)) throw new Error(`source file missing: ${srcChirho}`);
+  moveOptionalFileChirho(srcChirho, dstChirho);
+}
+
+function moveOptionalFileChirho(srcChirho: string, dstChirho: string): void {
+  if (!existsSync(srcChirho)) return;
+  if (existsSync(dstChirho)) throw new Error(`destination file already exists: ${dstChirho}`);
+  mkdirSync(dirname(dstChirho), { recursive: true });
+  renameSync(srcChirho, dstChirho);
 }
 
 function renderPageChirho(): string {
