@@ -1,7 +1,47 @@
 {
   "john316Chirho": "For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16",
   "schemaVersionChirho": 1,
-  "generatedAtChirho": "2026-06-01T00:00:00.000Z",
+  "generatedAtChirho": "2026-06-04T01:17:40.211Z",
   "purposeChirho": "Explicit, committed policy decisions for retiring Latin/symbol vision-tier items from the certification gate. Empty by default; accepted policies must name exact item IDs and current text hashes.",
-  "policiesChirho": []
+  "policiesChirho": [
+    {
+      "policyIdChirho": "codex-reviewed-trivial-punctuation-2026-06-04-chirho",
+      "decisionChirho": "accepted-clean-policy-chirho",
+      "scopeChirho": "script=symbol-chirho; kind=all-chirho; safeSymbolsOnly=true",
+      "itemCountChirho": 4,
+      "itemsChirho": [
+        {
+          "itemIdChirho": "v1-p0148-l036-w5",
+          "itemKindChirho": "d1-word-chirho",
+          "scriptChirho": "symbol-chirho",
+          "currentTextChirho": "//",
+          "currentTextHashChirho": "a2c2339691fc48fbd14fb307292dff3e21222712d9240810742d7df0c6d74dfb"
+        },
+        {
+          "itemIdChirho": "v1-p0148-l036-w7",
+          "itemKindChirho": "d1-word-chirho",
+          "scriptChirho": "symbol-chirho",
+          "currentTextChirho": ":",
+          "currentTextHashChirho": "e7ac0786668e0ff0f02b62bd04f45ff636fd82db63b1104601c975dc005f3a67"
+        },
+        {
+          "itemIdChirho": "v3-p0152-l017-s2",
+          "itemKindChirho": "span-chirho",
+          "scriptChirho": "symbol-chirho",
+          "currentTextChirho": "≠ +",
+          "currentTextHashChirho": "120c8ad75339fa9555113f8494c4314a0e7f2c1e384d121b3ffa3c57e1dc41e1"
+        },
+        {
+          "itemIdChirho": "v3-p0152-l025-s2",
+          "itemKindChirho": "span-chirho",
+          "scriptChirho": "symbol-chirho",
+          "currentTextChirho": "≠",
+          "currentTextHashChirho": "944604880c12a9c1b69a38680bdef084df96b6dd123ace1e4ccf269706792761"
+        }
+      ],
+      "reviewerChirho": "codex-gpt5-vision-chirho",
+      "rationaleChirho": "Visually inspected the four remaining safe-symbol target crops after the vol5 p63 l14 correction; each target clearly matches the stored punctuation exactly: //, :, ≠ +, and ≠. No nontrivial symbols, script sigla, references, or ornament guesses are included.",
+      "acceptedAtChirho": "2026-06-04T01:17:40.211Z"
+    }
+  ]
 }
