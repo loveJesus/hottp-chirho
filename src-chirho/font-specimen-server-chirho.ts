@@ -10,8 +10,9 @@
 //   bun src-chirho/font-specimen-server-chirho.ts
 
 import { Database } from "bun:sqlite";
-import { appendFileSync, existsSync, mkdirSync, readFileSync, rmSync } from "fs";
-import { join, dirname } from "path";
+import { existsSync, readFileSync, rmSync } from "fs";
+import { join } from "path";
+import { writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
 const PORT_CHIRHO = 8770;
@@ -47,6 +48,37 @@ const delStmtChirho = dbChirho.prepare(
   "DELETE FROM glyph_spines_chirho WHERE codepoint_chirho=? AND filename_chirho=?",
 );
 
+interface GlyphSpineRowChirho {
+  id_chirho: number;
+  codepoint_chirho: string;
+  letter_chirho: string;
+  filename_chirho: string;
+  pen_radius_chirho: number;
+  strokes_json_chirho: string;
+}
+
+function backupRowsBeforePurgeChirho(rowsChirho: GlyphSpineRowChirho[]): void {
+  if (rowsChirho.length === 0) return;
+  const existingBackupChirho = existsSync(BACKUP_PATH_CHIRHO) ? readFileSync(BACKUP_PATH_CHIRHO, "utf8") : "";
+  const backupLinesChirho = rowsChirho.map((rChirho) =>
+    JSON.stringify({
+      tsChirho: new Date().toISOString(),
+      viaChirho: "font-specimen-purge-chirho",
+      idChirho: rChirho.id_chirho,
+      codepointChirho: rChirho.codepoint_chirho,
+      letterChirho: rChirho.letter_chirho,
+      filenameChirho: rChirho.filename_chirho,
+      penRadiusChirho: rChirho.pen_radius_chirho,
+      strokesJsonChirho: rChirho.strokes_json_chirho,
+    })
+  );
+  const prefixChirho =
+    existingBackupChirho.length === 0 || existingBackupChirho.endsWith("\n")
+      ? existingBackupChirho
+      : `${existingBackupChirho}\n`;
+  writeTextAtomicChirho(BACKUP_PATH_CHIRHO, `${prefixChirho}${backupLinesChirho.join("\n")}\n`);
+}
+
 console.log("generating initial specimen…");
 regenSpecimenChirho();
 
@@ -70,26 +102,14 @@ Bun.serve({
         const keepSetChirho = new Set(
           bodyChirho.keptChirho.map((k_chirho) => `${k_chirho.cpChirho}/${k_chirho.fnChirho}`),
         );
-        const rowsChirho = allRowsStmtChirho.all() as any[];
-        let deletedChirho = 0;
-        mkdirSync(dirname(BACKUP_PATH_CHIRHO), { recursive: true });
-        for (const rChirho of rowsChirho) {
+        const rowsChirho = allRowsStmtChirho.all() as GlyphSpineRowChirho[];
+        const rowsToDeleteChirho = rowsChirho.filter((rChirho) => {
           const keyChirho = `${rChirho.codepoint_chirho}/${rChirho.filename_chirho}`;
-          if (keepSetChirho.has(keyChirho)) continue;
-          // backup the full row first (never hard-lost)
-          appendFileSync(
-            BACKUP_PATH_CHIRHO,
-            JSON.stringify({
-              tsChirho: new Date().toISOString(),
-              viaChirho: "font-specimen-purge-chirho",
-              idChirho: rChirho.id_chirho,
-              codepointChirho: rChirho.codepoint_chirho,
-              letterChirho: rChirho.letter_chirho,
-              filenameChirho: rChirho.filename_chirho,
-              penRadiusChirho: rChirho.pen_radius_chirho,
-              strokesJsonChirho: rChirho.strokes_json_chirho,
-            }) + "\n",
-          );
+          return !keepSetChirho.has(keyChirho);
+        });
+        backupRowsBeforePurgeChirho(rowsToDeleteChirho);
+        let deletedChirho = 0;
+        for (const rChirho of rowsToDeleteChirho) {
           delStmtChirho.run(rChirho.codepoint_chirho, rChirho.filename_chirho);
           const sidecarChirho = join(
             SPINES_DIR_CHIRHO,

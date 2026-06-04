@@ -18,7 +18,7 @@
  * Open http://localhost:8765/
  */
 
-import { existsSync, mkdirSync, readdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readdirSync } from "fs";
 import { join } from "path";
 import { Database } from "bun:sqlite";
 import { spawnSync } from "child_process";
