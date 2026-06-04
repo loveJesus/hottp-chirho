@@ -3,14 +3,14 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Hidden Hebrew Candidate Scan Chirho
 
-Generated: 2026-06-04T06:35:43.094Z
+Generated: 2026-06-04T06:42:03.898Z
 
 This is a machine-assisted review queue, not a certification result. It flags lines where OCR may have rendered printed Hebrew as valid-looking French, Latin, symbols, short Latin/bracket garbage, or digit garbage. Every item still needs visual review against the scanline before any span repair.
 
 ## Summary
 
-- Candidate lines: 39
-- High priority: 22
+- Candidate lines: 38
+- High priority: 21
 - Medium priority: 17
 - Low priority included: 0
 
@@ -47,17 +47,6 @@ Priority is heuristic: scripture/citation context, existing Hebrew spans, digit/
 - Line text: `7,17A מִשְׁפַּחַת [D] MT // spont : m t plur / schem (assim 14) : G VS clav למשפחות`
 - Suspicious spans:
   - S2 french-chirho: `[D] MT // spont : m t plur / schem (assim 14) : G VS` (repeated-uppercase-garble-near-hebrew-line-chirho; neighbors hebrew-chirho / latin-non-french-chirho)
-
-### high-chirho score 9: vol 2 p0148 L024
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-short-latin-symbol-garble-chirho`, `suspicious-span-adjacent-to-hebrew-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-2-chirho/page-0148-chirho/line-024-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-2-chirho/page-0148-chirho/line-024-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-2-chirho/page-0148-chirho/line-024-chirho.png)
-- Line text: `הָעָם JnT{2 מִלֶּכֶת 1] אשר on”. Des allusions sous une forme simplifiée se ren-`
-- Suspicious spans:
-  - S1 french-chirho: `JnT{2` (short-latin-symbol-garble-adjacent-to-hebrew-chirho; neighbors hebrew-chirho / hebrew-chirho)
-  - S3 french-chirho: `1]` (short-latin-symbol-garble-adjacent-to-hebrew-chirho; neighbors hebrew-chirho / hebrew-chirho)
 
 ### high-chirho score 9: vol 2 p0149 L037
 
