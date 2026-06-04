@@ -24,6 +24,7 @@ import {
   countByScriptChirho,
   hashTextChirho,
   latinSymbolVisionLiveSnapshotChirho,
+  symbolRiskForItemChirho,
   summarizeSymbolRiskChirho,
   type LatinSymbolVisionLiveItemChirho,
   type LatinSymbolVisionSymbolRiskSummaryChirho,
@@ -378,6 +379,7 @@ interface LatinSymbolReviewBackupSummaryChirho {
 
 interface CertificationStatusChirho {
   generatedAtChirho: string;
+  reviewStartLinksChirho: Record<string, string | null>;
   artifactsChirho: {
     exportReportExistsChirho: boolean;
     rawHebrewReportExistsChirho: boolean;
@@ -545,29 +547,35 @@ function urlQueryChirho(entriesChirho: Array<[string, string]>): string {
   return new URLSearchParams(entriesChirho).toString();
 }
 
-function latinSymbolReviewUrlChirho(scriptChirho: string, symbolRiskChirho?: string): string {
-  const entriesChirho: Array<[string, string]> = [["script-chirho", scriptChirho]];
+function latinSymbolReviewUrlChirho(scriptChirho?: string, symbolRiskChirho?: string, itemIdChirho?: string): string {
+  const entriesChirho: Array<[string, string]> = [];
+  if (scriptChirho !== undefined) entriesChirho.push(["script-chirho", scriptChirho]);
   if (symbolRiskChirho !== undefined) entriesChirho.push(["symbol-risk-chirho", symbolRiskChirho]);
-  return `http://localhost:8770/?${urlQueryChirho(entriesChirho)}`;
+  if (itemIdChirho !== undefined) entriesChirho.push(["item-chirho", itemIdChirho]);
+  const queryChirho = urlQueryChirho(entriesChirho);
+  return queryChirho.length === 0 ? "http://localhost:8770/" : `http://localhost:8770/?${queryChirho}`;
 }
 
 function rawHebrewReviewUrlChirho(
   validationStatusChirho?: string,
   reviewStateChirho?: string,
-  tierChirho?: string
+  tierChirho?: string,
+  itemKeyChirho?: string
 ): string {
   const entriesChirho: Array<[string, string]> = [];
   if (validationStatusChirho !== undefined) entriesChirho.push(["validation-status-chirho", validationStatusChirho]);
   if (reviewStateChirho !== undefined) entriesChirho.push(["review-state-chirho", reviewStateChirho]);
   if (tierChirho !== undefined) entriesChirho.push(["tier-chirho", tierChirho]);
+  if (itemKeyChirho !== undefined) entriesChirho.push(["item-chirho", itemKeyChirho]);
   const queryChirho = urlQueryChirho(entriesChirho);
   return queryChirho.length === 0 ? "http://localhost:8766/" : `http://localhost:8766/?${queryChirho}`;
 }
 
-function expertReviewUrlChirho(scriptChirho?: string, priorityChirho?: string): string {
+function expertReviewUrlChirho(scriptChirho?: string, priorityChirho?: string, itemIdChirho?: string): string {
   const entriesChirho: Array<[string, string]> = [];
   if (scriptChirho !== undefined) entriesChirho.push(["script-chirho", scriptChirho]);
   if (priorityChirho !== undefined) entriesChirho.push(["priority-chirho", priorityChirho]);
+  if (itemIdChirho !== undefined) entriesChirho.push(["item-chirho", itemIdChirho]);
   const queryChirho = urlQueryChirho(entriesChirho);
   return queryChirho.length === 0 ? "http://localhost:8771/" : `http://localhost:8771/?${queryChirho}`;
 }
@@ -650,6 +658,77 @@ function spanKeyChirho(spanChirho: Pick<RawHebrewSpanChirho, "volumeChirho" | "p
     spanChirho.lineIndexChirho,
     spanChirho.segmentIndexChirho,
   ].join(":");
+}
+
+function firstRawHebrewPendingItemKeyChirho(
+  spansChirho: RawHebrewSpanChirho[],
+  validationStatusChirho?: string,
+  tierChirho?: string
+): string | null {
+  const spanChirho = spansChirho.find((candidateChirho) =>
+    (validationStatusChirho === undefined || candidateChirho.validationStatusChirho === validationStatusChirho) &&
+    (tierChirho === undefined || rawHebrewReviewTierForSpanChirho(candidateChirho) === tierChirho)
+  );
+  return spanChirho === undefined ? null : spanKeyChirho(spanChirho);
+}
+
+function firstLatinSymbolPendingItemIdChirho(
+  itemsChirho: LatinSymbolVisionLiveItemChirho[],
+  scriptChirho?: string,
+  symbolRiskChirho?: string
+): string | null {
+  const itemChirho = itemsChirho.find((candidateChirho) =>
+    (scriptChirho === undefined || candidateChirho.scriptChirho === scriptChirho) &&
+    (symbolRiskChirho === undefined || symbolRiskForItemChirho(candidateChirho) === symbolRiskChirho)
+  );
+  return itemChirho === undefined ? null : itemChirho.idChirho;
+}
+
+function firstExpertPendingItemIdChirho(
+  itemsChirho: ExpertPackVisionItemChirho[],
+  scriptChirho?: string,
+  priorityChirho?: string
+): string | null {
+  const itemChirho = itemsChirho.find((candidateChirho) =>
+    (scriptChirho === undefined || candidateChirho.scriptChirho === scriptChirho) &&
+    (
+      priorityChirho === undefined ||
+      (priorityChirho === "priority-chirho" && candidateChirho.priorityMatchChirho === true) ||
+      (priorityChirho === "appendix-chirho" && candidateChirho.priorityMatchChirho !== true)
+    )
+  );
+  return itemChirho === undefined ? null : itemChirho.idChirho;
+}
+
+function rawHebrewReviewStartUrlChirho(
+  spansChirho: RawHebrewSpanChirho[],
+  validationStatusChirho?: string,
+  tierChirho?: string
+): string | null {
+  const itemKeyChirho = firstRawHebrewPendingItemKeyChirho(spansChirho, validationStatusChirho, tierChirho);
+  return itemKeyChirho === null ? null : rawHebrewReviewUrlChirho(validationStatusChirho, undefined, tierChirho, itemKeyChirho);
+}
+
+function latinSymbolReviewStartUrlChirho(
+  itemsChirho: LatinSymbolVisionLiveItemChirho[],
+  scriptChirho?: string,
+  symbolRiskChirho?: string
+): string | null {
+  const itemIdChirho = firstLatinSymbolPendingItemIdChirho(itemsChirho, scriptChirho, symbolRiskChirho);
+  return itemIdChirho === null ? null : latinSymbolReviewUrlChirho(scriptChirho, symbolRiskChirho, itemIdChirho);
+}
+
+function expertReviewStartUrlChirho(
+  itemsChirho: ExpertPackVisionItemChirho[],
+  scriptChirho?: string,
+  priorityChirho?: string
+): string | null {
+  const itemIdChirho = firstExpertPendingItemIdChirho(itemsChirho, scriptChirho, priorityChirho);
+  return itemIdChirho === null ? null : expertReviewUrlChirho(scriptChirho, priorityChirho, itemIdChirho);
+}
+
+function withReviewStartTextChirho(urlChirho: string | null): string {
+  return urlChirho === null ? "" : `; first pending: ${urlChirho}`;
 }
 
 function rawHebrewPackItemIdChirho(
@@ -1981,9 +2060,63 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       `${passCHumanValidationLocalRowsMissingFromBackupChirho} local Pass-C human validation row(s) need backup before certification can complete on a fresh checkout`
     );
   }
+  const reviewStartLinksChirho = {
+    rawHebrewAllChirho: rawHebrewReviewStartUrlChirho(livePendingRawSpansChirho),
+    rawHebrewUnvalidatedChirho: rawHebrewReviewStartUrlChirho(livePendingRawSpansChirho, "unvalidated-chirho"),
+    rawHebrewVols35UnvalidatedChirho: rawHebrewReviewStartUrlChirho(
+      livePendingRawSpansChirho,
+      "unvalidated-chirho",
+      RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_3_5_CHIRHO
+    ),
+    rawHebrewVols12UnvalidatedChirho: rawHebrewReviewStartUrlChirho(
+      livePendingRawSpansChirho,
+      "unvalidated-chirho",
+      RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_1_2_CHIRHO
+    ),
+    rawHebrewPartialChirho: rawHebrewReviewStartUrlChirho(
+      livePendingRawSpansChirho,
+      "partial-token-validated-chirho"
+    ),
+    rawHebrewVols12PartialChirho: rawHebrewReviewStartUrlChirho(
+      livePendingRawSpansChirho,
+      "partial-token-validated-chirho",
+      RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_1_2_CHIRHO
+    ),
+    rawHebrewSpotCheckChirho: rawHebrewReviewStartUrlChirho(
+      livePendingRawSpansChirho,
+      "all-token-validated-chirho",
+      RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO
+    ),
+    latinSymbolAllChirho: latinSymbolReviewStartUrlChirho(pendingLatinSymbolLiveItemsChirho),
+    latinSymbolFrenchChirho: latinSymbolReviewStartUrlChirho(pendingLatinSymbolLiveItemsChirho, "french-chirho"),
+    latinSymbolNonFrenchChirho: latinSymbolReviewStartUrlChirho(pendingLatinSymbolLiveItemsChirho, "latin-non-french-chirho"),
+    latinSymbolTrivialPunctuationChirho: latinSymbolReviewStartUrlChirho(
+      pendingLatinSymbolLiveItemsChirho,
+      "symbol-chirho",
+      "trivial-punctuation-chirho"
+    ),
+    latinSymbolSiglumSymbolChirho: latinSymbolReviewStartUrlChirho(
+      pendingLatinSymbolLiveItemsChirho,
+      "symbol-chirho",
+      "script-or-siglum-symbol-chirho"
+    ),
+    latinSymbolNontrivialSymbolChirho: latinSymbolReviewStartUrlChirho(
+      pendingLatinSymbolLiveItemsChirho,
+      "symbol-chirho",
+      "nontrivial-symbol-chirho"
+    ),
+    expertAllChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho),
+    expertPriorityChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, undefined, "priority-chirho"),
+    expertAppendixChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, undefined, "appendix-chirho"),
+    expertHebrewChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, "hebrew-chirho"),
+    expertGreekChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, "greek-chirho"),
+    expertSyriacChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, "syriac-chirho"),
+    expertArabicChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, "arabic-chirho"),
+  };
   const certificationCompleteChirho = remainingWorkChirho.length === 0;
   return {
     generatedAtChirho: new Date().toISOString(),
+    reviewStartLinksChirho,
     artifactsChirho: {
       exportReportExistsChirho,
       rawHebrewReportExistsChirho,
@@ -2120,31 +2253,31 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     "## Review Entry Points",
     "",
-    `- Raw Hebrew live validator: http://localhost:8766/ (${statusChirho.rawHebrewChirho.livePendingSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.reportSpanCountChirho} report span(s); command: \`bun run pass-c-human-validate-chirho\`)`,
-    `- Raw Hebrew unvalidated lane: ${rawHebrewReviewUrlChirho("unvalidated-chirho")} (${statusChirho.rawHebrewChirho.livePendingUnvalidatedSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.unvalidatedSpanCountChirho} report span(s))`,
-    `- Raw Hebrew primary vols 3-5 lane: ${rawHebrewReviewUrlChirho("unvalidated-chirho", undefined, RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_3_5_CHIRHO)} (${pendingRawHebrewVols35UnvalidatedTierCountChirho} pending of ${rawHebrewVols35UnvalidatedTierCountChirho} report span(s))`,
-    `- Raw Hebrew vols 1-2 unvalidated lane: ${rawHebrewReviewUrlChirho("unvalidated-chirho", undefined, RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_1_2_CHIRHO)} (${pendingRawHebrewVols12UnvalidatedTierCountChirho} pending of ${rawHebrewVols12UnvalidatedTierCountChirho} report span(s))`,
-    `- Raw Hebrew partial-validation lane: ${rawHebrewReviewUrlChirho("partial-token-validated-chirho")} (${statusChirho.rawHebrewChirho.livePendingPartialValidatedSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.partialValidatedSpanCountChirho} report span(s))`,
-    `- Raw Hebrew vols 1-2 partial lane: ${rawHebrewReviewUrlChirho("partial-token-validated-chirho", undefined, RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_1_2_CHIRHO)} (${pendingRawHebrewVols12PartialTierCountChirho} pending of ${rawHebrewVols12PartialTierCountChirho} report span(s))`,
-    `- Raw Hebrew all-token spot-check lane: ${rawHebrewReviewUrlChirho("all-token-validated-chirho", undefined, RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO)} (${pendingRawHebrewSpotCheckTierCountChirho} pending of ${rawHebrewSpotCheckTierCountChirho} report span(s))`,
+    `- Raw Hebrew live validator: http://localhost:8766/ (${statusChirho.rawHebrewChirho.livePendingSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.reportSpanCountChirho} report span(s); command: \`bun run pass-c-human-validate-chirho\`${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewAllChirho)})`,
+    `- Raw Hebrew unvalidated lane: ${rawHebrewReviewUrlChirho("unvalidated-chirho")} (${statusChirho.rawHebrewChirho.livePendingUnvalidatedSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.unvalidatedSpanCountChirho} report span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewUnvalidatedChirho)})`,
+    `- Raw Hebrew primary vols 3-5 lane: ${rawHebrewReviewUrlChirho("unvalidated-chirho", undefined, RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_3_5_CHIRHO)} (${pendingRawHebrewVols35UnvalidatedTierCountChirho} pending of ${rawHebrewVols35UnvalidatedTierCountChirho} report span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewVols35UnvalidatedChirho)})`,
+    `- Raw Hebrew vols 1-2 unvalidated lane: ${rawHebrewReviewUrlChirho("unvalidated-chirho", undefined, RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_1_2_CHIRHO)} (${pendingRawHebrewVols12UnvalidatedTierCountChirho} pending of ${rawHebrewVols12UnvalidatedTierCountChirho} report span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewVols12UnvalidatedChirho)})`,
+    `- Raw Hebrew partial-validation lane: ${rawHebrewReviewUrlChirho("partial-token-validated-chirho")} (${statusChirho.rawHebrewChirho.livePendingPartialValidatedSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.partialValidatedSpanCountChirho} report span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewPartialChirho)})`,
+    `- Raw Hebrew vols 1-2 partial lane: ${rawHebrewReviewUrlChirho("partial-token-validated-chirho", undefined, RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_1_2_CHIRHO)} (${pendingRawHebrewVols12PartialTierCountChirho} pending of ${rawHebrewVols12PartialTierCountChirho} report span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewVols12PartialChirho)})`,
+    `- Raw Hebrew all-token spot-check lane: ${rawHebrewReviewUrlChirho("all-token-validated-chirho", undefined, RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO)} (${pendingRawHebrewSpotCheckTierCountChirho} pending of ${rawHebrewSpotCheckTierCountChirho} report span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewSpotCheckChirho)})`,
     `- Raw Hebrew saved issue lane: ${rawHebrewReviewUrlChirho(undefined, "saved-issues-chirho")} (${statusChirho.humanValidationDbChirho.rawQueueIssueRowsChirho} read-only current issue row(s))`,
     "- Raw Hebrew pending counts match the live validator; report totals include already-saved rows.",
     `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
-    `- Latin/symbol live reviewer: http://localhost:8770/ (${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} remaining decision(s); command: \`bun run latin-symbol-vision-review-chirho\`)`,
-    `- Latin/symbol French lane: ${latinSymbolReviewUrlChirho("french-chirho")} (${pendingLatinSymbolScriptCountChirho("french-chirho")} pending of ${latinSymbolFrenchCountChirho} item(s))`,
-    `- Latin/symbol non-French lane: ${latinSymbolReviewUrlChirho("latin-non-french-chirho")} (${pendingLatinSymbolScriptCountChirho("latin-non-french-chirho")} pending of ${latinSymbolNonFrenchCountChirho} item(s))`,
-    `- Latin/symbol trivial punctuation lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "trivial-punctuation-chirho")} (${statusChirho.latinSymbolVisionChirho.pendingTrivialPunctuationSymbolItemCountChirho} pending of ${latinSymbolTrivialSymbolCountChirho} item(s))`,
-    `- Latin/symbol witness-sigla/script-symbol lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "script-or-siglum-symbol-chirho")} (${statusChirho.latinSymbolVisionChirho.pendingMixedScriptSymbolItemCountChirho} pending of ${latinSymbolSiglumSymbolCountChirho} item(s))`,
-    `- Latin/symbol nontrivial-symbol lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "nontrivial-symbol-chirho")} (${statusChirho.latinSymbolVisionChirho.pendingNontrivialSymbolItemCountChirho} pending of ${latinSymbolNontrivialSymbolCountChirho} item(s))`,
+    `- Latin/symbol live reviewer: http://localhost:8770/ (${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} remaining decision(s); command: \`bun run latin-symbol-vision-review-chirho\`${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolAllChirho)})`,
+    `- Latin/symbol French lane: ${latinSymbolReviewUrlChirho("french-chirho")} (${pendingLatinSymbolScriptCountChirho("french-chirho")} pending of ${latinSymbolFrenchCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolFrenchChirho)})`,
+    `- Latin/symbol non-French lane: ${latinSymbolReviewUrlChirho("latin-non-french-chirho")} (${pendingLatinSymbolScriptCountChirho("latin-non-french-chirho")} pending of ${latinSymbolNonFrenchCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolNonFrenchChirho)})`,
+    `- Latin/symbol trivial punctuation lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "trivial-punctuation-chirho")} (${statusChirho.latinSymbolVisionChirho.pendingTrivialPunctuationSymbolItemCountChirho} pending of ${latinSymbolTrivialSymbolCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolTrivialPunctuationChirho)})`,
+    `- Latin/symbol witness-sigla/script-symbol lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "script-or-siglum-symbol-chirho")} (${statusChirho.latinSymbolVisionChirho.pendingMixedScriptSymbolItemCountChirho} pending of ${latinSymbolSiglumSymbolCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolSiglumSymbolChirho)})`,
+    `- Latin/symbol nontrivial-symbol lane: ${latinSymbolReviewUrlChirho("symbol-chirho", "nontrivial-symbol-chirho")} (${statusChirho.latinSymbolVisionChirho.pendingNontrivialSymbolItemCountChirho} pending of ${latinSymbolNontrivialSymbolCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolNontrivialSymbolChirho)})`,
     "- Latin/symbol pending counts subtract accepted-clean reviews and accepted explicit policies; open issue reviews keep items pending.",
     `- Latin/symbol image packet: \`${relativeProjectPathChirho(LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO)}\``,
-    `- Expert non-Latin live reviewer: http://localhost:8771/ (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s); command: \`bun run vision-tier-expert-review-chirho\`)`,
-    `- Expert priority lane: ${expertReviewUrlChirho(undefined, "priority-chirho")} (${statusChirho.visionTierChirho.pendingPriorityItemCountChirho} pending of ${expertPriorityCountChirho} item(s))`,
-    `- Expert appendix lane: ${expertReviewUrlChirho(undefined, "appendix-chirho")} (${statusChirho.visionTierChirho.pendingAppendixItemCountChirho} pending of ${expertAppendixCountChirho} item(s))`,
-    `- Expert Hebrew/WLC lane: ${expertReviewUrlChirho("hebrew-chirho")} (${pendingExpertScriptCountChirho("hebrew-chirho")} pending of ${expertScriptCountChirho("hebrew-chirho")} item(s))`,
-    `- Expert Greek lane: ${expertReviewUrlChirho("greek-chirho")} (${pendingExpertScriptCountChirho("greek-chirho")} pending of ${expertScriptCountChirho("greek-chirho")} item(s))`,
-    `- Expert Syriac reader lane: ${expertReviewUrlChirho("syriac-chirho")} (${pendingExpertScriptCountChirho("syriac-chirho")} pending of ${expertScriptCountChirho("syriac-chirho")} item(s))`,
-    `- Expert Arabist lane: ${expertReviewUrlChirho("arabic-chirho")} (${pendingExpertScriptCountChirho("arabic-chirho")} pending of ${expertScriptCountChirho("arabic-chirho")} item(s))`,
+    `- Expert non-Latin live reviewer: http://localhost:8771/ (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s); command: \`bun run vision-tier-expert-review-chirho\`${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertAllChirho)})`,
+    `- Expert priority lane: ${expertReviewUrlChirho(undefined, "priority-chirho")} (${statusChirho.visionTierChirho.pendingPriorityItemCountChirho} pending of ${expertPriorityCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertPriorityChirho)})`,
+    `- Expert appendix lane: ${expertReviewUrlChirho(undefined, "appendix-chirho")} (${statusChirho.visionTierChirho.pendingAppendixItemCountChirho} pending of ${expertAppendixCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertAppendixChirho)})`,
+    `- Expert Hebrew/WLC lane: ${expertReviewUrlChirho("hebrew-chirho")} (${pendingExpertScriptCountChirho("hebrew-chirho")} pending of ${expertScriptCountChirho("hebrew-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertHebrewChirho)})`,
+    `- Expert Greek lane: ${expertReviewUrlChirho("greek-chirho")} (${pendingExpertScriptCountChirho("greek-chirho")} pending of ${expertScriptCountChirho("greek-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertGreekChirho)})`,
+    `- Expert Syriac reader lane: ${expertReviewUrlChirho("syriac-chirho")} (${pendingExpertScriptCountChirho("syriac-chirho")} pending of ${expertScriptCountChirho("syriac-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacChirho)})`,
+    `- Expert Arabist lane: ${expertReviewUrlChirho("arabic-chirho")} (${pendingExpertScriptCountChirho("arabic-chirho")} pending of ${expertScriptCountChirho("arabic-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertArabicChirho)})`,
     `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,
     `- Reviewer scope and primer guide: \`${relativeProjectPathChirho(REVIEWER_SCOPE_GUIDE_PATH_CHIRHO)}\``,
     `- Resolved Zechariah historical aid: \`${relativeProjectPathChirho(ZECHARIAH_TIPCHA_CONFIRMATION_AID_PATH_CHIRHO)}\``,
