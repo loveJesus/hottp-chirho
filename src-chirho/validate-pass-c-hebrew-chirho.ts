@@ -32,10 +32,10 @@ import {
   readFileSync,
   readdirSync,
   statSync,
-  writeFileSync,
 } from "fs";
 import { basename, join } from "path";
 
+import { writeJsonAtomicChirho, writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 
@@ -960,8 +960,8 @@ function mainChirho(): void {
   const reportChirho = buildValidationReportChirho(optionsChirho);
   const jsonPathChirho = join(optionsChirho.outDirChirho, "pass-c-hebrew-validation-chirho.json");
   const markdownPathChirho = join(optionsChirho.outDirChirho, "pass-c-hebrew-validation-chirho.md");
-  writeFileSync(jsonPathChirho, `${JSON.stringify(reportChirho, null, 2)}\n`);
-  writeFileSync(markdownPathChirho, markdownReportChirho(reportChirho));
+  writeJsonAtomicChirho(jsonPathChirho, reportChirho);
+  writeTextAtomicChirho(markdownPathChirho, markdownReportChirho(reportChirho));
   console.log(
     `[${MODULE_CHIRHO}] spans=${reportChirho.spanCountChirho}, ` +
       `tokens=${reportChirho.tokenCountChirho}, ` +

@@ -4,9 +4,13 @@
 import { mkdirSync, renameSync, writeFileSync } from "fs";
 import { dirname } from "path";
 
-export function writeJsonAtomicChirho(pathChirho: string, valueChirho: unknown): void {
+export function writeTextAtomicChirho(pathChirho: string, textChirho: string): void {
   mkdirSync(dirname(pathChirho), { recursive: true });
   const tempPathChirho = `${pathChirho}.tmp-chirho-${process.pid}-${Date.now()}`;
-  writeFileSync(tempPathChirho, `${JSON.stringify(valueChirho, null, 2)}\n`);
+  writeFileSync(tempPathChirho, textChirho);
   renameSync(tempPathChirho, pathChirho);
+}
+
+export function writeJsonAtomicChirho(pathChirho: string, valueChirho: unknown): void {
+  writeTextAtomicChirho(pathChirho, `${JSON.stringify(valueChirho, null, 2)}\n`);
 }

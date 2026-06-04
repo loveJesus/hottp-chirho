@@ -11,9 +11,10 @@
  */
 
 import { Database } from "bun:sqlite";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 
+import { writeJsonAtomicChirho, writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROGRESS_DB_PATH_CHIRHO, PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
   LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO,
@@ -4162,8 +4163,8 @@ function mainChirho(): void {
   const outDirChirho = parseArgValueChirho(argsChirho, "out-dir") ?? OUT_DIR_CHIRHO;
   mkdirSync(outDirChirho, { recursive: true });
   const statusChirho = buildStatusChirho(dbPathChirho);
-  writeFileSync(join(outDirChirho, "status-chirho.json"), `${JSON.stringify(statusChirho, null, 2)}\n`);
-  writeFileSync(join(outDirChirho, "status-chirho.md"), markdownChirho(statusChirho));
+  writeJsonAtomicChirho(join(outDirChirho, "status-chirho.json"), statusChirho);
+  writeTextAtomicChirho(join(outDirChirho, "status-chirho.md"), markdownChirho(statusChirho));
   console.log(
     `[${MODULE_CHIRHO}] complete=${statusChirho.certificationCompleteChirho} ` +
       `strictMode=${strictChirho} ` +
