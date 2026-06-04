@@ -706,17 +706,18 @@ function htmlChirho(): string {
     function shellSingleQuoteChirho(valueChirho) {
       return "'" + String(valueChirho).normalize("NFC").replace(/'/g, "'\\"'\\"'") + "'";
     }
-    function expertSuppliedTextCommandChirho(itemChirho) {
-      return [
+    function expertSuppliedTextCommandChirho(itemChirho, applyChirho) {
+      const commandPartsChirho = [
         "bun run apply-expert-supplied-vision-text-chirho",
         "--",
         "--id-chirho=" + shellSingleQuoteChirho(itemChirho.idChirho),
         "--supplied-text-chirho='<exact printed text>'",
         "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
         "--reviewer-role-chirho=" + shellSingleQuoteChirho(itemChirho.reviewerChirho),
-        "--rationale-chirho='<why this exact text is supplied>'",
-        "--apply"
-      ].join(" ");
+        "--rationale-chirho='<why this exact text is supplied>'"
+      ];
+      if (applyChirho) commandPartsChirho.push("--apply");
+      return commandPartsChirho.join(" ");
     }
     function reviewerAttributionErrorChirho(valueChirho) {
       const trimmedChirho = String(valueChirho || "").trim();
@@ -853,13 +854,18 @@ function htmlChirho(): string {
       if (itemTextIsBlankChirho(itemChirho)) {
         sideChirho.appendChild(elChirho("div", {
           classChirho: "warning-chirho",
-          textChirho: "This item has no current text. Do not confirm an empty transcription; use Report issue or the expert-supplied text apply path after a script reader supplies the exact printed text."
+          textChirho: "This item has no current text. Do not confirm an empty transcription; use Report issue or the expert-supplied text dry-run/apply path after a script reader supplies the exact printed text."
         }));
         const blankCommandBoxChirho = elChirho("div", { classChirho: "box-chirho" });
-        blankCommandBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "After exact script-reader transcription" }));
+        blankCommandBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Dry-run after exact script-reader transcription" }));
         blankCommandBoxChirho.appendChild(elChirho("div", {
           classChirho: "mono-chirho command-chirho",
-          textChirho: expertSuppliedTextCommandChirho(itemChirho)
+          textChirho: expertSuppliedTextCommandChirho(itemChirho, false)
+        }));
+        blankCommandBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Apply after dry-run verification" }));
+        blankCommandBoxChirho.appendChild(elChirho("div", {
+          classChirho: "mono-chirho command-chirho",
+          textChirho: expertSuppliedTextCommandChirho(itemChirho, true)
         }));
         sideChirho.appendChild(blankCommandBoxChirho);
       }
