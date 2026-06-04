@@ -15,6 +15,7 @@ import { join } from "path";
 import { existsSync, mkdirSync } from "fs";
 
 import { SPEC_DIR_CHIRHO } from "./config-chirho.ts";
+import { parseCliArgPrefixValueChirho } from "./utils-chirho.ts";
 
 const WLC_DB_PATH_CHIRHO = join(SPEC_DIR_CHIRHO, "wlc-chirho.sqlite");
 const SEFARIA_API_BASE_CHIRHO = "https://www.sefaria.org/api/v3/texts";
@@ -115,7 +116,9 @@ if (import.meta.main) {
 
   const argsChirho = process.argv.slice(2);
   const onlyBookChirho =
-    argsChirho.find((aChirho) => aChirho.startsWith("--book="))?.split("=")[1] ?? null;
+    argsChirho
+      .map((aChirho) => parseCliArgPrefixValueChirho(aChirho, "--book="))
+      .find((valueChirho) => valueChirho !== null) ?? null;
   const booksChirho = onlyBookChirho ? [onlyBookChirho] : BOOKS_CHIRHO;
 
   const insertVerseChirho = dbChirho.prepare(
@@ -159,8 +162,7 @@ if (import.meta.main) {
           const verseIdChirho = Number(infoChirho.lastInsertRowid);
           deleteWordsChirho.run(verseIdChirho);
           const tokensChirho = normChirho.split(/\s+/).filter((tChirho) => tChirho);
-          for (let wIdxChirho = 0; wIdxChirho < tokensChirho.length; wIdxChirho++) {
-            const wRawChirho = tokensChirho[wIdxChirho];
+          for (const [wIdxChirho, wRawChirho] of tokensChirho.entries()) {
             insertWordChirho.run(
               verseIdChirho,
               wIdxChirho,

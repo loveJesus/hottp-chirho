@@ -72,6 +72,16 @@ export function logChirho(
   console.log(`[${nowIsoChirho()}] [${moduleChirho}] ${messageChirho}`, ...argsChirho);
 }
 
+/** Parse an exact CLI prefix such as --vol= and reject empty values */
+export function parseCliArgPrefixValueChirho(argChirho: string, prefixChirho: string): string | null {
+  if (!argChirho.startsWith(prefixChirho)) return null;
+  const valueChirho = argChirho.slice(prefixChirho.length);
+  if (valueChirho.length === 0) {
+    throw new Error(`missing value for ${prefixChirho.slice(0, -1)}`);
+  }
+  return valueChirho;
+}
+
 /** Decode HTML entities from bbox output */
 export function decodeHtmlEntitiesChirho(htmlChirho: string): string {
   return htmlChirho

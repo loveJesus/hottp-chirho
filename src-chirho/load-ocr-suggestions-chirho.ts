@@ -26,6 +26,7 @@
  */
 import { readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { parseCliArgPrefixValueChirho } from "./utils-chirho.ts";
 
 const PROJECT_ROOT_CHIRHO = resolve(import.meta.dir, "..");
 const DEFAULT_TRIAGE_PATH_CHIRHO = resolve(
@@ -68,11 +69,15 @@ function mainChirho(): void {
   let modelChirho = "crnn-ctc-v1-chirho";
   let triagePathChirho = DEFAULT_TRIAGE_PATH_CHIRHO;
   for (const aChirho of argsChirho) {
-    if (aChirho.startsWith("--vol=")) volChirho = Number(aChirho.split("=")[1]);
-    if (aChirho.startsWith("--model=")) modelChirho = aChirho.split("=")[1];
-    if (aChirho.startsWith("--triage=")) {
-      triagePathChirho = resolve(PROJECT_ROOT_CHIRHO, aChirho.split("=").slice(1).join("="));
-    }
+    const volValueChirho = parseCliArgPrefixValueChirho(aChirho, "--vol=");
+    if (volValueChirho !== null) volChirho = Number(volValueChirho);
+    const modelValueChirho = parseCliArgPrefixValueChirho(aChirho, "--model=");
+    if (modelValueChirho !== null) modelChirho = modelValueChirho;
+    const triageValueChirho = parseCliArgPrefixValueChirho(aChirho, "--triage=");
+    if (triageValueChirho !== null) triagePathChirho = resolve(PROJECT_ROOT_CHIRHO, triageValueChirho);
+  }
+  if (!Number.isInteger(volChirho) || volChirho <= 0) {
+    throw new Error(`invalid --vol value: ${volChirho}`);
   }
   if (!existsSync(triagePathChirho)) {
     console.error(`no triage at ${triagePathChirho}; run triage_corpus_chirho.py (or read_volume_page_chirho.py --out-triage) first.`);
