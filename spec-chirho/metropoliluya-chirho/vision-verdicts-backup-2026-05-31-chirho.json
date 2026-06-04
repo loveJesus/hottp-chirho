@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T13:22:25.177Z",
+  "generatedAtChirho": "2026-06-04T13:31:38.093Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 854,
+  "countChirho": 861,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -5810,15 +5810,35 @@
       "lineIndexChirho": 21,
       "segmentIndexChirho": 10,
       "garbleTextChirho": "() clav .4",
-      "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "𝔊 𝔖 clav לִי",
-      "notesChirho": "Mixed: Fraktur sigla 𝔊 (LXX) 𝔖 (Syriac), Latin 'clav' (clavis/retroversion), then Hebrew לִי (li, 'to me'). Recovered Hebrew = לִי."
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": "𝔊 𝔖",
+      "notesChirho": "Split from old mixed Hebrew span `𝔊 𝔖 clav לִי`: witness sigla remain in Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 65,
+      "lineIndexChirho": 21,
+      "segmentIndexChirho": 11,
+      "garbleTextChirho": "() clav .4",
+      "scriptChirho": "latin-non-french-chirho",
+      "utf8TextChirho": "clav",
+      "notesChirho": "Split from old mixed Hebrew span `𝔊 𝔖 clav לִי`: Latin apparatus label `clav` remains in Latin/symbol proofing."
     },
     {
       "volumeChirho": 5,
       "pageChirho": 65,
       "lineIndexChirho": 21,
       "segmentIndexChirho": 12,
+      "garbleTextChirho": "() clav .4",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "לִי",
+      "notesChirho": "Split from old mixed Hebrew span `𝔊 𝔖 clav לִי`: scanline shows the Hebrew reading after the `clav` label. Stored as vision-chirho; exact letters and pointing remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 65,
+      "lineIndexChirho": 21,
+      "segmentIndexChirho": 14,
       "garbleTextChirho": "''",
       "scriptChirho": "symbol-chirho",
       "utf8TextChirho": "𝔙",
@@ -6820,15 +6840,45 @@
       "lineIndexChirho": 25,
       "segmentIndexChirho": 9,
       "garbleTextChirho": "( clav .>85",
-      "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "𝔊 clav וּמֵתִי →",
-      "notesChirho": "mixed: 𝔊 siglum (U+1D50A) + Latin 'clav' + Hebrew conjectured reading וּמֵתִי + arrow; image confirms"
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": "𝔊",
+      "notesChirho": "Split from old mixed Hebrew span `𝔊 clav וּמֵתִי →`: Septuagint siglum remains in Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 68,
+      "lineIndexChirho": 25,
+      "segmentIndexChirho": 10,
+      "garbleTextChirho": "( clav .>85",
+      "scriptChirho": "latin-non-french-chirho",
+      "utf8TextChirho": "clav",
+      "notesChirho": "Split from old mixed Hebrew span `𝔊 clav וּמֵתִי →`: Latin apparatus label `clav` remains in Latin/symbol proofing."
     },
     {
       "volumeChirho": 5,
       "pageChirho": 68,
       "lineIndexChirho": 25,
       "segmentIndexChirho": 11,
+      "garbleTextChirho": "( clav .>85",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "וּמֵתִי",
+      "notesChirho": "Split from old mixed Hebrew span `𝔊 clav וּמֵתִי →`: scanline shows the Hebrew reading after the `clav` label. Stored as vision-chirho; exact letters and pointing remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 68,
+      "lineIndexChirho": 25,
+      "segmentIndexChirho": 12,
+      "garbleTextChirho": "( clav .>85",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": "→",
+      "notesChirho": "Split from old mixed Hebrew span `𝔊 clav וּמֵתִי →`: arrow marker is apparatus punctuation and remains in Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 68,
+      "lineIndexChirho": 25,
+      "segmentIndexChirho": 14,
       "garbleTextChirho": "''",
       "scriptChirho": "symbol-chirho",
       "utf8TextChirho": "𝔙",
@@ -6860,9 +6910,29 @@
       "lineIndexChirho": 26,
       "segmentIndexChirho": 6,
       "garbleTextChirho": ") clav .>%!›5",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": "𝔖",
+      "notesChirho": "Split from old mixed Hebrew span `𝔖 clav וְשָׁכַבְתִּי`: Syriac/Peshitta siglum remains in Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 68,
+      "lineIndexChirho": 26,
+      "segmentIndexChirho": 7,
+      "garbleTextChirho": ") clav .>%!›5",
+      "scriptChirho": "latin-non-french-chirho",
+      "utf8TextChirho": "clav",
+      "notesChirho": "Split from old mixed Hebrew span `𝔖 clav וְשָׁכַבְתִּי`: Latin apparatus label `clav` remains in Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 68,
+      "lineIndexChirho": 26,
+      "segmentIndexChirho": 8,
+      "garbleTextChirho": ") clav .>%!›5",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "𝔖 clav וְשָׁכַבְתִּי",
-      "notesChirho": "mixed: Syriac siglum 𝔖 (U+1D516) + Latin 'clav' + Hebrew conjectured reading וְשָׁכַבְתִּי; image confirms"
+      "utf8TextChirho": "וְשָׁכַבְתִּי",
+      "notesChirho": "Split from old mixed Hebrew span `𝔖 clav וְשָׁכַבְתִּי`: scanline shows the Hebrew reading after the `clav` label. Stored as vision-chirho; exact letters and pointing remain Hebrew/WLC expert-confirmation tier."
     },
     {
       "volumeChirho": 5,
