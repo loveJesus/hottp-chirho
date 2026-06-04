@@ -21,6 +21,7 @@ import {
 } from "fs";
 import { join, dirname } from "path";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { parseGlyphKeyChirho } from "./glyph-key-chirho.ts";
 
 const PORT_CHIRHO = 8766;
 const FONT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "bitmap-font-v3-chirho");
@@ -247,9 +248,7 @@ Bun.serve({
         };
         const keyChirho = bodyChirho.keyChirho;
         const verdictChirho = bodyChirho.verdictChirho;
-        const cpHexChirho = keyChirho.split("/")[0].slice(2);
-        const letterChirho = String.fromCodePoint(parseInt(cpHexChirho, 16));
-        const fileChirho = keyChirho.split("/")[1];
+        const keyPartsChirho = parseGlyphKeyChirho(keyChirho);
         const reasonsChirho = (suspectsChirho[keyChirho]?.reasonsChirho ?? []).join(
           ",",
         );
@@ -259,9 +258,9 @@ Bun.serve({
           restoreChirho(keyChirho);
         }
         upsertVerdictStmtChirho.run(
-          cpHexChirho,
-          letterChirho,
-          fileChirho,
+          keyPartsChirho.cpHexChirho,
+          keyPartsChirho.letterChirho,
+          keyPartsChirho.fileChirho,
           verdictChirho,
           reasonsChirho,
           REVIEWER_CHIRHO,

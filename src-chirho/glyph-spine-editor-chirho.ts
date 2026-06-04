@@ -16,6 +16,7 @@ import { Database } from "bun:sqlite";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
 import { join, dirname } from "path";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { parseGlyphKeyChirho } from "./glyph-key-chirho.ts";
 
 const PORT_CHIRHO = 8768;
 const FONT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "bitmap-font-v3-chirho");
@@ -81,17 +82,19 @@ function glyphListChirho() {
 function spinePayloadChirho(keyChirho: string) {
   const seedChirho = seedsChirho[keyChirho];
   if (!seedChirho) return null;
-  const cpHexChirho = keyChirho.slice(2, 6);
-  const fileChirho = keyChirho.split("/")[1];
+  const keyPartsChirho = parseGlyphKeyChirho(keyChirho);
   const pngChirho = join(FONT_DIR_CHIRHO, keyChirho);
   const dataUriChirho = existsSync(pngChirho)
     ? "data:image/png;base64," + readFileSync(pngChirho).toString("base64")
     : "";
-  const rowChirho = getSpineStmtChirho.get(cpHexChirho, fileChirho) as any;
+  const rowChirho = getSpineStmtChirho.get(
+    keyPartsChirho.cpHexChirho,
+    keyPartsChirho.fileChirho,
+  ) as any;
   const savedChirho = !!rowChirho;
   return {
     keyChirho,
-    letterChirho: String.fromCodePoint(parseInt(cpHexChirho, 16)),
+    letterChirho: keyPartsChirho.letterChirho,
     wChirho: seedChirho.wChirho,
     hChirho: seedChirho.hChirho,
     penRadiusChirho: savedChirho ? rowChirho.pen_radius_chirho : seedChirho.penRadiusChirho,
@@ -485,22 +488,20 @@ Bun.serve({
           penRadiusChirho: number;
           strokesChirho: number[][][];
         };
-        const cpHexChirho = bChirho.keyChirho.slice(2, 6);
-        const fileChirho = bChirho.keyChirho.split("/")[1];
-        const letterChirho = String.fromCodePoint(parseInt(cpHexChirho, 16));
+        const keyPartsChirho = parseGlyphKeyChirho(bChirho.keyChirho);
         const strokesJsonChirho = JSON.stringify(bChirho.strokesChirho);
         upsertSpineStmtChirho.run(
-          cpHexChirho,
-          letterChirho,
-          fileChirho,
+          keyPartsChirho.cpHexChirho,
+          keyPartsChirho.letterChirho,
+          keyPartsChirho.fileChirho,
           bChirho.penRadiusChirho,
           strokesJsonChirho,
           EDITOR_CHIRHO,
         );
         const sidecarChirho = join(
           SPINES_DIR_CHIRHO,
-          `U+${cpHexChirho}`,
-          fileChirho.replace(/\.png$/, ".json"),
+          keyPartsChirho.cpDirChirho,
+          keyPartsChirho.fileChirho.replace(/\.png$/, ".json"),
         );
         mkdirSync(dirname(sidecarChirho), { recursive: true });
         writeFileSync(
@@ -508,7 +509,7 @@ Bun.serve({
           JSON.stringify(
             {
               keyChirho: bChirho.keyChirho,
-              letterChirho,
+              letterChirho: keyPartsChirho.letterChirho,
               penRadiusChirho: bChirho.penRadiusChirho,
               strokesChirho: bChirho.strokesChirho,
               savedByChirho: EDITOR_CHIRHO,
