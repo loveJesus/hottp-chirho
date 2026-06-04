@@ -3,7 +3,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Non-Latin Residue Candidate Scan Chirho
 
-Generated: 2026-06-04T11:55:05.203Z
+Generated: 2026-06-04T12:04:25.333Z
 
 This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, or apparatus residue inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.
 
@@ -11,23 +11,12 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 
 ## Summary
 
-- Candidate lines: 35
-- High priority: 2
+- Candidate lines: 34
+- High priority: 1
 - Medium priority: 27
 - Low priority included: 6
 
 ## Candidates
-
-### high-chirho score 10: vol 3 p0152 L044
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-3-chirho/page-0152-chirho/line-044-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-3-chirho/page-0152-chirho/line-044-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-3-chirho/page-0152-chirho/line-044-chirho.png)
-- Line text: `c) en 46,9b: omet ≠ κατὰ Tv 6601 Ts πύλης τῆς πρὸς νότον Kai 6 εἰσπορευόμενος`
-- Suspicious spans:
-  - S3 french-chirho: `Tv 6601 Ts` (short-garble-near-nonlatin-chirho; neighbors greek-chirho / greek-chirho)
-  - S7 french-chirho: `Kai 6` (short-garble-near-nonlatin-chirho; neighbors greek-chirho / greek-chirho)
 
 ### high-chirho score 8: vol 5 p0051 L005
 

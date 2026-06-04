@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T11:54:33.366Z",
+  "generatedAtChirho": "2026-06-04T12:03:24.196Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 826,
+  "countChirho": 828,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8263,6 +8263,26 @@
       "scriptChirho": "french-chirho",
       "utf8TextChirho": "et en 14 par",
       "notesChirho": "Cleaned vol 2 p151 line 14 French connector after scanline review: print reads `et en 14 par` between Hebrew `קדשו` and `למקדשא`; current OCR fused it as `eten 14 par`. Stored as french-chirho vision-tier cleanup, not certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 44,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "Tv 6601 Ts",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "τῆς",
+      "notesChirho": "Recovered vol 3 p152 line 44 Greek residue after scanline review: the current OCR stored `Tv 6601 Ts` as French, but the print reads Greek `τῆς` after `κατὰ` and before `πύλης` in Ezek 46:9b. Stored as greek-chirho vision-tier; exact Greek text remains Greek expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 44,
+      "segmentIndexChirho": 7,
+      "garbleTextChirho": "Kai 6",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "καὶ ὁ",
+      "notesChirho": "Recovered vol 3 p152 line 44 Greek residue after scanline review: the current OCR stored `Kai 6` as French, but the print reads Greek `καὶ ὁ` before `εἰσπορευόμενος` in Ezek 46:9b. Stored as greek-chirho vision-tier; exact Greek text remains Greek expert-confirmation tier."
     }
   ]
 }
