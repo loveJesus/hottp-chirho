@@ -85,9 +85,11 @@ interface RepairReportChirho {
 }
 
 const EXPECTED_RENDERED_CHIRHO = "הָעָם JnT{2 מִלֶּכֶת 1] אשר on”. Des allusions sous une forme simplifiée se ren-";
-const REPAIRED_RENDERED_CHIRHO =
+const PERIODLESS_REPAIRED_RENDERED_CHIRHO =
   "בְּרִיתָם אֲשֶׁר סָרוּ מִלֶּכֶת בְּדֶרֶךְ הָעָם Des allusions sous une forme simplifiée se ren-";
-const RECOVERED_HEBREW_CHIRHO = "בְּרִיתָם אֲשֶׁר סָרוּ מִלֶּכֶת בְּדֶרֶךְ הָעָם";
+const REPAIRED_RENDERED_CHIRHO =
+  "בְּרִיתָם אֲשֶׁר סָרוּ מִלֶּכֶת בְּדֶרֶךְ הָעָם. Des allusions sous une forme simplifiée se ren-";
+const RECOVERED_HEBREW_CHIRHO = "בְּרִיתָם אֲשֶׁר סָרוּ מִלֶּכֶת בְּדֶרֶךְ הָעָם.";
 
 function loadJsonChirho<TChirho>(pathChirho: string): TChirho {
   return JSON.parse(readFileSync(pathChirho, "utf8")) as TChirho;
@@ -145,16 +147,19 @@ function validateTilingChirho(lineChirho: SpanLineChirho): void {
   }
 }
 
-function stateForLineChirho(lineChirho: SpanLineChirho): "pre-repair-chirho" | "already-applied-chirho" | "unknown-chirho" {
+function stateForLineChirho(
+  lineChirho: SpanLineChirho
+): "pre-repair-chirho" | "periodless-applied-chirho" | "already-applied-chirho" | "unknown-chirho" {
   const renderedChirho = normalizeTextForStorageChirho(renderedLineChirho(lineChirho));
   if (renderedChirho === normalizeTextForStorageChirho(EXPECTED_RENDERED_CHIRHO)) return "pre-repair-chirho";
+  if (renderedChirho === normalizeTextForStorageChirho(PERIODLESS_REPAIRED_RENDERED_CHIRHO)) return "periodless-applied-chirho";
   if (renderedChirho === normalizeTextForStorageChirho(REPAIRED_RENDERED_CHIRHO)) return "already-applied-chirho";
   return "unknown-chirho";
 }
 
 function buildPlannedLineChirho(lineChirho: SpanLineChirho, appliedAtChirho: string): SpanLineChirho {
   const existingSpansChirho = sortedSpansChirho(lineChirho);
-  const suffixSpanChirho = existingSpansChirho[5];
+  const suffixSpanChirho = existingSpansChirho.length === 2 ? existingSpansChirho[1] : existingSpansChirho[5];
   if (suffixSpanChirho === undefined) throw new Error("expected original French suffix span to exist");
 
   const nextLineChirho = structuredClone(lineChirho);
@@ -168,7 +173,7 @@ function buildPlannedLineChirho(lineChirho: SpanLineChirho, appliedAtChirho: str
       provenanceChirho: "vision-chirho",
       visionTranscribedAtChirho: appliedAtChirho,
       visionNotesChirho:
-        "Recovered continuous Isaiah 8:11 / 1QSa Hebrew phrase from partial Pass-C Hebrew islands plus short Latin/bracket garbage; Claude and Codex second-witnessed the scanline. Stored as one vision-chirho span because the OCR segmentation splits through the quote; exact letters, vowels, and marks remain expert-confirmation tier.",
+        "Recovered continuous Isaiah 8:11 / 1QSa Hebrew phrase from partial Pass-C Hebrew islands plus short Latin/bracket garbage; Claude and Codex second-witnessed the scanline. A follow-up audit confirmed the printed sentence-ending period after the quote. Stored as one vision-chirho span because the OCR segmentation splits through the quote; exact letters, vowels, marks, and punctuation remain expert-confirmation tier.",
     },
     {
       ...suffixSpanChirho,

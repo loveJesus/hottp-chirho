@@ -1,5 +1,5 @@
 {
-  "generatedAtChirho": "2026-06-04T06:41:44.967Z",
+  "generatedAtChirho": "2026-06-04T06:47:12.479Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
   "countChirho": 787,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
@@ -7871,8 +7871,8 @@
       "segmentIndexChirho": 0,
       "garbleTextChirho": "JnT{2 + 1] + Hebrew swallowed into old French suffix around partial הָעָם / מִלֶּכֶת / אשר",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "בְּרִיתָם אֲשֶׁר סָרוּ מִלֶּכֶת בְּדֶרֶךְ הָעָם",
-      "notesChirho": "Recovered continuous Isaiah 8:11 / 1QSa Hebrew phrase from partial Pass-C Hebrew islands plus short Latin/bracket garbage; Claude and Codex second-witnessed the scanline. Stored as one vision-chirho span because the OCR segmentation splits through the quote; exact letters, vowels, and marks remain expert-confirmation tier."
+      "utf8TextChirho": "בְּרִיתָם אֲשֶׁר סָרוּ מִלֶּכֶת בְּדֶרֶךְ הָעָם.",
+      "notesChirho": "Recovered continuous Isaiah 8:11 / 1QSa Hebrew phrase from partial Pass-C Hebrew islands plus short Latin/bracket garbage; Claude and Codex second-witnessed the scanline. A follow-up audit confirmed the printed sentence-ending period after the quote. Stored as one vision-chirho span because the OCR segmentation splits through the quote; exact letters, vowels, marks, and punctuation remain expert-confirmation tier."
     }
   ]
 }
