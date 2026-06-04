@@ -547,6 +547,15 @@ function htmlChirho(): string {
         <option value="priority-chirho">Priority</option>
         <option value="appendix-chirho">Appendix</option>
       </select>
+      <label class="label-chirho" for="volume-filter-chirho">Volume</label>
+      <select id="volume-filter-chirho">
+        <option value="all-chirho">All</option>
+        <option value="vol-1-chirho">Vol 1</option>
+        <option value="vol-2-chirho">Vol 2</option>
+        <option value="vol-3-chirho">Vol 3</option>
+        <option value="vol-4-chirho">Vol 4</option>
+        <option value="vol-5-chirho">Vol 5</option>
+      </select>
       <button type="button" id="prev-chirho">Previous</button>
       <button type="button" id="next-chirho">Skip</button>
       <button type="button" id="copy-link-chirho">Copy link</button>
@@ -560,6 +569,7 @@ function htmlChirho(): string {
     const queryChirho = new URLSearchParams(window.location.search);
     let scriptFilterChirho = queryChirho.get("script-chirho") || "all-chirho";
     let priorityFilterChirho = queryChirho.get("priority-chirho") || "all-chirho";
+    let volumeFilterChirho = queryChirho.get("volume-chirho") || "all-chirho";
     let requestedItemIdChirho = queryChirho.get("item-chirho");
 
     function elChirho(tagChirho, attrsChirho = {}, childrenChirho = []) {
@@ -600,26 +610,36 @@ function htmlChirho(): string {
     }
     if (!selectHasValueChirho("script-filter-chirho", scriptFilterChirho)) scriptFilterChirho = "all-chirho";
     if (!selectHasValueChirho("priority-filter-chirho", priorityFilterChirho)) priorityFilterChirho = "all-chirho";
+    if (!selectHasValueChirho("volume-filter-chirho", volumeFilterChirho)) volumeFilterChirho = "all-chirho";
     function syncFilterControlsChirho() {
       document.getElementById("script-filter-chirho").value = scriptFilterChirho;
       document.getElementById("priority-filter-chirho").value = priorityFilterChirho;
+      document.getElementById("volume-filter-chirho").value = volumeFilterChirho;
+    }
+    function volumeFilterNumberChirho() {
+      if (volumeFilterChirho === "all-chirho") return null;
+      const matchChirho = volumeFilterChirho.match(/^vol-(\\d+)-chirho$/);
+      return matchChirho ? Number.parseInt(matchChirho[1], 10) : null;
     }
     function syncUrlChirho() {
       const paramsChirho = new URLSearchParams();
       if (scriptFilterChirho !== "all-chirho") paramsChirho.set("script-chirho", scriptFilterChirho);
       if (priorityFilterChirho !== "all-chirho") paramsChirho.set("priority-chirho", priorityFilterChirho);
+      if (volumeFilterChirho !== "all-chirho") paramsChirho.set("volume-chirho", volumeFilterChirho);
       const itemChirho = currentItemChirho();
       if (itemChirho) paramsChirho.set("item-chirho", itemChirho.idChirho);
       const queryStringChirho = paramsChirho.toString();
       window.history.replaceState(null, "", queryStringChirho ? window.location.pathname + "?" + queryStringChirho : window.location.pathname);
     }
     function activeItemsChirho() {
+      const volumeChirho = volumeFilterNumberChirho();
       return itemsChirho.filter((itemChirho) =>
         !itemChirho.confirmedChirho &&
         (scriptFilterChirho === "all-chirho" || itemChirho.scriptChirho === scriptFilterChirho) &&
         (priorityFilterChirho === "all-chirho" ||
           (priorityFilterChirho === "priority-chirho" && itemChirho.priorityMatchChirho) ||
-          (priorityFilterChirho === "appendix-chirho" && !itemChirho.priorityMatchChirho))
+          (priorityFilterChirho === "appendix-chirho" && !itemChirho.priorityMatchChirho)) &&
+        (volumeChirho === null || itemChirho.volumeChirho === volumeChirho)
       );
     }
     function activeIndexForItemIdChirho(itemIdChirho) {
@@ -824,6 +844,12 @@ function htmlChirho(): string {
     });
     document.getElementById("priority-filter-chirho").addEventListener("change", (eventChirho) => {
       priorityFilterChirho = eventChirho.target.value;
+      requestedItemIdChirho = null;
+      indexChirho = 0;
+      renderChirho();
+    });
+    document.getElementById("volume-filter-chirho").addEventListener("change", (eventChirho) => {
+      volumeFilterChirho = eventChirho.target.value;
       requestedItemIdChirho = null;
       indexChirho = 0;
       renderChirho();

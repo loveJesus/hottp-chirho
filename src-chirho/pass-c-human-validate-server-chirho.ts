@@ -1074,6 +1074,15 @@ function pageHtmlChirho(): string {
         <option value="suspect-text-chirho">Suspect text</option>
         <option value="unknown-script-chirho">Unknown script</option>
       </select>
+      <label class="label-chirho" for="volume-filter-chirho">Volume</label>
+      <select id="volume-filter-chirho">
+        <option value="all-chirho">All</option>
+        <option value="vol-1-chirho">Vol 1</option>
+        <option value="vol-2-chirho">Vol 2</option>
+        <option value="vol-3-chirho">Vol 3</option>
+        <option value="vol-4-chirho">Vol 4</option>
+        <option value="vol-5-chirho">Vol 5</option>
+      </select>
       <button type="button" id="prev-chirho">Previous</button>
       <button type="button" id="next-chirho">Skip</button>
       <button type="button" id="copy-link-chirho">Copy link</button>
@@ -1134,22 +1143,35 @@ function pageHtmlChirho(): string {
       initialSearchParamsChirho.get("tier-chirho"),
       "all-chirho"
     );
+    let volumeFilterChirho = selectValueOrDefaultChirho(
+      "volume-filter-chirho",
+      initialSearchParamsChirho.get("volume-chirho"),
+      "all-chirho"
+    );
     function syncFilterControlsChirho() {
       document.getElementById("review-state-filter-chirho").value = reviewStateFilterChirho;
       document.getElementById("validation-status-filter-chirho").value = validationStatusFilterChirho;
       document.getElementById("tier-filter-chirho").value = tierFilterChirho;
+      document.getElementById("volume-filter-chirho").value = volumeFilterChirho;
+    }
+    function volumeFilterNumberChirho() {
+      if (volumeFilterChirho === "all-chirho") return null;
+      const matchChirho = volumeFilterChirho.match(/^vol-(\\d+)-chirho$/);
+      return matchChirho ? Number.parseInt(matchChirho[1], 10) : null;
     }
     function syncUrlChirho() {
       const paramsChirho = new URLSearchParams();
       if (reviewStateFilterChirho !== "pending-chirho") paramsChirho.set("review-state-chirho", reviewStateFilterChirho);
       if (validationStatusFilterChirho !== "all-chirho") paramsChirho.set("validation-status-chirho", validationStatusFilterChirho);
       if (tierFilterChirho !== "all-chirho") paramsChirho.set("tier-chirho", tierFilterChirho);
+      if (volumeFilterChirho !== "all-chirho") paramsChirho.set("volume-chirho", volumeFilterChirho);
       const itemChirho = currentItemChirho();
       if (itemChirho) paramsChirho.set("item-chirho", itemChirho.keyChirho);
       const queryChirho = paramsChirho.toString();
       window.history.replaceState(null, "", queryChirho ? window.location.pathname + "?" + queryChirho : window.location.pathname);
     }
     function activeQueueChirho() {
+      const volumeChirho = volumeFilterNumberChirho();
       return queueChirho.filter((itemChirho) =>
         (
           reviewStateFilterChirho === "pending-chirho"
@@ -1157,7 +1179,8 @@ function pageHtmlChirho(): string {
             : validationsChirho.get(itemChirho.keyChirho)?.verdict_chirho === "reviewed-issues-chirho"
         ) &&
         (validationStatusFilterChirho === "all-chirho" || itemChirho.validationStatusChirho === validationStatusFilterChirho) &&
-        (tierFilterChirho === "all-chirho" || itemChirho.tierChirho === tierFilterChirho)
+        (tierFilterChirho === "all-chirho" || itemChirho.tierChirho === tierFilterChirho) &&
+        (volumeChirho === null || itemChirho.volumeChirho === volumeChirho)
       );
     }
     function activeIndexForItemKeyChirho(itemKeyChirho) {
@@ -1588,6 +1611,12 @@ function pageHtmlChirho(): string {
     });
     document.getElementById("tier-filter-chirho").addEventListener("change", (eventChirho) => {
       tierFilterChirho = eventChirho.target.value;
+      requestedItemKeyChirho = null;
+      indexChirho = 0;
+      renderChirho();
+    });
+    document.getElementById("volume-filter-chirho").addEventListener("change", (eventChirho) => {
+      volumeFilterChirho = eventChirho.target.value;
       requestedItemKeyChirho = null;
       indexChirho = 0;
       renderChirho();
