@@ -822,6 +822,8 @@ function htmlChirho(): string {
         issueGridChirho.appendChild(labelChirho);
       }
       formChirho.appendChild(issueGridChirho);
+      const actionStatusChirho = elChirho("div", { classChirho: "label-chirho action-status-chirho", textChirho: "" });
+      formChirho.appendChild(actionStatusChirho);
       const actionsChirho = elChirho("div", { classChirho: "actions-chirho" });
       const confirmChirho = elChirho("button", { classChirho: "confirm-chirho", type: "button", textChirho: "Confirm" });
       confirmChirho.disabled = true;
@@ -831,6 +833,13 @@ function htmlChirho(): string {
         reviewerRoleStatusChirho.textContent = reviewerRoleMatchesItemChirho(itemChirho)
           ? "Confirmation role OK."
           : "Confirm role must be " + itemChirho.reviewerChirho + ".";
+        const actionMessagesChirho = [];
+        if (fieldValueChirho("rationale-chirho").trim().length === 0) actionMessagesChirho.push("rationale required");
+        if (!certifyExactCheckedChirho()) actionMessagesChirho.push("Confirm needs exact-certification checkbox");
+        if (currentIssueFlagsChirho().length === 0) actionMessagesChirho.push("Report issue needs an issue flag");
+        actionStatusChirho.textContent = actionMessagesChirho.length === 0
+          ? "Confirm and Report issue requirements are currently satisfied."
+          : "Action requirements: " + actionMessagesChirho.join("; ") + ".";
         confirmChirho.disabled = !confirmationCanSubmitChirho(itemChirho);
         issueChirho.disabled = !issueCanSubmitChirho();
       };
