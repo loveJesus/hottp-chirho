@@ -68,7 +68,12 @@ import {
   rawHebrewReviewTierForSpanChirho,
 } from "./raw-hebrew-review-tier-chirho.ts";
 import { isGenericReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
-import { sourceFingerprintForPathsChirho, spanSourceFingerprintForTargetsChirho, type SourceFingerprintChirho } from "./source-fingerprint-chirho.ts";
+import {
+  sourceFingerprintForPathsChirho,
+  spanLinePathsForTargetsChirho,
+  spanSourceFingerprintForTargetsChirho,
+  type SourceFingerprintChirho,
+} from "./source-fingerprint-chirho.ts";
 import {
   scanNonNfcSpanTextFieldsChirho,
   scanSpanLinePathsChirho,
@@ -2495,7 +2500,6 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     nonNfcSpanTextFieldsChirho.map((findingChirho) => findingChirho.relativePathChirho)
   );
   const liveSpanLinePathsChirho = scanSpanLinePathsChirho();
-  const liveSpanCountChirho = liveSpanCountForPathsChirho(liveSpanLinePathsChirho);
   const strictBlindScannerSpanSourceFingerprintChirho = sourceFingerprintForPathsChirho(liveSpanLinePathsChirho);
   const hiddenHebrewScannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(HIDDEN_HEBREW_CANDIDATE_SCANNER_PATH_CHIRHO);
   const nonLatinResidueScannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(NON_LATIN_RESIDUE_CANDIDATE_SCANNER_PATH_CHIRHO);
@@ -2505,7 +2509,9 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     (typeof exportReportChirho.strictPassedChirho === "boolean" &&
       typeof exportReportChirho.issueCountChirho === "number");
   const exportReportTargetsResultChirho = exportReportTargetsChirho(exportReportChirho);
+  const exportReportSpanLinePathsChirho = spanLinePathsForTargetsChirho(exportReportTargetsResultChirho);
   const liveSpanSourceFingerprintChirho = spanSourceFingerprintForTargetsChirho(exportReportTargetsResultChirho);
+  const liveSpanCountChirho = liveSpanCountForPathsChirho(exportReportSpanLinePathsChirho);
   const exportReportHasSpanSourceFingerprintChirho =
     typeof exportReportChirho.spanSourceFileCountChirho === "number" &&
     typeof exportReportChirho.spanSourceFingerprintChirho === "string";
