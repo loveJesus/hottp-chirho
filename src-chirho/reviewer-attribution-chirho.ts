@@ -32,7 +32,7 @@ export const GENERIC_REVIEWER_IDS_CHIRHO = new Set<string>([
 ]);
 
 export const MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO =
-  "(^|[^a-z0-9])(anthropic|claude|codex|gemini|gpt[-_ ]?[0-9]*|llama|mistral|model|openai|o[0-9]+)([^a-z0-9]|$)";
+  "(^|[^a-z0-9])(ai|anthropic|bot|claude|codex|gemini|gpt[-_ ]?[0-9]*|llama|llm|mistral|model|openai|o[0-9]+)([^a-z0-9]|$)";
 export const MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO = "i";
 
 const MACHINE_REVIEWER_ID_RE_CHIRHO = new RegExp(

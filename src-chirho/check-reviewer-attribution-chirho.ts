@@ -80,9 +80,23 @@ const REVIEWER_ATTRIBUTION_CASES_CHIRHO: ReviewerAttributionCaseChirho[] = [
   {
     reviewerChirho: "inhumane-bot-chirho",
     genericChirho: false,
-    machineChirho: false,
+    machineChirho: true,
     explicitOkChirho: true,
-    certifyingOkChirho: true,
+    certifyingOkChirho: false,
+  },
+  {
+    reviewerChirho: "ai-reviewer-chirho",
+    genericChirho: false,
+    machineChirho: true,
+    explicitOkChirho: true,
+    certifyingOkChirho: false,
+  },
+  {
+    reviewerChirho: "llm-reviewer-chirho",
+    genericChirho: false,
+    machineChirho: true,
+    explicitOkChirho: true,
+    certifyingOkChirho: false,
   },
   {
     reviewerChirho: "codex-gpt5-chirho",
