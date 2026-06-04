@@ -7,9 +7,10 @@
  * Default is a dry-run JSON preview with decisionChirho=draft-chirho. Writing an
  * accepted policy requires explicit --decision-chirho=accepted-clean-policy-chirho
  * plus reviewer, rationale, --accept-clean-chirho, and
- * --expected-item-count-chirho. Symbol-labeled items that are not trivial
- * punctuation are excluded by --safe-symbols-only-chirho and cannot be accepted
- * in bulk without an explicit override.
+ * --expected-item-count-chirho plus exact expected item ids. Symbol-labeled
+ * items that are not trivial punctuation are excluded by
+ * --safe-symbols-only-chirho and cannot be accepted in bulk without an explicit
+ * override.
  */
 
 import { existsSync, readFileSync } from "fs";
@@ -52,6 +53,36 @@ function parseExpectedItemCountChirho(argsChirho: string[]): number | null {
     throw new Error(`--expected-item-count-chirho must be a non-negative integer; got ${valueChirho}`);
   }
   return countChirho;
+}
+
+function parseExpectedItemIdsChirho(argsChirho: string[]): Set<string> {
+  const expectedItemIdsChirho = new Set<string>();
+  const valuesChirho = [
+    ...splitCsvChirho(parseArgValueChirho(argsChirho, "expected-item-ids-chirho")),
+    ...argsChirho
+      .filter((argChirho) => argChirho.startsWith("--expected-item-id-chirho="))
+      .flatMap((argChirho) => splitCsvChirho(argChirho.slice("--expected-item-id-chirho=".length))),
+  ];
+  for (const itemIdChirho of valuesChirho) {
+    if (expectedItemIdsChirho.has(itemIdChirho)) {
+      throw new Error(`duplicate expected item id: ${itemIdChirho}`);
+    }
+    expectedItemIdsChirho.add(itemIdChirho);
+  }
+  return expectedItemIdsChirho;
+}
+
+function assertExpectedItemIdsChirho(selectedItemIdsChirho: string[], expectedItemIdsChirho: Set<string>): void {
+  if (expectedItemIdsChirho.size !== selectedItemIdsChirho.length) {
+    throw new Error(
+      "--expected-item-id-chirho or --expected-item-ids-chirho must name every selected item exactly once"
+    );
+  }
+  const selectedKeyChirho = [...selectedItemIdsChirho].sort().join(",");
+  const expectedKeyChirho = [...expectedItemIdsChirho].sort().join(",");
+  if (selectedKeyChirho !== expectedKeyChirho) {
+    throw new Error(`expected item id set [${expectedKeyChirho}] does not match selected item ids [${selectedKeyChirho}]`);
+  }
 }
 
 function slugChirho(valueChirho: string): string {
@@ -97,6 +128,7 @@ function mainChirho(): void {
   const rationaleChirho = parseArgValueChirho(argsChirho, "rationale-chirho") ?? "";
   const outPathChirho = parseArgValueChirho(argsChirho, "out-chirho") ?? LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO;
   const expectedItemCountChirho = parseExpectedItemCountChirho(argsChirho);
+  const expectedItemIdsChirho = parseExpectedItemIdsChirho(argsChirho);
   const scriptScopeLabelChirho =
     safeSymbolsOnlyChirho && scriptFiltersChirho.size === 0
       ? "symbol-chirho"
@@ -154,6 +186,12 @@ function mainChirho(): void {
     if (writeChirho && expectedItemCountChirho !== selectedItemsChirho.length) {
       throw new Error(
         `selected item count ${selectedItemsChirho.length} does not match --expected-item-count-chirho=${expectedItemCountChirho}`
+      );
+    }
+    if (writeChirho) {
+      assertExpectedItemIdsChirho(
+        selectedItemsChirho.map((itemChirho) => itemChirho.idChirho),
+        expectedItemIdsChirho
       );
     }
   }

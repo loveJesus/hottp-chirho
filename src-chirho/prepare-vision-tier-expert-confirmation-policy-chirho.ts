@@ -6,7 +6,8 @@
  *
  * Default mode prints a draft JSON policy. Writing a confirmed policy requires
  * --write-chirho, --decision-chirho=confirmed-expert-chirho, reviewer, role,
- * rationale, --certify-exact-chirho, and --expected-item-count-chirho.
+ * rationale, --certify-exact-chirho, --expected-item-count-chirho, and exact
+ * expected item ids.
  */
 
 import { existsSync, readFileSync } from "fs";
@@ -47,6 +48,36 @@ function parseExpectedItemCountChirho(argsChirho: string[]): number | null {
     throw new Error(`--expected-item-count-chirho must be a non-negative integer; got ${valueChirho}`);
   }
   return countChirho;
+}
+
+function parseExpectedItemIdsChirho(argsChirho: string[]): Set<string> {
+  const expectedItemIdsChirho = new Set<string>();
+  const valuesChirho = [
+    ...splitCsvChirho(parseArgValueChirho(argsChirho, "expected-item-ids-chirho")),
+    ...argsChirho
+      .filter((argChirho) => argChirho.startsWith("--expected-item-id-chirho="))
+      .flatMap((argChirho) => splitCsvChirho(argChirho.slice("--expected-item-id-chirho=".length))),
+  ];
+  for (const itemIdChirho of valuesChirho) {
+    if (expectedItemIdsChirho.has(itemIdChirho)) {
+      throw new Error(`duplicate expected item id: ${itemIdChirho}`);
+    }
+    expectedItemIdsChirho.add(itemIdChirho);
+  }
+  return expectedItemIdsChirho;
+}
+
+function assertExpectedItemIdsChirho(selectedItemIdsChirho: string[], expectedItemIdsChirho: Set<string>): void {
+  if (expectedItemIdsChirho.size !== selectedItemIdsChirho.length) {
+    throw new Error(
+      "--expected-item-id-chirho or --expected-item-ids-chirho must name every selected item exactly once"
+    );
+  }
+  const selectedKeyChirho = [...selectedItemIdsChirho].sort().join(",");
+  const expectedKeyChirho = [...expectedItemIdsChirho].sort().join(",");
+  if (selectedKeyChirho !== expectedKeyChirho) {
+    throw new Error(`expected item id set [${expectedKeyChirho}] does not match selected item ids [${selectedKeyChirho}]`);
+  }
 }
 
 function slugChirho(valueChirho: string): string {
@@ -97,6 +128,7 @@ function mainChirho(): void {
   const rationaleChirho = parseArgValueChirho(argsChirho, "rationale-chirho") ?? "";
   const outPathChirho = parseArgValueChirho(argsChirho, "out-chirho") ?? VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO;
   const expectedItemCountChirho = parseExpectedItemCountChirho(argsChirho);
+  const expectedItemIdsChirho = parseExpectedItemIdsChirho(argsChirho);
   const scopePartsChirho = [
     scriptFiltersChirho.size === 0 ? "all-scripts-chirho" : [...scriptFiltersChirho].sort().join("-"),
     idFiltersChirho.size === 0 ? "all-items-chirho" : `${idFiltersChirho.size}-ids-chirho`,
@@ -136,6 +168,12 @@ function mainChirho(): void {
     if (writeChirho && expectedItemCountChirho !== selectedItemsChirho.length) {
       throw new Error(
         `selected item count ${selectedItemsChirho.length} does not match --expected-item-count-chirho=${expectedItemCountChirho}`
+      );
+    }
+    if (writeChirho) {
+      assertExpectedItemIdsChirho(
+        selectedItemsChirho.map((itemChirho) => itemChirho.idChirho),
+        expectedItemIdsChirho
       );
     }
     assertReviewerRoleMatchesSelectedItemsChirho(selectedItemsChirho, reviewerRoleChirho);
