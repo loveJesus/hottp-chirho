@@ -721,6 +721,17 @@ function htmlChirho(): string {
       }
       return null;
     }
+    function isMachineReviewerAttributionChirho(valueChirho) {
+      return /(^|[^a-z0-9])(anthropic|claude|codex|gemini|gpt[-_ ]?[0-9]*|llama|mistral|model|openai|o[0-9]+)([^a-z0-9]|$)/i.test(String(valueChirho || "").trim().toLowerCase());
+    }
+    function certifyingReviewerAttributionErrorChirho(valueChirho) {
+      const explicitErrorChirho = reviewerAttributionErrorChirho(valueChirho);
+      if (explicitErrorChirho !== null) return explicitErrorChirho;
+      if (isMachineReviewerAttributionChirho(valueChirho)) {
+        return "Reviewer must identify a human reviewer; machine reviewer " + String(valueChirho || "").trim() + " cannot certify.";
+      }
+      return null;
+    }
     function reviewerRoleValueChirho(itemChirho) {
       const savedRoleChirho = localStorage.getItem("expertReviewerRoleChirho") || "";
       return savedRoleChirho === itemChirho.reviewerChirho ? savedRoleChirho : itemChirho.reviewerChirho;
@@ -745,6 +756,7 @@ function htmlChirho(): string {
     function confirmationCanSubmitChirho(itemChirho) {
       return !itemTextIsBlankChirho(itemChirho) &&
         certifyExactCheckedChirho() &&
+        certifyingReviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho")) === null &&
         reviewerFieldsCompleteChirho() &&
         reviewerRoleMatchesItemChirho(itemChirho);
     }
@@ -881,12 +893,19 @@ function htmlChirho(): string {
       confirmChirho.disabled = true;
       const issueChirho = elChirho("button", { classChirho: "issue-chirho", type: "button", textChirho: "Report issue" });
       const updateActionButtonsChirho = () => {
-        reviewerStatusChirho.textContent = reviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho")) ?? "Reviewer attribution OK.";
+        const explicitReviewerErrorChirho = reviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho"));
+        const certifyingReviewerErrorChirho = certifyingReviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho"));
+        reviewerStatusChirho.textContent = explicitReviewerErrorChirho !== null
+          ? explicitReviewerErrorChirho
+          : certifyingReviewerErrorChirho !== null
+            ? certifyingReviewerErrorChirho + " Issue reporting remains available."
+            : "Reviewer attribution OK.";
         reviewerRoleStatusChirho.textContent = reviewerRoleMatchesItemChirho(itemChirho)
           ? "Confirmation role OK."
           : "Confirm role must be " + itemChirho.reviewerChirho + ".";
         const actionMessagesChirho = [];
         if (fieldValueChirho("rationale-chirho").trim().length === 0) actionMessagesChirho.push("rationale required");
+        if (certifyingReviewerErrorChirho !== null) actionMessagesChirho.push("Confirm needs explicit human reviewer");
         if (itemTextIsBlankChirho(itemChirho)) actionMessagesChirho.push("Confirm needs expert-supplied text first");
         else if (!certifyExactCheckedChirho()) actionMessagesChirho.push("Confirm needs exact-certification checkbox");
         if (currentIssueFlagsChirho().length === 0) actionMessagesChirho.push("Report issue needs an issue flag");
@@ -925,7 +944,7 @@ function htmlChirho(): string {
         setStatusChirho("Check the exact-certification box before confirming this item.");
         return;
       }
-      const reviewerErrorChirho = reviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho"));
+      const reviewerErrorChirho = certifyingReviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho"));
       if (reviewerErrorChirho !== null) {
         setStatusChirho(reviewerErrorChirho);
         return;

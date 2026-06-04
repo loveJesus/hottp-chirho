@@ -297,6 +297,17 @@ function htmlChirho(): string {
       }
       return null;
     }
+    function isMachineReviewerAttributionChirho(valueChirho) {
+      return /(^|[^a-z0-9])(anthropic|claude|codex|gemini|gpt[-_ ]?[0-9]*|llama|mistral|model|openai|o[0-9]+)([^a-z0-9]|$)/i.test(String(valueChirho || "").trim().toLowerCase());
+    }
+    function certifyingReviewerAttributionErrorChirho(valueChirho) {
+      const explicitErrorChirho = reviewerAttributionErrorChirho(valueChirho);
+      if (explicitErrorChirho !== null) return explicitErrorChirho;
+      if (isMachineReviewerAttributionChirho(valueChirho)) {
+        return "Reviewer must identify a human reviewer; machine reviewer " + String(valueChirho || "").trim() + " cannot certify.";
+      }
+      return null;
+    }
     function currentPositionTextChirho(activeCountChirho) {
       return activeCountChirho === 0 ? "item 0 of 0" : "item " + (indexChirho + 1) + " of " + activeCountChirho;
     }
@@ -403,12 +414,17 @@ function htmlChirho(): string {
       return currentIssueFlagsChirho().length === 0;
     }
     function currentReviewCanSubmitChirho() {
-      return reviewerAttributionErrorChirho(currentReviewerChirho()) === null &&
+      const reviewerErrorChirho = currentReviewWouldBeCleanChirho()
+        ? certifyingReviewerAttributionErrorChirho(currentReviewerChirho())
+        : reviewerAttributionErrorChirho(currentReviewerChirho());
+      return reviewerErrorChirho === null &&
         (!currentReviewWouldBeCleanChirho() || cleanAcceptAcknowledgedChirho());
     }
     function latinSymbolReviewActionMessagesChirho() {
       const messagesChirho = [];
-      const reviewerErrorChirho = reviewerAttributionErrorChirho(currentReviewerChirho());
+      const reviewerErrorChirho = currentReviewWouldBeCleanChirho()
+        ? certifyingReviewerAttributionErrorChirho(currentReviewerChirho())
+        : reviewerAttributionErrorChirho(currentReviewerChirho());
       if (reviewerErrorChirho !== null) messagesChirho.push(reviewerErrorChirho);
       if (currentReviewWouldBeCleanChirho() && !cleanAcceptAcknowledgedChirho()) {
         messagesChirho.push("clean acceptance checkbox required");
@@ -532,7 +548,10 @@ function htmlChirho(): string {
       const actionsChirho = elChirho("div", { classChirho: "actions-chirho" });
       const continueChirho = elChirho("button", { classChirho: "continue-chirho", type: "button", textChirho: reviewActionTextChirho() });
       const updateReviewerStatusChirho = () => {
-        reviewerStatusChirho.textContent = reviewerAttributionErrorChirho(currentReviewerChirho()) ?? "Reviewer attribution OK.";
+        const reviewerErrorChirho = currentReviewWouldBeCleanChirho()
+          ? certifyingReviewerAttributionErrorChirho(currentReviewerChirho())
+          : reviewerAttributionErrorChirho(currentReviewerChirho());
+        reviewerStatusChirho.textContent = reviewerErrorChirho ?? "Reviewer attribution OK.";
       };
       const updateActionStatusChirho = () => {
         const messagesChirho = latinSymbolReviewActionMessagesChirho();
@@ -572,7 +591,9 @@ function htmlChirho(): string {
       const flagsChirho = currentIssueFlagsChirho();
       const notesChirho = document.getElementById("notes-chirho").value;
       const reviewerValueChirho = currentReviewerChirho();
-      const reviewerErrorChirho = reviewerAttributionErrorChirho(reviewerValueChirho);
+      const reviewerErrorChirho = flagsChirho.length === 0
+        ? certifyingReviewerAttributionErrorChirho(reviewerValueChirho)
+        : reviewerAttributionErrorChirho(reviewerValueChirho);
       if (reviewerErrorChirho !== null) {
         setStatusChirho(reviewerErrorChirho);
         return;

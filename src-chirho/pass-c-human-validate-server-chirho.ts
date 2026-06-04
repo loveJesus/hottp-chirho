@@ -1344,6 +1344,17 @@ function pageHtmlChirho(): string {
       }
       return null;
     }
+    function isMachineReviewerAttributionChirho(valueChirho) {
+      return /(^|[^a-z0-9])(anthropic|claude|codex|gemini|gpt[-_ ]?[0-9]*|llama|mistral|model|openai|o[0-9]+)([^a-z0-9]|$)/i.test(String(valueChirho || "").trim().toLowerCase());
+    }
+    function certifyingReviewerAttributionErrorChirho(valueChirho) {
+      const explicitErrorChirho = reviewerAttributionErrorChirho(valueChirho);
+      if (explicitErrorChirho !== null) return explicitErrorChirho;
+      if (isMachineReviewerAttributionChirho(valueChirho)) {
+        return "Reviewer must identify a human reviewer; machine reviewer " + String(valueChirho || "").trim() + " cannot certify";
+      }
+      return null;
+    }
     function selectValueOrDefaultChirho(selectIdChirho, valueChirho, defaultChirho) {
       const selectChirho = document.getElementById(selectIdChirho);
       if (typeof valueChirho !== "string") return defaultChirho;
@@ -1592,7 +1603,10 @@ function pageHtmlChirho(): string {
       return messagesChirho;
     }
     function cleanReviewCanSubmitChirho(itemChirho) {
-      return reviewerAttributionErrorChirho(currentReviewerChirho()) === null &&
+      const reviewerErrorChirho = pendingReviewWouldBeCleanChirho(itemChirho)
+        ? certifyingReviewerAttributionErrorChirho(currentReviewerChirho())
+        : reviewerAttributionErrorChirho(currentReviewerChirho());
+      return reviewerErrorChirho === null &&
         rawReviewActionMessagesChirho(itemChirho).length === 0;
     }
     function cleanReviewActionTextChirho(itemChirho) {
@@ -1914,7 +1928,10 @@ function pageHtmlChirho(): string {
         const continueButtonChirho = elChirho("button", { classChirho: "continue-chirho", textChirho: cleanReviewActionTextChirho(itemChirho) });
         const updateReviewerStatusChirho = () => {
           if (!reviewerStatusChirho) return;
-          reviewerStatusChirho.textContent = reviewerAttributionErrorChirho(currentReviewerChirho()) ?? "Reviewer attribution OK.";
+          const reviewerErrorChirho = pendingReviewWouldBeCleanChirho(itemChirho)
+            ? certifyingReviewerAttributionErrorChirho(currentReviewerChirho())
+            : reviewerAttributionErrorChirho(currentReviewerChirho());
+          reviewerStatusChirho.textContent = reviewerErrorChirho ?? "Reviewer attribution OK.";
         };
         const updateActionStatusChirho = () => {
           const messagesChirho = rawReviewActionMessagesChirho(itemChirho);
@@ -1970,7 +1987,9 @@ function pageHtmlChirho(): string {
       const issueFlagsChirho = Array.from(document.querySelectorAll(".issue-checkbox-chirho:checked"))
         .map((inputChirho) => inputChirho.value);
       const scriptVerdictChirho = document.querySelector("input[name='script-verdict-chirho']:checked")?.value ?? "";
-      const reviewerErrorChirho = reviewerAttributionErrorChirho(reviewerValueChirho);
+      const reviewerErrorChirho = pendingReviewWouldBeCleanChirho(itemChirho)
+        ? certifyingReviewerAttributionErrorChirho(reviewerValueChirho)
+        : reviewerAttributionErrorChirho(reviewerValueChirho);
       if (reviewerErrorChirho !== null) {
         setStatusChirho(reviewerErrorChirho);
         return;
