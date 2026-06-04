@@ -3,14 +3,14 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Hidden Hebrew Candidate Scan Chirho
 
-Generated: 2026-06-04T07:44:41.371Z
+Generated: 2026-06-04T07:59:28.133Z
 
 This is a machine-assisted review queue, not a certification result. It flags lines where OCR may have rendered printed Hebrew as valid-looking French, Latin, symbols, short Latin/bracket garbage, or digit garbage. Every item still needs visual review against the scanline before any span repair.
 
 ## Summary
 
-- Candidate lines: 34
-- High priority: 17
+- Candidate lines: 33
+- High priority: 16
 - Medium priority: 17
 - Low priority included: 0
 
@@ -97,16 +97,6 @@ Priority is heuristic: scripture/citation context, existing Hebrew spans, digit/
 - Line text: `pluriel משפחת avec le *G et la *V. Quant à 7247 du vs 17b, il y voit une erreur de`
 - Suspicious spans:
   - S2 french-chirho: `avec le *G et la *V. Quant à 7247 du vs 17b, il y voit une erreur de` (dense-digit-cluster-chirho; neighbors hebrew-chirho / none)
-
-### high-chirho score 8: vol 2 p0151 L033
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-dense-digit-cluster-chirho`, `suspicious-span-adjacent-to-hebrew-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-2-chirho/page-0151-chirho/line-033-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-2-chirho/page-0151-chirho/line-033-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-2-chirho/page-0151-chirho/line-033-chirho.png)
-- Line text: `à l'intérieur de l'expression 71929 צוֹר qui suit. Le Seigneur en tant que “roc” est le`
-- Suspicious spans:
-  - S0 french-chirho: `à l'intérieur de l'expression 71929` (dense-digit-cluster-chirho; neighbors none / hebrew-chirho)
 
 ### high-chirho score 8: vol 2 p0152 L037
 

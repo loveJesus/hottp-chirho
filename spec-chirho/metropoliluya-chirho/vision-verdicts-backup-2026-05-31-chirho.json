@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T07:44:04.318Z",
+  "generatedAtChirho": "2026-06-04T07:58:55.540Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 792,
+  "countChirho": 793,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7923,6 +7923,16 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "(ואחמדם ואקחם)",
       "notesChirho": "Corrected the Josh 7:21 Hebrew citation from visual/bidi parenthesis order. Claude and Codex second-witnessed the scanline as one unpointed parenthesized quote, logical text `(ואחמדם ואקחם)`: parentheses wrap both words, not one parenthesis after ואחמדם and one before ואקחם. Consonants are confident; exact vowels/marks and punctuation/parenthesis placement remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 151,
+      "lineIndexChirho": 33,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "71929 + mispointed צוֹר",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "צוּר מִכְשׁוֹל",
+      "notesChirho": "Recovered the Isaiah 8:14 expression from hidden digit garbage plus an existing mispointed Pass-C Hebrew island. Claude and Codex second-witnessed the scanline as logical text `צוּר מִכְשׁוֹל`: the old `71929` is מִכְשׁוֹל and the existing `צוֹר` carries the wrong holam; the print/context show shuruk `צוּר` (rock), not Tyre. WLC Isaiah 8:14 corroborates `וּלְצוּר מִכְשׁוֹל`, but this span remains vision-chirho; exact printed vowels/marks and segmentation remain Hebrew/WLC expert-confirmation tier."
     }
   ]
 }
