@@ -86,9 +86,11 @@ interface RepairReportChirho {
 
 const EXPECTED_RENDERED_CHIRHO =
   "Ces allusions paraissent supposer en Is 8,11 une leçon הַזֶּה Qyn 1172 מִלֶּכֶת 0";
-const REPAIRED_RENDERED_CHIRHO =
+const INCOMPLETE_REPAIRED_RENDERED_CHIRHO =
   "Ces allusions paraissent supposer en Is 8,11 une leçon מִלֶּכֶת בְּדֶרֶךְ הָעָם הַזֶּה";
-const RECOVERED_HEBREW_CHIRHO = "מִלֶּכֶת בְּדֶרֶךְ הָעָם הַזֶּה";
+const REPAIRED_RENDERED_CHIRHO =
+  "Ces allusions paraissent supposer en Is 8,11 une leçon סָרוּ מִלֶּכֶת בְּדֶרֶךְ הָעָם הַזֶּה";
+const RECOVERED_HEBREW_CHIRHO = "סָרוּ מִלֶּכֶת בְּדֶרֶךְ הָעָם הַזֶּה";
 
 function loadJsonChirho<TChirho>(pathChirho: string): TChirho {
   return JSON.parse(readFileSync(pathChirho, "utf8")) as TChirho;
@@ -148,7 +150,12 @@ function validateTilingChirho(lineChirho: SpanLineChirho): void {
 
 function stateForLineChirho(lineChirho: SpanLineChirho): "pre-repair-chirho" | "already-applied-chirho" | "unknown-chirho" {
   const renderedChirho = normalizeTextForStorageChirho(renderedLineChirho(lineChirho));
-  if (renderedChirho === normalizeTextForStorageChirho(EXPECTED_RENDERED_CHIRHO)) return "pre-repair-chirho";
+  if (
+    renderedChirho === normalizeTextForStorageChirho(EXPECTED_RENDERED_CHIRHO) ||
+    renderedChirho === normalizeTextForStorageChirho(INCOMPLETE_REPAIRED_RENDERED_CHIRHO)
+  ) {
+    return "pre-repair-chirho";
+  }
   if (renderedChirho === normalizeTextForStorageChirho(REPAIRED_RENDERED_CHIRHO)) return "already-applied-chirho";
   return "unknown-chirho";
 }
@@ -177,7 +184,7 @@ function buildPlannedLineChirho(lineChirho: SpanLineChirho, appliedAtChirho: str
       provenanceChirho: "vision-chirho",
       visionTranscribedAtChirho: appliedAtChirho,
       visionNotesChirho:
-        "Recovered continuous Isaiah 8:11 printed Hebrew quote from two partial Pass-C Hebrew islands plus digit/French garbage; Claude and Codex second-witnessed the scanline. Stored as one vision-chirho span to preserve the observed continuous RTL quote; exact letters, vowels, and marks remain expert-confirmation tier.",
+        "Recovered continuous Isaiah 8:11 printed Hebrew quote from two partial Pass-C Hebrew islands plus digit/French garbage; Claude and Codex second-witnessed the scanline. A follow-up audit confirmed the old trailing 0 is a distinct rightmost סרו word, not the edge of מִלֶּכֶת. Stored as one vision-chirho span to preserve the observed continuous RTL quote; exact letters, vowels, and marks remain expert-confirmation tier.",
     },
   ];
   validateTilingChirho(nextLineChirho);
@@ -195,7 +202,7 @@ function visionVerdictForLineChirho(lineChirho: SpanLineChirho): VisionVerdictCh
     pageChirho: 148,
     lineIndexChirho: 28,
     segmentIndexChirho: 1,
-    garbleTextChirho: "Qyn 1172 + trailing 0 around partial הַזֶּה / מִלֶּכֶת",
+    garbleTextChirho: "Qyn 1172 + trailing 0/סרו around partial הַזֶּה / מִלֶּכֶת",
     scriptChirho: "hebrew-chirho",
     utf8TextChirho: normalizeTextForStorageChirho(recoveredSpanChirho.utf8TextChirho),
     notesChirho:

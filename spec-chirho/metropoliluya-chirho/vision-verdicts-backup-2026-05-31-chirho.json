@@ -1,5 +1,5 @@
 {
-  "generatedAtChirho": "2026-06-04T06:28:01.532Z",
+  "generatedAtChirho": "2026-06-04T06:35:23.525Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
   "countChirho": 786,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
@@ -7859,10 +7859,10 @@
       "pageChirho": 148,
       "lineIndexChirho": 28,
       "segmentIndexChirho": 1,
-      "garbleTextChirho": "Qyn 1172 + trailing 0 around partial הַזֶּה / מִלֶּכֶת",
+      "garbleTextChirho": "Qyn 1172 + trailing 0/סרו around partial הַזֶּה / מִלֶּכֶת",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "מִלֶּכֶת בְּדֶרֶךְ הָעָם הַזֶּה",
-      "notesChirho": "Recovered continuous Isaiah 8:11 printed Hebrew quote from two partial Pass-C Hebrew islands plus digit/French garbage; Claude and Codex second-witnessed the scanline. Stored as one vision-chirho span to preserve the observed continuous RTL quote; exact letters, vowels, and marks remain expert-confirmation tier."
+      "utf8TextChirho": "סָרוּ מִלֶּכֶת בְּדֶרֶךְ הָעָם הַזֶּה",
+      "notesChirho": "Recovered continuous Isaiah 8:11 printed Hebrew quote from two partial Pass-C Hebrew islands plus digit/French garbage; Claude and Codex second-witnessed the scanline. A follow-up audit confirmed the old trailing 0 is a distinct rightmost סרו word, not the edge of מִלֶּכֶת. Stored as one vision-chirho span to preserve the observed continuous RTL quote; exact letters, vowels, and marks remain expert-confirmation tier."
     }
   ]
 }
