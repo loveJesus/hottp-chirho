@@ -5,9 +5,9 @@
  * Run the repeatable certification-critical verification bundle.
  *
  * This does not certify text or modify review state. It only checks the
- * TypeScript surface used by the certification gate/review tools, regenerates
- * the current certification status report, and verifies the browser review
- * stations are responding.
+ * TypeScript surface used by the certification gate/review tools, checks diff
+ * whitespace hygiene, regenerates the current certification status report, and
+ * verifies the browser review stations are responding.
  */
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
@@ -23,6 +23,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
   {
     labelChirho: "certification TypeScript surface",
     argsChirho: [process.execPath, "run", "typecheck-certification-chirho"],
+  },
+  {
+    labelChirho: "git diff whitespace hygiene",
+    argsChirho: ["git", "diff", "--check"],
   },
   {
     labelChirho: "certification status gate",
