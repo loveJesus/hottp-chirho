@@ -29,6 +29,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
     argsChirho: [process.execPath, "run", "check-reviewer-attribution-chirho"],
   },
   {
+    labelChirho: "expert-supplied text CLI guards",
+    argsChirho: [process.execPath, "run", "check-expert-supplied-text-guards-chirho"],
+  },
+  {
     labelChirho: "git diff whitespace hygiene",
     argsChirho: ["git", "diff", "--check"],
   },
