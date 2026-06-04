@@ -15,6 +15,7 @@ import { dirname, join, relative } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "../../src-chirho/config-chirho.ts";
 import { renderSpanLineTextChirho } from "../../src-chirho/span-line-text-chirho.ts";
+import { sourceFingerprintForPathsChirho, type SourceFingerprintChirho } from "../../src-chirho/source-fingerprint-chirho.ts";
 import { scanSpanLinePathsChirho } from "../../src-chirho/span-nfc-chirho.ts";
 import { normalizeTextForStorageChirho } from "../../src-chirho/text-normalization-chirho.ts";
 
@@ -292,7 +293,7 @@ function markdownImagePathChirho(reportPathChirho: string, imagePathChirho: stri
   return relative(dirname(reportPathChirho), imagePathChirho).replaceAll("\\", "/");
 }
 
-function renderReportChirho(candidatesChirho: CandidateChirho[], reportPathChirho: string): string {
+function renderReportChirho(candidatesChirho: CandidateChirho[], reportPathChirho: string, spanSourceFingerprintChirho: SourceFingerprintChirho): string {
   const priorityCountsChirho = candidatesChirho.reduce<Record<string, number>>((countsChirho, candidateChirho) => {
     countsChirho[candidateChirho.priorityChirho] = (countsChirho[candidateChirho.priorityChirho] ?? 0) + 1;
     return countsChirho;
@@ -309,6 +310,8 @@ function renderReportChirho(candidatesChirho: CandidateChirho[], reportPathChirh
     "",
     "## Summary",
     "",
+    `- Span source files: ${spanSourceFingerprintChirho.fileCountChirho}`,
+    `- Span source fingerprint: ${spanSourceFingerprintChirho.sha256Chirho}`,
     `- Candidate lines: ${candidatesChirho.length}`,
     `- High priority: ${priorityCountsChirho["high-chirho"] ?? 0}`,
     `- Medium priority: ${priorityCountsChirho["medium-chirho"] ?? 0}`,
@@ -343,7 +346,9 @@ function renderReportChirho(candidatesChirho: CandidateChirho[], reportPathChirh
 function mainChirho(): void {
   const reportPathArgChirho = process.argv.find((argChirho) => argChirho.startsWith("--out-chirho="));
   const reportPathChirho = reportPathArgChirho?.slice("--out-chirho=".length) ?? DEFAULT_REPORT_PATH_CHIRHO;
-  const candidatesChirho = scanSpanLinePathsChirho()
+  const spanLinePathsChirho = scanSpanLinePathsChirho();
+  const spanSourceFingerprintChirho = sourceFingerprintForPathsChirho(spanLinePathsChirho);
+  const candidatesChirho = spanLinePathsChirho
     .map(candidateForLineChirho)
     .filter((candidateChirho): candidateChirho is CandidateChirho => candidateChirho !== null)
     .sort((aChirho, bChirho) => {
@@ -353,12 +358,14 @@ function mainChirho(): void {
       return aChirho.lineIndexChirho - bChirho.lineIndexChirho;
     });
 
-  writeFileSync(reportPathChirho, renderReportChirho(candidatesChirho, reportPathChirho));
+  writeFileSync(reportPathChirho, renderReportChirho(candidatesChirho, reportPathChirho, spanSourceFingerprintChirho));
   console.log(
     JSON.stringify(
       {
         moduleChirho: MODULE_CHIRHO,
         reportPathChirho: relativePathChirho(reportPathChirho),
+        spanSourceFileCountChirho: spanSourceFingerprintChirho.fileCountChirho,
+        spanSourceFingerprintChirho: spanSourceFingerprintChirho.sha256Chirho,
         candidateCountChirho: candidatesChirho.length,
         highPriorityCountChirho: candidatesChirho.filter((candidateChirho) => candidateChirho.priorityChirho === "high-chirho").length,
         mediumPriorityCountChirho: candidatesChirho.filter((candidateChirho) => candidateChirho.priorityChirho === "medium-chirho").length,

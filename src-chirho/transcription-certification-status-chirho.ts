@@ -56,7 +56,7 @@ import {
   RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO,
   rawHebrewReviewTierForSpanChirho,
 } from "./raw-hebrew-review-tier-chirho.ts";
-import { spanSourceFingerprintForTargetsChirho } from "./source-fingerprint-chirho.ts";
+import { sourceFingerprintForPathsChirho, spanSourceFingerprintForTargetsChirho, type SourceFingerprintChirho } from "./source-fingerprint-chirho.ts";
 import {
   scanNonNfcSpanTextFieldsChirho,
   scanSpanLinePathsChirho,
@@ -416,6 +416,9 @@ interface CandidateScanReportSummaryChirho {
   reportExistsChirho: boolean;
   reportShapeOkChirho: boolean;
   generatedAtChirho: string | null;
+  spanSourceFileCountChirho: number | null;
+  liveSpanSourceFileCountChirho: number;
+  spanSourceFingerprintMatchesCurrentChirho: boolean;
   candidateLineCountChirho: number | null;
   highPriorityCountChirho: number | null;
   mediumPriorityCountChirho: number | null;
@@ -599,7 +602,12 @@ function markdownNumberFieldChirho(markdownChirho: string, labelChirho: string):
   return Number(matchChirho[1]);
 }
 
-function candidateScanReportSummaryChirho(pathChirho: string): CandidateScanReportSummaryChirho {
+function markdownTextFieldChirho(markdownChirho: string, labelChirho: string): string | null {
+  const escapedLabelChirho = labelChirho.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return markdownChirho.match(new RegExp(`^- ${escapedLabelChirho}: (.+)$`, "mu"))?.[1] ?? null;
+}
+
+function candidateScanReportSummaryChirho(pathChirho: string, liveSpanSourceFingerprintChirho: SourceFingerprintChirho): CandidateScanReportSummaryChirho {
   const reportPathChirho = relativeProjectPathChirho(pathChirho);
   if (!existsSync(pathChirho)) {
     return {
@@ -607,6 +615,9 @@ function candidateScanReportSummaryChirho(pathChirho: string): CandidateScanRepo
       reportExistsChirho: false,
       reportShapeOkChirho: false,
       generatedAtChirho: null,
+      spanSourceFileCountChirho: null,
+      liveSpanSourceFileCountChirho: liveSpanSourceFingerprintChirho.fileCountChirho,
+      spanSourceFingerprintMatchesCurrentChirho: false,
       candidateLineCountChirho: null,
       highPriorityCountChirho: null,
       mediumPriorityCountChirho: null,
@@ -615,20 +626,31 @@ function candidateScanReportSummaryChirho(pathChirho: string): CandidateScanRepo
   }
   const textChirho = readFileSync(pathChirho, "utf8");
   const generatedAtChirho = textChirho.match(/^Generated: (.+)$/mu)?.[1] ?? null;
+  const spanSourceFileCountChirho = markdownNumberFieldChirho(textChirho, "Span source files");
+  const spanSourceFingerprintChirho = markdownTextFieldChirho(textChirho, "Span source fingerprint");
   const candidateLineCountChirho = markdownNumberFieldChirho(textChirho, "Candidate lines");
   const highPriorityCountChirho = markdownNumberFieldChirho(textChirho, "High priority");
   const mediumPriorityCountChirho = markdownNumberFieldChirho(textChirho, "Medium priority");
   const lowPriorityCountChirho = markdownNumberFieldChirho(textChirho, "Low priority included");
+  const reportShapeOkChirho =
+    generatedAtChirho !== null &&
+    spanSourceFileCountChirho !== null &&
+    spanSourceFingerprintChirho !== null &&
+    candidateLineCountChirho !== null &&
+    highPriorityCountChirho !== null &&
+    mediumPriorityCountChirho !== null &&
+    lowPriorityCountChirho !== null;
   return {
     reportPathChirho,
     reportExistsChirho: true,
-    reportShapeOkChirho:
-      generatedAtChirho !== null &&
-      candidateLineCountChirho !== null &&
-      highPriorityCountChirho !== null &&
-      mediumPriorityCountChirho !== null &&
-      lowPriorityCountChirho !== null,
+    reportShapeOkChirho,
     generatedAtChirho,
+    spanSourceFileCountChirho,
+    liveSpanSourceFileCountChirho: liveSpanSourceFingerprintChirho.fileCountChirho,
+    spanSourceFingerprintMatchesCurrentChirho:
+      reportShapeOkChirho &&
+      spanSourceFileCountChirho === liveSpanSourceFingerprintChirho.fileCountChirho &&
+      spanSourceFingerprintChirho === liveSpanSourceFingerprintChirho.sha256Chirho,
     candidateLineCountChirho,
     highPriorityCountChirho,
     mediumPriorityCountChirho,
@@ -1450,6 +1472,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const nonNfcSpanFilesChirho = new Set(
     nonNfcSpanTextFieldsChirho.map((findingChirho) => findingChirho.relativePathChirho)
   );
+  const strictBlindScannerSpanSourceFingerprintChirho = sourceFingerprintForPathsChirho(scanSpanLinePathsChirho());
   const exportReportShapeOkChirho =
     !exportReportExistsChirho ||
     (typeof exportReportChirho.strictPassedChirho === "boolean" &&
@@ -1960,8 +1983,14 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     liveNonNfcSpanFileCountChirho: nonNfcSpanFilesChirho.size,
   };
   const strictBlindScansChirho = {
-    hiddenHebrewChirho: candidateScanReportSummaryChirho(HIDDEN_HEBREW_CANDIDATE_SCAN_PATH_CHIRHO),
-    nonLatinResidueChirho: candidateScanReportSummaryChirho(NON_LATIN_RESIDUE_CANDIDATE_SCAN_PATH_CHIRHO),
+    hiddenHebrewChirho: candidateScanReportSummaryChirho(
+      HIDDEN_HEBREW_CANDIDATE_SCAN_PATH_CHIRHO,
+      strictBlindScannerSpanSourceFingerprintChirho
+    ),
+    nonLatinResidueChirho: candidateScanReportSummaryChirho(
+      NON_LATIN_RESIDUE_CANDIDATE_SCAN_PATH_CHIRHO,
+      strictBlindScannerSpanSourceFingerprintChirho
+    ),
   };
   const remainingWorkChirho: string[] = [];
   if (!exportReportExistsChirho) {
@@ -2514,6 +2543,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `  - Report exists: ${scanChirho.reportExistsChirho}`,
     `  - Report shape OK: ${scanChirho.reportShapeOkChirho}`,
     `  - Generated: ${scanChirho.generatedAtChirho ?? "unknown"}`,
+    `  - Span source files in report: ${scanChirho.spanSourceFileCountChirho ?? "unknown"}`,
+    `  - Live span source files: ${scanChirho.liveSpanSourceFileCountChirho}`,
+    `  - Span source fingerprint matches current spans: ${scanChirho.spanSourceFingerprintMatchesCurrentChirho}`,
     `  - Candidate lines: ${scanChirho.candidateLineCountChirho ?? "unknown"}`,
     `  - High/medium/low: ${[
       scanChirho.highPriorityCountChirho ?? "unknown",
