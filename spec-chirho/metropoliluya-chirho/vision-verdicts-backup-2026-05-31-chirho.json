@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T10:19:21.516Z",
+  "generatedAtChirho": "2026-06-04T10:31:56.188Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 813,
+  "countChirho": 814,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8133,6 +8133,16 @@
       "scriptChirho": "greek-chirho",
       "utf8TextChirho": "ὁ θεός",
       "notesChirho": "Recovered Greek `ὁ θεός` after second-witness scanline review. The OCR read the rough-breathing omicron `ὁ` as `0`/`6`; the repaired span stores U+1F41 omicron with rough breathing plus `θεός` with final sigma. Stored as greek-chirho vision-tier for Greek expert confirmation."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 151,
+      "lineIndexChirho": 46,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "פְּאֵר",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "אתיק",
+      "notesChirho": "Human review flagged the stored פְּאֵר as wrong letters/vowels. The crop and Ezekiel 42:3 context support consonants אתיק (aleph-tav-yod-qoph) for the MT word behind κατὰ στίχον / ἐστιχισμέναι. Stored consonants only as vision-chirho; exact vowels/marks remain Hebrew/WLC expert-confirmation tier."
     }
   ]
 }
