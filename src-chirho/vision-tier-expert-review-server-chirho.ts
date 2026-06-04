@@ -87,6 +87,13 @@ interface ConfirmRequestChirho {
   reviewerRoleChirho?: string;
   rationaleChirho?: string;
   certifyExactChirho?: boolean;
+  expectedScriptChirho?: string;
+  expectedReviewerChirho?: string;
+  expectedVisionSourceChirho?: string;
+  expectedCurrentTextChirho?: string;
+  expectedSourcePathChirho?: string;
+  expectedPacketPathChirho?: string;
+  expectedMarkdownPathChirho?: string;
 }
 
 interface IssueRequestChirho extends ConfirmRequestChirho {
@@ -478,6 +485,27 @@ function reviewItemsForStateChirho(
     openIssueChirho: openIssueDetailsByIdChirho.get(itemChirho.idChirho) ?? null,
     textIsBlankChirho: itemChirho.currentTextChirho.trim().length === 0,
   }));
+}
+
+function staleDisplayMismatchChirho(
+  requestChirho: ConfirmRequestChirho,
+  packetItemChirho: ExpertPackItemChirho
+): string | null {
+  const comparisonsChirho = [
+    ["expectedScriptChirho", packetItemChirho.scriptChirho],
+    ["expectedReviewerChirho", packetItemChirho.reviewerChirho],
+    ["expectedVisionSourceChirho", packetItemChirho.visionSourceChirho],
+    ["expectedCurrentTextChirho", packetItemChirho.currentTextChirho],
+    ["expectedSourcePathChirho", packetItemChirho.sourcePathChirho],
+    ["expectedPacketPathChirho", packetItemChirho.packetPathChirho],
+    ["expectedMarkdownPathChirho", packetItemChirho.markdownPathChirho],
+  ] as const;
+  for (const [fieldChirho, currentValueChirho] of comparisonsChirho) {
+    const submittedValueChirho = requestChirho[fieldChirho];
+    if (typeof submittedValueChirho !== "string") return `${fieldChirho} is missing`;
+    if (submittedValueChirho !== currentValueChirho) return `${fieldChirho} no longer matches current packet`;
+  }
+  return null;
 }
 
 function htmlChirho(): string {
@@ -911,7 +939,14 @@ function htmlChirho(): string {
           reviewerChirho: fieldValueChirho("reviewer-chirho"),
           reviewerRoleChirho: fieldValueChirho("reviewer-role-chirho"),
           rationaleChirho: fieldValueChirho("rationale-chirho"),
-          certifyExactChirho: certifyExactCheckedChirho()
+          certifyExactChirho: certifyExactCheckedChirho(),
+          expectedScriptChirho: itemChirho.scriptChirho,
+          expectedReviewerChirho: itemChirho.reviewerChirho,
+          expectedVisionSourceChirho: itemChirho.visionSourceChirho,
+          expectedCurrentTextChirho: itemChirho.currentTextChirho,
+          expectedSourcePathChirho: itemChirho.sourcePathChirho,
+          expectedPacketPathChirho: itemChirho.packetPathChirho,
+          expectedMarkdownPathChirho: itemChirho.markdownPathChirho
         })
       });
       const dataChirho = await responseChirho.json();
@@ -941,7 +976,14 @@ function htmlChirho(): string {
           reviewerChirho: fieldValueChirho("reviewer-chirho"),
           reviewerRoleChirho: fieldValueChirho("reviewer-role-chirho"),
           rationaleChirho: fieldValueChirho("rationale-chirho"),
-          issueFlagsChirho: flagsChirho
+          issueFlagsChirho: flagsChirho,
+          expectedScriptChirho: itemChirho.scriptChirho,
+          expectedReviewerChirho: itemChirho.reviewerChirho,
+          expectedVisionSourceChirho: itemChirho.visionSourceChirho,
+          expectedCurrentTextChirho: itemChirho.currentTextChirho,
+          expectedSourcePathChirho: itemChirho.sourcePathChirho,
+          expectedPacketPathChirho: itemChirho.packetPathChirho,
+          expectedMarkdownPathChirho: itemChirho.markdownPathChirho
         })
       });
       const dataChirho = await responseChirho.json();
@@ -1041,6 +1083,15 @@ Bun.serve({
         const { manifestChirho, liveItemsChirho, liveByIdChirho } = loadCurrentStateChirho(policyPathChirho);
         const liveItemChirho = liveByIdChirho.get(itemIdChirho);
         if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);
+        const packetItemChirho = (manifestChirho.completeVisionItemsChirho ?? []).find((itemChirho) => itemChirho.idChirho === itemIdChirho);
+        if (packetItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown packet item" }, 404);
+        const staleDisplayChirho = staleDisplayMismatchChirho(bodyChirho, packetItemChirho);
+        if (staleDisplayChirho !== null) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: `Expert review item is stale: ${staleDisplayChirho}; reload review state`,
+          }, 409);
+        }
         if (liveItemChirho.currentTextChirho.trim().length === 0) {
           return jsonResponseChirho({ okChirho: false, errorChirho: "blank currentTextChirho cannot be confirmed; apply expert-supplied text first" }, 400);
         }
@@ -1074,6 +1125,15 @@ Bun.serve({
         const { manifestChirho, liveItemsChirho, liveByIdChirho } = loadCurrentStateChirho(policyPathChirho);
         const liveItemChirho = liveByIdChirho.get(itemIdChirho);
         if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);
+        const packetItemChirho = (manifestChirho.completeVisionItemsChirho ?? []).find((itemChirho) => itemChirho.idChirho === itemIdChirho);
+        if (packetItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown packet item" }, 404);
+        const staleDisplayChirho = staleDisplayMismatchChirho(bodyChirho, packetItemChirho);
+        if (staleDisplayChirho !== null) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: `Expert review item is stale: ${staleDisplayChirho}; reload review state`,
+          }, 409);
+        }
         const policyChirho = saveReviewedIssueChirho({
           policyPathChirho,
           manifestChirho,
