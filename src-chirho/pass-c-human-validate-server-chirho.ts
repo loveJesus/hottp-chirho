@@ -1763,6 +1763,12 @@ function pageHtmlChirho(): string {
       } else {
         sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "Choose a script only when the live text is usable for that script. Latin and symbol clean reviews certify the text; Hebrew, Greek, and Syriac clean reviews only resolve the script and still need script-specific text validation." }));
       }
+      if (itemChirho.attentionReasonsChirho.length > 0) {
+        sideChirho.appendChild(elChirho("div", {
+          classChirho: "warning-chirho",
+          textChirho: "Attention flags: " + itemChirho.attentionReasonsChirho.join("; ") + ". These are review-priority signals, not verdicts; inspect the crop and full line before any clean certification."
+        }));
+      }
       if (itemChirho.hasLiveSpanTextDriftChirho) {
         sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "Live span text differs from this report. Check the relevant issue box; clean review is blocked." }));
       }
