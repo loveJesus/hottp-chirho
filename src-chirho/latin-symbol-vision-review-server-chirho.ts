@@ -41,7 +41,10 @@ import {
   type LatinSymbolPacketItemChirho,
   type LatinSymbolPacketManifestChirho,
 } from "./latin-symbol-vision-review-store-chirho.ts";
-import { explicitReviewerAttributionErrorChirho } from "./reviewer-attribution-chirho.ts";
+import {
+  explicitReviewerAttributionErrorChirho,
+  GENERIC_REVIEWER_IDS_CHIRHO,
+} from "./reviewer-attribution-chirho.ts";
 
 const MODULE_CHIRHO = "latin-symbol-vision-review-server-chirho";
 const DEFAULT_PORT_CHIRHO = 8770;
@@ -214,6 +217,7 @@ function htmlChirho(): string {
     const issueFlagOptionsChirho = ${scriptJsonChirho(ISSUE_FLAG_OPTIONS_CHIRHO)};
     const symbolRiskOptionsChirho = ${scriptJsonChirho(SYMBOL_RISK_OPTIONS_CHIRHO)};
     const serverReviewerChirho = ${scriptJsonChirho(reviewerChirho)};
+    const genericReviewerIdsChirho = new Set(${scriptJsonChirho([...GENERIC_REVIEWER_IDS_CHIRHO])});
     let itemsChirho = [];
     let reviewsChirho = new Map();
     let acceptedPolicyIdsChirho = new Set();
@@ -253,7 +257,7 @@ function htmlChirho(): string {
       const trimmedChirho = String(valueChirho || "").trim();
       const normalizedChirho = trimmedChirho.toLowerCase();
       if (trimmedChirho.length === 0) return "Reviewer is required.";
-      if (normalizedChirho === "human-chirho" || normalizedChirho === "unknown-reviewer-chirho") {
+      if (genericReviewerIdsChirho.has(normalizedChirho)) {
         return "Reviewer must identify the explicit reviewer, not " + trimmedChirho + ".";
       }
       return null;

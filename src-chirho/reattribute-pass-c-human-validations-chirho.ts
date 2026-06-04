@@ -184,10 +184,12 @@ function loadGenericRowsChirho(dbChirho: Database): PassCHumanValidationRowChirh
          FROM pass_c_human_validations_chirho
         WHERE is_current_chirho = 1
           AND schema_version_chirho >= 2
-          AND (trim(reviewer_chirho) = '' OR lower(trim(reviewer_chirho)) IN ('human-chirho', 'unknown-reviewer-chirho'))
         ORDER BY id_chirho`
     )
-    .all() as PassCHumanValidationRowChirho[];
+    .all()
+    .filter((rowChirho) =>
+      isGenericReviewerAttributionChirho((rowChirho as PassCHumanValidationRowChirho).reviewer_chirho)
+    ) as PassCHumanValidationRowChirho[];
 }
 
 function assertRowsEligibleChirho(rowsChirho: PassCHumanValidationRowChirho[], requestedIdsChirho: number[]): void {

@@ -31,7 +31,10 @@ import {
   RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO,
   rawHebrewReviewTierForSpanChirho,
 } from "./raw-hebrew-review-tier-chirho.ts";
-import { explicitReviewerAttributionErrorChirho } from "./reviewer-attribution-chirho.ts";
+import {
+  explicitReviewerAttributionErrorChirho,
+  GENERIC_REVIEWER_IDS_CHIRHO,
+} from "./reviewer-attribution-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
@@ -1135,6 +1138,7 @@ function pageHtmlChirho(): string {
     const issueFlagOptionsChirho = ${scriptJsonChirho(ISSUE_FLAG_OPTIONS_CHIRHO)};
     const scriptVerdictOptionsChirho = ${scriptJsonChirho(SCRIPT_VERDICT_OPTIONS_CHIRHO)};
     const serverReviewerChirho = ${scriptJsonChirho(reviewerChirho)};
+    const genericReviewerIdsChirho = new Set(${scriptJsonChirho([...GENERIC_REVIEWER_IDS_CHIRHO])});
     let validationsChirho = new Map();
     let indexChirho = 0;
     const initialSearchParamsChirho = new URLSearchParams(window.location.search);
@@ -1169,7 +1173,7 @@ function pageHtmlChirho(): string {
       const trimmedChirho = String(valueChirho || "").trim();
       const normalizedChirho = trimmedChirho.toLowerCase();
       if (trimmedChirho.length === 0) return "Reviewer is required";
-      if (normalizedChirho === "human-chirho" || normalizedChirho === "unknown-reviewer-chirho") {
+      if (genericReviewerIdsChirho.has(normalizedChirho)) {
         return "Reviewer must identify the explicit reviewer, not " + trimmedChirho;
       }
       return null;

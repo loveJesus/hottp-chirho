@@ -12,7 +12,10 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, join, resolve } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
-import { explicitReviewerAttributionErrorChirho } from "./reviewer-attribution-chirho.ts";
+import {
+  explicitReviewerAttributionErrorChirho,
+  GENERIC_REVIEWER_IDS_CHIRHO,
+} from "./reviewer-attribution-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 import {
   EXPERT_MARKDOWN_PATH_PAIRS_CHIRHO,
@@ -568,6 +571,7 @@ function htmlChirho(): string {
   </main>
   <script>
     const issueFlagOptionsChirho = ${scriptJsonChirho(ISSUE_FLAG_OPTIONS_CHIRHO)};
+    const genericReviewerIdsChirho = new Set(${scriptJsonChirho([...GENERIC_REVIEWER_IDS_CHIRHO])});
     let itemsChirho = [];
     let indexChirho = 0;
     const queryChirho = new URLSearchParams(window.location.search);
@@ -669,7 +673,7 @@ function htmlChirho(): string {
       const trimmedChirho = String(valueChirho || "").trim();
       const normalizedChirho = trimmedChirho.toLowerCase();
       if (trimmedChirho.length === 0) return "Reviewer is required.";
-      if (normalizedChirho === "human-chirho" || normalizedChirho === "unknown-reviewer-chirho") {
+      if (genericReviewerIdsChirho.has(normalizedChirho)) {
         return "Reviewer must identify the explicit reviewer, not " + trimmedChirho + ".";
       }
       return null;

@@ -9,7 +9,25 @@
  */
 
 export const GENERIC_REVIEWER_IDS_CHIRHO = new Set<string>([
+  "arabist",
+  "arabist-chirho",
+  "greek reviewer",
+  "greek-reviewer-chirho",
+  "hebrew reviewer",
+  "hebrew-reviewer-chirho",
+  "hebrew/wlc reviewer",
+  "hebrew-wlc-reviewer-chirho",
+  "human",
   "human-chirho",
+  "human-reviewer",
+  "human-reviewer-chirho",
+  "reviewer",
+  "reviewer-chirho",
+  "syriac reader",
+  "syriac-reader-chirho",
+  "unknown",
+  "unknown-chirho",
+  "unknown-reviewer",
   "unknown-reviewer-chirho",
 ]);
 
