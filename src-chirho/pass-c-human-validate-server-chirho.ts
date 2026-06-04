@@ -1188,7 +1188,14 @@ function pageHtmlChirho(): string {
       return activeQueueChirho().findIndex((itemChirho) => itemChirho.keyChirho === itemKeyChirho);
     }
     function applyRequestedItemKeyChirho() {
-      const requestedIndexChirho = activeIndexForItemKeyChirho(requestedItemKeyChirho);
+      let requestedIndexChirho = activeIndexForItemKeyChirho(requestedItemKeyChirho);
+      const requestedItemChirho = queueChirho.find((itemChirho) => itemChirho.keyChirho === requestedItemKeyChirho);
+      const volumeChirho = volumeFilterNumberChirho();
+      if (requestedIndexChirho < 0 && requestedItemChirho && volumeChirho !== null && requestedItemChirho.volumeChirho !== volumeChirho) {
+        volumeFilterChirho = "all-chirho";
+        syncFilterControlsChirho();
+        requestedIndexChirho = activeIndexForItemKeyChirho(requestedItemKeyChirho);
+      }
       if (requestedIndexChirho >= 0) indexChirho = requestedIndexChirho;
       requestedItemKeyChirho = null;
     }

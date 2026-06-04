@@ -647,7 +647,14 @@ function htmlChirho(): string {
       return activeItemsChirho().findIndex((itemChirho) => itemChirho.idChirho === itemIdChirho);
     }
     function applyRequestedItemIdChirho() {
-      const requestedIndexChirho = activeIndexForItemIdChirho(requestedItemIdChirho);
+      let requestedIndexChirho = activeIndexForItemIdChirho(requestedItemIdChirho);
+      const requestedItemChirho = itemsChirho.find((itemChirho) => itemChirho.idChirho === requestedItemIdChirho);
+      const volumeChirho = volumeFilterNumberChirho();
+      if (requestedIndexChirho < 0 && requestedItemChirho && volumeChirho !== null && requestedItemChirho.volumeChirho !== volumeChirho) {
+        volumeFilterChirho = "all-chirho";
+        syncFilterControlsChirho();
+        requestedIndexChirho = activeIndexForItemIdChirho(requestedItemIdChirho);
+      }
       if (requestedIndexChirho >= 0) indexChirho = requestedIndexChirho;
       requestedItemIdChirho = null;
     }
