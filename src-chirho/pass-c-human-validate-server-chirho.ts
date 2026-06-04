@@ -1270,6 +1270,20 @@ function pageHtmlChirho(): string {
       const marksChirho = namedMarkDeltasChirho(fromTextChirho, toTextChirho);
       return marksChirho.length > 0 ? marksChirho.join("; ") : "No named typewriter mark additions/removals detected";
     }
+    function pendingReviewIssueFlagsChirho() {
+      return Array.from(document.querySelectorAll(".issue-checkbox-chirho:checked"))
+        .map((inputChirho) => inputChirho.value);
+    }
+    function pendingReviewHasEditedTextChirho(itemChirho) {
+      const editChirho = document.getElementById("edit-chirho");
+      return !!editChirho && editChirho.value.normalize("NFC") !== String(itemChirho.liveSpanTextChirho ?? "").normalize("NFC");
+    }
+    function pendingReviewWouldBeCleanChirho(itemChirho) {
+      return !pendingReviewHasEditedTextChirho(itemChirho) && pendingReviewIssueFlagsChirho().length === 0;
+    }
+    function cleanReviewActionTextChirho(itemChirho) {
+      return pendingReviewWouldBeCleanChirho(itemChirho) ? "Accept as clean" : "Save issue";
+    }
     async function loadValidationsChirho() {
       const responseChirho = await fetch("/api-chirho/validations-chirho");
       const dataChirho = await responseChirho.json();
@@ -1537,7 +1551,18 @@ function pageHtmlChirho(): string {
 
       const actionsChirho = elChirho("div", { classChirho: "actions-chirho" });
       if (reviewStateFilterChirho === "pending-chirho") {
-        const continueButtonChirho = elChirho("button", { classChirho: "continue-chirho", textChirho: "Continue" });
+        sideChirho.appendChild(elChirho("div", {
+          classChirho: "warning-chirho",
+          textChirho: "No checked issue boxes and no edited text saves a reviewed-clean row for this exact span. Check an issue box or edit the text if anything is wrong, split, missing, extra, or uncertain."
+        }));
+        const continueButtonChirho = elChirho("button", { classChirho: "continue-chirho", textChirho: cleanReviewActionTextChirho(itemChirho) });
+        const updateContinueButtonChirho = () => {
+          continueButtonChirho.textContent = cleanReviewActionTextChirho(itemChirho);
+        };
+        editChirho.addEventListener("input", updateContinueButtonChirho);
+        for (const checkboxChirho of issueGridChirho.querySelectorAll(".issue-checkbox-chirho")) {
+          checkboxChirho.addEventListener("change", updateContinueButtonChirho);
+        }
         continueButtonChirho.addEventListener("click", () => submitReviewChirho());
         actionsChirho.appendChild(continueButtonChirho);
         const undoButtonChirho = elChirho("button", { classChirho: "undo-chirho", textChirho: "Undo last" });
