@@ -31,6 +31,31 @@ __pycache__/
 
 # MCP / tooling scratch
 .playwright-mcp/
+.antigravitycli/
+
+# local visual review scratch artifacts
+/hottp-local-modal-zoom.png
+/hottp-local-page152-overview.png
+/hottp-local-word-modal-ocr.png
+/hottp-tool-font-specimen-chirho.png
+/hottp-tool-glyph-review-chirho.png
+/hottp-tool-polygon-annotate-chirho.png
+/hottp-tool-spine-editor-chirho.png
+/latin-symbol-review-page-chirho.png
+/modal-snapshot.md
+/page152-snapshot.md
+/pass-c-unknown-validator-chirho.png
+/pass-c-validator-fixed-chirho.png
+/pass-c-validator-vol5-fixed-chirho.png
+/pass-c-validator-vol5-wordbox-crop-chirho.png
+/pass-c-validator-wordbox-crop-chirho.png
+/pass-c-validator-wordbox-crop-tight-chirho.png
+/spine-additive-check.png
+/spine-aleph-clean.png
+/spine-editor-check.png
+/spine-modes-check.png
+/spine-subpixel-check.png
+/src-chirho/evaluate_tess_gate_rescue_chirho.py
 
 # build / runtime artifacts
 node_modules/
