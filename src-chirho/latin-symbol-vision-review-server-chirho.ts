@@ -48,8 +48,10 @@ import {
   MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO,
   MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO,
 } from "./reviewer-attribution-chirho.ts";
+import { reviewServerStartupHealthChirho } from "./review-server-health-chirho.ts";
 
 const MODULE_CHIRHO = "latin-symbol-vision-review-server-chirho";
+const SERVER_HEALTH_CHIRHO = reviewServerStartupHealthChirho("latin-symbol-chirho");
 const DEFAULT_PORT_CHIRHO = 8770;
 const SYMBOL_RISK_OPTIONS_CHIRHO = [
   { valueChirho: "all-chirho", labelChirho: "All risk classes" },
@@ -714,6 +716,9 @@ Bun.serve({
       }
       if (urlChirho.pathname === "/favicon.ico") {
         return new Response(null, { status: 204 });
+      }
+      if (urlChirho.pathname === "/api-chirho/server-health-chirho") {
+        return jsonResponseChirho(SERVER_HEALTH_CHIRHO);
       }
       if (urlChirho.pathname === "/asset-chirho") {
         const relativePathChirho = urlChirho.searchParams.get("path");

@@ -10,13 +10,18 @@
  */
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import {
+  reviewServerSourceFingerprintChirho,
+  type ReviewServerHealthChirho,
+  type ReviewServerKeyChirho,
+} from "./review-server-health-chirho.ts";
 
 const MODULE_CHIRHO = "review-servers-chirho";
 const CHECK_TIMEOUT_MS_CHIRHO = 3000;
 const START_TIMEOUT_MS_CHIRHO = 8000;
 
 interface ReviewServerChirho {
-  keyChirho: string;
+  keyChirho: ReviewServerKeyChirho;
   labelChirho: string;
   portChirho: number;
   scriptPathChirho: string;
@@ -29,6 +34,9 @@ interface ServerCheckChirho {
   statusChirho: number | null;
   errorChirho: string | null;
   checkedUrlsChirho: string[];
+  portRespondedChirho: boolean;
+  sourceFingerprintChirho: string | null;
+  expectedSourceFingerprintChirho: string | null;
 }
 
 const REVIEW_SERVERS_CHIRHO: ReviewServerChirho[] = [
@@ -72,6 +80,23 @@ function serverProbeUrlChirho(serviceChirho: ReviewServerChirho, probePathChirho
   return new URL(probePathChirho, serverUrlChirho(serviceChirho)).toString();
 }
 
+async function fetchServerHealthChirho(
+  serviceChirho: ReviewServerChirho,
+  timeoutMsChirho: number
+): Promise<ReviewServerHealthChirho> {
+  const abortControllerChirho = new AbortController();
+  const timeoutChirho = setTimeout(() => abortControllerChirho.abort(), timeoutMsChirho);
+  try {
+    const responseChirho = await fetch(serverProbeUrlChirho(serviceChirho, "/api-chirho/server-health-chirho"), {
+      signal: abortControllerChirho.signal,
+    });
+    if (!responseChirho.ok) throw new Error(`HTTP ${responseChirho.status}`);
+    return (await responseChirho.json()) as ReviewServerHealthChirho;
+  } finally {
+    clearTimeout(timeoutChirho);
+  }
+}
+
 async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChirho = CHECK_TIMEOUT_MS_CHIRHO): Promise<ServerCheckChirho> {
   const checkedUrlsChirho: string[] = [];
   for (const probePathChirho of serviceChirho.probePathsChirho) {
@@ -90,6 +115,9 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
           statusChirho: responseChirho.status,
           errorChirho: `${probePathChirho} HTTP ${responseChirho.status}`,
           checkedUrlsChirho,
+          portRespondedChirho: true,
+          sourceFingerprintChirho: null,
+          expectedSourceFingerprintChirho: null,
         };
       }
     } catch (errorChirho) {
@@ -100,18 +128,62 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
         statusChirho: null,
         errorChirho: `${probePathChirho} ${messageChirho}`,
         checkedUrlsChirho,
+        portRespondedChirho: false,
+        sourceFingerprintChirho: null,
+        expectedSourceFingerprintChirho: null,
       };
     } finally {
       clearTimeout(timeoutChirho);
     }
   }
-  return {
-    serviceChirho,
-    runningChirho: true,
-    statusChirho: 200,
-    errorChirho: null,
-    checkedUrlsChirho,
-  };
+  const expectedFingerprintChirho = reviewServerSourceFingerprintChirho(serviceChirho.keyChirho);
+  const healthUrlChirho = serverProbeUrlChirho(serviceChirho, "/api-chirho/server-health-chirho");
+  checkedUrlsChirho.push(healthUrlChirho);
+  try {
+    const healthChirho = await fetchServerHealthChirho(serviceChirho, timeoutMsChirho);
+    if (
+      healthChirho.schemaVersionChirho !== 1 ||
+      healthChirho.keyChirho !== serviceChirho.keyChirho ||
+      healthChirho.sourceFingerprintChirho !== expectedFingerprintChirho.sourceFingerprintChirho ||
+      healthChirho.sourceFileCountChirho !== expectedFingerprintChirho.sourceFileCountChirho
+    ) {
+      return {
+        serviceChirho,
+        runningChirho: false,
+        statusChirho: 200,
+        errorChirho:
+          `/api-chirho/server-health-chirho source fingerprint mismatch` +
+          ` current=${expectedFingerprintChirho.sourceFingerprintChirho.slice(0, 12)}` +
+          ` server=${String(healthChirho.sourceFingerprintChirho ?? "").slice(0, 12)}`,
+        checkedUrlsChirho,
+        portRespondedChirho: true,
+        sourceFingerprintChirho: healthChirho.sourceFingerprintChirho ?? null,
+        expectedSourceFingerprintChirho: expectedFingerprintChirho.sourceFingerprintChirho,
+      };
+    }
+    return {
+      serviceChirho,
+      runningChirho: true,
+      statusChirho: 200,
+      errorChirho: null,
+      checkedUrlsChirho,
+      portRespondedChirho: true,
+      sourceFingerprintChirho: healthChirho.sourceFingerprintChirho,
+      expectedSourceFingerprintChirho: expectedFingerprintChirho.sourceFingerprintChirho,
+    };
+  } catch (errorChirho) {
+    const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
+    return {
+      serviceChirho,
+      runningChirho: false,
+      statusChirho: null,
+      errorChirho: `/api-chirho/server-health-chirho ${messageChirho}`,
+      checkedUrlsChirho,
+      portRespondedChirho: true,
+      sourceFingerprintChirho: null,
+      expectedSourceFingerprintChirho: expectedFingerprintChirho.sourceFingerprintChirho,
+    };
+  }
 }
 
 async function waitForServerChirho(serviceChirho: ReviewServerChirho): Promise<ServerCheckChirho> {
@@ -129,7 +201,7 @@ function printCheckChirho(checkChirho: ServerCheckChirho): void {
   if (checkChirho.runningChirho) {
     console.log(
       `[${MODULE_CHIRHO}] ok ${checkChirho.serviceChirho.labelChirho}: ${urlChirho}` +
-        ` (${checkChirho.checkedUrlsChirho.length} probe(s))`
+        ` (${checkChirho.checkedUrlsChirho.length} probe(s), source ${checkChirho.sourceFingerprintChirho?.slice(0, 12) ?? "unknown"})`
     );
     return;
   }
@@ -152,6 +224,10 @@ async function startMissingServersChirho(): Promise<void> {
     if (initialCheckChirho.runningChirho) {
       console.log(`[${MODULE_CHIRHO}] already running ${serviceChirho.labelChirho}: ${serverUrlChirho(serviceChirho)}`);
       continue;
+    }
+    if (initialCheckChirho.portRespondedChirho) {
+      printCheckChirho(initialCheckChirho);
+      throw new Error(`${serviceChirho.labelChirho} is responding but stale or unhealthy; stop it and restart ${serviceChirho.scriptPathChirho}`);
     }
     console.log(
       `[${MODULE_CHIRHO}] starting ${serviceChirho.labelChirho}: bun run ${serviceChirho.scriptPathChirho}`

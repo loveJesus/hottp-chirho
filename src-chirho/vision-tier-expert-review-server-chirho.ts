@@ -20,6 +20,7 @@ import {
   MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO,
   MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO,
 } from "./reviewer-attribution-chirho.ts";
+import { reviewServerStartupHealthChirho } from "./review-server-health-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 import {
   EXPERT_MARKDOWN_PATH_PAIRS_CHIRHO,
@@ -46,6 +47,7 @@ import {
 } from "./vision-tier-expert-live-items-chirho.ts";
 
 const MODULE_CHIRHO = "vision-tier-expert-review-server-chirho";
+const SERVER_HEALTH_CHIRHO = reviewServerStartupHealthChirho("expert-non-latin-chirho");
 const DEFAULT_PORT_CHIRHO = 8771;
 const EXPERT_PACK_DIR_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -1076,6 +1078,9 @@ Bun.serve({
       }
       if (urlChirho.pathname === "/favicon.ico") {
         return new Response(null, { status: 204 });
+      }
+      if (urlChirho.pathname === "/api-chirho/server-health-chirho") {
+        return jsonResponseChirho(SERVER_HEALTH_CHIRHO);
       }
       if (urlChirho.pathname === "/asset-chirho") {
         const relativePathChirho = urlChirho.searchParams.get("path");

@@ -38,10 +38,12 @@ import {
   MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO,
   MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO,
 } from "./reviewer-attribution-chirho.ts";
+import { reviewServerStartupHealthChirho } from "./review-server-health-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "pass-c-human-validate-server-chirho";
+const SERVER_HEALTH_CHIRHO = reviewServerStartupHealthChirho("raw-hebrew-chirho");
 const DEFAULT_PORT_CHIRHO = 8766;
 const REPORT_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -2139,6 +2141,9 @@ Bun.serve({
     }
     if (urlChirho.pathname === "/favicon.ico") {
       return new Response(null, { status: 204 });
+    }
+    if (urlChirho.pathname === "/api-chirho/server-health-chirho") {
+      return jsonResponseChirho(SERVER_HEALTH_CHIRHO);
     }
     if (urlChirho.pathname.startsWith("/line-image-chirho/")) {
       const keyChirho = decodeURIComponent(urlChirho.pathname.slice("/line-image-chirho/".length));
