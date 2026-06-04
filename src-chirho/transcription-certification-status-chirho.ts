@@ -67,6 +67,7 @@ import {
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import { normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 import {
+  expectedVisionTierReviewerRoleChirho,
   readVisionTierExpertConfirmationFileChirho,
   summarizeVisionTierExpertConfirmationsChirho,
   VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO,
@@ -183,6 +184,19 @@ interface GuardedWlcCorrectionCommandChirho {
   humanValidationIdChirho: number;
   suggestedTextChirho: string;
   commandChirho: string;
+}
+
+interface BlankVisionTierHandoffChirho {
+  idChirho: string;
+  locationChirho: string;
+  scriptChirho: string | null;
+  expectedReviewerRoleChirho: string | null;
+  expertReviewUrlChirho: string;
+  applyCommandTemplateChirho: string;
+  sourcePathChirho: string | null;
+  packetPathChirho: string | null;
+  markdownPathChirho: string | null;
+  manifestItemFreshChirho: boolean;
 }
 
 interface SuggestedCorrectionSpanChirho extends SpanLikeChirho {
@@ -409,6 +423,7 @@ interface CertificationStatusChirho {
     issueCodeCountsChirho: Record<string, number>;
     issueSummariesChirho: string[];
     guardedWlcCorrectionCommandsChirho: GuardedWlcCorrectionCommandChirho[];
+    blankVisionTierHandoffsChirho: BlankVisionTierHandoffChirho[];
     spanSourceFileCountChirho: number | null;
     liveSpanSourceFileCountChirho: number;
     spanSourceFingerprintMatchesCurrentChirho: boolean;
@@ -546,6 +561,17 @@ function readJsonFileChirho<TChirho>(pathChirho: string, fallbackChirho: TChirho
 
 function shellSingleQuoteChirho(valueChirho: string): string {
   return `'${valueChirho.replace(/'/g, `'\\''`)}'`;
+}
+
+function expertItemIdForLocationChirho(
+  locationChirho: Pick<Required<ExportIssueChirho>, "volumeChirho" | "pageChirho" | "lineIndexChirho" | "segmentIndexChirho">
+): string {
+  return [
+    `v${locationChirho.volumeChirho}`,
+    `p${String(locationChirho.pageChirho).padStart(4, "0")}`,
+    `l${String(locationChirho.lineIndexChirho).padStart(3, "0")}`,
+    `s${locationChirho.segmentIndexChirho}`,
+  ].join("-");
 }
 
 function urlQueryChirho(entriesChirho: Array<[string, string]>): string {
@@ -786,6 +812,60 @@ function expertReviewStartUrlChirho(
 
 function withReviewStartTextChirho(urlChirho: string | null): string {
   return urlChirho === null ? "" : `; first pending: ${urlChirho}`;
+}
+
+function blankVisionTierApplyCommandTemplateChirho(idChirho: string, expectedReviewerRoleChirho: string | null): string {
+  return [
+    "bun run apply-expert-supplied-vision-text-chirho --",
+    `--id-chirho=${shellSingleQuoteChirho(idChirho)}`,
+    "--supplied-text-chirho='<exact printed text>'",
+    "--reviewer-chirho=<reviewer-id-chirho>",
+    `--reviewer-role-chirho=${shellSingleQuoteChirho(expectedReviewerRoleChirho ?? "<expected-script-role-chirho>")}`,
+    "--rationale-chirho='<why this exact text is supplied>'",
+    "--apply",
+  ].join(" ");
+}
+
+function blankVisionTierHandoffsChirho(
+  issuesChirho: ExportIssueChirho[],
+  manifestItemsByIdChirho: Map<string, ExpertPackVisionItemChirho>,
+  liveItemsByIdChirho: Map<string, { scriptChirho: string; visionSourceChirho: string; currentTextChirho: string }>
+): BlankVisionTierHandoffChirho[] {
+  return issuesChirho
+    .filter(
+      (issueChirho): issueChirho is Required<Pick<ExportIssueChirho, "volumeChirho" | "pageChirho" | "lineIndexChirho" | "segmentIndexChirho">> & ExportIssueChirho =>
+        issueChirho.codeChirho === "blank-span-text-chirho" &&
+        typeof issueChirho.volumeChirho === "number" &&
+        typeof issueChirho.pageChirho === "number" &&
+        typeof issueChirho.lineIndexChirho === "number" &&
+        typeof issueChirho.segmentIndexChirho === "number"
+    )
+    .map((issueChirho) => {
+      const idChirho = expertItemIdForLocationChirho(issueChirho);
+      const manifestItemChirho = manifestItemsByIdChirho.get(idChirho);
+      const liveItemChirho = liveItemsByIdChirho.get(idChirho);
+      const scriptChirho = liveItemChirho?.scriptChirho ?? manifestItemChirho?.scriptChirho ?? null;
+      const expectedReviewerRoleChirho =
+        scriptChirho === null ? null : expectedVisionTierReviewerRoleChirho(scriptChirho);
+      const manifestItemFreshChirho =
+        manifestItemChirho !== undefined &&
+        liveItemChirho !== undefined &&
+        manifestItemChirho.scriptChirho === liveItemChirho.scriptChirho &&
+        manifestItemChirho.visionSourceChirho === liveItemChirho.visionSourceChirho &&
+        manifestItemChirho.currentTextChirho === liveItemChirho.currentTextChirho;
+      return {
+        idChirho,
+        locationChirho: `vol ${issueChirho.volumeChirho} p${issueChirho.pageChirho} line ${issueChirho.lineIndexChirho} seg ${issueChirho.segmentIndexChirho}`,
+        scriptChirho,
+        expectedReviewerRoleChirho,
+        expertReviewUrlChirho: expertReviewUrlChirho(scriptChirho ?? undefined, undefined, idChirho),
+        applyCommandTemplateChirho: blankVisionTierApplyCommandTemplateChirho(idChirho, expectedReviewerRoleChirho),
+        sourcePathChirho: manifestItemChirho?.sourcePathChirho ?? null,
+        packetPathChirho: manifestItemChirho?.packetPathChirho ?? null,
+        markdownPathChirho: manifestItemChirho?.markdownPathChirho ?? null,
+        manifestItemFreshChirho,
+      };
+    });
 }
 
 function volumeLaneLinesChirho(
@@ -1462,6 +1542,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     issueCodeCountsChirho: countIssueCodesChirho(exportReportChirho.issuesChirho ?? []),
     issueSummariesChirho: (exportReportChirho.issuesChirho ?? []).slice(0, 12).map(summarizeIssueChirho),
     guardedWlcCorrectionCommandsChirho: guardedWlcCorrectionCommandsChirho(),
+    blankVisionTierHandoffsChirho: [] as BlankVisionTierHandoffChirho[],
     spanSourceFileCountChirho: exportReportChirho.spanSourceFileCountChirho ?? null,
     liveSpanSourceFileCountChirho: liveSpanSourceFingerprintChirho.fileCountChirho,
     spanSourceFingerprintMatchesCurrentChirho: exportReportSpanSourceFingerprintMatchesCurrentChirho,
@@ -1541,7 +1622,16 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const expertManifestItemsChirho = expertPackManifestShapeOkChirho
     ? expertManifestChirho.completeVisionItemsChirho ?? []
     : [];
+  const expertManifestItemsByIdChirho = new Map(
+    expertManifestItemsChirho.map((itemChirho) => [itemChirho.idChirho, itemChirho])
+  );
   const expertManifestItemIdsChirho = new Set(expertManifestItemsChirho.map((itemChirho) => itemChirho.idChirho));
+  const blankVisionTierHandoffsResultChirho = blankVisionTierHandoffsChirho(
+    exportReportChirho.issuesChirho ?? [],
+    expertManifestItemsByIdChirho,
+    visionTierLiveItemsByIdChirho
+  );
+  structuralChirho.blankVisionTierHandoffsChirho = blankVisionTierHandoffsResultChirho;
   const visionTierManifestCountMatchesCurrentChirho =
     expertManifestItemsChirho.length === visionTierLiveItemsChirho.length;
   const visionTierManifestIdsMatchCurrentChirho =
@@ -2314,6 +2404,19 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   const issueSummaryLinesChirho = statusChirho.structuralChirho.issueSummariesChirho.length === 0
     ? ["- None."]
     : statusChirho.structuralChirho.issueSummariesChirho.map((issueChirho) => `- ${issueChirho}`);
+  const blankVisionTierHandoffLinesChirho =
+    statusChirho.structuralChirho.blankVisionTierHandoffsChirho.length === 0
+      ? ["- None."]
+      : statusChirho.structuralChirho.blankVisionTierHandoffsChirho.flatMap((handoffChirho) => [
+          `- ${handoffChirho.idChirho} (${handoffChirho.locationChirho}; script ${handoffChirho.scriptChirho ?? "unknown-chirho"}; expected role ${handoffChirho.expectedReviewerRoleChirho ?? "unknown-chirho"})`,
+          `  - Expert review URL: ${handoffChirho.expertReviewUrlChirho}`,
+          `  - Source scanline: \`${handoffChirho.sourcePathChirho === null ? "missing-manifest-source-chirho" : relativeProjectPathChirho(handoffChirho.sourcePathChirho)}\``,
+          `  - Packet image: \`${handoffChirho.packetPathChirho === null ? "missing-manifest-packet-chirho" : relativeProjectPathChirho(handoffChirho.packetPathChirho)}\``,
+          `  - Markdown image path: \`${handoffChirho.markdownPathChirho ?? "missing-manifest-markdown-path-chirho"}\``,
+          `  - Manifest item fresh against live queue: ${handoffChirho.manifestItemFreshChirho}`,
+          `  - Expert-supplied text command after exact script-reader transcription: \`${handoffChirho.applyCommandTemplateChirho}\``,
+          "  - Applying supplied text removes only the EMPTY-SPAN structural marker; the item remains vision-tier until explicit expert confirmation.",
+        ]);
   const guardedWlcCorrectionCommandLinesChirho = statusChirho.structuralChirho.guardedWlcCorrectionCommandsChirho.length === 0
     ? ["- Guarded WLC correction commands: none pending"]
     : statusChirho.structuralChirho.guardedWlcCorrectionCommandsChirho.map(
@@ -2441,6 +2544,10 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "### Strict Issue Details",
     "",
     ...issueSummaryLinesChirho,
+    "",
+    "### Blank Expert Transcription Handoff",
+    "",
+    ...blankVisionTierHandoffLinesChirho,
     "",
     "## Unicode Normalization",
     "",
