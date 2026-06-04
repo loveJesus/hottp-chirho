@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T11:38:14.430Z",
+  "generatedAtChirho": "2026-06-04T11:46:54.819Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 817,
+  "countChirho": 825,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -73,26 +73,6 @@
       "scriptChirho": "symbol-chirho",
       "utf8TextChirho": "≠ +",
       "notesChirho": "Crop (xMin 473–532) shows ≠ + clearly; OCR rendered ≠ as Z (visual confusion of the two horizontal bars with a diagonal)."
-    },
-    {
-      "volumeChirho": 3,
-      "pageChirho": 152,
-      "lineIndexChirho": 19,
-      "segmentIndexChirho": 2,
-      "garbleTextChirho": "4 +d",
-      "scriptChirho": "symbol-chirho",
-      "utf8TextChirho": "≠ + ὁ",
-      "notesChirho": "Crop (xMin 451–547) shows ≠ + ὁ; symbols plus Greek article ὁ; OCR garbled ≠ as 4 and ὁ as d; labeled symbol-chirho for the dominant ≠ + marks, ὁ is part of the same unsplit span."
-    },
-    {
-      "volumeChirho": 3,
-      "pageChirho": 152,
-      "lineIndexChirho": 20,
-      "segmentIndexChirho": 2,
-      "garbleTextChirho": "Æ+0",
-      "scriptChirho": "symbol-chirho",
-      "utf8TextChirho": "≠ + ὁ",
-      "notesChirho": "Crop (xMin 468–563) shows ≠ + ὁ; parallel structure to line 19 (en 45,15c); OCR garbled ≠ as Æ and ὁ as 0; same mixed symbol+Greek article span."
     },
     {
       "volumeChirho": 3,
@@ -8173,6 +8153,106 @@
       "scriptChirho": "greek-chirho",
       "utf8TextChirho": "ὁ θεός",
       "notesChirho": "Recovered vol 3 p152 line 16 Greek `ὁ θεός` after scanline review. The OCR rendered the rough-breathing omicron `ὁ` and following `θεός` as French-like `+0 es`; stored as greek-chirho vision-tier for Greek expert confirmation, not certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 18,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "old Greek span swallowed .967",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "λέγει κύριος",
+      "notesChirho": "Repaired vol 3 p152 line 18 Greek apparatus cluster after scanline review: the print reads `λέγει κύριος .967 ≠ + κύριος Cpl et rel.[3]`. The old Greek phrase box swallowed `.967`. Stored as vision-tier for the appropriate Greek or Latin/symbol review lane, not certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 18,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "omitted .967 and split ≠ / +",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": ".967 ≠ +",
+      "notesChirho": "Repaired vol 3 p152 line 18 Greek apparatus cluster after scanline review: the print reads `λέγει κύριος .967 ≠ + κύριος Cpl et rel.[3]`. Recovered `.967 ≠ +`; the previous split omitted `.967` and stored `+` as French text. Stored as vision-tier for the appropriate Greek or Latin/symbol review lane, not certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 18,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "renumbered/reboxed κύριος after apparatus merge",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "κύριος",
+      "notesChirho": "Repaired vol 3 p152 line 18 Greek apparatus cluster after scanline review: the print reads `λέγει κύριος .967 ≠ + κύριος Cpl et rel.[3]`. Reboxed the following `κύριος` after merging the apparatus operator span. Stored as vision-tier for the appropriate Greek or Latin/symbol review lane, not certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 19,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "old Greek span swallowed .967",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "λέγει κύριος",
+      "notesChirho": "Repaired vol 3 p152 line 19 Greek apparatus cluster after scanline review: the print reads `λέγει κύριος .967 ≠ + ὁ θεός Cpl et rel.[4]`. The old Greek phrase box swallowed `.967`. Stored as vision-tier for the appropriate Greek or Latin/symbol review lane, not certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 19,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "omitted .967 and included Greek ὁ",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": ".967 ≠ +",
+      "notesChirho": "Repaired vol 3 p152 line 19 Greek apparatus cluster after scanline review: the print reads `λέγει κύριος .967 ≠ + ὁ θεός Cpl et rel.[4]`. Recovered `.967 ≠ +`; the old symbol span omitted `.967` and included Greek `ὁ`. Stored as vision-tier for the appropriate Greek or Latin/symbol review lane, not certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 19,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "split ὁ away from θεός",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "ὁ θεός",
+      "notesChirho": "Repaired vol 3 p152 line 19 Greek apparatus cluster after scanline review: the print reads `λέγει κύριος .967 ≠ + ὁ θεός Cpl et rel.[4]`. Reboxed `ὁ θεός` as Greek text instead of splitting `ὁ` into the symbol span. Stored as vision-tier for the appropriate Greek or Latin/symbol review lane, not certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 20,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "old Greek span swallowed .967",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "λέγει κύριος",
+      "notesChirho": "Repaired vol 3 p152 line 20 Greek apparatus cluster after scanline review: the print reads `λέγει κύριος .967 ≠ + ὁ θεός Cpl et rel.[5]`. The old Greek phrase box swallowed `.967`. Stored as vision-tier for the appropriate Greek or Latin/symbol review lane, not certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 20,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "omitted .967 and included Greek ὁ",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": ".967 ≠ +",
+      "notesChirho": "Repaired vol 3 p152 line 20 Greek apparatus cluster after scanline review: the print reads `λέγει κύριος .967 ≠ + ὁ θεός Cpl et rel.[5]`. Recovered `.967 ≠ +`; the old symbol span omitted `.967` and included Greek `ὁ`. Stored as vision-tier for the appropriate Greek or Latin/symbol review lane, not certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 20,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "split ὁ away from θεός",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "ὁ θεός",
+      "notesChirho": "Repaired vol 3 p152 line 20 Greek apparatus cluster after scanline review: the print reads `λέγει κύριος .967 ≠ + ὁ θεός Cpl et rel.[5]`. Reboxed `ὁ θεός` as Greek text instead of splitting `ὁ` into the symbol span. Stored as vision-tier for the appropriate Greek or Latin/symbol review lane, not certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 20,
+      "segmentIndexChirho": 4,
+      "garbleTextChirho": "Cplet rel.[5]",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "Cpl et rel.[5]",
+      "notesChirho": "Repaired vol 3 p152 line 20 Greek apparatus cluster after scanline review: the print reads `λέγει κύριος .967 ≠ + ὁ θεός Cpl et rel.[5]`. Cleaned the French apparatus tail from `Cplet rel.[5]` into `Cpl et rel.[5]`. Stored as vision-tier for the appropriate Greek or Latin/symbol review lane, not certified."
     }
   ]
 }
