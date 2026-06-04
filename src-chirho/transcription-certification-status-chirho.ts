@@ -362,6 +362,7 @@ interface LatinSymbolReviewBackupReviewChirho {
   itemIdChirho?: string;
   currentTextHashChirho?: string;
   verdictChirho?: string;
+  acceptCleanChirho?: boolean;
   appliedAtChirho?: string | null;
   schemaVersionChirho?: number;
   updatedAtChirho?: string;
@@ -404,6 +405,7 @@ interface LatinSymbolReviewRowChirho {
   itemIdChirho: string;
   currentTextHashChirho: string;
   verdictChirho: string;
+  acceptCleanChirho: boolean;
   appliedAtChirho: string | null;
   schemaVersionChirho: number;
   updatedAtChirho: string;
@@ -1528,9 +1530,11 @@ function latinSymbolReviewRowsChirho(dbPathChirho: string): LatinSymbolReviewRow
     if (columnsChirho.size === 0) return [];
     const hasAppliedAtChirho = columnsChirho.has("applied_at_chirho");
     const hasSchemaVersionChirho = columnsChirho.has("schema_version_chirho");
+    const hasAcceptCleanChirho = columnsChirho.has("accept_clean_chirho");
     const rowsChirho = dbChirho
       .query(`
         SELECT item_id_chirho, current_text_hash_chirho, verdict_chirho, updated_at_chirho,
+               ${hasAcceptCleanChirho ? "accept_clean_chirho" : "0 AS accept_clean_chirho"},
                ${hasAppliedAtChirho ? "applied_at_chirho" : "NULL AS applied_at_chirho"},
                ${hasSchemaVersionChirho ? "schema_version_chirho" : "1 AS schema_version_chirho"}
           FROM latin_symbol_vision_reviews_chirho
@@ -1541,6 +1545,7 @@ function latinSymbolReviewRowsChirho(dbPathChirho: string): LatinSymbolReviewRow
         item_id_chirho: string;
         current_text_hash_chirho: string;
         verdict_chirho: string;
+        accept_clean_chirho: number;
         updated_at_chirho: string;
         applied_at_chirho: string | null;
         schema_version_chirho: number;
@@ -1549,6 +1554,7 @@ function latinSymbolReviewRowsChirho(dbPathChirho: string): LatinSymbolReviewRow
       itemIdChirho: rowChirho.item_id_chirho,
       currentTextHashChirho: rowChirho.current_text_hash_chirho,
       verdictChirho: rowChirho.verdict_chirho,
+      acceptCleanChirho: rowChirho.accept_clean_chirho === 1,
       appliedAtChirho: rowChirho.applied_at_chirho,
       schemaVersionChirho: rowChirho.schema_version_chirho,
       updatedAtChirho: rowChirho.updated_at_chirho,
@@ -1570,12 +1576,15 @@ function latinSymbolReviewBackupRowsChirho(
         typeof rowChirho.itemIdChirho === "string" &&
         typeof rowChirho.currentTextHashChirho === "string" &&
         typeof rowChirho.verdictChirho === "string" &&
+        typeof rowChirho.acceptCleanChirho === "boolean" &&
+        (rowChirho.verdictChirho !== "accepted-clean-chirho" || rowChirho.acceptCleanChirho === true) &&
         typeof rowChirho.updatedAtChirho === "string"
     )
     .map((rowChirho) => ({
       itemIdChirho: rowChirho.itemIdChirho!,
       currentTextHashChirho: rowChirho.currentTextHashChirho!,
       verdictChirho: rowChirho.verdictChirho!,
+      acceptCleanChirho: rowChirho.acceptCleanChirho!,
       appliedAtChirho: rowChirho.appliedAtChirho ?? null,
       schemaVersionChirho: rowChirho.schemaVersionChirho ?? 1,
       updatedAtChirho: rowChirho.updatedAtChirho!,
@@ -1588,6 +1597,7 @@ function reviewDurabilityKeyChirho(rowChirho: LatinSymbolReviewRowChirho): strin
     rowChirho.itemIdChirho,
     rowChirho.currentTextHashChirho,
     rowChirho.verdictChirho,
+    rowChirho.acceptCleanChirho ? "accept-clean-chirho" : "no-clean-ack-chirho",
     rowChirho.updatedAtChirho,
   ].join("\u0000");
 }
@@ -1714,7 +1724,9 @@ function summarizeLatinSymbolReviewsChirho(
       staleRowsChirho += 1;
       continue;
     }
-    if (rowChirho.verdictChirho === "accepted-clean-chirho") validReviewedCleanRowsChirho += 1;
+    if (rowChirho.verdictChirho === "accepted-clean-chirho" && rowChirho.acceptCleanChirho) {
+      validReviewedCleanRowsChirho += 1;
+    }
     if (rowChirho.verdictChirho === "reviewed-issues-chirho") validReviewedIssueRowsChirho += 1;
     if (rowChirho.appliedAtChirho !== null) appliedRowsChirho += 1;
   }
@@ -1738,6 +1750,7 @@ function validLatinSymbolReviewIdsChirho(
   const idsChirho = new Set<string>();
   for (const rowChirho of rowsChirho) {
     if (rowChirho.verdictChirho !== verdictChirho) continue;
+    if (rowChirho.verdictChirho === "accepted-clean-chirho" && !rowChirho.acceptCleanChirho) continue;
     const currentHashChirho = hashByIdChirho.get(rowChirho.itemIdChirho);
     if (currentHashChirho === undefined || currentHashChirho !== rowChirho.currentTextHashChirho) continue;
     idsChirho.add(rowChirho.itemIdChirho);

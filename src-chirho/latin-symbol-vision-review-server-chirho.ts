@@ -598,6 +598,7 @@ Bun.serve({
           manifestChirho,
           liveItemChirho,
           verdictChirho: verdictForLatinSymbolIssueFlagsChirho(issueFlagsChirho),
+          acceptCleanChirho: issueFlagsChirho.length === 0,
           issueFlagsChirho,
           notesChirho,
           reviewerChirho: effectiveReviewerChirho,

@@ -96,6 +96,7 @@ export interface LatinSymbolReviewDbRowChirho {
   current_text_hash_chirho: string;
   line_text_chirho: string;
   verdict_chirho: string;
+  accept_clean_chirho: number;
   issue_flags_chirho: string | null;
   notes_chirho: string | null;
   packet_generated_at_chirho: string | null;
@@ -111,6 +112,7 @@ export interface LatinSymbolReviewRowChirho {
   idChirho: number;
   itemIdChirho: string;
   verdictChirho: string;
+  acceptCleanChirho: boolean;
   issueFlagsChirho: string[];
   notesChirho: string | null;
   reviewerChirho: string;
@@ -123,6 +125,7 @@ export interface SaveLatinSymbolReviewParamsChirho {
   manifestChirho: LatinSymbolPacketManifestChirho;
   liveItemChirho: LatinSymbolVisionLiveItemChirho;
   verdictChirho: string;
+  acceptCleanChirho: boolean;
   issueFlagsChirho: string[];
   notesChirho: string | null;
   reviewerChirho: string;
@@ -230,6 +233,7 @@ CREATE TABLE IF NOT EXISTS latin_symbol_vision_reviews_chirho (
   current_text_hash_chirho  TEXT NOT NULL,
   line_text_chirho          TEXT NOT NULL,
   verdict_chirho            TEXT NOT NULL,
+  accept_clean_chirho       INTEGER NOT NULL DEFAULT 0,
   issue_flags_chirho        TEXT,
   notes_chirho              TEXT,
   packet_generated_at_chirho TEXT,
@@ -248,6 +252,9 @@ CREATE TABLE IF NOT EXISTS latin_symbol_vision_reviews_chirho (
   }
   if (!columnsChirho.has("schema_version_chirho")) {
     dbChirho.run("ALTER TABLE latin_symbol_vision_reviews_chirho ADD COLUMN schema_version_chirho INTEGER NOT NULL DEFAULT 1");
+  }
+  if (!columnsChirho.has("accept_clean_chirho")) {
+    dbChirho.run("ALTER TABLE latin_symbol_vision_reviews_chirho ADD COLUMN accept_clean_chirho INTEGER NOT NULL DEFAULT 0");
   }
   dbChirho.run(`
 CREATE INDEX IF NOT EXISTS idx_lsvr_item_current_chirho
@@ -294,7 +301,7 @@ export function currentLatinSymbolReviewRowsChirho(dbChirho: Database): LatinSym
       SELECT id_chirho, item_id_chirho, item_kind_chirho, volume_chirho, page_chirho,
              line_index_chirho, segment_index_chirho, word_index_chirho, script_chirho,
              source_chirho, current_text_chirho, current_text_hash_chirho, line_text_chirho,
-             verdict_chirho, issue_flags_chirho, notes_chirho, packet_generated_at_chirho,
+             verdict_chirho, accept_clean_chirho, issue_flags_chirho, notes_chirho, packet_generated_at_chirho,
              reviewer_chirho, created_at_chirho, updated_at_chirho, supersedes_id_chirho,
              applied_at_chirho, schema_version_chirho
         FROM latin_symbol_vision_reviews_chirho
@@ -309,6 +316,7 @@ export function publicLatinSymbolReviewRowsChirho(dbChirho: Database): LatinSymb
     idChirho: rowChirho.id_chirho,
     itemIdChirho: rowChirho.item_id_chirho,
     verdictChirho: rowChirho.verdict_chirho,
+    acceptCleanChirho: rowChirho.accept_clean_chirho === 1,
     issueFlagsChirho: parseStoredLatinSymbolIssueFlagsChirho(rowChirho.issue_flags_chirho),
     notesChirho: rowChirho.notes_chirho,
     reviewerChirho: rowChirho.reviewer_chirho,
@@ -350,6 +358,7 @@ export function writeLatinSymbolReviewBackupChirho(
       currentHashMatchesLiveChirho: liveHashByIdChirho.get(rowChirho.item_id_chirho) === rowChirho.current_text_hash_chirho,
       lineTextChirho: rowChirho.line_text_chirho,
       verdictChirho: rowChirho.verdict_chirho,
+      acceptCleanChirho: rowChirho.accept_clean_chirho === 1,
       issueFlagsChirho: parseStoredLatinSymbolIssueFlagsChirho(rowChirho.issue_flags_chirho),
       notesChirho: rowChirho.notes_chirho,
       packetGeneratedAtChirho: rowChirho.packet_generated_at_chirho,
@@ -375,14 +384,18 @@ export function acceptedCleanLatinSymbolReviewIdsChirho(
   );
   const rowsChirho = dbChirho
     .query(`
-      SELECT item_id_chirho, current_text_hash_chirho
+      SELECT item_id_chirho, current_text_hash_chirho, accept_clean_chirho
         FROM latin_symbol_vision_reviews_chirho
        WHERE is_current_chirho = 1
          AND verdict_chirho = 'accepted-clean-chirho'`)
-    .all() as Array<{ item_id_chirho: string; current_text_hash_chirho: string }>;
+    .all() as Array<{ item_id_chirho: string; current_text_hash_chirho: string; accept_clean_chirho: number }>;
   return new Set(
     rowsChirho
-      .filter((rowChirho) => hashByIdChirho.get(rowChirho.item_id_chirho) === rowChirho.current_text_hash_chirho)
+      .filter(
+        (rowChirho) =>
+          rowChirho.accept_clean_chirho === 1 &&
+          hashByIdChirho.get(rowChirho.item_id_chirho) === rowChirho.current_text_hash_chirho
+      )
       .map((rowChirho) => rowChirho.item_id_chirho)
   );
 }
@@ -398,6 +411,9 @@ export function saveLatinSymbolReviewChirho(paramsChirho: SaveLatinSymbolReviewP
   }
   if (paramsChirho.verdictChirho === "accepted-clean-chirho" && issueFlagsChirho.length > 0) {
     throw new Error("accepted-clean-chirho cannot carry issue flags");
+  }
+  if (paramsChirho.verdictChirho === "accepted-clean-chirho" && paramsChirho.acceptCleanChirho !== true) {
+    throw new Error("accepted-clean-chirho requires acceptCleanChirho=true acknowledgement");
   }
   if (paramsChirho.verdictChirho === "reviewed-issues-chirho" && issueFlagsChirho.length === 0) {
     throw new Error("reviewed-issues-chirho requires at least one issue flag");
@@ -416,10 +432,10 @@ INSERT INTO latin_symbol_vision_reviews_chirho
   (item_id_chirho, item_kind_chirho, volume_chirho, page_chirho, line_index_chirho,
    segment_index_chirho, word_index_chirho, script_chirho, source_chirho,
    current_text_chirho, current_text_hash_chirho, line_text_chirho, verdict_chirho,
-   issue_flags_chirho, notes_chirho, packet_generated_at_chirho, reviewer_chirho,
+   accept_clean_chirho, issue_flags_chirho, notes_chirho, packet_generated_at_chirho, reviewer_chirho,
    created_at_chirho, updated_at_chirho, supersedes_id_chirho, is_current_chirho, schema_version_chirho)
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)`)
+  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 1)`)
     .run(
       paramsChirho.liveItemChirho.idChirho,
       paramsChirho.liveItemChirho.itemKindChirho,
@@ -434,6 +450,7 @@ VALUES
       currentTextHashChirho,
       paramsChirho.liveItemChirho.lineTextChirho,
       paramsChirho.verdictChirho,
+      paramsChirho.acceptCleanChirho ? 1 : 0,
       JSON.stringify(issueFlagsChirho),
       paramsChirho.notesChirho,
       paramsChirho.manifestChirho.generatedAtChirho ?? null,
@@ -446,6 +463,7 @@ VALUES
     idChirho: Number(resultChirho.lastInsertRowid),
     itemIdChirho: paramsChirho.liveItemChirho.idChirho,
     verdictChirho: paramsChirho.verdictChirho,
+    acceptCleanChirho: paramsChirho.acceptCleanChirho,
     issueFlagsChirho,
     notesChirho: paramsChirho.notesChirho,
     reviewerChirho: paramsChirho.reviewerChirho,

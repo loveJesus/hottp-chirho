@@ -134,6 +134,7 @@ function mainChirho(): void {
     manifestChirho,
     liveItemChirho,
     verdictChirho,
+    acceptCleanChirho: verdictChirho === "accepted-clean-chirho",
     issueFlagsChirho,
     notesChirho,
     reviewerChirho,
