@@ -375,9 +375,10 @@ export function writeLatinSymbolReviewBackupChirho(
   return rowsChirho.length;
 }
 
-export function acceptedCleanLatinSymbolReviewIdsChirho(
+export function validLatinSymbolReviewIdsByVerdictChirho(
   dbChirho: Database,
-  liveItemsChirho: LatinSymbolVisionLiveItemChirho[]
+  liveItemsChirho: LatinSymbolVisionLiveItemChirho[],
+  verdictChirho: "accepted-clean-chirho" | "reviewed-issues-chirho"
 ): Set<string> {
   const hashByIdChirho = new Map(
     liveItemsChirho.map((itemChirho) => [itemChirho.idChirho, hashTextChirho(itemChirho.textChirho)])
@@ -387,17 +388,31 @@ export function acceptedCleanLatinSymbolReviewIdsChirho(
       SELECT item_id_chirho, current_text_hash_chirho, accept_clean_chirho
         FROM latin_symbol_vision_reviews_chirho
        WHERE is_current_chirho = 1
-         AND verdict_chirho = 'accepted-clean-chirho'`)
-    .all() as Array<{ item_id_chirho: string; current_text_hash_chirho: string; accept_clean_chirho: number }>;
+         AND verdict_chirho = ?`)
+    .all(verdictChirho) as Array<{ item_id_chirho: string; current_text_hash_chirho: string; accept_clean_chirho: number }>;
   return new Set(
     rowsChirho
       .filter(
         (rowChirho) =>
-          rowChirho.accept_clean_chirho === 1 &&
+          (verdictChirho !== "accepted-clean-chirho" || rowChirho.accept_clean_chirho === 1) &&
           hashByIdChirho.get(rowChirho.item_id_chirho) === rowChirho.current_text_hash_chirho
       )
       .map((rowChirho) => rowChirho.item_id_chirho)
   );
+}
+
+export function acceptedCleanLatinSymbolReviewIdsChirho(
+  dbChirho: Database,
+  liveItemsChirho: LatinSymbolVisionLiveItemChirho[]
+): Set<string> {
+  return validLatinSymbolReviewIdsByVerdictChirho(dbChirho, liveItemsChirho, "accepted-clean-chirho");
+}
+
+export function reviewedIssueLatinSymbolReviewIdsChirho(
+  dbChirho: Database,
+  liveItemsChirho: LatinSymbolVisionLiveItemChirho[]
+): Set<string> {
+  return validLatinSymbolReviewIdsByVerdictChirho(dbChirho, liveItemsChirho, "reviewed-issues-chirho");
 }
 
 export function verdictForLatinSymbolIssueFlagsChirho(issueFlagsChirho: string[]): string {

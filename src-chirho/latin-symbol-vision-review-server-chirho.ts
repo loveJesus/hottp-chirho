@@ -27,12 +27,14 @@ import {
 } from "./latin-symbol-vision-live-items-chirho.ts";
 import {
   assertLatinSymbolManifestMatchesLiveChirho,
+  acceptedCleanLatinSymbolReviewIdsChirho,
   ensureLatinSymbolReviewSchemaChirho,
   LATIN_SYMBOL_PACK_DIR_CHIRHO,
   LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO,
   loadLatinSymbolPacketManifestChirho,
   parseLatinSymbolIssueFlagsChirho,
   publicLatinSymbolReviewRowsChirho,
+  reviewedIssueLatinSymbolReviewIdsChirho,
   saveLatinSymbolReviewChirho,
   verdictForLatinSymbolIssueFlagsChirho,
   writeLatinSymbolReviewBackupChirho,
@@ -208,6 +210,8 @@ function htmlChirho(): string {
     let itemsChirho = [];
     let reviewsChirho = new Map();
     let acceptedPolicyIdsChirho = new Set();
+    let acceptedReviewIdsChirho = new Set();
+    let reviewedIssueIdsChirho = new Set();
     let indexChirho = 0;
     const initialSearchParamsChirho = new URLSearchParams(window.location.search);
     let requestedItemIdChirho = initialSearchParamsChirho.get("item-chirho");
@@ -289,10 +293,8 @@ function htmlChirho(): string {
     function acceptedDecisionIdsChirho() {
       const idsChirho = new Set();
       for (const itemIdChirho of acceptedPolicyIdsChirho) idsChirho.add(itemIdChirho);
-      for (const reviewChirho of reviewsChirho.values()) {
-        if (reviewChirho.verdictChirho === "accepted-clean-chirho") idsChirho.add(reviewChirho.itemIdChirho);
-        if (reviewChirho.verdictChirho === "reviewed-issues-chirho") idsChirho.delete(reviewChirho.itemIdChirho);
-      }
+      for (const itemIdChirho of acceptedReviewIdsChirho) idsChirho.add(itemIdChirho);
+      for (const itemIdChirho of reviewedIssueIdsChirho) idsChirho.delete(itemIdChirho);
       return idsChirho;
     }
     function activeItemsChirho() {
@@ -349,6 +351,8 @@ function htmlChirho(): string {
       itemsChirho = dataChirho.itemsChirho;
       reviewsChirho = new Map(dataChirho.reviewsChirho.map((reviewChirho) => [reviewChirho.itemIdChirho, reviewChirho]));
       acceptedPolicyIdsChirho = new Set(dataChirho.acceptedPolicyItemIdsChirho || []);
+      acceptedReviewIdsChirho = new Set(dataChirho.acceptedReviewItemIdsChirho || []);
+      reviewedIssueIdsChirho = new Set(dataChirho.reviewedIssueItemIdsChirho || []);
       applyRequestedItemIdChirho();
       if (indexChirho >= activeItemsChirho().length) indexChirho = Math.max(0, activeItemsChirho().length - 1);
       renderChirho();
@@ -480,8 +484,12 @@ function htmlChirho(): string {
       }
       reviewsChirho.set(dataChirho.reviewChirho.itemIdChirho, dataChirho.reviewChirho);
       if (dataChirho.reviewChirho.verdictChirho === "accepted-clean-chirho") {
+        acceptedReviewIdsChirho.add(dataChirho.reviewChirho.itemIdChirho);
+        reviewedIssueIdsChirho.delete(dataChirho.reviewChirho.itemIdChirho);
         if (indexChirho >= activeItemsChirho().length) indexChirho = Math.max(0, activeItemsChirho().length - 1);
       } else {
+        acceptedReviewIdsChirho.delete(dataChirho.reviewChirho.itemIdChirho);
+        reviewedIssueIdsChirho.add(dataChirho.reviewChirho.itemIdChirho);
         indexChirho = Math.min(indexChirho + 1, Math.max(0, activeItemsChirho().length - 1));
       }
       setStatusChirho("Saved " + dataChirho.reviewChirho.verdictChirho + " and refreshed backup.");
@@ -572,6 +580,8 @@ Bun.serve({
           itemsChirho: reviewItemsForManifestChirho(manifestChirho),
           reviewsChirho: publicLatinSymbolReviewRowsChirho(dbChirho),
           acceptedPolicyItemIdsChirho: [...policySummaryChirho.acceptedItemIdsChirho],
+          acceptedReviewItemIdsChirho: [...acceptedCleanLatinSymbolReviewIdsChirho(dbChirho, liveItemsChirho)],
+          reviewedIssueItemIdsChirho: [...reviewedIssueLatinSymbolReviewIdsChirho(dbChirho, liveItemsChirho)],
         });
       }
       if (urlChirho.pathname === "/api-chirho/review-chirho" && reqChirho.method === "POST") {
