@@ -559,6 +559,7 @@ function htmlChirho(): string {
     const queryChirho = new URLSearchParams(window.location.search);
     let scriptFilterChirho = queryChirho.get("script-chirho") || "all-chirho";
     let priorityFilterChirho = queryChirho.get("priority-chirho") || "all-chirho";
+    let requestedItemIdChirho = queryChirho.get("item-chirho");
 
     function elChirho(tagChirho, attrsChirho = {}, childrenChirho = []) {
       const nodeChirho = document.createElement(tagChirho);
@@ -585,6 +586,8 @@ function htmlChirho(): string {
       const paramsChirho = new URLSearchParams();
       if (scriptFilterChirho !== "all-chirho") paramsChirho.set("script-chirho", scriptFilterChirho);
       if (priorityFilterChirho !== "all-chirho") paramsChirho.set("priority-chirho", priorityFilterChirho);
+      const itemChirho = currentItemChirho();
+      if (itemChirho) paramsChirho.set("item-chirho", itemChirho.idChirho);
       const queryStringChirho = paramsChirho.toString();
       window.history.replaceState(null, "", queryStringChirho ? window.location.pathname + "?" + queryStringChirho : window.location.pathname);
     }
@@ -596,6 +599,15 @@ function htmlChirho(): string {
           (priorityFilterChirho === "priority-chirho" && itemChirho.priorityMatchChirho) ||
           (priorityFilterChirho === "appendix-chirho" && !itemChirho.priorityMatchChirho))
       );
+    }
+    function activeIndexForItemIdChirho(itemIdChirho) {
+      if (typeof itemIdChirho !== "string" || itemIdChirho.length === 0) return -1;
+      return activeItemsChirho().findIndex((itemChirho) => itemChirho.idChirho === itemIdChirho);
+    }
+    function applyRequestedItemIdChirho() {
+      const requestedIndexChirho = activeIndexForItemIdChirho(requestedItemIdChirho);
+      if (requestedIndexChirho >= 0) indexChirho = requestedIndexChirho;
+      requestedItemIdChirho = null;
     }
     function currentItemChirho() { return activeItemsChirho()[indexChirho]; }
     function imageSrcChirho(pathChirho) { return "/asset-chirho?path=" + encodeURIComponent(pathChirho); }
@@ -617,6 +629,7 @@ function htmlChirho(): string {
       const dataChirho = await responseChirho.json();
       if (!dataChirho.okChirho) throw new Error(dataChirho.errorChirho || "state failed");
       itemsChirho = dataChirho.itemsChirho;
+      applyRequestedItemIdChirho();
       if (indexChirho >= activeItemsChirho().length) indexChirho = Math.max(0, activeItemsChirho().length - 1);
       renderChirho();
     }
@@ -628,6 +641,7 @@ function htmlChirho(): string {
         activeChirho + " pending in filter, " + confirmedChirho + " confirmed, " + issueReportedChirho + " issue-reported, " + itemsChirho.length + " total";
     }
     function renderChirho() {
+      syncUrlChirho();
       const appChirho = document.getElementById("app-chirho");
       clearChirho(appChirho);
       renderSummaryChirho();
@@ -780,14 +794,14 @@ function htmlChirho(): string {
     }
     document.getElementById("script-filter-chirho").addEventListener("change", (eventChirho) => {
       scriptFilterChirho = eventChirho.target.value;
+      requestedItemIdChirho = null;
       indexChirho = 0;
-      syncUrlChirho();
       renderChirho();
     });
     document.getElementById("priority-filter-chirho").addEventListener("change", (eventChirho) => {
       priorityFilterChirho = eventChirho.target.value;
+      requestedItemIdChirho = null;
       indexChirho = 0;
-      syncUrlChirho();
       renderChirho();
     });
     document.getElementById("prev-chirho").addEventListener("click", () => {
@@ -799,7 +813,6 @@ function htmlChirho(): string {
       renderChirho();
     });
     syncFilterControlsChirho();
-    syncUrlChirho();
     loadStateChirho().catch((errorChirho) => setStatusChirho(String(errorChirho)));
   </script>
 </body>
@@ -817,6 +830,9 @@ Bun.serve({
     try {
       if (urlChirho.pathname === "/") {
         return new Response(htmlChirho(), { headers: { "Content-Type": "text/html; charset=utf-8" } });
+      }
+      if (urlChirho.pathname === "/favicon.ico") {
+        return new Response(null, { status: 204 });
       }
       if (urlChirho.pathname === "/asset-chirho") {
         const relativePathChirho = urlChirho.searchParams.get("path");

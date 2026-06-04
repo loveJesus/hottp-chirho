@@ -1087,6 +1087,7 @@ function pageHtmlChirho(): string {
     let validationsChirho = new Map();
     let indexChirho = 0;
     const initialSearchParamsChirho = new URLSearchParams(window.location.search);
+    let requestedItemKeyChirho = initialSearchParamsChirho.get("item-chirho");
 
     function textChirho(valueChirho) { return document.createTextNode(valueChirho); }
     function elChirho(tagChirho, attrsChirho = {}, childrenChirho = []) {
@@ -1142,6 +1143,8 @@ function pageHtmlChirho(): string {
       if (reviewStateFilterChirho !== "pending-chirho") paramsChirho.set("review-state-chirho", reviewStateFilterChirho);
       if (validationStatusFilterChirho !== "all-chirho") paramsChirho.set("validation-status-chirho", validationStatusFilterChirho);
       if (tierFilterChirho !== "all-chirho") paramsChirho.set("tier-chirho", tierFilterChirho);
+      const itemChirho = currentItemChirho();
+      if (itemChirho) paramsChirho.set("item-chirho", itemChirho.keyChirho);
       const queryChirho = paramsChirho.toString();
       window.history.replaceState(null, "", queryChirho ? window.location.pathname + "?" + queryChirho : window.location.pathname);
     }
@@ -1155,6 +1158,15 @@ function pageHtmlChirho(): string {
         (validationStatusFilterChirho === "all-chirho" || itemChirho.validationStatusChirho === validationStatusFilterChirho) &&
         (tierFilterChirho === "all-chirho" || itemChirho.tierChirho === tierFilterChirho)
       );
+    }
+    function activeIndexForItemKeyChirho(itemKeyChirho) {
+      if (typeof itemKeyChirho !== "string" || itemKeyChirho.length === 0) return -1;
+      return activeQueueChirho().findIndex((itemChirho) => itemChirho.keyChirho === itemKeyChirho);
+    }
+    function applyRequestedItemKeyChirho() {
+      const requestedIndexChirho = activeIndexForItemKeyChirho(requestedItemKeyChirho);
+      if (requestedIndexChirho >= 0) indexChirho = requestedIndexChirho;
+      requestedItemKeyChirho = null;
     }
     function currentItemChirho() { return activeQueueChirho()[indexChirho]; }
     function clampIndexChirho(valueChirho) {
@@ -1276,6 +1288,7 @@ function pageHtmlChirho(): string {
       return wrapChirho;
     }
     function renderChirho() {
+      syncUrlChirho();
       const appChirho = document.getElementById("app-chirho");
       clearChirho(appChirho);
       renderSummaryChirho();
@@ -1539,25 +1552,27 @@ function pageHtmlChirho(): string {
     document.getElementById("next-chirho").addEventListener("click", () => moveIndexChirho(1));
     document.getElementById("review-state-filter-chirho").addEventListener("change", (eventChirho) => {
       reviewStateFilterChirho = eventChirho.target.value;
+      requestedItemKeyChirho = null;
       indexChirho = 0;
-      syncUrlChirho();
       renderChirho();
     });
     document.getElementById("validation-status-filter-chirho").addEventListener("change", (eventChirho) => {
       validationStatusFilterChirho = eventChirho.target.value;
+      requestedItemKeyChirho = null;
       indexChirho = 0;
-      syncUrlChirho();
       renderChirho();
     });
     document.getElementById("tier-filter-chirho").addEventListener("change", (eventChirho) => {
       tierFilterChirho = eventChirho.target.value;
+      requestedItemKeyChirho = null;
       indexChirho = 0;
-      syncUrlChirho();
       renderChirho();
     });
     syncFilterControlsChirho();
-    syncUrlChirho();
-    loadValidationsChirho().then(renderChirho);
+    loadValidationsChirho().then(() => {
+      applyRequestedItemKeyChirho();
+      renderChirho();
+    });
   </script>
 </body>
 </html>`;

@@ -195,6 +195,7 @@ function htmlChirho(): string {
     let acceptedPolicyIdsChirho = new Set();
     let indexChirho = 0;
     const initialSearchParamsChirho = new URLSearchParams(window.location.search);
+    let requestedItemIdChirho = initialSearchParamsChirho.get("item-chirho");
 
     function textNodeChirho(valueChirho) { return document.createTextNode(valueChirho == null ? "" : String(valueChirho)); }
     function elChirho(tagChirho, attrsChirho = {}, childrenChirho = []) {
@@ -232,6 +233,8 @@ function htmlChirho(): string {
       const paramsChirho = new URLSearchParams();
       if (scriptFilterChirho !== "all-chirho") paramsChirho.set("script-chirho", scriptFilterChirho);
       if (symbolRiskFilterChirho !== "all-chirho") paramsChirho.set("symbol-risk-chirho", symbolRiskFilterChirho);
+      const itemChirho = currentItemChirho();
+      if (itemChirho) paramsChirho.set("item-chirho", itemChirho.idChirho);
       const queryChirho = paramsChirho.toString();
       window.history.replaceState(null, "", queryChirho ? window.location.pathname + "?" + queryChirho : window.location.pathname);
     }
@@ -252,6 +255,15 @@ function htmlChirho(): string {
         (symbolRiskFilterChirho === "all-chirho" || itemChirho.symbolRiskChirho === symbolRiskFilterChirho)
       );
     }
+    function activeIndexForItemIdChirho(itemIdChirho) {
+      if (typeof itemIdChirho !== "string" || itemIdChirho.length === 0) return -1;
+      return activeItemsChirho().findIndex((itemChirho) => itemChirho.idChirho === itemIdChirho);
+    }
+    function applyRequestedItemIdChirho() {
+      const requestedIndexChirho = activeIndexForItemIdChirho(requestedItemIdChirho);
+      if (requestedIndexChirho >= 0) indexChirho = requestedIndexChirho;
+      requestedItemIdChirho = null;
+    }
     function currentItemChirho() { return activeItemsChirho()[indexChirho]; }
     function imageSrcChirho(pathChirho) { return "/asset-chirho?path=" + encodeURIComponent(pathChirho); }
     function symbolRiskLabelChirho(valueChirho) {
@@ -265,6 +277,7 @@ function htmlChirho(): string {
       itemsChirho = dataChirho.itemsChirho;
       reviewsChirho = new Map(dataChirho.reviewsChirho.map((reviewChirho) => [reviewChirho.itemIdChirho, reviewChirho]));
       acceptedPolicyIdsChirho = new Set(dataChirho.acceptedPolicyItemIdsChirho || []);
+      applyRequestedItemIdChirho();
       if (indexChirho >= activeItemsChirho().length) indexChirho = Math.max(0, activeItemsChirho().length - 1);
       renderChirho();
     }
@@ -275,6 +288,7 @@ function htmlChirho(): string {
         activeChirho + " pending in filter, " + acceptedChirho + " accepted decision(s), " + reviewsChirho.size + " current review rows";
     }
     function renderChirho() {
+      syncUrlChirho();
       const appChirho = document.getElementById("app-chirho");
       clearChirho(appChirho);
       renderSummaryChirho();
@@ -371,14 +385,14 @@ function htmlChirho(): string {
     }
     document.getElementById("script-filter-chirho").addEventListener("change", (eventChirho) => {
       scriptFilterChirho = eventChirho.target.value;
+      requestedItemIdChirho = null;
       indexChirho = 0;
-      syncUrlChirho();
       renderChirho();
     });
     document.getElementById("symbol-risk-filter-chirho").addEventListener("change", (eventChirho) => {
       symbolRiskFilterChirho = eventChirho.target.value;
+      requestedItemIdChirho = null;
       indexChirho = 0;
-      syncUrlChirho();
       renderChirho();
     });
     document.getElementById("prev-chirho").addEventListener("click", () => {
@@ -390,7 +404,6 @@ function htmlChirho(): string {
       renderChirho();
     });
     syncFilterControlsChirho();
-    syncUrlChirho();
     loadStateChirho().catch((errorChirho) => setStatusChirho(String(errorChirho)));
   </script>
 </body>
@@ -424,6 +437,9 @@ Bun.serve({
     try {
       if (urlChirho.pathname === "/") {
         return new Response(htmlChirho(), { headers: { "Content-Type": "text/html; charset=utf-8" } });
+      }
+      if (urlChirho.pathname === "/favicon.ico") {
+        return new Response(null, { status: 204 });
       }
       if (urlChirho.pathname === "/asset-chirho") {
         const relativePathChirho = urlChirho.searchParams.get("path");
