@@ -31,6 +31,7 @@ import {
 } from "fs";
 import { join } from "path";
 
+import { writeJsonAtomicChirho, writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO, VOLUMES_CHIRHO } from "./config-chirho.ts";
 import { d1AuditFingerprintForDbPathChirho } from "./d1-audit-fingerprint-chirho.ts";
 import { spanSourceFingerprintForTargetsChirho } from "./source-fingerprint-chirho.ts";
@@ -1247,14 +1248,14 @@ async function runExportChirho(optionsChirho: CliOptionsChirho): Promise<ExportR
 
     const pagePathChirho = pageMarkdownPathChirho(optionsChirho.outDirChirho, pageChirho.targetChirho);
     ensureDirChirho(join(optionsChirho.outDirChirho, `vol-${pageChirho.targetChirho.volumeChirho}-chirho`));
-    await Bun.write(pagePathChirho, pageChirho.markdownChirho);
+    writeTextAtomicChirho(pagePathChirho, pageChirho.markdownChirho);
   }
 
   for (const [volumeChirho, pagesChirho] of [...pagesByVolumeChirho.entries()].sort((aChirho, bChirho) => aChirho[0] - bChirho[0])) {
     const sortedPagesChirho = pagesChirho.sort((aChirho, bChirho) => aChirho.targetChirho.pageChirho - bChirho.targetChirho.pageChirho);
     const volumePathChirho = volumeMarkdownPathChirho(optionsChirho.outDirChirho, volumeChirho);
     ensureDirChirho(join(optionsChirho.outDirChirho, `vol-${volumeChirho}-chirho`));
-    await Bun.write(volumePathChirho, buildVolumeMarkdownChirho(volumeChirho, sortedPagesChirho));
+    writeTextAtomicChirho(volumePathChirho, buildVolumeMarkdownChirho(volumeChirho, sortedPagesChirho));
   }
 
   const pageReportsChirho = pageExportsChirho.map((pageChirho) => pageReportChirho(optionsChirho.outDirChirho, pageChirho));
@@ -1305,10 +1306,7 @@ async function runExportChirho(optionsChirho: CliOptionsChirho): Promise<ExportR
   };
 
   ensureDirChirho(optionsChirho.outDirChirho);
-  await Bun.write(
-    join(optionsChirho.outDirChirho, "export-report-chirho.json"),
-    `${JSON.stringify(reportChirho, null, 2)}\n`
-  );
+  writeJsonAtomicChirho(join(optionsChirho.outDirChirho, "export-report-chirho.json"), reportChirho);
 
   if (optionsChirho.strictChirho && !strictPassedChirho) {
     throw new Error(`Strict export failed: ${issuesChirho.length} issue(s); see export-report-chirho.json`);
