@@ -31,8 +31,14 @@ export const GENERIC_REVIEWER_IDS_CHIRHO = new Set<string>([
   "unknown-reviewer-chirho",
 ]);
 
-const MACHINE_REVIEWER_ID_RE_CHIRHO =
-  /(^|[^a-z0-9])(anthropic|claude|codex|gemini|gpt[-_ ]?[0-9]*|llama|mistral|model|openai|o[0-9]+)([^a-z0-9]|$)/i;
+export const MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO =
+  "(^|[^a-z0-9])(anthropic|claude|codex|gemini|gpt[-_ ]?[0-9]*|llama|mistral|model|openai|o[0-9]+)([^a-z0-9]|$)";
+export const MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO = "i";
+
+const MACHINE_REVIEWER_ID_RE_CHIRHO = new RegExp(
+  MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO,
+  MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO
+);
 
 function normalizedReviewerIdChirho(reviewerChirho: string): string {
   return reviewerChirho.trim().toLowerCase();

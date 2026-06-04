@@ -36,6 +36,8 @@ import {
   certifyingReviewerAttributionErrorChirho,
   explicitReviewerAttributionErrorChirho,
   GENERIC_REVIEWER_IDS_CHIRHO,
+  MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO,
+  MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO,
 } from "./reviewer-attribution-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
@@ -1304,6 +1306,10 @@ function pageHtmlChirho(): string {
     const scriptVerdictOptionsChirho = ${scriptJsonChirho(SCRIPT_VERDICT_OPTIONS_CHIRHO)};
     const serverReviewerChirho = ${scriptJsonChirho(reviewerChirho)};
     const genericReviewerIdsChirho = new Set(${scriptJsonChirho([...GENERIC_REVIEWER_IDS_CHIRHO])});
+    const machineReviewerIdReChirho = new RegExp(
+      ${scriptJsonChirho(MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO)},
+      ${scriptJsonChirho(MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO)}
+    );
     let validationRowsChirho = [];
     let validationsChirho = new Map();
     let indexChirho = 0;
@@ -1345,7 +1351,7 @@ function pageHtmlChirho(): string {
       return null;
     }
     function isMachineReviewerAttributionChirho(valueChirho) {
-      return /(^|[^a-z0-9])(anthropic|claude|codex|gemini|gpt[-_ ]?[0-9]*|llama|mistral|model|openai|o[0-9]+)([^a-z0-9]|$)/i.test(String(valueChirho || "").trim().toLowerCase());
+      return machineReviewerIdReChirho.test(String(valueChirho || "").trim().toLowerCase());
     }
     function certifyingReviewerAttributionErrorChirho(valueChirho) {
       const explicitErrorChirho = reviewerAttributionErrorChirho(valueChirho);

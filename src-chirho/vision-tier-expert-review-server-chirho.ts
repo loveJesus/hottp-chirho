@@ -17,6 +17,8 @@ import {
   certifyingReviewerAttributionErrorChirho,
   explicitReviewerAttributionErrorChirho,
   GENERIC_REVIEWER_IDS_CHIRHO,
+  MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO,
+  MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO,
 } from "./reviewer-attribution-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 import {
@@ -600,6 +602,10 @@ function htmlChirho(): string {
   <script>
     const issueFlagOptionsChirho = ${scriptJsonChirho(ISSUE_FLAG_OPTIONS_CHIRHO)};
     const genericReviewerIdsChirho = new Set(${scriptJsonChirho([...GENERIC_REVIEWER_IDS_CHIRHO])});
+    const machineReviewerIdReChirho = new RegExp(
+      ${scriptJsonChirho(MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO)},
+      ${scriptJsonChirho(MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO)}
+    );
     let itemsChirho = [];
     let indexChirho = 0;
     const queryChirho = new URLSearchParams(window.location.search);
@@ -722,7 +728,7 @@ function htmlChirho(): string {
       return null;
     }
     function isMachineReviewerAttributionChirho(valueChirho) {
-      return /(^|[^a-z0-9])(anthropic|claude|codex|gemini|gpt[-_ ]?[0-9]*|llama|mistral|model|openai|o[0-9]+)([^a-z0-9]|$)/i.test(String(valueChirho || "").trim().toLowerCase());
+      return machineReviewerIdReChirho.test(String(valueChirho || "").trim().toLowerCase());
     }
     function certifyingReviewerAttributionErrorChirho(valueChirho) {
       const explicitErrorChirho = reviewerAttributionErrorChirho(valueChirho);
