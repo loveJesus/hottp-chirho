@@ -353,10 +353,15 @@ interface RawHebrewTriageSampleChirho {
 }
 
 interface RawHebrewTriageSummaryChirho {
+  attentionItemCountChirho: number;
   lowConfidenceItemCountChirho: number;
   multiTokenItemCountChirho: number;
   delimiterNotationItemCountChirho: number;
   noDirectReadItemCountChirho: number;
+  preReviewNotesAvailableChirho: boolean;
+  preReviewCoveredAttentionItemCountChirho: number;
+  preReviewUncoveredAttentionItemCountChirho: number;
+  preReviewUncoveredSamplesChirho: RawHebrewTriageSampleChirho[];
   samplesChirho: RawHebrewTriageSampleChirho[];
 }
 
@@ -1327,7 +1332,41 @@ function hebrewSkeletonChirho(textChirho: string): string {
     .replace(/[^\u05D0-\u05EA]/g, "");
 }
 
-function rawHebrewTriageSummaryChirho(itemsChirho: RawHebrewPackItemChirho[]): RawHebrewTriageSummaryChirho {
+function rawHebrewPreReviewMentionsItemChirho(itemChirho: RawHebrewPackItemChirho, notesTextChirho: string): boolean {
+  const keyChirho = `${itemChirho.volumeChirho}:${itemChirho.pageChirho}:${itemChirho.lineIndexChirho}:${itemChirho.segmentIndexChirho}`;
+  const locationChirho =
+    `vol ${itemChirho.volumeChirho} p${itemChirho.pageChirho} L${itemChirho.lineIndexChirho} S${itemChirho.segmentIndexChirho}`;
+  const paddedLocationChirho =
+    `vol ${itemChirho.volumeChirho} p${String(itemChirho.pageChirho).padStart(4, "0")} ` +
+    `L${String(itemChirho.lineIndexChirho).padStart(3, "0")} S${itemChirho.segmentIndexChirho}`;
+  return (
+    notesTextChirho.includes(itemChirho.idChirho) ||
+    notesTextChirho.includes(keyChirho) ||
+    notesTextChirho.includes(locationChirho) ||
+    notesTextChirho.includes(paddedLocationChirho)
+  );
+}
+
+function rawHebrewTriageSampleChirho(
+  itemChirho: RawHebrewPackItemChirho,
+  reasonsChirho: string[]
+): RawHebrewTriageSampleChirho {
+  return {
+    idChirho: itemChirho.idChirho,
+    reviewUrlChirho: rawHebrewPackItemReviewUrlChirho(itemChirho),
+    textChirho: itemChirho.textChirho,
+    validationStatusChirho: itemChirho.validationStatusChirho,
+    reasonsChirho,
+    witnessCountChirho: typeof itemChirho.witnessCountChirho === "number" ? itemChirho.witnessCountChirho : null,
+    bestDirectConfidenceChirho: bestRawHebrewDirectConfidenceChirho(itemChirho),
+    lineTextChirho: itemChirho.lineTextChirho,
+  };
+}
+
+function rawHebrewTriageSummaryChirho(
+  itemsChirho: RawHebrewPackItemChirho[],
+  preReviewNotesTextChirho: string | null
+): RawHebrewTriageSummaryChirho {
   const lowConfidenceItemsChirho = itemsChirho.filter((itemChirho) => {
     const bestConfidenceChirho = bestRawHebrewDirectConfidenceChirho(itemChirho);
     return bestConfidenceChirho !== null && bestConfidenceChirho < 0.75;
@@ -1339,7 +1378,7 @@ function rawHebrewTriageSummaryChirho(itemsChirho: RawHebrewPackItemChirho[]): R
     rawHebrewAttentionKindsChirho(itemChirho).includes(RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO)
   );
   const noDirectReadItemsChirho = itemsChirho.filter((itemChirho) => (itemChirho.directWordReadsChirho ?? []).length === 0);
-  const sampleItemsChirho = itemsChirho
+  const attentionEntriesChirho = itemsChirho
     .map((itemChirho) => ({
       itemChirho,
       reasonsChirho: rawHebrewAttentionReasonsChirho(itemChirho),
@@ -1349,23 +1388,29 @@ function rawHebrewTriageSummaryChirho(itemsChirho: RawHebrewPackItemChirho[]): R
     .sort((aChirho, bChirho) =>
       bChirho.scoreChirho - aChirho.scoreChirho ||
       aChirho.itemChirho.idChirho.localeCompare(bChirho.itemChirho.idChirho)
-    )
+    );
+  const preReviewUncoveredEntriesChirho = preReviewNotesTextChirho === null
+    ? attentionEntriesChirho
+    : attentionEntriesChirho.filter(
+        (entryChirho) => !rawHebrewPreReviewMentionsItemChirho(entryChirho.itemChirho, preReviewNotesTextChirho)
+      );
+  const sampleItemsChirho = attentionEntriesChirho
     .slice(0, 8);
   return {
+    attentionItemCountChirho: attentionEntriesChirho.length,
     lowConfidenceItemCountChirho: lowConfidenceItemsChirho.length,
     multiTokenItemCountChirho: multiTokenItemsChirho.length,
     delimiterNotationItemCountChirho: delimiterNotationItemsChirho.length,
     noDirectReadItemCountChirho: noDirectReadItemsChirho.length,
-    samplesChirho: sampleItemsChirho.map((entryChirho) => ({
-      idChirho: entryChirho.itemChirho.idChirho,
-      reviewUrlChirho: rawHebrewPackItemReviewUrlChirho(entryChirho.itemChirho),
-      textChirho: entryChirho.itemChirho.textChirho,
-      validationStatusChirho: entryChirho.itemChirho.validationStatusChirho,
-      reasonsChirho: entryChirho.reasonsChirho,
-      witnessCountChirho: typeof entryChirho.itemChirho.witnessCountChirho === "number" ? entryChirho.itemChirho.witnessCountChirho : null,
-      bestDirectConfidenceChirho: bestRawHebrewDirectConfidenceChirho(entryChirho.itemChirho),
-      lineTextChirho: entryChirho.itemChirho.lineTextChirho,
-    })),
+    preReviewNotesAvailableChirho: preReviewNotesTextChirho !== null,
+    preReviewCoveredAttentionItemCountChirho: attentionEntriesChirho.length - preReviewUncoveredEntriesChirho.length,
+    preReviewUncoveredAttentionItemCountChirho: preReviewUncoveredEntriesChirho.length,
+    preReviewUncoveredSamplesChirho: preReviewUncoveredEntriesChirho
+      .slice(0, 8)
+      .map((entryChirho) => rawHebrewTriageSampleChirho(entryChirho.itemChirho, entryChirho.reasonsChirho)),
+    samplesChirho: sampleItemsChirho.map((entryChirho) =>
+      rawHebrewTriageSampleChirho(entryChirho.itemChirho, entryChirho.reasonsChirho)
+    ),
   };
 }
 
@@ -2768,7 +2813,18 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     const itemKeyChirho = rawHebrewPackItemKeyChirho(itemChirho);
     return itemKeyChirho !== null && livePendingRawSpanKeysChirho.has(itemKeyChirho);
   });
-  const rawHebrewTriageSummaryResultChirho = rawHebrewTriageSummaryChirho(livePendingRawHebrewPackItemsChirho);
+  let rawHebrewPreReviewNotesTextChirho: string | null = null;
+  try {
+    if (existsSync(RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO)) {
+      rawHebrewPreReviewNotesTextChirho = readFileSync(RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO, "utf8");
+    }
+  } catch (_errorChirho) {
+    rawHebrewPreReviewNotesTextChirho = null;
+  }
+  const rawHebrewTriageSummaryResultChirho = rawHebrewTriageSummaryChirho(
+    livePendingRawHebrewPackItemsChirho,
+    rawHebrewPreReviewNotesTextChirho
+  );
   const rawHebrewTierCountsChirho = countRawHebrewByTierChirho(rawSpansChirho);
   const livePendingRawHebrewTierCountsChirho = countRawHebrewByTierChirho(livePendingRawSpansChirho);
   const rawHebrewValidationTierCountsChirho = countRawHebrewByValidationTierChirho(rawSpansChirho);
@@ -3924,10 +3980,13 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "confirmation(s)",
     (volumeChirho) => expertReviewUrlChirho(undefined, undefined, undefined, volumeChirho)
   );
-  const rawHebrewTriageSampleLinesChirho =
-    statusChirho.rawHebrewChirho.triageChirho.samplesChirho.length === 0
-      ? ["- Attention samples: none"]
-      : statusChirho.rawHebrewChirho.triageChirho.samplesChirho.flatMap((sampleChirho) => {
+  const rawHebrewTriageSampleLinesForChirho = (
+    samplesChirho: RawHebrewTriageSampleChirho[],
+    emptyTextChirho: string
+  ): string[] =>
+    samplesChirho.length === 0
+      ? [`- ${emptyTextChirho}`]
+      : samplesChirho.flatMap((sampleChirho) => {
           const confidenceTextChirho = sampleChirho.bestDirectConfidenceChirho === null
             ? "none"
             : sampleChirho.bestDirectConfidenceChirho.toFixed(4);
@@ -3938,6 +3997,14 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
             `  - Line: ${markdownInlineCodeChirho(oneLineSnippetChirho(sampleChirho.lineTextChirho, 130))}`,
           ];
         });
+  const rawHebrewTriageSampleLinesChirho = rawHebrewTriageSampleLinesForChirho(
+    statusChirho.rawHebrewChirho.triageChirho.samplesChirho,
+    "Attention samples: none"
+  );
+  const rawHebrewPreReviewUncoveredSampleLinesChirho = rawHebrewTriageSampleLinesForChirho(
+    statusChirho.rawHebrewChirho.triageChirho.preReviewUncoveredSamplesChirho,
+    "Pre-review uncovered attention samples: none"
+  );
   const genericReviewerDetailLinesChirho =
     statusChirho.humanValidationDbChirho.genericReviewerRowDetailsChirho.length === 0
       ? ["- Attribution-blocked reviewer row details: none"]
@@ -4194,7 +4261,12 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Multi-token Hebrew spans: ${statusChirho.rawHebrewChirho.triageChirho.multiTokenItemCountChirho}`,
     `- Delimiter/damaged-text notation spans: ${statusChirho.rawHebrewChirho.triageChirho.delimiterNotationItemCountChirho}`,
     `- No direct CRNN crop reads: ${statusChirho.rawHebrewChirho.triageChirho.noDirectReadItemCountChirho}`,
+    `- Attention items with at least one flag: ${statusChirho.rawHebrewChirho.triageChirho.attentionItemCountChirho}`,
+    `- Non-certifying pre-review note coverage: ${statusChirho.rawHebrewChirho.triageChirho.preReviewNotesAvailableChirho ? `${statusChirho.rawHebrewChirho.triageChirho.preReviewCoveredAttentionItemCountChirho}/${statusChirho.rawHebrewChirho.triageChirho.attentionItemCountChirho} current attention item(s)` : "notes unavailable"}`,
+    `- Current attention items not mentioned in the pre-review note: ${statusChirho.rawHebrewChirho.triageChirho.preReviewUncoveredAttentionItemCountChirho}`,
     ...rawHebrewTriageSampleLinesChirho,
+    "- Pre-review note uncovered current attention samples:",
+    ...rawHebrewPreReviewUncoveredSampleLinesChirho,
     "",
     "## Human Validation DB",
     "",
