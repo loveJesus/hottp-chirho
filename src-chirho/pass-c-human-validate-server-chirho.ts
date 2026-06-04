@@ -1017,6 +1017,7 @@ function pageHtmlChirho(): string {
     .box-chirho { border: 1px solid #d6d9dd; background: #fff; padding: 12px; }
     .meta-grid-chirho { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 13px; }
     .mono-chirho { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .command-chirho { overflow-wrap: anywhere; white-space: pre-wrap; }
     .candidate-words-chirho { overflow-wrap: anywhere; }
     .witness-list-chirho { display: flex; flex-direction: column; gap: 6px; font-size: 13px; margin-top: 8px; }
     .witness-chirho { border-left: 3px solid #8aa399; padding-left: 8px; }
@@ -1108,6 +1109,9 @@ function pageHtmlChirho(): string {
       } catch (_errorChirho) {
         return [];
       }
+    }
+    function shellSingleQuoteChirho(valueChirho) {
+      return "'" + String(valueChirho).normalize("NFC").replace(/'/g, "'\\"'\\"'") + "'";
     }
     let reviewStateFilterChirho = selectValueOrDefaultChirho(
       "review-state-filter-chirho",
@@ -1292,11 +1296,17 @@ function pageHtmlChirho(): string {
           textChirho: "Saved issue row shown read-only. Inspect the crop and use the guarded status-report correction command only after explicit confirmation."
         }));
         if (typeof itemChirho.wlcSuggestedTextChirho === "string" && itemChirho.wlcSuggestedTextChirho.length > 0) {
+          const guardedCommandChirho =
+            "bun run apply-human-suggested-corrections-chirho -- --apply --certify-human " +
+            "--validation-id-chirho=" + savedValidationChirho.id_chirho + " " +
+            "--suggested-text-chirho=" + shellSingleQuoteChirho(itemChirho.wlcSuggestedTextChirho);
           const suggestionBoxChirho = elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
             elChirho("div", { textChirho: "WLC suggestion" }),
             elChirho("div", { classChirho: spanTextClassChirho(itemChirho), textChirho: itemChirho.wlcSuggestedTextChirho }),
             elChirho("div", { textChirho: "Source" }),
-            elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.wlcSuggestionSourceChirho ?? "unknown-chirho" })
+            elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.wlcSuggestionSourceChirho ?? "unknown-chirho" }),
+            elChirho("div", { textChirho: "After confirmation" }),
+            elChirho("div", { classChirho: "mono-chirho command-chirho", textChirho: guardedCommandChirho })
           ]);
           sideChirho.appendChild(suggestionBoxChirho);
         }
