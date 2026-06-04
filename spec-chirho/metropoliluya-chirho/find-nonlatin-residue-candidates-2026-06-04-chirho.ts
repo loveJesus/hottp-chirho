@@ -33,7 +33,8 @@ const SYRIAC_CHAR_RE_CHIRHO = /[\u0700-\u074f]/u;
 const ARABIC_CHAR_RE_CHIRHO = /[\u0600-\u06ff]/u;
 const REVIEWABLE_TEXT_SCRIPT_SET_CHIRHO = new Set(["french-chirho", "latin-non-french-chirho", "latin-chirho", "symbol-chirho"]);
 const NON_LATIN_SCRIPT_SET_CHIRHO = new Set(["hebrew-chirho", "greek-chirho", "syriac-chirho", "arabic-chirho"]);
-const PURE_WITNESS_SYMBOL_RE_CHIRHO = /^(?:[\s′'𝔐𝔊𝔙𝔖𝔗MGVST]+|[ασ]′|α′\s+σ′|𝔐\s+σ′\s+𝔖|σ′\s+𝔙\s+𝔗\s+[\u0590-\u05ff]+)$/u;
+const GREEK_APPARATUS_SIGLUM_TOKEN_RE_CHIRHO = /[ασε](?:[′'])?/gu;
+const SYMBOL_APPARATUS_REMAINDER_RE_CHIRHO = /^[\s′'𝔐𝔊𝔙𝔖𝔗MGVST/,+:;().!"?{}\[\]-]*$/u;
 const GREEK_APPARATUS_LABEL_RE_CHIRHO = /λέγει κύριος/u;
 const APPARATUS_TARGET_RE_CHIRHO = /\.967\s+≠\s+\+/u;
 const SHORT_GARBAGE_RE_CHIRHO = /^(?=.{2,14}$)(?=.*[0-9{}[\]£?+])[\p{L}0-9{}[\]£?+ "'”“.-]+$/u;
@@ -90,6 +91,18 @@ function compactTextChirho(textChirho: string): string {
   return normalizeTextForStorageChirho(textChirho).replace(/\s+/g, " ").trim();
 }
 
+function isStandaloneGreekApparatusSiglumSymbolChirho(textChirho: string): boolean {
+  if (!GREEK_CHAR_RE_CHIRHO.test(textChirho)) return false;
+  const strippedTextChirho = textChirho.replace(GREEK_APPARATUS_SIGLUM_TOKEN_RE_CHIRHO, "");
+  return (
+    !GREEK_CHAR_RE_CHIRHO.test(strippedTextChirho) &&
+    !HEBREW_CHAR_RE_CHIRHO.test(strippedTextChirho) &&
+    !SYRIAC_CHAR_RE_CHIRHO.test(strippedTextChirho) &&
+    !ARABIC_CHAR_RE_CHIRHO.test(strippedTextChirho) &&
+    SYMBOL_APPARATUS_REMAINDER_RE_CHIRHO.test(strippedTextChirho)
+  );
+}
+
 function lineTextChirho(lineChirho: SpanLineChirho): string {
   return renderSpanLineTextChirho(lineChirho, { normalizeTextChirho: normalizeTextForStorageChirho });
 }
@@ -117,9 +130,7 @@ function wrongScriptReasonsChirho(spanChirho: SpanChirho): string[] {
   if (spanChirho.scriptChirho !== "hebrew-chirho" && HEBREW_CHAR_RE_CHIRHO.test(textChirho)) reasonsChirho.push("hebrew-chars-in-non-hebrew-span-chirho");
   if (spanChirho.scriptChirho !== "syriac-chirho" && SYRIAC_CHAR_RE_CHIRHO.test(textChirho)) reasonsChirho.push("syriac-chars-in-non-syriac-span-chirho");
   if (spanChirho.scriptChirho !== "arabic-chirho" && ARABIC_CHAR_RE_CHIRHO.test(textChirho)) reasonsChirho.push("arabic-chars-in-non-arabic-span-chirho");
-  if (reasonsChirho.length > 0 && spanChirho.scriptChirho === "symbol-chirho" && PURE_WITNESS_SYMBOL_RE_CHIRHO.test(textChirho)) {
-    return reasonsChirho.map((reasonChirho) => `${reasonChirho}:witness-symbol-review-chirho`);
-  }
+  if (reasonsChirho.length > 0 && spanChirho.scriptChirho === "symbol-chirho" && isStandaloneGreekApparatusSiglumSymbolChirho(textChirho)) return [];
   return reasonsChirho;
 }
 
@@ -153,7 +164,6 @@ function scoreCandidateChirho(lineReasonsValueChirho: string[], suspiciousSpansC
     reasonsChirho.push("line-greek-apparatus-without-dot967-chirho");
   }
   for (const spanChirho of suspiciousSpansChirho) {
-    if (spanChirho.reasonsChirho.some((reasonChirho) => reasonChirho.includes("witness-symbol-review-chirho"))) scoreChirho += 1;
     if (spanChirho.reasonsChirho.some((reasonChirho) => reasonChirho.startsWith("greek-chars-in-non-greek"))) scoreChirho += 3;
     if (spanChirho.reasonsChirho.some((reasonChirho) => reasonChirho.startsWith("hebrew-chars-in-non-hebrew"))) scoreChirho += 3;
     if (spanChirho.reasonsChirho.some((reasonChirho) => reasonChirho.startsWith("syriac-chars-in-non-syriac"))) scoreChirho += 4;
@@ -238,7 +248,7 @@ function renderReportChirho(candidatesChirho: CandidateChirho[], reportPathChirh
     "",
     "This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, or apparatus residue inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.",
     "",
-    "Witness sigla and symbol spans can be legitimate mixed-script apparatus; those rows are review targets, not automatic defects.",
+    "Standalone Greek recension sigla inside symbol spans are handled by the Latin/symbol proofing lane and are intentionally excluded here; Greek words or Hebrew/Syriac/Arabic residue in the wrong script remain reportable.",
     "",
     "## Summary",
     "",
