@@ -3,7 +3,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Non-Latin Residue Candidate Scan Chirho
 
-Generated: 2026-06-04T12:37:04.791Z
+Generated: 2026-06-04T12:45:19.079Z
 
 This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, or apparatus residue inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.
 
@@ -11,10 +11,10 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 
 ## Summary
 
-- Candidate lines: 20
+- Candidate lines: 17
 - High priority: 1
 - Medium priority: 13
-- Low priority included: 6
+- Low priority included: 3
 
 ## Candidates
 
@@ -157,36 +157,6 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 - Line text: `auquel se rapporte aussi la particule δέ du 𝔊 et le ἀλλὰ μήν de σ′ , alors`
 - Suspicious spans:
   - S7 symbol-chirho: `σ′` (greek-chars-in-non-greek-span-chirho:witness-symbol-review-chirho; neighbors french-chirho / french-chirho)
-
-### low-chirho score 4: vol 3 p0148 L005
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-3-chirho/page-0148-chirho/line-005-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-3-chirho/page-0148-chirho/line-005-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-3-chirho/page-0148-chirho/line-005-chirho.png)
-- Line text: `Barberini achève par κλήρῳ un alinéa qui a commencé au début du vs 4, et par ἐν`
-- Suspicious spans:
-  - S0 french-chirho: `Barberini achève par κλήρῳ un alinéa qui a commencé au début du vs 4, et par` (greek-chars-in-non-greek-span-chirho; neighbors none / greek-chirho)
-
-### low-chirho score 4: vol 3 p0150 L051
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-3-chirho/page-0150-chirho/line-051-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-3-chirho/page-0150-chirho/line-051-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-3-chirho/page-0150-chirho/line-051-chirho.png)
-- Line text: `palimpseste de Würzburg) de la leçon τοῦ αιλαμ (au lieu de καὶ αἰλαμμω que Rahlfs (=`
-- Suspicious spans:
-  - S2 french-chirho: `αιλαμ (au lieu de καὶ αἰλαμμω que Rahlfs (=` (greek-chars-in-non-greek-span-chirho; neighbors greek-chirho / none)
-
-### low-chirho score 4: vol 4 p0150 L031
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-4-chirho/page-0150-chirho/line-031-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-4-chirho/page-0150-chirho/line-031-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-4-chirho/page-0150-chirho/line-031-chirho.png)
-- Line text: `Gant porte: Ô θεὸς ὁ περιτιθείς μοι δύναμιν ∫ καὶ διδοὺς`
-- Suspicious spans:
-  - S4 symbol-chirho: `∫ καὶ` (greek-chars-in-non-greek-span-chirho; neighbors greek-chirho / greek-chirho)
 
 ### low-chirho score 4: vol 5 p0051 L006
 

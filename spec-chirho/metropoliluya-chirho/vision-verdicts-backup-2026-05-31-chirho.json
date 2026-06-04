@@ -1,19 +1,9 @@
 {
-  "generatedAtChirho": "2026-06-04T12:35:14.698Z",
+  "generatedAtChirho": "2026-06-04T12:44:42.373Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 842,
+  "countChirho": 849,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
-    {
-      "volumeChirho": 3,
-      "pageChirho": 148,
-      "lineIndexChirho": 5,
-      "segmentIndexChirho": 0,
-      "garbleTextChirho": "Barberini achève par k\\pw un alinéa qui a commencé au début du vs 4, et par",
-      "scriptChirho": "french-chirho",
-      "utf8TextChirho": "Barberini achève par κλήρῳ un alinéa qui a commencé au début du vs 4, et par",
-      "notesChirho": "Scanline clearly shows κλήρῳ (Greek dative of κλῆρος); backslash-garble k\\pw corrected to κλήρῳ; sentence remains French with embedded Greek word as-is."
-    },
     {
       "volumeChirho": 3,
       "pageChirho": 148,
@@ -53,16 +43,6 @@
       "scriptChirho": "greek-chirho",
       "utf8TextChirho": "Τὸ",
       "notesChirho": "Image shows Greek 'Τὸ' (definite article); OCR garbled to 'Td'; correcting script to greek-chirho."
-    },
-    {
-      "volumeChirho": 3,
-      "pageChirho": 150,
-      "lineIndexChirho": 51,
-      "segmentIndexChirho": 2,
-      "garbleTextChirho": "aurai (au lieu de Kai at\\apyiw que Rahlfs (=",
-      "scriptChirho": "french-chirho",
-      "utf8TextChirho": "αιλαμ (au lieu de καὶ αἰλαμμω que Rahlfs (=",
-      "notesChirho": "Image shows 'αιλαμ (au lieu de καὶ αἰλαμμω que Rahlfs (='; 'aurai'→'αιλαμ' (OCR confusion of Greek transliteration) and 'Kai at\\apyiw'→'καὶ αἰλαμμω' (embedded Greek corrected); keeping french-chirho as mixed French+Greek citation sentence."
     },
     {
       "volumeChirho": 3,
@@ -8423,6 +8403,96 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "גָדוּר",
       "notesChirho": "Recovered vol 4 p148 line 17 hidden Hebrew from the old OCR `11`: scanline reads `20 lire גָדוּר (πεφραγμένος)`. Greek `πεφραγμένος` corroborates the fenced/enclosed reading; exact Hebrew pointing remains Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 148,
+      "lineIndexChirho": 5,
+      "segmentIndexChirho": 0,
+      "garbleTextChirho": "Barberini achève par",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "Barberini achève par",
+      "notesChirho": "Split vol 3 p148 line 5 old mixed French/Greek vision span; French text before the printed Greek word is preserved as vision-tier because the span boundary was machine repaired."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 148,
+      "lineIndexChirho": 5,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "k\\pw",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "κλήρῳ",
+      "notesChirho": "Split vol 3 p148 line 5 old mixed span so printed Greek `κλήρῳ` has its own greek-chirho vision-tier span. The word was previously recovered from OCR garble inside a French span; exact Greek remains expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 148,
+      "lineIndexChirho": 5,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "un alinéa qui a commencé au début du vs 4, et par",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "un alinéa qui a commencé au début du vs 4, et par",
+      "notesChirho": "Split vol 3 p148 line 5 old mixed French/Greek vision span; French text after `κλήρῳ` is preserved as vision-tier because the span boundary was machine repaired."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 150,
+      "lineIndexChirho": 51,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "aurai",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "αιλαμ",
+      "notesChirho": "Split vol 3 p150 line 51 old mixed French/Greek vision span so `αιλαμ` has its own greek-chirho span. Text is preserved from the prior visual recovery; exact Greek remains expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 150,
+      "lineIndexChirho": 51,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "(au lieu de",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "(au lieu de",
+      "notesChirho": "Split vol 3 p150 line 51 old mixed French/Greek vision span; French parenthetical text `(au lieu de` is preserved as vision-tier because the span boundary was machine repaired."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 150,
+      "lineIndexChirho": 51,
+      "segmentIndexChirho": 4,
+      "garbleTextChirho": "Kai at\\apyiw",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "καὶ αἰλαμμω",
+      "notesChirho": "Split vol 3 p150 line 51 old mixed French/Greek vision span so `καὶ αἰλαμμω` has its own greek-chirho span. Text is preserved from the prior visual recovery; exact Greek remains expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 150,
+      "lineIndexChirho": 51,
+      "segmentIndexChirho": 5,
+      "garbleTextChirho": "que Rahlfs (=",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "que Rahlfs (=",
+      "notesChirho": "Split vol 3 p150 line 51 old mixed French/Greek vision span; French text `que Rahlfs (=` is preserved as vision-tier because the span boundary was machine repaired."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 150,
+      "lineIndexChirho": 31,
+      "segmentIndexChirho": 4,
+      "garbleTextChirho": "∫ καὶ",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": "∫",
+      "notesChirho": "Split vol 4 p150 line 31 old mixed symbol/Greek span so the apparatus mark `∫` stands alone as symbol-chirho vision-tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 150,
+      "lineIndexChirho": 31,
+      "segmentIndexChirho": 5,
+      "garbleTextChirho": "∫ καὶ",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "καὶ",
+      "notesChirho": "Split vol 4 p150 line 31 old mixed symbol/Greek span so printed Greek `καὶ` has its own greek-chirho vision-tier span before `διδοὺς`; exact Greek remains expert-confirmation tier."
     }
   ]
 }
