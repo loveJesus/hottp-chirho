@@ -56,6 +56,7 @@ export interface VisionTierExpertConfirmationPolicyChirho {
   reviewerChirho?: string;
   reviewerRoleChirho?: string;
   confirmedAtChirho?: string;
+  certifyExactChirho?: boolean;
   reviewedAtChirho?: string;
   rationaleChirho?: string;
   issueFlagsChirho?: string[];
@@ -169,6 +170,9 @@ function validateConfirmationShapeChirho(fileChirho: VisionTierExpertConfirmatio
       }
       if (!nonEmptyStringChirho(policyChirho.confirmedAtChirho)) {
         errorsChirho.push(`${policyIdChirho}: confirmed policy requires confirmedAtChirho`);
+      }
+      if (policyChirho.certifyExactChirho !== true) {
+        errorsChirho.push(`${policyIdChirho}: confirmed policy requires certifyExactChirho=true`);
       }
       if (!nonEmptyStringChirho(policyChirho.rationaleChirho)) {
         errorsChirho.push(`${policyIdChirho}: confirmed policy requires rationaleChirho`);

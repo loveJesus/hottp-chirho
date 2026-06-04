@@ -319,6 +319,7 @@ function confirmedPolicyForItemChirho(paramsChirho: {
     reviewerChirho: paramsChirho.reviewerChirho,
     reviewerRoleChirho: paramsChirho.reviewerRoleChirho,
     confirmedAtChirho: new Date().toISOString(),
+    certifyExactChirho: true,
     rationaleChirho: paramsChirho.rationaleChirho,
     scopeChirho: `id=${itemChirho.idChirho}; script=${itemChirho.scriptChirho}; visionSource=${itemChirho.visionSourceChirho}`,
     itemCountChirho: 1,

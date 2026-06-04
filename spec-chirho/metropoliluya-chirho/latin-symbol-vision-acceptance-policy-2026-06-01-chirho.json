@@ -41,7 +41,8 @@
       ],
       "reviewerChirho": "codex-gpt5-vision-chirho",
       "rationaleChirho": "Visually inspected the four remaining safe-symbol target crops after the vol5 p63 l14 correction; each target clearly matches the stored punctuation exactly: //, :, ≠ +, and ≠. No nontrivial symbols, script sigla, references, or ornament guesses are included.",
-      "acceptedAtChirho": "2026-06-04T01:17:40.211Z"
+      "acceptedAtChirho": "2026-06-04T01:17:40.211Z",
+      "acceptCleanChirho": true
     }
   ]
 }

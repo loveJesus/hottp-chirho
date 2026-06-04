@@ -147,6 +147,7 @@ function mainChirho(): void {
   if (rationaleChirho.length !== 0) policyChirho.rationaleChirho = rationaleChirho;
   if (decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO) {
     policyChirho.confirmedAtChirho = nowChirho;
+    policyChirho.certifyExactChirho = true;
   }
 
   if (!writeChirho) {

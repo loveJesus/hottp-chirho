@@ -41,6 +41,7 @@ export interface LatinSymbolAcceptancePolicyChirho {
   decisionChirho?: string;
   reviewerChirho?: string;
   acceptedAtChirho?: string;
+  acceptCleanChirho?: boolean;
   rationaleChirho?: string;
   scopeChirho?: string;
   itemCountChirho?: number;
@@ -121,6 +122,9 @@ function validatePolicyShapeChirho(fileChirho: LatinSymbolAcceptancePolicyFileCh
       }
       if (!nonEmptyStringChirho(policyChirho.acceptedAtChirho)) {
         errorsChirho.push(`${policyIdChirho}: accepted policy requires acceptedAtChirho`);
+      }
+      if (policyChirho.acceptCleanChirho !== true) {
+        errorsChirho.push(`${policyIdChirho}: accepted policy requires acceptCleanChirho=true`);
       }
       if (!nonEmptyStringChirho(policyChirho.rationaleChirho)) {
         errorsChirho.push(`${policyIdChirho}: accepted policy requires rationaleChirho`);

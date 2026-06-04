@@ -163,6 +163,7 @@ function mainChirho(): void {
   if (rationaleChirho.length !== 0) policyChirho.rationaleChirho = rationaleChirho;
   if (decisionChirho === LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO) {
     policyChirho.acceptedAtChirho = nowChirho;
+    policyChirho.acceptCleanChirho = true;
   }
 
   if (!writeChirho) {
