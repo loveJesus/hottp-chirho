@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T09:51:50.938Z",
+  "generatedAtChirho": "2026-06-04T10:02:36.216Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 801,
+  "countChirho": 803,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8013,6 +8013,26 @@
       "scriptChirho": "arabic-chirho",
       "utf8TextChirho": "الـى",
       "notesChirho": "Cleaned the vol 5 p64 line 6 right edge after visual inspection: the scanline ends with Arabic `الـى`, and the old final S6 French `*8` was a non-existent edge artifact. The Arabic span was widened from x1892..2021 to x1892..2046 to cover the line edge. The Arabic reading remains vision-chirho and still belongs to Arabist expert confirmation for exact orthography."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 149,
+      "lineIndexChirho": 25,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "1?",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "יסר",
+      "notesChirho": "Recovered vol 2 p149 line 25 hidden Hebrew root from OCR `1?`. Claude and Codex independently read the scanline as bare consonantal `יסר` (yod-samekh-resh), the root behind the surrounding Isaiah 8:11 discussion. Stored as vision-chirho, consonants-only; exact letters/marks and segmentation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 1,
+      "pageChirho": 149,
+      "lineIndexChirho": 19,
+      "segmentIndexChirho": 0,
+      "garbleTextChirho": "vs 9},",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "s'étaient tenus les pieds des prêtres” (cf. vs 9), au vs 8 “selon le nombre des tribus d'Is-",
+      "notesChirho": "Corrected vol 1 p149 line 19 OCR punctuation after second-witness scanline review: the print reads `(cf. vs 9),`, with a closing parenthesis balancing `(cf.`, not the stored brace `}`. Stored as french-chirho vision-tier cleanup; no other line text changed."
     }
   ]
 }
