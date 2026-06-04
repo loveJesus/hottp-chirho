@@ -453,6 +453,8 @@ function htmlChirho(): string {
         value: reviewerChirho
       });
       formChirho.appendChild(reviewerInputChirho);
+      const reviewerStatusChirho = elChirho("div", { classChirho: "label-chirho reviewer-status-chirho", textChirho: "" });
+      formChirho.appendChild(reviewerStatusChirho);
       formChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Issue flags" }));
       formChirho.appendChild(elChirho("div", {
         classChirho: "label-chirho",
@@ -483,7 +485,11 @@ function htmlChirho(): string {
       formChirho.appendChild(notesChirho);
       const actionsChirho = elChirho("div", { classChirho: "actions-chirho" });
       const continueChirho = elChirho("button", { classChirho: "continue-chirho", type: "button", textChirho: reviewActionTextChirho() });
+      const updateReviewerStatusChirho = () => {
+        reviewerStatusChirho.textContent = reviewerAttributionErrorChirho(currentReviewerChirho()) ?? "Reviewer attribution OK.";
+      };
       const updateContinueButtonChirho = () => {
+        updateReviewerStatusChirho();
         continueChirho.textContent = reviewActionTextChirho();
         continueChirho.disabled = !currentReviewCanSubmitChirho();
       };

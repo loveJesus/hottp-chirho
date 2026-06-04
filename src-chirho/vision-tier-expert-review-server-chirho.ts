@@ -796,9 +796,15 @@ function htmlChirho(): string {
 
       const formChirho = elChirho("div", { classChirho: "box-chirho input-grid-chirho" });
       formChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "reviewer-chirho", textChirho: "Reviewer" }));
-      formChirho.appendChild(elChirho("input", { id: "reviewer-chirho", value: localStorage.getItem("expertReviewerChirho") || "" }));
+      const reviewerInputChirho = elChirho("input", { id: "reviewer-chirho", value: localStorage.getItem("expertReviewerChirho") || "" });
+      formChirho.appendChild(reviewerInputChirho);
+      const reviewerStatusChirho = elChirho("div", { classChirho: "label-chirho reviewer-status-chirho", textChirho: "" });
+      formChirho.appendChild(reviewerStatusChirho);
       formChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "reviewer-role-chirho", textChirho: "Role" }));
-      formChirho.appendChild(elChirho("input", { id: "reviewer-role-chirho", value: reviewerRoleValueChirho(itemChirho) }));
+      const reviewerRoleInputChirho = elChirho("input", { id: "reviewer-role-chirho", value: reviewerRoleValueChirho(itemChirho) });
+      formChirho.appendChild(reviewerRoleInputChirho);
+      const reviewerRoleStatusChirho = elChirho("div", { classChirho: "label-chirho reviewer-role-status-chirho", textChirho: "" });
+      formChirho.appendChild(reviewerRoleStatusChirho);
       formChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "rationale-chirho", textChirho: "Rationale" }));
       formChirho.appendChild(elChirho("textarea", { id: "rationale-chirho", textChirho: localStorage.getItem("expertRationaleChirho") || "" }));
       const certifyInputChirho = elChirho("input", { id: "certify-exact-chirho", type: "checkbox" });
@@ -821,6 +827,10 @@ function htmlChirho(): string {
       confirmChirho.disabled = true;
       const issueChirho = elChirho("button", { classChirho: "issue-chirho", type: "button", textChirho: "Report issue" });
       const updateActionButtonsChirho = () => {
+        reviewerStatusChirho.textContent = reviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho")) ?? "Reviewer attribution OK.";
+        reviewerRoleStatusChirho.textContent = reviewerRoleMatchesItemChirho(itemChirho)
+          ? "Confirmation role OK."
+          : "Confirm role must be " + itemChirho.reviewerChirho + ".";
         confirmChirho.disabled = !confirmationCanSubmitChirho(itemChirho);
         issueChirho.disabled = !issueCanSubmitChirho();
       };

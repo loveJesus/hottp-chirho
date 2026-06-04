@@ -1620,6 +1620,7 @@ function pageHtmlChirho(): string {
       }
 
       let reviewerInputChirho = null;
+      let reviewerStatusChirho = null;
       if (reviewStateFilterChirho === "pending-chirho") {
         const reviewerBoxChirho = elChirho("div", { classChirho: "box-chirho" });
         reviewerBoxChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "reviewer-chirho", textChirho: "Reviewer" }));
@@ -1631,6 +1632,8 @@ function pageHtmlChirho(): string {
           value: reviewerChirho
         });
         reviewerBoxChirho.appendChild(reviewerInputChirho);
+        reviewerStatusChirho = elChirho("div", { classChirho: "label-chirho reviewer-status-chirho", textChirho: "" });
+        reviewerBoxChirho.appendChild(reviewerStatusChirho);
         sideChirho.appendChild(reviewerBoxChirho);
       } else if (savedValidationChirho) {
         sideChirho.appendChild(elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
@@ -1688,7 +1691,12 @@ function pageHtmlChirho(): string {
           textChirho: "A clean save requires the checkbox above. Check an issue box or edit the text if anything is wrong, split, lumped, missing, extra, or uncertain."
         }));
         const continueButtonChirho = elChirho("button", { classChirho: "continue-chirho", textChirho: cleanReviewActionTextChirho(itemChirho) });
+        const updateReviewerStatusChirho = () => {
+          if (!reviewerStatusChirho) return;
+          reviewerStatusChirho.textContent = reviewerAttributionErrorChirho(currentReviewerChirho()) ?? "Reviewer attribution OK.";
+        };
         const updateContinueButtonChirho = () => {
+          updateReviewerStatusChirho();
           continueButtonChirho.textContent = cleanReviewActionTextChirho(itemChirho);
           continueButtonChirho.disabled = !cleanReviewCanSubmitChirho(itemChirho);
         };
