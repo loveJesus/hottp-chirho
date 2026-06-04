@@ -3,7 +3,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Non-Latin Residue Candidate Scan Chirho
 
-Generated: 2026-06-04T12:14:34.239Z
+Generated: 2026-06-04T12:22:05.350Z
 
 This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, or apparatus residue inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.
 
@@ -11,9 +11,9 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 
 ## Summary
 
-- Candidate lines: 32
+- Candidate lines: 30
 - High priority: 1
-- Medium priority: 25
+- Medium priority: 23
 - Low priority included: 6
 
 ## Candidates
@@ -87,26 +87,6 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 - Line text: `20 lire 11 (πεφραγμένος C'est l'une des nombreuses confusions`
 - Suspicious spans:
   - S0 french-chirho: `20 lire 11` (short-garble-near-nonlatin-chirho; neighbors none / greek-chirho)
-
-### medium-chirho score 5: vol 4 p0150 L018
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-4-chirho/page-0150-chirho/line-018-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-4-chirho/page-0150-chirho/line-018-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-4-chirho/page-0150-chirho/line-018-chirho.png)
-- Line text: `ἰσχυρὸς περιζωννύς Le εὐπορίαν [ Kai ἔδωκεν τελείαν`
-- Suspicious spans:
-  - S3 french-chirho: `[ Kai` (short-garble-near-nonlatin-chirho; neighbors greek-chirho / greek-chirho)
-
-### medium-chirho score 5: vol 4 p0150 L032
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-4-chirho/page-0150-chirho/line-032-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-4-chirho/page-0150-chirho/line-032-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-4-chirho/page-0150-chirho/line-032-chirho.png)
-- Line text: `ὁσιότητα ταῖς 660s pou et le 𝔊pal d ἰσχυρὸς ὁ κραταιῶν`
-- Suspicious spans:
-  - S1 french-chirho: `660s pou et le` (short-garble-near-nonlatin-chirho; neighbors greek-chirho / symbol-chirho)
 
 ### medium-chirho score 5: vol 4 p0152 L024
 

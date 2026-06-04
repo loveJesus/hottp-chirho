@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T12:13:31.514Z",
+  "generatedAtChirho": "2026-06-04T12:20:45.406Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 833,
+  "countChirho": 839,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -153,16 +153,6 @@
       "scriptChirho": "greek-chirho",
       "utf8TextChirho": "ὁ",
       "notesChirho": "Image shows ὁ θεὸς ὁ περιτιθείς; this slot (x=397,w=46) between θεὸς (seg1) and περιτιθείς (seg3) is the Greek article ὁ; OCR garbled the rough-breathing omicron as Latin 'd'."
-    },
-    {
-      "volumeChirho": 4,
-      "pageChirho": 150,
-      "lineIndexChirho": 32,
-      "segmentIndexChirho": 5,
-      "garbleTextChirho": "d",
-      "scriptChirho": "greek-chirho",
-      "utf8TextChirho": "ὁ",
-      "notesChirho": "Image shows ἰσχυρὸς ὁ κραταιῶν; slot (x=959,w=45) between ἰσχυρὸς (seg4) and κραταιῶν (seg6) is the Greek article ὁ; same rough-breathing OCR error as line-031 seg2."
     },
     {
       "volumeChirho": 5,
@@ -8333,6 +8323,76 @@
       "scriptChirho": "greek-chirho",
       "utf8TextChirho": "τῷ",
       "notesChirho": "Migrated the existing vol 4 p148 line 10 vision-tier `τῷ` row from segment 4 to segment 5 after splitting preceding `μονόζωνος` and the apparatus sign into separate spans; original OCR garble was `T@`. Exact Greek remains expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 150,
+      "lineIndexChirho": 18,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "Le",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "με",
+      "notesChirho": "Recovered vol 4 p150 line 18 Greek residue after scanline review: current OCR stored `Le` as French, but the print reads Greek `με` between `ἰσχυρὸς περιζωννύς` and `εὐπορίαν`. Stored as greek-chirho vision-tier; exact Greek text remains expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 150,
+      "lineIndexChirho": 18,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "[",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": "∫",
+      "notesChirho": "Split vol 4 p150 line 18 apparatus sign after scanline review: current OCR stored `[ Kai` as French, but the print shows the apparatus sign before Greek `καὶ`. Stored as symbol-chirho vision-tier for Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 150,
+      "lineIndexChirho": 18,
+      "segmentIndexChirho": 4,
+      "garbleTextChirho": "Kai",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "καὶ",
+      "notesChirho": "Recovered vol 4 p150 line 18 Greek residue after scanline review: current OCR stored `[ Kai` as French, but the print reads Greek `καὶ` after the apparatus sign and before `ἔδωκεν τελείαν`. Stored as greek-chirho vision-tier; exact Greek text remains expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 150,
+      "lineIndexChirho": 32,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "660s pou",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "ὁδοῖς μου",
+      "notesChirho": "Recovered vol 4 p150 line 32 Greek residue after scanline review: current OCR stored the beginning of `660s pou et le` as French, but the print reads Greek `ὁδοῖς μου` after `ὁσιότητα ταῖς`. Stored as greek-chirho vision-tier; exact Greek text remains expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 150,
+      "lineIndexChirho": 32,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "𝔊pal",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": "𝔊pal:",
+      "notesChirho": "Cleaned vol 4 p150 line 32 symbol span after scanline review: the printed siglum reads `𝔊pal:` with a colon before the following Greek article. Stored as symbol-chirho vision-tier for Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 150,
+      "lineIndexChirho": 32,
+      "segmentIndexChirho": 4,
+      "garbleTextChirho": "d",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "ὁ",
+      "notesChirho": "Recovered vol 4 p150 line 32 Greek article after scanline review: current OCR stored `d` as French, but the print reads Greek `ὁ` before `ἰσχυρὸς`. Stored as greek-chirho vision-tier; exact Greek text remains expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 150,
+      "lineIndexChirho": 32,
+      "segmentIndexChirho": 6,
+      "garbleTextChirho": "d",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "ὁ",
+      "notesChirho": "Migrated the existing vol 4 p150 line 32 vision-tier `ὁ` row from segment 5 to segment 6 after splitting preceding `ὁδοῖς μου et le` and adding the printed `𝔊pal:` colon; original OCR garble was `d`. Exact Greek remains expert-confirmation tier."
     }
   ]
 }
