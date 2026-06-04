@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T07:34:16.156Z",
+  "generatedAtChirho": "2026-06-04T07:44:04.318Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 791,
+  "countChirho": 792,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7913,6 +7913,16 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "(לא תחמד ... ולקחת לך)",
       "notesChirho": "Recovered the full Deuteronomy 7:25 Hebrew citation from hidden OCR garbage around the partial Pass-C Hebrew island. Claude and Codex second-witnessed the scanline as logical text `(לא תחמד ... ולקחת לך)`, including the printed three-dot ellipsis between תחמד and ולקחת and the closing לך. Parentheses delimit the Hebrew citation and are stored inside the Hebrew span. Exact vowels/marks, ellipsis character convention, and punctuation/parenthesis placement remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 1,
+      "pageChirho": 151,
+      "lineIndexChirho": 7,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "ואחמדם) (ואקחם",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "(ואחמדם ואקחם)",
+      "notesChirho": "Corrected the Josh 7:21 Hebrew citation from visual/bidi parenthesis order. Claude and Codex second-witnessed the scanline as one unpointed parenthesized quote, logical text `(ואחמדם ואקחם)`: parentheses wrap both words, not one parenthesis after ואחמדם and one before ואקחם. Consonants are confident; exact vowels/marks and punctuation/parenthesis placement remain Hebrew/WLC expert-confirmation tier."
     }
   ]
 }
