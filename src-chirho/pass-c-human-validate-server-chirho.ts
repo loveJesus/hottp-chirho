@@ -213,6 +213,7 @@ interface HumanValidationRowChirho {
   original_text_hash_chirho: string;
   line_text_chirho: string | null;
   verdict_chirho: string;
+  certify_clean_chirho: number;
   corrected_text_chirho: string | null;
   corrected_skeleton_chirho: string | null;
   script_verdict_chirho: string | null;
@@ -779,6 +780,7 @@ CREATE TABLE IF NOT EXISTS pass_c_human_validations_chirho (
   original_text_hash_chirho TEXT NOT NULL,
   line_text_chirho          TEXT,
   verdict_chirho            TEXT NOT NULL,
+  certify_clean_chirho      INTEGER NOT NULL DEFAULT 0,
   corrected_text_chirho     TEXT,
   corrected_skeleton_chirho TEXT,
   script_verdict_chirho     TEXT,
@@ -813,6 +815,11 @@ addColumnIfMissingChirho(
   "script_verdict_chirho",
   "script_verdict_chirho TEXT"
 );
+addColumnIfMissingChirho(
+  "pass_c_human_validations_chirho",
+  "certify_clean_chirho",
+  "certify_clean_chirho INTEGER NOT NULL DEFAULT 0"
+);
 
 dbChirho.run(`
 CREATE INDEX IF NOT EXISTS idx_pchv_span_chirho
@@ -825,17 +832,17 @@ CREATE INDEX IF NOT EXISTS idx_pchv_current_chirho
 const saveValidationStmtChirho = dbChirho.prepare(`
 INSERT INTO pass_c_human_validations_chirho
   (volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
-   original_text_chirho, original_text_hash_chirho, line_text_chirho, verdict_chirho,
+   original_text_chirho, original_text_hash_chirho, line_text_chirho, verdict_chirho, certify_clean_chirho,
    corrected_text_chirho, corrected_skeleton_chirho, script_verdict_chirho, issue_flags_chirho, notes_chirho, witness_snapshot_chirho,
    queue_generated_at_chirho, reviewer_chirho, created_at_chirho, updated_at_chirho,
    supersedes_id_chirho, is_current_chirho, schema_version_chirho)
 VALUES
-  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 2)`);
+  (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, 2)`);
 
 const validationRowsStmtChirho = dbChirho.prepare(`
 SELECT id_chirho, volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
        original_text_chirho, original_text_hash_chirho, line_text_chirho,
-       verdict_chirho, corrected_text_chirho, corrected_skeleton_chirho, script_verdict_chirho, issue_flags_chirho, notes_chirho,
+       verdict_chirho, certify_clean_chirho, corrected_text_chirho, corrected_skeleton_chirho, script_verdict_chirho, issue_flags_chirho, notes_chirho,
        witness_snapshot_chirho, queue_generated_at_chirho, reviewer_chirho,
        created_at_chirho, updated_at_chirho, supersedes_id_chirho, is_current_chirho,
        applied_at_chirho, applied_to_file_chirho, schema_version_chirho
@@ -846,7 +853,7 @@ SELECT id_chirho, volume_chirho, page_chirho, line_index_chirho, segment_index_c
 const validationByIdStmtChirho = dbChirho.prepare(`
 SELECT id_chirho, volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
        original_text_chirho, original_text_hash_chirho, line_text_chirho,
-       verdict_chirho, corrected_text_chirho, corrected_skeleton_chirho, script_verdict_chirho, issue_flags_chirho, notes_chirho,
+       verdict_chirho, certify_clean_chirho, corrected_text_chirho, corrected_skeleton_chirho, script_verdict_chirho, issue_flags_chirho, notes_chirho,
        witness_snapshot_chirho, queue_generated_at_chirho, reviewer_chirho,
        created_at_chirho, updated_at_chirho, supersedes_id_chirho, is_current_chirho,
        applied_at_chirho, applied_to_file_chirho, schema_version_chirho
@@ -941,7 +948,8 @@ function saveDecisionChirho(
   scriptVerdictChirho: string | null,
   issueFlagsChirho: string[],
   notesChirho: string | null,
-  supersedesIdChirho: number | null
+  supersedesIdChirho: number | null,
+  certifyCleanChirho: boolean
 ): HumanValidationRowChirho {
   const nowChirho = new Date().toISOString();
   supersedeValidationStmtChirho.run(
@@ -959,6 +967,7 @@ function saveDecisionChirho(
     hashTextChirho(itemChirho.liveSpanTextChirho),
     itemChirho.lineTextChirho,
     verdictChirho,
+    certifyCleanChirho ? 1 : 0,
     correctedTextChirho,
     correctedTextChirho ? hebrewSkeletonChirho(correctedTextChirho) : null,
     scriptVerdictChirho,
@@ -1818,7 +1827,8 @@ Bun.serve({
         scriptVerdictChirho,
         issueFlagsChirho,
         bodyChirho.notesChirho,
-        currentChirho?.id_chirho ?? null
+        currentChirho?.id_chirho ?? null,
+        cleanReviewChirho
       );
       writePassCHumanValidationBackupChirho(dbChirho, backupPathChirho);
       const nowChirho = new Date().toISOString();

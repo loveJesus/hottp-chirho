@@ -42,6 +42,7 @@ interface HumanValidationRowChirho {
   original_text_chirho: string;
   original_text_hash_chirho: string;
   verdict_chirho: string;
+  certify_clean_chirho: number;
   corrected_text_chirho: string | null;
   script_verdict_chirho: string | null;
   issue_flags_chirho: string | null;
@@ -145,7 +146,8 @@ function tableColumnsChirho(dbChirho: Database, tableNameChirho: string): string
 function rowQueryChirho(
   argsChirho: string[],
   hasIssueFlagsColumnChirho: boolean,
-  hasScriptVerdictColumnChirho: boolean
+  hasScriptVerdictColumnChirho: boolean,
+  hasCertifyCleanColumnChirho: boolean
 ): { sqlChirho: string; paramsChirho: Array<string | number> } {
   const clausesChirho = [
     "is_current_chirho = 1",
@@ -172,6 +174,7 @@ function rowQueryChirho(
     sqlChirho: `
       SELECT id_chirho, volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
              original_text_chirho, original_text_hash_chirho, verdict_chirho,
+             ${hasCertifyCleanColumnChirho ? "certify_clean_chirho" : "0 AS certify_clean_chirho"},
              corrected_text_chirho,
              ${hasScriptVerdictColumnChirho ? "script_verdict_chirho" : "NULL AS script_verdict_chirho"},
              ${hasIssueFlagsColumnChirho ? "issue_flags_chirho" : "NULL AS issue_flags_chirho"},
@@ -234,6 +237,16 @@ function applyRowChirho(
   const issueFlagsChirho = parseIssueFlagsChirho(rowChirho.issue_flags_chirho);
   const scriptVerdictChirho = parseScriptVerdictChirho(rowChirho.script_verdict_chirho);
   if (rowChirho.verdict_chirho === "reviewed-clean-chirho") {
+    if (rowChirho.certify_clean_chirho !== 1) {
+      return {
+        idChirho: rowChirho.id_chirho,
+        keyChirho,
+        verdictChirho: rowChirho.verdict_chirho,
+        statusChirho: "error-chirho",
+        messageChirho: "reviewed-clean row is missing certify_clean_chirho=1 acknowledgement",
+        filePathChirho,
+      };
+    }
     const stampsHumanProvenanceChirho =
       scriptVerdictChirho === null || shouldStampHumanProvenanceChirho(scriptVerdictChirho);
     if (applyChirho) {
@@ -296,7 +309,8 @@ function mainChirho(): void {
   const queryChirho = rowQueryChirho(
     argsChirho,
     columnsChirho.has("issue_flags_chirho"),
-    columnsChirho.has("script_verdict_chirho")
+    columnsChirho.has("script_verdict_chirho"),
+    columnsChirho.has("certify_clean_chirho")
   );
   const rowsChirho = dbChirho.query(queryChirho.sqlChirho).all(...queryChirho.paramsChirho) as HumanValidationRowChirho[];
   const updateAppliedStmtChirho = dbChirho.prepare(`

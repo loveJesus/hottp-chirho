@@ -353,6 +353,7 @@ interface HumanValidationDbRowChirho {
   line_index_chirho: number;
   segment_index_chirho: number;
   verdict_chirho: string;
+  certify_clean_chirho: number;
   applied_at_chirho: string | null;
   schema_version_chirho: number;
 }
@@ -1501,10 +1502,12 @@ function validationRowsChirho(dbPathChirho: string): HumanValidationDbRowChirho[
     if (columnsChirho.size === 0) return [];
     const hasSchemaVersionChirho = columnsChirho.has("schema_version_chirho");
     const hasAppliedAtChirho = columnsChirho.has("applied_at_chirho");
+    const hasCertifyCleanChirho = columnsChirho.has("certify_clean_chirho");
     return dbChirho
       .query(`
         SELECT volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
                verdict_chirho,
+               ${hasCertifyCleanChirho ? "certify_clean_chirho" : "0 AS certify_clean_chirho"},
                ${hasAppliedAtChirho ? "applied_at_chirho" : "NULL AS applied_at_chirho"},
                ${hasSchemaVersionChirho ? "schema_version_chirho" : "1 AS schema_version_chirho"}
           FROM pass_c_human_validations_chirho

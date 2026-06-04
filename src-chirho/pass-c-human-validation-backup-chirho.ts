@@ -32,6 +32,7 @@ export interface PassCHumanValidationBackupReviewChirho {
   originalTextChirho: string;
   originalTextHashChirho: string;
   verdictChirho: string;
+  certifyCleanChirho: boolean;
   correctedTextChirho: string | null;
   scriptVerdictChirho: string | null;
   issueFlagsChirho: string[];
@@ -65,6 +66,7 @@ interface PassCHumanValidationDbRowChirho {
   original_text_chirho: string;
   original_text_hash_chirho: string;
   verdict_chirho: string;
+  certify_clean_chirho: number;
   corrected_text_chirho: string | null;
   script_verdict_chirho: string | null;
   issue_flags_chirho: string | null;
@@ -162,9 +164,11 @@ export function passCHumanValidationBackupRowsFromDbChirho(
   const hasAppliedAtChirho = columnsChirho.has("applied_at_chirho");
   const hasAppliedToFileChirho = columnsChirho.has("applied_to_file_chirho");
   const hasSchemaVersionChirho = columnsChirho.has("schema_version_chirho");
+  const hasCertifyCleanChirho = columnsChirho.has("certify_clean_chirho");
   const rowsChirho = dbChirho.query(`
     SELECT id_chirho, volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
            original_text_chirho, original_text_hash_chirho, verdict_chirho, corrected_text_chirho,
+           ${hasCertifyCleanChirho ? "certify_clean_chirho" : "0 AS certify_clean_chirho"},
            ${hasScriptVerdictChirho ? "script_verdict_chirho" : "NULL AS script_verdict_chirho"},
            ${hasIssueFlagsChirho ? "issue_flags_chirho" : "NULL AS issue_flags_chirho"},
            notes_chirho, queue_generated_at_chirho, reviewer_chirho, created_at_chirho, updated_at_chirho,
@@ -186,6 +190,7 @@ export function passCHumanValidationBackupRowsFromDbChirho(
     originalTextChirho: rowChirho.original_text_chirho,
     originalTextHashChirho: rowChirho.original_text_hash_chirho,
     verdictChirho: rowChirho.verdict_chirho,
+    certifyCleanChirho: rowChirho.certify_clean_chirho === 1,
     correctedTextChirho: rowChirho.corrected_text_chirho,
     scriptVerdictChirho: rowChirho.script_verdict_chirho,
     issueFlagsChirho: parseIssueFlagsChirho(rowChirho.issue_flags_chirho),
@@ -225,6 +230,7 @@ export function passCHumanValidationDurabilityKeyChirho(
     originalTextChirho: reviewChirho.originalTextChirho,
     originalTextHashChirho: reviewChirho.originalTextHashChirho,
     verdictChirho: reviewChirho.verdictChirho,
+    certifyCleanChirho: reviewChirho.certifyCleanChirho,
     correctedTextChirho: reviewChirho.correctedTextChirho,
     scriptVerdictChirho: reviewChirho.scriptVerdictChirho,
     issueFlagsChirho: reviewChirho.issueFlagsChirho,
@@ -262,6 +268,8 @@ export function passCHumanValidationBackupShapeOkChirho(
           typeof reviewChirho.originalTextChirho === "string" &&
           typeof reviewChirho.originalTextHashChirho === "string" &&
           typeof reviewChirho.verdictChirho === "string" &&
+          typeof reviewChirho.certifyCleanChirho === "boolean" &&
+          (reviewChirho.verdictChirho !== "reviewed-clean-chirho" || reviewChirho.certifyCleanChirho === true) &&
           Array.isArray(reviewChirho.issueFlagsChirho) &&
           typeof reviewChirho.reviewerChirho === "string" &&
           typeof reviewChirho.createdAtChirho === "string" &&
