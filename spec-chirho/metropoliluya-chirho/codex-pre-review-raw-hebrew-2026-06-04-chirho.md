@@ -49,6 +49,13 @@ span was surfaced.
   - Visual precheck: the crop clearly shows damaged-text notation with brackets/dots; this is not ordinary continuous Hebrew and should be treated as DSS/Qumran notation, not rubber-stamped as a simple word.
   - Human check still needed: exact bracket order, dot codepoint convention, and whether this belongs with a DSS/Qumran-capable reviewer.
 
+- `vol 1 p149 L10 S1`:
+  `http://localhost:8766/?attention-chirho=no-direct-read-chirho&item-chirho=1%3A149%3A10%3A1`
+  - Live text: `נִכְרְתוּ מֵי הַיַּרְדֵּן`
+  - Attention reason: no direct CRNN crop read and partial token validation.
+  - Visual precheck: the crop is a broad multi-word Hebrew phrase in an apparatus line; no obvious swallowed neighboring Latin/symbol span or clipped Hebrew word is visible. Treat this as a real human review target, not an automatic hidden-text repair.
+  - Human check still needed: exact multi-word text, vowels/marks, and whether the shorter `מֵי` form is what the print says here.
+
 - `vol 2 p149 L19 S3`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=2%3A149%3A19%3A3`
   - Live text: `אָמַר`
@@ -69,6 +76,20 @@ span was surfaced.
   - Attention reason: low direct-read confidence.
   - Visual precheck: the crop visibly contains a short Hebrew root matching the stored consonants at review resolution.
   - Human check still needed: exact letters and whether the bare consonantal form is the intended transcription.
+
+- `vol 5 p148 L25 S5`:
+  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A148%3A25%3A5`
+  - Live text: `מְלִיצַי רֵעָי`
+  - Attention reason: multi-token Hebrew span.
+  - Visual precheck: the target crop cleanly boxes the two Hebrew words after the slash; the following period is already its own neighboring French/punctuation span. No additional maqqef-like repair is visible in this target crop.
+  - Human check still needed: exact consonants, niqqud, word spacing, and whether the two-word span should stay grouped for this apparatus line.
+
+- `vol 5 p149 L2 S3`:
+  `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A149%3A2%3A3`
+  - Live text: `יִמְצָא רֵעִי`
+  - Attention reason: low direct-read confidence and multi-token Hebrew span.
+  - Visual precheck: the crop is centered on the two Hebrew words after `𝔊 :`; the adjacent French word `quand` starts outside the box, so no obvious French bleed or missing Hebrew neighbor is visible.
+  - Human check still needed: exact vowels/marks and confirmation that the two printed words match the stored text.
 
 - `vol 5 p150 L4 S1`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A150%3A4%3A1`
