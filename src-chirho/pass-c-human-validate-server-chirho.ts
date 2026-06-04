@@ -1918,7 +1918,8 @@ Bun.serve({
         null,
         [],
         "undo latest validation",
-        latestChirho.id_chirho
+        latestChirho.id_chirho,
+        false
       );
       writePassCHumanValidationBackupChirho(dbChirho, backupPathChirho);
       return jsonResponseChirho({ okChirho: true, rowChirho });
