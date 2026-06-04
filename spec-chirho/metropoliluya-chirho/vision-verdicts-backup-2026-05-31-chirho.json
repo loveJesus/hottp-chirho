@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T02:16:49.442Z",
+  "generatedAtChirho": "2026-06-04T05:10:36.490Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 773,
+  "countChirho": 779,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7733,6 +7733,66 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "תִּגְבׇּל־בָּ֑הּ",
       "notesChirho": "Recovered the Zechariah 9:2 continuation from the printed crop: Pass-C garble \"72 >23\" corresponds to תִּגְבׇּל־בָּ֑הּ. Stored as vision-chirho; exact vowel/accent confirmation remains in the expert pack."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 151,
+      "lineIndexChirho": 14,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "known-script-garble-chirho",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "מָעוּזִּי חָיִל",
+      "notesChirho": "Recovered from printed Hebrew mis-OCR rendered as D. \"DD after \"voit en\"; II Samuel 22:33 WLC corroborates מָעוּזִּי חָיִל, but exact printed pointing remains expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 151,
+      "lineIndexChirho": 15,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "known-script-garble-chirho",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "בְּרִיתִי",
+      "notesChirho": "Recovered from printed Hebrew mis-OCR rendered as \"n°2; Numbers 25:12 WLC corroborates בְּרִיתִי שָׁלוֹם, with exact printed pointing routed to expert confirmation."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 151,
+      "lineIndexChirho": 15,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "known-script-garble-chirho",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "בְּרִית",
+      "notesChirho": "Recovered from printed Hebrew mis-OCR rendered as N°73 at the end of the line; exact printed pointing remains expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 151,
+      "lineIndexChirho": 16,
+      "segmentIndexChirho": 0,
+      "garbleTextChirho": "known-script-garble-chirho",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "שְׁלוֹמִי",
+      "notesChirho": "Recovered from printed Hebrew mis-OCR rendered as \"D; Isaiah 54:10 WLC corroborates שְׁלוֹמִי, with exact printed pointing routed to expert confirmation."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 151,
+      "lineIndexChirho": 16,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "known-script-garble-chirho",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "דַּרְכֵּךְ זִמָּה",
+      "notesChirho": "Recovered from printed Hebrew mis-OCR rendered as 11} 72771; Ezekiel 16:27 WLC corroborates the phrase consonantally, with exact printed pointing routed to expert confirmation."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 151,
+      "lineIndexChirho": 17,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "known-script-garble-chirho",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "מַרְכְּבֹתֶיךָ",
+      "notesChirho": "Recovered from printed Hebrew mis-OCR rendered as + 772279; Habakkuk 3:8 WLC corroborates מַרְכְּבֹתֶיךָ יְשׁוּעָה, with exact printed pointing routed to expert confirmation."
     }
   ]
 }
