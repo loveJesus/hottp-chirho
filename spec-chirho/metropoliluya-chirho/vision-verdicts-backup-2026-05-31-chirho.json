@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T12:03:24.196Z",
+  "generatedAtChirho": "2026-06-04T12:13:31.514Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 828,
+  "countChirho": 833,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -133,16 +133,6 @@
       "scriptChirho": "greek-chirho",
       "utf8TextChirho": "τῆς",
       "notesChirho": "Crop (xMin 409–475, width 66) shows τῆς; OCR garbled as Ts (same τ→T pattern as seg 1); between πύλης and πρὸς νότον in closing parenthetical."
-    },
-    {
-      "volumeChirho": 4,
-      "pageChirho": 148,
-      "lineIndexChirho": 10,
-      "segmentIndexChirho": 4,
-      "garbleTextChirho": "T@",
-      "scriptChirho": "greek-chirho",
-      "utf8TextChirho": "τῷ",
-      "notesChirho": "mis-OCR Greek τῷ (καὶ ἐν τῷ θεῷ)"
     },
     {
       "volumeChirho": 4,
@@ -8283,6 +8273,66 @@
       "scriptChirho": "greek-chirho",
       "utf8TextChirho": "καὶ ὁ",
       "notesChirho": "Recovered vol 3 p152 line 44 Greek residue after scanline review: the current OCR stored `Kai 6` as French, but the print reads Greek `καὶ ὁ` before `εἰσπορευόμενος` in Ezek 46:9b. Stored as greek-chirho vision-tier; exact Greek text remains Greek expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 148,
+      "lineIndexChirho": 2,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "Tût 6@",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "τῷ θεῷ",
+      "notesChirho": "Recovered vol 4 p148 line 2 Greek residue after scanline review: current OCR stored `Tût 6@` as French, but the scanline reads Greek `τῷ θεῷ` between `(καὶ) ἐν` and `μου ὑπερβήσομαι τεῖχος`. Stored as greek-chirho vision-tier; exact Greek text and punctuation remain Greek expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 148,
+      "lineIndexChirho": 9,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "Kai",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "καὶ",
+      "notesChirho": "Recovered vol 4 p148 line 9 Greek residue after scanline review: current OCR stored `Kai` as French, but the scanline reads Greek `καὶ` after the apparatus sign. Stored as greek-chirho vision-tier; exact Greek text and punctuation remain Greek expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 148,
+      "lineIndexChirho": 9,
+      "segmentIndexChirho": 5,
+      "garbleTextChirho": "8e pou",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "θεῷ μου",
+      "notesChirho": "Recovered vol 4 p148 line 9 Greek residue after scanline review: current OCR stored `8e pou` as French, but the scanline reads Greek `θεῷ μου` between `ἐν` and `ἐξαλοῦμαι`. Stored as greek-chirho vision-tier; exact Greek text and punctuation remain Greek expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 148,
+      "lineIndexChirho": 10,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "uové£wvos",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "μονόζωνος",
+      "notesChirho": "Recovered vol 4 p148 line 10 Greek residue after scanline review: current OCR stored `uové£wvos [` as French, but the scanline reads Greek `μονόζωνος` followed by an apparatus sign. Stored as greek-chirho vision-tier; exact Greek text remains Greek expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 148,
+      "lineIndexChirho": 10,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "[",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": "∫",
+      "notesChirho": "Split the printed apparatus sign from vol 4 p148 line 10 after scanline review. The old French residue `uové£wvos [` included Greek `μονόζωνος` plus this sign; the sign remains symbol-chirho vision-tier for Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 148,
+      "lineIndexChirho": 10,
+      "segmentIndexChirho": 5,
+      "garbleTextChirho": "T@",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "τῷ",
+      "notesChirho": "Migrated the existing vol 4 p148 line 10 vision-tier `τῷ` row from segment 4 to segment 5 after splitting preceding `μονόζωνος` and the apparatus sign into separate spans; original OCR garble was `T@`. Exact Greek remains expert-confirmation tier."
     }
   ]
 }

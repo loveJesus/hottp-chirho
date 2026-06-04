@@ -3,7 +3,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Non-Latin Residue Candidate Scan Chirho
 
-Generated: 2026-06-04T12:04:25.333Z
+Generated: 2026-06-04T12:14:34.239Z
 
 This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, or apparatus residue inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.
 
@@ -11,9 +11,9 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 
 ## Summary
 
-- Candidate lines: 34
+- Candidate lines: 32
 - High priority: 1
-- Medium priority: 27
+- Medium priority: 25
 - Low priority included: 6
 
 ## Candidates
@@ -77,26 +77,6 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 - Line text: `en 44,24a: κρίνειν 967 + κρῖσιν Cpl ≠ διακρίνειν vel διακρῖναι rel.[12]`
 - Suspicious spans:
   - S2 french-chirho: `967 +` (short-garble-near-nonlatin-chirho; neighbors greek-chirho / greek-chirho)
-
-### medium-chirho score 5: vol 4 p0148 L009
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-4-chirho/page-0148-chirho/line-009-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-4-chirho/page-0148-chirho/line-009-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-4-chirho/page-0148-chirho/line-009-chirho.png)
-- Line text: `10 πεφραγμένος ∫ Kai ἐν 8e pou ἐξαλοῦμαι ὡς μόσχος et le`
-- Suspicious spans:
-  - S5 french-chirho: `8e pou` (short-garble-near-nonlatin-chirho; neighbors greek-chirho / greek-chirho)
-
-### medium-chirho score 5: vol 4 p0148 L010
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-4-chirho/page-0148-chirho/line-010-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-4-chirho/page-0148-chirho/line-010-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-4-chirho/page-0148-chirho/line-010-chirho.png)
-- Line text: `𝔊pal ὅτι ἐν σοὶ δραμοῦμαι uové£wvos [ καὶ ἐν τῷ θεῷ`
-- Suspicious spans:
-  - S2 french-chirho: `uové£wvos [` (short-garble-near-nonlatin-chirho; neighbors greek-chirho / greek-chirho)
 
 ### medium-chirho score 5: vol 4 p0148 L017
 
