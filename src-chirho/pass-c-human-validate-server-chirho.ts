@@ -1076,6 +1076,7 @@ function pageHtmlChirho(): string {
       </select>
       <button type="button" id="prev-chirho">Previous</button>
       <button type="button" id="next-chirho">Skip</button>
+      <button type="button" id="copy-link-chirho">Copy link</button>
     </div>
     <section class="main-chirho" id="app-chirho"></section>
   </main>
@@ -1246,6 +1247,24 @@ function pageHtmlChirho(): string {
       clampIndexChirho(indexChirho);
     }
     function setStatusChirho(messageChirho) { document.getElementById("status-chirho").textContent = messageChirho; }
+    async function copyCurrentLinkChirho() {
+      const linkChirho = window.location.href;
+      try {
+        if (!navigator.clipboard?.writeText) throw new Error("clipboard unavailable");
+        await navigator.clipboard.writeText(linkChirho);
+        setStatusChirho("Copied current item link");
+      } catch (_errorChirho) {
+        const textareaChirho = document.createElement("textarea");
+        textareaChirho.value = linkChirho;
+        textareaChirho.style.position = "fixed";
+        textareaChirho.style.left = "-9999px";
+        document.body.appendChild(textareaChirho);
+        textareaChirho.select();
+        const copiedChirho = document.execCommand("copy");
+        textareaChirho.remove();
+        setStatusChirho(copiedChirho ? "Copied current item link" : "Copy failed; URL bar already has current item link");
+      }
+    }
     function renderSummaryChirho() {
       const activeCountChirho = activeQueueChirho().length;
       const modeLabelChirho = reviewStateFilterChirho === "pending-chirho" ? "remaining" : "saved issue row(s)";
@@ -1550,6 +1569,7 @@ function pageHtmlChirho(): string {
     });
     document.getElementById("prev-chirho").addEventListener("click", () => moveIndexChirho(-1));
     document.getElementById("next-chirho").addEventListener("click", () => moveIndexChirho(1));
+    document.getElementById("copy-link-chirho").addEventListener("click", () => copyCurrentLinkChirho());
     document.getElementById("review-state-filter-chirho").addEventListener("change", (eventChirho) => {
       reviewStateFilterChirho = eventChirho.target.value;
       requestedItemKeyChirho = null;

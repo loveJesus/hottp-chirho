@@ -549,6 +549,7 @@ function htmlChirho(): string {
       </select>
       <button type="button" id="prev-chirho">Previous</button>
       <button type="button" id="next-chirho">Skip</button>
+      <button type="button" id="copy-link-chirho">Copy link</button>
     </div>
     <section class="main-chirho" id="app-chirho"></section>
   </main>
@@ -573,6 +574,24 @@ function htmlChirho(): string {
     }
     function clearChirho(nodeChirho) { while (nodeChirho.firstChild) nodeChirho.removeChild(nodeChirho.firstChild); }
     function setStatusChirho(messageChirho) { document.getElementById("status-chirho").textContent = messageChirho; }
+    async function copyCurrentLinkChirho() {
+      const linkChirho = window.location.href;
+      try {
+        if (!navigator.clipboard?.writeText) throw new Error("clipboard unavailable");
+        await navigator.clipboard.writeText(linkChirho);
+        setStatusChirho("Copied current item link");
+      } catch (_errorChirho) {
+        const textareaChirho = document.createElement("textarea");
+        textareaChirho.value = linkChirho;
+        textareaChirho.style.position = "fixed";
+        textareaChirho.style.left = "-9999px";
+        document.body.appendChild(textareaChirho);
+        textareaChirho.select();
+        const copiedChirho = document.execCommand("copy");
+        textareaChirho.remove();
+        setStatusChirho(copiedChirho ? "Copied current item link" : "Copy failed; URL bar already has current item link");
+      }
+    }
     function selectHasValueChirho(idChirho, valueChirho) {
       return [...document.getElementById(idChirho).options].some((optionChirho) => optionChirho.value === valueChirho);
     }
@@ -812,6 +831,7 @@ function htmlChirho(): string {
       indexChirho = Math.min(indexChirho + 1, Math.max(0, activeItemsChirho().length - 1));
       renderChirho();
     });
+    document.getElementById("copy-link-chirho").addEventListener("click", () => copyCurrentLinkChirho());
     syncFilterControlsChirho();
     loadStateChirho().catch((errorChirho) => setStatusChirho(String(errorChirho)));
   </script>
