@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T13:57:30.524Z",
+  "generatedAtChirho": "2026-06-04T16:12:25.982Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 871,
+  "countChirho": 874,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8713,6 +8713,36 @@
       "scriptChirho": "french-chirho",
       "utf8TextChirho": "[B]",
       "notesChirho": "Split bracketed [B] witness label from old OCR fragment `y\" [B]`; label remains vision-tier Latin/French proofing, not certified."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 148,
+      "lineIndexChirho": 14,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "1D?.",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "יוסרנו.",
+      "notesChirho": "Recovered vol 2 p148 line 14 hidden Hebrew from OCR `1D?.` after raw-review crop inspection. The scanline prints consonantal `יוסרנו` followed by a period between French `Sa leçon est` and `Il est probable`. Stored as vision-chirho; exact letters, vowels/marks, and period placement remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 148,
+      "lineIndexChirho": 32,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "7D?.",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "יסר.",
+      "notesChirho": "Recovered vol 2 p148 line 32 hidden Hebrew root from OCR `7D?.`; the scanline prints `יסר` followed by a period after French `verbe`. Stored as hebrew-chirho vision-tier, not certified; exact letters, vowels/marks, and punctuation/segmentation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 149,
+      "lineIndexChirho": 6,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "1D?",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "יסר",
+      "notesChirho": "Recovered vol 2 p149 line 6 hidden Hebrew root from OCR `1D?`; the scanline prints `יסר` after French `le futur de`. Stored as hebrew-chirho vision-tier, not certified; exact letters, vowels/marks, and punctuation/segmentation remain Hebrew/WLC expert-confirmation tier."
     }
   ]
 }

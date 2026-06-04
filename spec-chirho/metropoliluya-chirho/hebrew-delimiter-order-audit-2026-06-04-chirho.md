@@ -3,7 +3,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Hebrew Delimiter Order Audit Chirho
 
-Generated: 2026-06-04T14:34:20.996Z
+Generated: 2026-06-04T16:13:21.955Z
 
 This is a read-only mechanical audit for Hebrew spans that contain parentheses, square brackets, or braces. It does not certify text and does not change the gate. It exists to catch the strict-blind visual-order bug class where Hebrew parentheses were stored as a close delimiter before an open delimiter.
 Neighbor-unbalanced rows are review targets, not automatic defects; Qumran/DSS lacuna notation can legitimately be damaged or unresolved until an expert confirms it.
@@ -13,7 +13,7 @@ Neighbor-unbalanced rows are review targets, not automatic defects; Qumran/DSS l
 - Scanner source files: 7
 - Scanner source fingerprint: f18d07d4b0126a45192f1329b7ab409f6fd0263faed1083e34deb99c83ec9740
 - Span source files: 1789
-- Span source fingerprint: 143f10b8c62f37c1a33eed3c796f5bc4941bb0596c211cb4cabe6b68116c431b
+- Span source fingerprint: c012d425055f47a405e5b6c73e836372122a8d807df76bc4a79c64dc2073b061
 - Hebrew delimiter span count: 11
 - Close-before-open suspect count: 0
 - Neighbor-unbalanced review count: 1
