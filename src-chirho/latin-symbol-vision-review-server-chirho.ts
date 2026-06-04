@@ -73,6 +73,16 @@ interface ReviewRequestChirho {
   notesChirho?: string;
   reviewerChirho?: string;
   acceptCleanChirho?: unknown;
+  expectedItemKindChirho?: string;
+  expectedScriptChirho?: string;
+  expectedSourceChirho?: string;
+  expectedTextChirho?: string;
+  expectedLineTextChirho?: string;
+  expectedSourceImageHashChirho?: string;
+  expectedTargetImageHashChirho?: string;
+  expectedLineImageHashChirho?: string;
+  expectedTargetMarkdownPathChirho?: string;
+  expectedLineMarkdownPathChirho?: string;
 }
 
 interface LatinSymbolReviewItemChirho extends LatinSymbolPacketItemChirho {
@@ -122,6 +132,30 @@ function reviewItemsForManifestChirho(manifestChirho: LatinSymbolPacketManifestC
     ...itemChirho,
     symbolRiskChirho: symbolRiskForItemChirho(itemChirho),
   }));
+}
+
+function staleDisplayMismatchChirho(
+  requestChirho: ReviewRequestChirho,
+  packetItemChirho: LatinSymbolPacketItemChirho
+): string | null {
+  const comparisonsChirho = [
+    ["expectedItemKindChirho", packetItemChirho.itemKindChirho],
+    ["expectedScriptChirho", packetItemChirho.scriptChirho],
+    ["expectedSourceChirho", packetItemChirho.sourceChirho],
+    ["expectedTextChirho", packetItemChirho.textChirho],
+    ["expectedLineTextChirho", packetItemChirho.lineTextChirho],
+    ["expectedSourceImageHashChirho", packetItemChirho.sourceImageHashChirho],
+    ["expectedTargetImageHashChirho", packetItemChirho.targetImageHashChirho],
+    ["expectedLineImageHashChirho", packetItemChirho.lineImageHashChirho],
+    ["expectedTargetMarkdownPathChirho", packetItemChirho.targetMarkdownPathChirho],
+    ["expectedLineMarkdownPathChirho", packetItemChirho.lineMarkdownPathChirho],
+  ] as const;
+  for (const [fieldChirho, currentValueChirho] of comparisonsChirho) {
+    const submittedValueChirho = requestChirho[fieldChirho];
+    if (typeof submittedValueChirho !== "string") return `${fieldChirho} is missing`;
+    if (submittedValueChirho !== currentValueChirho) return `${fieldChirho} no longer matches current packet`;
+  }
+  return null;
 }
 
 function htmlChirho(): string {
@@ -557,7 +591,17 @@ function htmlChirho(): string {
           issueFlagsChirho: flagsChirho,
           notesChirho,
           reviewerChirho,
-          acceptCleanChirho: cleanAcceptAcknowledgedChirho()
+          acceptCleanChirho: cleanAcceptAcknowledgedChirho(),
+          expectedItemKindChirho: itemChirho.itemKindChirho,
+          expectedScriptChirho: itemChirho.scriptChirho,
+          expectedSourceChirho: itemChirho.sourceChirho,
+          expectedTextChirho: itemChirho.textChirho,
+          expectedLineTextChirho: itemChirho.lineTextChirho,
+          expectedSourceImageHashChirho: itemChirho.sourceImageHashChirho,
+          expectedTargetImageHashChirho: itemChirho.targetImageHashChirho,
+          expectedLineImageHashChirho: itemChirho.lineImageHashChirho,
+          expectedTargetMarkdownPathChirho: itemChirho.targetMarkdownPathChirho,
+          expectedLineMarkdownPathChirho: itemChirho.lineMarkdownPathChirho
         })
       });
       const dataChirho = await responseChirho.json();
@@ -673,6 +717,15 @@ Bun.serve({
         const { manifestChirho, liveItemsChirho, liveByIdChirho } = loadCurrentStateChirho();
         const liveItemChirho = liveByIdChirho.get(bodyChirho.idChirho);
         if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);
+        const packetItemChirho = (manifestChirho.itemsChirho ?? []).find((itemChirho) => itemChirho.idChirho === bodyChirho.idChirho);
+        if (packetItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown packet item" }, 404);
+        const staleDisplayChirho = staleDisplayMismatchChirho(bodyChirho, packetItemChirho);
+        if (staleDisplayChirho !== null) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: `Latin/symbol review item is stale: ${staleDisplayChirho}; reload review state`,
+          }, 409);
+        }
         const issueFlagsChirho = parseLatinSymbolIssueFlagsChirho(bodyChirho.issueFlagsChirho);
         if (issueFlagsChirho.length === 0 && bodyChirho.acceptCleanChirho !== true) {
           return jsonResponseChirho({
