@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T08:21:09.503Z",
+  "generatedAtChirho": "2026-06-04T08:36:02.034Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 795,
+  "countChirho": 796,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7953,6 +7953,16 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "לגברים",
       "notesChirho": "Recovered from digit garbage `7247` in the vol 1 p152 line 7 discussion of vs 17b. Claude and Codex second-witnessed the scanline as bare consonantal `לגברים` (lamed-gimel-bet-resh-yod-finalmem). The final measured box is x740..862: the French `à` remains in the preceding span and the Hebrew ל is not clipped. Stored as vision-chirho; exact printed letters, vowels/marks if any, and segmentation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 1,
+      "pageChirho": 149,
+      "lineIndexChirho": 38,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "MY Un 723",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "כְּכֹל אֲשֶׁר־צִוָּה מֹשֶׁה אֶת־יְהוֹשֻׁעַ",
+      "notesChirho": "Expanded the too-narrow vol 1 p149 line 38 Hebrew span: Claude and Codex second-witnessed that the print reads `כְּכֹל אֲשֶׁר־צִוָּה מֹשֶׁה אֶת־יְהוֹשֻׁעַ` across x89..535, while the old S1 box covered only the left half and `MY Un 723` was the Hebrew right half mis-OCR'd inside the following French span. The two maqafs in אשר־צוה and את־יהושע are visually certain, matching Joshua 4:10, but the span remains vision-chirho; exact printed vowels/marks and segmentation remain Hebrew/WLC expert-confirmation tier."
     }
   ]
 }

@@ -3,14 +3,14 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Hidden Hebrew Candidate Scan Chirho
 
-Generated: 2026-06-04T08:21:28.776Z
+Generated: 2026-06-04T08:36:33.544Z
 
 This is a machine-assisted review queue, not a certification result. It flags lines where OCR may have rendered printed Hebrew as valid-looking French, Latin, symbols, short Latin/bracket garbage, or digit garbage. Every item still needs visual review against the scanline before any span repair.
 
 ## Summary
 
-- Candidate lines: 31
-- High priority: 14
+- Candidate lines: 29
+- High priority: 12
 - Medium priority: 17
 - Low priority included: 0
 
@@ -67,26 +67,6 @@ Priority is heuristic: scripture/citation context, existing Hebrew spans, digit/
 - Line text: `un לְ- d'accusatif en 2 S 3,30 et en Ps 135,11, alors qu'aucun לְ-`
 - Suspicious spans:
   - S2 french-chirho: `d'accusatif en 2 S 3,30 et en Ps 135,11, alors qu'aucun` (dense-digit-cluster-chirho; neighbors hebrew-chirho / hebrew-chirho)
-
-### high-chirho score 8: vol 1 p0149 L011
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-dense-digit-cluster-chirho`, `suspicious-span-adjacent-to-hebrew-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-1-chirho/page-0149-chirho/line-011-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-1-chirho/page-0149-chirho/line-011-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-1-chirho/page-0149-chirho/line-011-chirho.png)
-- Line text: `Graetz voit en ces mots une dittographie de נִכְרְתוּ מֵימֵי הַיַּרְדֵּן 17922 qui les précède`
-- Suspicious spans:
-  - S2 french-chirho: `17922 qui les précède` (dense-digit-cluster-chirho; neighbors hebrew-chirho / none)
-
-### high-chirho score 8: vol 1 p0149 L038
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-dense-digit-cluster-chirho`, `suspicious-span-adjacent-to-hebrew-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-1-chirho/page-0149-chirho/line-038-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-1-chirho/page-0149-chirho/line-038-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-1-chirho/page-0149-chirho/line-038-chirho.png)
-- Line text: `4,10 כְּכֹל אֲשֶׁרצִוָּה מֹשֶׁה אֶתיְהוֹשֻׁעַ MY Un 723 [B] M g(S) T // abr-elus : G om / lic : V`
-- Suspicious spans:
-  - S2 french-chirho: `MY Un 723 [B] M g(S) T // abr-elus : G` (dense-digit-cluster-chirho; neighbors hebrew-chirho / latin-non-french-chirho)
 
 ### high-chirho score 8: vol 3 p0151 L010
 
