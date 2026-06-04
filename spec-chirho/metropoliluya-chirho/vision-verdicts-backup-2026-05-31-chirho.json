@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T06:47:12.479Z",
+  "generatedAtChirho": "2026-06-04T07:02:15.821Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 787,
+  "countChirho": 788,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7873,6 +7873,16 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "בְּרִיתָם אֲשֶׁר סָרוּ מִלֶּכֶת בְּדֶרֶךְ הָעָם.",
       "notesChirho": "Recovered continuous Isaiah 8:11 / 1QSa Hebrew phrase from partial Pass-C Hebrew islands plus short Latin/bracket garbage; Claude and Codex second-witnessed the scanline. A follow-up audit confirmed the printed sentence-ending period after the quote. Stored as one vision-chirho span because the OCR segmentation splits through the quote; exact letters, vowels, marks, and punctuation remain expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 148,
+      "lineIndexChirho": 23,
+      "segmentIndexChirho": 0,
+      "garbleTextChirho": "J£ra] bracketed/dotted Hebrew word between partial הָעָם and הברית הסרים מלכת",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "הברית הסרים מלכת [בד]ר̇ך̇ הָעָם.",
+      "notesChirho": "Recovered continuing 11QMelchisédec Hebrew citation from two partial Pass-C Hebrew islands plus bracket/Latin garbage; Claude and Codex second-witnessed the scanline. Stored logical bracket placement as [בד]רך with supralinear dots over resh+kaf using the same combining dot-above convention as line 22; do not normalize this line to the similar 1QSa wording on line 24. Exact lacuna extent, dot semantics, vowels, and punctuation remain Qumran/DSS expert-confirmation tier."
     }
   ]
 }

@@ -3,14 +3,14 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Hidden Hebrew Candidate Scan Chirho
 
-Generated: 2026-06-04T06:47:48.420Z
+Generated: 2026-06-04T07:03:28.033Z
 
 This is a machine-assisted review queue, not a certification result. It flags lines where OCR may have rendered printed Hebrew as valid-looking French, Latin, symbols, short Latin/bracket garbage, or digit garbage. Every item still needs visual review against the scanline before any span repair.
 
 ## Summary
 
-- Candidate lines: 38
-- High priority: 21
+- Candidate lines: 37
+- High priority: 20
 - Medium priority: 17
 - Low priority included: 0
 
@@ -127,16 +127,6 @@ Priority is heuristic: scripture/citation context, existing Hebrew spans, digit/
 - Line text: `pluriel משפחת avec le *G et la *V. Quant à 7247 du vs 17b, il y voit une erreur de`
 - Suspicious spans:
   - S2 french-chirho: `avec le *G et la *V. Quant à 7247 du vs 17b, il y voit une erreur de` (dense-digit-cluster-chirho; neighbors hebrew-chirho / none)
-
-### high-chirho score 8: vol 2 p0148 L023
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-short-latin-symbol-garble-chirho`, `suspicious-span-adjacent-to-hebrew-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-2-chirho/page-0148-chirho/line-023-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-2-chirho/page-0148-chirho/line-023-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-2-chirho/page-0148-chirho/line-023-chirho.png)
-- Line text: `הָעָם J£ra] הברית הסרים מלכת On a une allusion très semblable en 1QSa I 2s : un`
-- Suspicious spans:
-  - S1 french-chirho: `J£ra]` (short-latin-symbol-garble-adjacent-to-hebrew-chirho; neighbors hebrew-chirho / hebrew-chirho)
 
 ### high-chirho score 8: vol 2 p0151 L033
 
