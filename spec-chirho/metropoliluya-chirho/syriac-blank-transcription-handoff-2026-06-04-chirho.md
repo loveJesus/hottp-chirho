@@ -38,13 +38,13 @@ The Syriac item is boxed and routed, but the UTF-8 text is empty. That emptiness
 3. Run the dry-run command first, without `--apply`, using the exact text and reviewer identity:
 
 ```bash
-bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='v3-p0151-l010-s3' --supplied-text-chirho='<exact printed Syriac text>' --reviewer-chirho='<reviewer-id-chirho>' --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>'
+bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='v3-p0151-l010-s3' --supplied-text-chirho='<exact printed Syriac text>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>'
 ```
 
 4. Apply only after the dry-run reports the intended single blank-span fill:
 
 ```bash
-bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='v3-p0151-l010-s3' --supplied-text-chirho='<exact printed Syriac text>' --reviewer-chirho='<reviewer-id-chirho>' --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>' --apply
+bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='v3-p0151-l010-s3' --supplied-text-chirho='<exact printed Syriac text>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>' --apply
 ```
 
 The command is role-gated to `Syriac reader`, freshness-gated against the live expert packet, and refuses to overwrite non-empty text. Applying supplied text only fills the blank structural hole. It does not certify the item. After the exact text is supplied and the expert pack/status are regenerated, the same Syriac reader still needs to confirm the item explicitly in the expert reviewer.

@@ -712,7 +712,7 @@ function htmlChirho(): string {
         "--",
         "--id-chirho=" + shellSingleQuoteChirho(itemChirho.idChirho),
         "--supplied-text-chirho='<exact printed text>'",
-        "--reviewer-chirho='<reviewer-id-chirho>'",
+        "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
         "--reviewer-role-chirho=" + shellSingleQuoteChirho(itemChirho.reviewerChirho),
         "--rationale-chirho='<why this exact text is supplied>'",
         "--apply"
