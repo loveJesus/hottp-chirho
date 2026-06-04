@@ -290,7 +290,17 @@ interface RawHebrewReportChirho {
 
 interface RawHebrewPackItemChirho extends PacketImageHashFieldsChirho {
   idChirho: string;
+  volumeChirho?: number;
+  pageChirho?: number;
+  lineIndexChirho?: number;
+  segmentIndexChirho?: number;
   validationStatusChirho: string;
+  tokenSkeletonsChirho?: string[];
+  witnessCountChirho?: number;
+  directWordReadsChirho?: Array<{
+    confidenceChirho?: number;
+    wlcVerdictChirho?: string;
+  }>;
   textChirho: string;
   lineTextChirho: string;
   targetMarkdownPathChirho: string;
@@ -310,6 +320,25 @@ interface RawHebrewReportLiveDriftChirho {
   reasonChirho: string;
   reportTextChirho: string;
   liveTextChirho: string | null;
+}
+
+interface RawHebrewTriageSampleChirho {
+  idChirho: string;
+  reviewUrlChirho: string;
+  textChirho: string;
+  validationStatusChirho: string;
+  reasonsChirho: string[];
+  witnessCountChirho: number | null;
+  bestDirectConfidenceChirho: number | null;
+  lineTextChirho: string;
+}
+
+interface RawHebrewTriageSummaryChirho {
+  lowConfidenceItemCountChirho: number;
+  multiTokenItemCountChirho: number;
+  delimiterNotationItemCountChirho: number;
+  noDirectReadItemCountChirho: number;
+  samplesChirho: RawHebrewTriageSampleChirho[];
 }
 
 interface ExpertPackManifestChirho {
@@ -646,6 +675,7 @@ interface CertificationStatusChirho {
     liveReportMatchesSpanFilesChirho: boolean;
     liveReportDriftCountChirho: number;
     liveReportDriftSamplesChirho: string[];
+    triageChirho: RawHebrewTriageSummaryChirho;
   };
   visionTierChirho: {
     d1ReadErrorChirho: string | null;
@@ -1115,6 +1145,37 @@ function rawHebrewReviewUrlChirho(
   return queryChirho.length === 0 ? "http://localhost:8766/" : `http://localhost:8766/?${queryChirho}`;
 }
 
+function rawHebrewPackItemKeyChirho(itemChirho: RawHebrewPackItemChirho): string | null {
+  if (
+    typeof itemChirho.volumeChirho === "number" &&
+    typeof itemChirho.pageChirho === "number" &&
+    typeof itemChirho.lineIndexChirho === "number" &&
+    typeof itemChirho.segmentIndexChirho === "number"
+  ) {
+    return [itemChirho.volumeChirho, itemChirho.pageChirho, itemChirho.lineIndexChirho, itemChirho.segmentIndexChirho].join(":");
+  }
+  const matchChirho = itemChirho.idChirho.match(/^v(\d+)-p(\d{4})-l(\d{3})-s(\d+)$/);
+  if (matchChirho === null) return null;
+  return [
+    Number.parseInt(matchChirho[1]!, 10),
+    Number.parseInt(matchChirho[2]!, 10),
+    Number.parseInt(matchChirho[3]!, 10),
+    Number.parseInt(matchChirho[4]!, 10),
+  ].join(":");
+}
+
+function rawHebrewPackItemReviewUrlChirho(itemChirho: RawHebrewPackItemChirho): string {
+  const itemKeyChirho = rawHebrewPackItemKeyChirho(itemChirho);
+  const volumeChirho = itemVolumeChirho(itemChirho) ?? undefined;
+  return rawHebrewReviewUrlChirho(
+    itemChirho.validationStatusChirho,
+    undefined,
+    undefined,
+    itemKeyChirho ?? undefined,
+    volumeChirho
+  );
+}
+
 function expertReviewUrlChirho(
   scriptChirho?: string,
   priorityChirho?: string,
@@ -1135,6 +1196,86 @@ function hebrewSkeletonChirho(textChirho: string): string {
     .normalize("NFKD")
     .replace(/[\u0591-\u05C7]/g, "")
     .replace(/[^\u05D0-\u05EA]/g, "");
+}
+
+function bestRawHebrewDirectConfidenceChirho(itemChirho: RawHebrewPackItemChirho): number | null {
+  const confidencesChirho = (itemChirho.directWordReadsChirho ?? [])
+    .map((readChirho) => readChirho.confidenceChirho)
+    .filter((confidenceChirho): confidenceChirho is number => typeof confidenceChirho === "number");
+  return confidencesChirho.length === 0 ? null : Math.max(...confidencesChirho);
+}
+
+function rawHebrewDelimiterNotationRiskChirho(textChirho: string): boolean {
+  return /[()[\]{}<>]/u.test(textChirho) || textChirho.includes("...") || textChirho.includes("\u0307");
+}
+
+function rawHebrewTriageReasonsChirho(itemChirho: RawHebrewPackItemChirho): string[] {
+  const reasonsChirho: string[] = [];
+  const bestConfidenceChirho = bestRawHebrewDirectConfidenceChirho(itemChirho);
+  if (bestConfidenceChirho !== null && bestConfidenceChirho < 0.75) {
+    reasonsChirho.push(`low direct-read confidence ${bestConfidenceChirho.toFixed(4)}`);
+  }
+  if ((itemChirho.tokenSkeletonsChirho ?? []).length > 1) {
+    reasonsChirho.push("multi-token Hebrew span");
+  }
+  if (rawHebrewDelimiterNotationRiskChirho(itemChirho.textChirho)) {
+    reasonsChirho.push("delimiter/damaged-text notation");
+  }
+  if ((itemChirho.directWordReadsChirho ?? []).length === 0) {
+    reasonsChirho.push("no direct CRNN crop read");
+  }
+  return reasonsChirho;
+}
+
+function rawHebrewTriageScoreChirho(itemChirho: RawHebrewPackItemChirho): number {
+  let scoreChirho = 0;
+  const bestConfidenceChirho = bestRawHebrewDirectConfidenceChirho(itemChirho);
+  if (bestConfidenceChirho !== null && bestConfidenceChirho < 0.75) scoreChirho += 4;
+  if (rawHebrewDelimiterNotationRiskChirho(itemChirho.textChirho)) scoreChirho += 3;
+  if ((itemChirho.tokenSkeletonsChirho ?? []).length > 1) scoreChirho += 2;
+  if ((itemChirho.directWordReadsChirho ?? []).length === 0) scoreChirho += 1;
+  if (itemChirho.validationStatusChirho === "unvalidated-chirho") scoreChirho += 1;
+  return scoreChirho;
+}
+
+function rawHebrewTriageSummaryChirho(itemsChirho: RawHebrewPackItemChirho[]): RawHebrewTriageSummaryChirho {
+  const lowConfidenceItemsChirho = itemsChirho.filter((itemChirho) => {
+    const bestConfidenceChirho = bestRawHebrewDirectConfidenceChirho(itemChirho);
+    return bestConfidenceChirho !== null && bestConfidenceChirho < 0.75;
+  });
+  const multiTokenItemsChirho = itemsChirho.filter((itemChirho) => (itemChirho.tokenSkeletonsChirho ?? []).length > 1);
+  const delimiterNotationItemsChirho = itemsChirho.filter((itemChirho) =>
+    rawHebrewDelimiterNotationRiskChirho(itemChirho.textChirho)
+  );
+  const noDirectReadItemsChirho = itemsChirho.filter((itemChirho) => (itemChirho.directWordReadsChirho ?? []).length === 0);
+  const sampleItemsChirho = itemsChirho
+    .map((itemChirho) => ({
+      itemChirho,
+      reasonsChirho: rawHebrewTriageReasonsChirho(itemChirho),
+      scoreChirho: rawHebrewTriageScoreChirho(itemChirho),
+    }))
+    .filter((entryChirho) => entryChirho.reasonsChirho.length !== 0)
+    .sort((aChirho, bChirho) =>
+      bChirho.scoreChirho - aChirho.scoreChirho ||
+      aChirho.itemChirho.idChirho.localeCompare(bChirho.itemChirho.idChirho)
+    )
+    .slice(0, 8);
+  return {
+    lowConfidenceItemCountChirho: lowConfidenceItemsChirho.length,
+    multiTokenItemCountChirho: multiTokenItemsChirho.length,
+    delimiterNotationItemCountChirho: delimiterNotationItemsChirho.length,
+    noDirectReadItemCountChirho: noDirectReadItemsChirho.length,
+    samplesChirho: sampleItemsChirho.map((entryChirho) => ({
+      idChirho: entryChirho.itemChirho.idChirho,
+      reviewUrlChirho: rawHebrewPackItemReviewUrlChirho(entryChirho.itemChirho),
+      textChirho: entryChirho.itemChirho.textChirho,
+      validationStatusChirho: entryChirho.itemChirho.validationStatusChirho,
+      reasonsChirho: entryChirho.reasonsChirho,
+      witnessCountChirho: typeof entryChirho.itemChirho.witnessCountChirho === "number" ? entryChirho.itemChirho.witnessCountChirho : null,
+      bestDirectConfidenceChirho: bestRawHebrewDirectConfidenceChirho(entryChirho.itemChirho),
+      lineTextChirho: entryChirho.itemChirho.lineTextChirho,
+    })),
+  };
 }
 
 function countRawHebrewByTierChirho(spansChirho: RawHebrewSpanChirho[]): Record<string, number> {
@@ -1361,6 +1502,17 @@ function volumeLaneLinesChirho(
       return `- ${labelChirho} vol ${volumeChirho} lane: ${urlForVolumeChirho(volumeChirho)} (${countChirho} pending ${unitChirho}${withReviewStartTextChirho(reviewStartUrlChirho)})`;
     })
     .filter((lineChirho): lineChirho is string => lineChirho !== null);
+}
+
+function markdownInlineCodeChirho(textChirho: string): string {
+  return `\`${textChirho.replace(/`/g, "'")}\``;
+}
+
+function oneLineSnippetChirho(textChirho: string, maxLengthChirho: number): string {
+  const normalizedChirho = textChirho.replace(/\s+/g, " ").trim();
+  return normalizedChirho.length <= maxLengthChirho
+    ? normalizedChirho
+    : `${normalizedChirho.slice(0, Math.max(0, maxLengthChirho - 1))}…`;
 }
 
 function rawHebrewPackItemIdChirho(
@@ -2266,6 +2418,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     RAW_HEBREW_PACK_DIR_CHIRHO,
     TARGET_LINE_MARKDOWN_PATH_PAIRS_CHIRHO
   );
+  const rawHebrewTriageSummaryResultChirho = rawHebrewTriageSummaryChirho(rawHebrewPackItemsChirho);
   const rawHebrewReportLiveDriftsResultChirho = rawHebrewReportLiveDriftsChirho(rawSpansChirho);
   const humanValidationRowsChirho = validationRowsChirho(dbPathChirho);
   const humanSummaryChirho = summarizeHumanValidationsChirho(humanValidationRowsChirho, rawSpansChirho);
@@ -2369,6 +2522,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     liveReportDriftSamplesChirho: rawHebrewReportLiveDriftsResultChirho
       .slice(0, 8)
       .map(summarizeRawHebrewReportLiveDriftChirho),
+    triageChirho: rawHebrewTriageSummaryResultChirho,
   };
   const visionTierLiveSnapshotChirho = visionTierExpertLiveSnapshotChirho();
   const visionTierLiveItemsChirho = visionTierLiveSnapshotChirho.itemsChirho;
@@ -3343,6 +3497,20 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "confirmation(s)",
     (volumeChirho) => expertReviewUrlChirho(undefined, undefined, undefined, volumeChirho)
   );
+  const rawHebrewTriageSampleLinesChirho =
+    statusChirho.rawHebrewChirho.triageChirho.samplesChirho.length === 0
+      ? ["- Attention samples: none"]
+      : statusChirho.rawHebrewChirho.triageChirho.samplesChirho.flatMap((sampleChirho) => {
+          const confidenceTextChirho = sampleChirho.bestDirectConfidenceChirho === null
+            ? "none"
+            : sampleChirho.bestDirectConfidenceChirho.toFixed(4);
+          return [
+            `- ${sampleChirho.idChirho}: ${sampleChirho.reviewUrlChirho}`,
+            `  - Text: ${markdownInlineCodeChirho(sampleChirho.textChirho)}; status: ${sampleChirho.validationStatusChirho}; reasons: ${sampleChirho.reasonsChirho.join(", ")}`,
+            `  - Witness count: ${sampleChirho.witnessCountChirho ?? "unknown"}; best direct confidence: ${confidenceTextChirho}`,
+            `  - Line: ${markdownInlineCodeChirho(oneLineSnippetChirho(sampleChirho.lineTextChirho, 130))}`,
+          ];
+        });
   return [
     "<!-- For God so loved the world that he gave his only begotten Son,",
     "that whoever believes in him should not perish but have eternal life. John 3:16 -->",
@@ -3493,6 +3661,16 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Live pending validation+tier counts: ${Object.entries(statusChirho.rawHebrewChirho.livePendingValidationTierCountsChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
     `- Source counts before filter: ${sourceCountsChirho || "none"}`,
     `- Export/report count match: ${statusChirho.rawHebrewChirho.exportPassCOcrMatchesReportChirho}`,
+    "",
+    "### Raw Hebrew Review Triage",
+    "",
+    "This is a display-only prioritization aid from the current raw Hebrew packet. It does not certify, apply, or decrement the gate.",
+    "",
+    `- Low-confidence direct CRNN reads (<0.75): ${statusChirho.rawHebrewChirho.triageChirho.lowConfidenceItemCountChirho}`,
+    `- Multi-token Hebrew spans: ${statusChirho.rawHebrewChirho.triageChirho.multiTokenItemCountChirho}`,
+    `- Delimiter/damaged-text notation spans: ${statusChirho.rawHebrewChirho.triageChirho.delimiterNotationItemCountChirho}`,
+    `- No direct CRNN crop reads: ${statusChirho.rawHebrewChirho.triageChirho.noDirectReadItemCountChirho}`,
+    ...rawHebrewTriageSampleLinesChirho,
     "",
     "## Human Validation DB",
     "",
