@@ -524,6 +524,7 @@ function htmlChirho(): string {
     .confirm-chirho { color: #116149; border-color: #499b7f !important; font-weight: 750; }
     .issue-chirho { color: #704000; border-color: #bd7a1b !important; font-weight: 750; }
     .warning-chirho { border-left: 4px solid #bd7a1b; background: #fff7e8; padding: 10px; font-size: 13px; color: #704000; }
+    .command-chirho { white-space: pre-wrap; overflow-wrap: anywhere; background: #f5f6f7; border: 1px solid #d6d9dd; padding: 10px; font-size: 12px; line-height: 1.35; }
     .done-chirho { padding: 42px 0; color: #59636f; font-size: 18px; }
     @media (max-width: 900px) {
       .main-chirho { grid-template-columns: 1fr; }
@@ -667,6 +668,21 @@ function htmlChirho(): string {
     function currentItemChirho() { return activeItemsChirho()[indexChirho]; }
     function imageSrcChirho(pathChirho) { return "/asset-chirho?path=" + encodeURIComponent(pathChirho); }
     function fieldValueChirho(idChirho) { return document.getElementById(idChirho)?.value ?? ""; }
+    function shellSingleQuoteChirho(valueChirho) {
+      return "'" + String(valueChirho).normalize("NFC").replace(/'/g, "'\\"'\\"'") + "'";
+    }
+    function expertSuppliedTextCommandChirho(itemChirho) {
+      return [
+        "bun run apply-expert-supplied-vision-text-chirho",
+        "--",
+        "--id-chirho=" + shellSingleQuoteChirho(itemChirho.idChirho),
+        "--supplied-text-chirho='<exact printed text>'",
+        "--reviewer-chirho='<reviewer-id-chirho>'",
+        "--reviewer-role-chirho=" + shellSingleQuoteChirho(itemChirho.reviewerChirho),
+        "--rationale-chirho='<why this exact text is supplied>'",
+        "--apply"
+      ].join(" ");
+    }
     function reviewerAttributionErrorChirho(valueChirho) {
       const trimmedChirho = String(valueChirho || "").trim();
       const normalizedChirho = trimmedChirho.toLowerCase();
@@ -792,6 +808,13 @@ function htmlChirho(): string {
           classChirho: "warning-chirho",
           textChirho: "This item has no current text. Do not confirm an empty transcription; use Report issue or the expert-supplied text apply path after a script reader supplies the exact printed text."
         }));
+        const blankCommandBoxChirho = elChirho("div", { classChirho: "box-chirho" });
+        blankCommandBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "After exact script-reader transcription" }));
+        blankCommandBoxChirho.appendChild(elChirho("div", {
+          classChirho: "mono-chirho command-chirho",
+          textChirho: expertSuppliedTextCommandChirho(itemChirho)
+        }));
+        sideChirho.appendChild(blankCommandBoxChirho);
       }
 
       const formChirho = elChirho("div", { classChirho: "box-chirho input-grid-chirho" });
@@ -835,7 +858,8 @@ function htmlChirho(): string {
           : "Confirm role must be " + itemChirho.reviewerChirho + ".";
         const actionMessagesChirho = [];
         if (fieldValueChirho("rationale-chirho").trim().length === 0) actionMessagesChirho.push("rationale required");
-        if (!certifyExactCheckedChirho()) actionMessagesChirho.push("Confirm needs exact-certification checkbox");
+        if (itemTextIsBlankChirho(itemChirho)) actionMessagesChirho.push("Confirm needs expert-supplied text first");
+        else if (!certifyExactCheckedChirho()) actionMessagesChirho.push("Confirm needs exact-certification checkbox");
         if (currentIssueFlagsChirho().length === 0) actionMessagesChirho.push("Report issue needs an issue flag");
         actionStatusChirho.textContent = actionMessagesChirho.length === 0
           ? "Confirm and Report issue requirements are currently satisfied."
