@@ -85,6 +85,17 @@ function loadSpansForLineChirho(
   }
 }
 
+function resolvePageImagePathChirho(imagePathChirho: string): string {
+  if (existsSync(imagePathChirho)) return imagePathChirho;
+  const normalizedPathChirho = imagePathChirho.replaceAll("\\", "/");
+  const workspaceMarkerChirho = "workspace-chirho/";
+  const workspaceIndexChirho = normalizedPathChirho.indexOf(workspaceMarkerChirho);
+  if (workspaceIndexChirho === -1) return imagePathChirho;
+  const workspaceRelativePathChirho = normalizedPathChirho.slice(workspaceIndexChirho).split("/");
+  const localPathChirho = join(PROJECT_ROOT_CHIRHO, ...workspaceRelativePathChirho);
+  return existsSync(localPathChirho) ? localPathChirho : imagePathChirho;
+}
+
 async function annotatePageChirho(
   volumeNumberChirho: number,
   pageNumberChirho: number
@@ -103,7 +114,8 @@ async function annotatePageChirho(
       `No page row for vol ${volumeNumberChirho} p${pageNumberChirho} — run pass1-extract-lines-chirho first`
     );
   }
-  if (!existsSync(pageRowChirho.image_path_chirho)) {
+  const pageImagePathChirho = resolvePageImagePathChirho(pageRowChirho.image_path_chirho);
+  if (!existsSync(pageImagePathChirho)) {
     throw new Error(`Image missing on disk: ${pageRowChirho.image_path_chirho}`);
   }
 
@@ -129,7 +141,7 @@ async function annotatePageChirho(
   // Build magick draw args: blue translucent rectangles, then red index labels.
   const argsChirho: string[] = [
     "magick",
-    pageRowChirho.image_path_chirho,
+    pageImagePathChirho,
     "-fill",
     "rgba(80, 140, 255, 0.20)",
     "-stroke",
@@ -178,7 +190,7 @@ async function annotatePageChirho(
         pageXChirho,
         pageYChirho: lChirho.y_min_chirho,
         pageX2Chirho,
-        pageY2Chirho: lChirho.y_max_chirho,
+        pageY2Chirho: lChirho.y_min_chirho + lChirho.height_chirho,
       });
       segmentGroupsChirho.set(fillChirho, groupChirho);
       segmentCountChirho++;
