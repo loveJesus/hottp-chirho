@@ -22,7 +22,7 @@ import {
   isGenericReviewerAttributionChirho,
 } from "./reviewer-attribution-chirho.ts";
 import { spanLinePathChirho, type SpanLineLikeChirho, type SpanLikeChirho } from "./span-nfc-chirho.ts";
-import { normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
+import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "reattribute-pass-c-human-validations-chirho";
 
@@ -71,6 +71,7 @@ function usageChirho(): string {
     "Dry-run is the default. Applying writes append-only superseding rows and refreshes the Pass-C human validation backup.",
     "Only current schema-v2 rows with blank/generic reviewer attribution can be reattributed.",
     "--expected-live-text-chirho is optional and only supported for a single --validation-id-chirho row; it fails closed if the live span text has drifted since the status report was read.",
+    "--expected-live-text-hash-chirho=<id>:<sha256> may be repeated for exact batch reattribution; when present, every selected row must have a matching live text hash.",
   ].join("\n");
 }
 
@@ -252,6 +253,56 @@ function assertExpectedLiveTextChirho(
   }
 }
 
+function parseExpectedLiveTextHashesChirho(argsChirho: string[]): Map<number, string> {
+  const valuesChirho = parseArgValuesChirho(argsChirho, "expected-live-text-hash-chirho");
+  const hashesChirho = new Map<number, string>();
+  for (const valueChirho of valuesChirho) {
+    const separatorIndexChirho = valueChirho.indexOf(":");
+    if (separatorIndexChirho <= 0) {
+      throw new Error(`invalid --expected-live-text-hash-chirho=${valueChirho}; expected <id>:<sha256>`);
+    }
+    const idTextChirho = valueChirho.slice(0, separatorIndexChirho);
+    const hashChirho = valueChirho.slice(separatorIndexChirho + 1).toLowerCase();
+    const idChirho = Number.parseInt(idTextChirho, 10);
+    if (!Number.isInteger(idChirho) || String(idChirho) !== idTextChirho.trim()) {
+      throw new Error(`invalid expected hash validation id: ${idTextChirho}`);
+    }
+    if (!/^[a-f0-9]{64}$/.test(hashChirho)) {
+      throw new Error(`invalid expected live text hash for validation id ${idChirho}`);
+    }
+    if (hashesChirho.has(idChirho)) throw new Error(`duplicate expected live text hash for validation id ${idChirho}`);
+    hashesChirho.set(idChirho, hashChirho);
+  }
+  return hashesChirho;
+}
+
+function assertExpectedLiveTextHashesChirho(
+  rowsChirho: PassCHumanValidationRowChirho[],
+  expectedHashesChirho: Map<number, string>
+): void {
+  if (expectedHashesChirho.size === 0) return;
+  const rowIdsChirho = new Set(rowsChirho.map((rowChirho) => rowChirho.id_chirho));
+  const extraIdsChirho = [...expectedHashesChirho.keys()].filter((idChirho) => !rowIdsChirho.has(idChirho));
+  if (extraIdsChirho.length > 0) {
+    throw new Error(`expected live text hash supplied for unselected validation id(s): ${extraIdsChirho.join(",")}`);
+  }
+  const missingIdsChirho = rowsChirho
+    .map((rowChirho) => rowChirho.id_chirho)
+    .filter((idChirho) => !expectedHashesChirho.has(idChirho));
+  if (missingIdsChirho.length > 0) {
+    throw new Error(`missing expected live text hash for selected validation id(s): ${missingIdsChirho.join(",")}`);
+  }
+  for (const rowChirho of rowsChirho) {
+    const expectedHashChirho = expectedHashesChirho.get(rowChirho.id_chirho)!;
+    const liveHashChirho = hashTextChirho(liveSpanTextForRowChirho(rowChirho));
+    if (liveHashChirho !== expectedHashChirho) {
+      throw new Error(
+        `validation id ${rowChirho.id_chirho} live text hash drifted; expected ${expectedHashChirho}, current ${liveHashChirho}`
+      );
+    }
+  }
+}
+
 function reattributionNoteChirho(
   existingNotesChirho: string | null,
   previousReviewerChirho: string,
@@ -349,6 +400,7 @@ function mainChirho(): void {
   assertExplicitReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
   const rationaleChirho = requiredArgValueChirho(argsChirho, "rationale-chirho");
   const expectedLiveTextChirho = parseArgValueChirho(argsChirho, "expected-live-text-chirho");
+  const expectedLiveTextHashesChirho = parseExpectedLiveTextHashesChirho(argsChirho);
   const dbPathChirho = parseArgValueChirho(argsChirho, "db-chirho") ?? PROGRESS_DB_PATH_CHIRHO;
   const backupPathChirho =
     parseArgValueChirho(argsChirho, "backup-chirho") ?? PASS_C_HUMAN_VALIDATION_BACKUP_PATH_CHIRHO;
@@ -360,6 +412,7 @@ function mainChirho(): void {
       : loadRowsByIdChirho(dbChirho, validationIdsChirho);
     assertRowsEligibleChirho(rowsChirho, validationIdsChirho);
     assertExpectedLiveTextChirho(rowsChirho, expectedLiveTextChirho, allGenericChirho);
+    assertExpectedLiveTextHashesChirho(rowsChirho, expectedLiveTextHashesChirho);
     if (rowsChirho.length === 0) {
       console.log(`[${MODULE_CHIRHO}] no eligible row(s)`);
       return;

@@ -547,6 +547,7 @@ interface HumanValidationSummaryChirho {
   legacyCurrentRowsChirho: number;
   genericReviewerRowsChirho: number;
   genericReviewerRowDetailsChirho: GenericHumanValidationReviewerRowChirho[];
+  genericReviewerRowGroupsChirho: GenericHumanValidationReviewerGroupChirho[];
 }
 
 interface GenericHumanValidationReviewerRowChirho {
@@ -571,6 +572,19 @@ interface GenericHumanValidationReviewerRowChirho {
   liveHumanValidationIdChirho: number | null;
   liveHumanValidationVerdictChirho: string | null;
   liveTextMatchesOriginalChirho: boolean | null;
+  liveTextHashChirho: string | null;
+}
+
+interface GenericHumanValidationReviewerGroupChirho {
+  groupKeyChirho: string;
+  reviewerChirho: string;
+  appliedAtChirho: string | null;
+  rowCountChirho: number;
+  idsChirho: number[];
+  locationsChirho: string[];
+  verdictCountsChirho: Record<string, number>;
+  allLiveTextHashesAvailableChirho: boolean;
+  expectedLiveTextHashArgsChirho: string[];
 }
 
 interface PassCHumanValidationBackupSummaryChirho {
@@ -2063,6 +2077,7 @@ interface HumanValidationLiveSpanContextChirho {
   liveHumanValidationIdChirho: number | null;
   liveHumanValidationVerdictChirho: string | null;
   liveTextMatchesOriginalChirho: boolean | null;
+  liveTextHashChirho: string | null;
 }
 
 function liveSpanContextForHumanValidationRowChirho(
@@ -2077,6 +2092,7 @@ function liveSpanContextForHumanValidationRowChirho(
     liveHumanValidationIdChirho: null,
     liveHumanValidationVerdictChirho: null,
     liveTextMatchesOriginalChirho: null,
+    liveTextHashChirho: null,
   };
   const pathChirho = spanLinePathChirho(rowChirho.volume_chirho, rowChirho.page_chirho, rowChirho.line_index_chirho);
   if (!existsSync(pathChirho)) return emptyChirho;
@@ -2103,6 +2119,7 @@ function liveSpanContextForHumanValidationRowChirho(
         typeof spanChirho.humanValidationVerdictChirho === "string" ? spanChirho.humanValidationVerdictChirho : null,
       liveTextMatchesOriginalChirho:
         liveTextChirho === null ? null : liveTextChirho === normalizeTextForStorageChirho(rowChirho.original_text_chirho),
+      liveTextHashChirho: liveTextChirho === null ? null : hashTextChirho(liveTextChirho),
     };
   } catch (errorChirho) {
     return {
@@ -2130,6 +2147,49 @@ function genericReviewerRowDetailChirho(rowChirho: HumanValidationDbRowChirho): 
     appliedAtChirho: rowChirho.applied_at_chirho,
     ...liveSpanContextChirho,
   };
+}
+
+function genericReviewerRowGroupsChirho(
+  rowsChirho: GenericHumanValidationReviewerRowChirho[]
+): GenericHumanValidationReviewerGroupChirho[] {
+  const groupsByKeyChirho = new Map<string, GenericHumanValidationReviewerRowChirho[]>();
+  for (const rowChirho of rowsChirho) {
+    const groupKeyChirho = [
+      rowChirho.reviewerChirho,
+      rowChirho.appliedAtChirho ?? "not-applied-chirho",
+    ].join("\u0000");
+    const groupRowsChirho = groupsByKeyChirho.get(groupKeyChirho) ?? [];
+    groupRowsChirho.push(rowChirho);
+    groupsByKeyChirho.set(groupKeyChirho, groupRowsChirho);
+  }
+  return [...groupsByKeyChirho.entries()]
+    .map(([groupKeyChirho, groupRowsChirho]) => {
+      const sortedRowsChirho = [...groupRowsChirho].sort((aChirho, bChirho) => aChirho.idChirho - bChirho.idChirho);
+      const verdictCountsChirho: Record<string, number> = {};
+      for (const rowChirho of sortedRowsChirho) {
+        verdictCountsChirho[rowChirho.verdictChirho] = (verdictCountsChirho[rowChirho.verdictChirho] ?? 0) + 1;
+      }
+      return {
+        groupKeyChirho,
+        reviewerChirho: sortedRowsChirho[0]?.reviewerChirho ?? "<unknown-reviewer-chirho>",
+        appliedAtChirho: sortedRowsChirho[0]?.appliedAtChirho ?? null,
+        rowCountChirho: sortedRowsChirho.length,
+        idsChirho: sortedRowsChirho.map((rowChirho) => rowChirho.idChirho),
+        locationsChirho: sortedRowsChirho.map((rowChirho) => rowChirho.locationChirho),
+        verdictCountsChirho,
+        allLiveTextHashesAvailableChirho: sortedRowsChirho.every((rowChirho) => rowChirho.liveTextHashChirho !== null),
+        expectedLiveTextHashArgsChirho: sortedRowsChirho.flatMap((rowChirho) =>
+          rowChirho.liveTextHashChirho === null
+            ? []
+            : [`--expected-live-text-hash-chirho=${rowChirho.idChirho}:${rowChirho.liveTextHashChirho}`]
+        ),
+      };
+    })
+    .sort((aChirho, bChirho) => {
+      const appliedCompareChirho = (aChirho.appliedAtChirho ?? "").localeCompare(bChirho.appliedAtChirho ?? "");
+      if (appliedCompareChirho !== 0) return appliedCompareChirho;
+      return aChirho.idsChirho[0]! - bChirho.idsChirho[0]!;
+    });
 }
 
 function tableExistsChirho(dbChirho: Database, tableNameChirho: string): boolean {
@@ -2308,6 +2368,7 @@ function summarizeHumanValidationsChirho(
   const genericReviewerRowDetailsChirho = genericReviewerRowsChirho
     .map(genericReviewerRowDetailChirho)
     .sort((aChirho, bChirho) => aChirho.idChirho - bChirho.idChirho);
+  const genericReviewerRowGroupsSummaryChirho = genericReviewerRowGroupsChirho(genericReviewerRowDetailsChirho);
   return {
     currentSchema2RowsChirho: schema2RowsChirho.length,
     reviewedCleanRowsChirho: schema2RowsChirho.filter((rowChirho) => rowChirho.verdict_chirho === "reviewed-clean-chirho").length,
@@ -2320,6 +2381,7 @@ function summarizeHumanValidationsChirho(
     legacyCurrentRowsChirho: rowsChirho.filter((rowChirho) => rowChirho.schema_version_chirho < 2).length,
     genericReviewerRowsChirho: genericReviewerRowsChirho.length,
     genericReviewerRowDetailsChirho,
+    genericReviewerRowGroupsChirho: genericReviewerRowGroupsSummaryChirho,
   };
 }
 
@@ -3834,6 +3896,37 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
             ];
           }),
         ];
+  const genericReviewerBatchGroupsChirho = statusChirho.humanValidationDbChirho.genericReviewerRowGroupsChirho
+    .filter((groupChirho) => groupChirho.rowCountChirho > 1);
+  const genericReviewerBatchLinesChirho =
+    genericReviewerBatchGroupsChirho.length === 0
+      ? ["- Generic reviewer exact-ID batch groups: none"]
+      : [
+          "- Generic reviewer exact-ID batch groups:",
+          "- Use a batch command only when every row in that timestamp group is genuinely attributable to the same explicit reviewer.",
+          ...genericReviewerBatchGroupsChirho.flatMap((groupChirho) => {
+            const verdictCountsChirho = Object.entries(groupChirho.verdictCountsChirho)
+              .map(([verdictChirho, countChirho]) => `${verdictChirho}=${countChirho}`)
+              .join(", ");
+            const validationIdArgsChirho = groupChirho.idsChirho
+              .map((idChirho) => `--validation-id-chirho=${idChirho}`);
+            const baseCommandPartsChirho = [
+              "bun run reattribute-pass-c-human-validations-chirho --",
+              ...validationIdArgsChirho,
+              "--reviewer-chirho=<explicit-reviewer-id-chirho>",
+              "--rationale-chirho='<why every selected row is attributable to that reviewer>'",
+              ...groupChirho.expectedLiveTextHashArgsChirho,
+            ];
+            const dryRunCommandChirho = baseCommandPartsChirho.join(" ");
+            const applyCommandChirho = [...baseCommandPartsChirho, "--apply-chirho"].join(" ");
+            return [
+              `  - applied ${groupChirho.appliedAtChirho ?? "not-applied-chirho"}; current reviewer ${groupChirho.reviewerChirho}; ids ${groupChirho.idsChirho.join(", ")}; locations ${groupChirho.locationsChirho.join(", ")}`,
+              `    - Verdict counts: ${verdictCountsChirho || "none"}; live hash guards: ${groupChirho.allLiveTextHashesAvailableChirho ? "all-present-chirho" : "missing-live-hash-chirho"}`,
+              `    - Batch dry-run command: \`${dryRunCommandChirho}\``,
+              `    - Batch apply command: \`${applyCommandChirho}\``,
+            ];
+          }),
+        ];
   return [
     "<!-- For God so loved the world that he gave his only begotten Son,",
     "that whoever believes in him should not perish but have eternal life. John 3:16 -->",
@@ -4010,6 +4103,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "- Generic reviewer bulk dry-run path (same explicit reviewer only): `bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why every current generic row is attributable to that reviewer>'`",
     "- Generic reviewer bulk apply path (same explicit reviewer only): `bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why every current generic row is attributable to that reviewer>' --apply-chirho`",
     "- Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit reviewer.",
+    ...genericReviewerBatchLinesChirho,
     ...genericReviewerDetailLinesChirho,
     "",
     "## Pass-C Human Validation Backup",
