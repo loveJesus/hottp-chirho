@@ -33,6 +33,9 @@ const DIGIT_CLUSTER_RE_CHIRHO = /(?:^|[\s([{])(?:[A-Za-z]?\d{3,}[A-Za-z]?|\d{2,}
 const SYMBOL_DIGIT_RE_CHIRHO = /(?:[+*#]\s*\d+|\d+\s*[}?]|\}\s*\d+)/u;
 const ORDINAL_GARBAGE_RE_CHIRHO = /(?:^|[\s([{])["“”']?[nN][°º]\d+/u;
 const REPEATED_UPPER_GARBAGE_RE_CHIRHO = /(?:^|[\s([{])["“”']?[A-Z]\.?\s+["“”']?[A-Z]{2}(?=$|[\s,.;:)])/u;
+const SHORT_LATIN_SYMBOL_GARBAGE_RE_CHIRHO = /^(?=.{2,12}$)(?=.*[A-Za-z])(?=.*[{}\[\]£?])[A-Za-z0-9{}\[\]£?]+$/u;
+const SHORT_BRACKET_DIGIT_GARBAGE_RE_CHIRHO = /^(?:\d[\]}]|\d{1,2}[A-Za-z]?)$/u;
+const BRACKETED_SINGLE_CAPITAL_SIGLUM_RE_CHIRHO = /^[{\[][A-Z][}\]]$/u;
 const SCRIPTURE_REF_RE_CHIRHO =
   /\b(?:Gn|Ex|Lv|Nb|Dt|Jos|Jg|1\s*S|2\s*S|1\s*R|2\s*R|Is|Jr|Ez|Éz|Ha|Hab|Za|Zach?|Ps|Jb|Job|Qo|Pr)\s*\d/u;
 const BENIGN_NUMERIC_CONTEXT_RE_CHIRHO =
@@ -127,6 +130,14 @@ function spanReasonsChirho(spanChirho: SpanChirho, lineChirho: SpanLineChirho, s
   if (REPEATED_UPPER_GARBAGE_RE_CHIRHO.test(textChirho) && hasHebrewSpanChirho(lineChirho)) {
     reasonsChirho.push("repeated-uppercase-garble-near-hebrew-line-chirho");
   }
+  if (
+    isAdjacentToHebrewChirho(spansChirho, indexChirho) &&
+    (SHORT_LATIN_SYMBOL_GARBAGE_RE_CHIRHO.test(textChirho) || SHORT_BRACKET_DIGIT_GARBAGE_RE_CHIRHO.test(textChirho)) &&
+    !BRACKETED_SINGLE_CAPITAL_SIGLUM_RE_CHIRHO.test(textChirho) &&
+    !BENIGN_NUMERIC_CONTEXT_RE_CHIRHO.test(textChirho)
+  ) {
+    reasonsChirho.push("short-latin-symbol-garble-adjacent-to-hebrew-chirho");
+  }
   return [...new Set(reasonsChirho)];
 }
 
@@ -145,6 +156,9 @@ function scoreCandidateChirho(lineChirho: SpanLineChirho, lineTextValueChirho: s
   const hasOrdinalGarbleChirho = suspiciousSpansChirho.some((spanChirho) => spanChirho.reasonsChirho.includes("ordinal-garble-chirho"));
   const hasRepeatedUpperGarbleChirho = suspiciousSpansChirho.some((spanChirho) =>
     spanChirho.reasonsChirho.includes("repeated-uppercase-garble-near-hebrew-line-chirho")
+  );
+  const hasShortLatinSymbolGarbleChirho = suspiciousSpansChirho.some((spanChirho) =>
+    spanChirho.reasonsChirho.includes("short-latin-symbol-garble-adjacent-to-hebrew-chirho")
   );
   const hasAdjacentHebrewChirho = suspiciousSpansChirho.some((spanChirho) =>
     spanChirho.leftScriptChirho === "hebrew-chirho" || spanChirho.rightScriptChirho === "hebrew-chirho"
@@ -173,6 +187,10 @@ function scoreCandidateChirho(lineChirho: SpanLineChirho, lineTextValueChirho: s
   if (hasRepeatedUpperGarbleChirho) {
     scoreChirho += 4;
     reasonsChirho.push("line-has-repeated-uppercase-garble-chirho");
+  }
+  if (hasShortLatinSymbolGarbleChirho) {
+    scoreChirho += 3;
+    reasonsChirho.push("line-has-short-latin-symbol-garble-chirho");
   }
   if (hasAdjacentHebrewChirho) {
     scoreChirho += 2;
@@ -254,7 +272,7 @@ function renderReportChirho(candidatesChirho: CandidateChirho[], reportPathChirh
     "",
     `Generated: ${new Date().toISOString()}`,
     "",
-    "This is a machine-assisted review queue, not a certification result. It flags lines where OCR may have rendered printed Hebrew as valid-looking French, Latin, symbols, or digit garbage. Every item still needs visual review against the scanline before any span repair.",
+    "This is a machine-assisted review queue, not a certification result. It flags lines where OCR may have rendered printed Hebrew as valid-looking French, Latin, symbols, short Latin/bracket garbage, or digit garbage. Every item still needs visual review against the scanline before any span repair.",
     "",
     "## Summary",
     "",
@@ -263,7 +281,7 @@ function renderReportChirho(candidatesChirho: CandidateChirho[], reportPathChirh
     `- Medium priority: ${priorityCountsChirho["medium-chirho"] ?? 0}`,
     `- Low priority included: ${priorityCountsChirho["low-chirho"] ?? 0}`,
     "",
-    "Priority is heuristic: scripture/citation context, existing Hebrew spans, digit/symbol garbage, and adjacency to Hebrew increase priority. Normal manuscript numbers and citations can still appear here as false positives.",
+    "Priority is heuristic: scripture/citation context, existing Hebrew spans, digit/symbol/short Latin-bracket garbage, and adjacency to Hebrew increase priority. Normal manuscript numbers, citations, and sigla can still appear here as false positives.",
     "",
     "## Candidates",
     "",
