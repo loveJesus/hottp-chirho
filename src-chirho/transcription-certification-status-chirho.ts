@@ -251,7 +251,17 @@ interface ExpertPackVisionItemChirho {
   scriptChirho: string;
   visionSourceChirho: string;
   currentTextChirho: string;
+  sourcePathChirho: string;
+  packetPathChirho: string;
+  markdownPathChirho: string;
   priorityMatchChirho?: boolean;
+}
+
+interface ExpertPackImageDriftChirho {
+  idChirho: string;
+  reasonChirho: string;
+  sourcePathChirho: string;
+  packetPathChirho: string;
 }
 
 interface LatinSymbolPackItemChirho {
@@ -452,6 +462,9 @@ interface CertificationStatusChirho {
     manifestCountMatchesCurrentChirho: boolean;
     manifestIdsMatchCurrentChirho: boolean;
     manifestTextMatchesCurrentChirho: boolean;
+    manifestImagesMatchCurrentChirho: boolean;
+    manifestImageDriftCountChirho: number;
+    manifestImageDriftSamplesChirho: string[];
     confirmedByPolicyCountChirho: number;
     reviewedIssueByPolicyCountChirho: number;
     remainingConfirmationCountChirho: number;
@@ -718,6 +731,49 @@ function rawHebrewReportLiveDriftsChirho(rawSpansChirho: RawHebrewSpanChirho[]):
         reasonChirho: "line-text-drift-chirho",
         reportTextChirho: reportLineTextChirho,
         liveTextChirho: liveLineTextChirho,
+      });
+    }
+  }
+  return driftsChirho;
+}
+
+function summarizeExpertPackImageDriftChirho(driftChirho: ExpertPackImageDriftChirho): string {
+  return [
+    driftChirho.idChirho,
+    driftChirho.reasonChirho,
+    `source="${driftChirho.sourcePathChirho}"`,
+    `packet="${driftChirho.packetPathChirho}"`,
+  ].join(" ");
+}
+
+function expertPackImageDriftsChirho(itemsChirho: ExpertPackVisionItemChirho[]): ExpertPackImageDriftChirho[] {
+  const driftsChirho: ExpertPackImageDriftChirho[] = [];
+  const seenPairsChirho = new Map<string, string | null>();
+  for (const itemChirho of itemsChirho) {
+    const pairKeyChirho = `${itemChirho.sourcePathChirho}\u0000${itemChirho.packetPathChirho}`;
+    let reasonChirho = seenPairsChirho.get(pairKeyChirho);
+    if (reasonChirho === undefined) {
+      if (!existsSync(itemChirho.sourcePathChirho)) {
+        reasonChirho = "missing-source-image-chirho";
+      } else if (!existsSync(itemChirho.packetPathChirho)) {
+        reasonChirho = "missing-packet-image-chirho";
+      } else {
+        try {
+          reasonChirho = readFileSync(itemChirho.sourcePathChirho).equals(readFileSync(itemChirho.packetPathChirho))
+            ? null
+            : "image-byte-drift-chirho";
+        } catch (errorChirho) {
+          reasonChirho = `image-read-error-chirho:${errorChirho instanceof Error ? errorChirho.message : String(errorChirho)}`;
+        }
+      }
+      seenPairsChirho.set(pairKeyChirho, reasonChirho);
+    }
+    if (reasonChirho !== null) {
+      driftsChirho.push({
+        idChirho: itemChirho.idChirho,
+        reasonChirho,
+        sourcePathChirho: itemChirho.sourcePathChirho,
+        packetPathChirho: itemChirho.packetPathChirho,
       });
     }
   }
@@ -1094,7 +1150,10 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
           typeof itemChirho.idChirho === "string" &&
           typeof itemChirho.scriptChirho === "string" &&
           typeof itemChirho.visionSourceChirho === "string" &&
-          typeof itemChirho.currentTextChirho === "string"
+          typeof itemChirho.currentTextChirho === "string" &&
+          typeof itemChirho.sourcePathChirho === "string" &&
+          typeof itemChirho.packetPathChirho === "string" &&
+          typeof itemChirho.markdownPathChirho === "string"
       ));
   const latinSymbolPackManifestShapeOkChirho =
     !latinSymbolPackManifestExistsChirho ||
@@ -1249,6 +1308,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
         liveItemChirho.currentTextChirho === itemChirho.currentTextChirho
       );
     });
+  const visionTierManifestImageDriftsChirho = expertPackImageDriftsChirho(expertManifestItemsChirho);
   const visionTierConfirmationSummaryChirho = summarizeVisionTierExpertConfirmationsChirho(
     visionTierExpertConfirmationFileChirho,
     visionTierExpertConfirmationPolicyExistsChirho,
@@ -1303,6 +1363,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     manifestCountMatchesCurrentChirho: visionTierManifestCountMatchesCurrentChirho,
     manifestIdsMatchCurrentChirho: visionTierManifestIdsMatchCurrentChirho,
     manifestTextMatchesCurrentChirho: visionTierManifestTextMatchesCurrentChirho,
+    manifestImagesMatchCurrentChirho: visionTierManifestImageDriftsChirho.length === 0,
+    manifestImageDriftCountChirho: visionTierManifestImageDriftsChirho.length,
+    manifestImageDriftSamplesChirho: visionTierManifestImageDriftsChirho
+      .slice(0, 8)
+      .map(summarizeExpertPackImageDriftChirho),
     confirmedByPolicyCountChirho: visionTierConfirmationSummaryChirho.validConfirmedPolicyItemCountChirho,
     reviewedIssueByPolicyCountChirho: visionTierConfirmationSummaryChirho.validReviewedIssuePolicyItemCountChirho,
     remainingConfirmationCountChirho: visionTierRemainingConfirmationCountChirho,
@@ -1637,6 +1702,13 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     !visionTierManifestTextMatchesCurrentChirho
   ) {
     remainingWorkChirho.push("expert confirmation manifest text does not match current live vision-tier span text; regenerate make-expert-confirm-pack-chirho");
+  }
+  if (
+    expertPackManifestExistsChirho &&
+    expertPackManifestShapeOkChirho &&
+    visionTierManifestImageDriftsChirho.length !== 0
+  ) {
+    remainingWorkChirho.push(`${visionTierManifestImageDriftsChirho.length} expert confirmation packet image(s) do not match source scanline images; regenerate make-expert-confirm-pack-chirho`);
   }
   if (visionTierConfirmationSummaryChirho.staleConfirmedPolicyItemCountChirho !== 0) {
     remainingWorkChirho.push(
@@ -1995,6 +2067,11 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Manifest count matches current state: ${statusChirho.visionTierChirho.manifestCountMatchesCurrentChirho}`,
     `- Manifest IDs match current state: ${statusChirho.visionTierChirho.manifestIdsMatchCurrentChirho}`,
     `- Manifest text matches current state: ${statusChirho.visionTierChirho.manifestTextMatchesCurrentChirho}`,
+    `- Manifest images match source scanlines: ${statusChirho.visionTierChirho.manifestImagesMatchCurrentChirho}`,
+    `- Manifest image drift items: ${statusChirho.visionTierChirho.manifestImageDriftCountChirho}`,
+    ...statusChirho.visionTierChirho.manifestImageDriftSamplesChirho.map(
+      (sampleChirho) => `  - ${sampleChirho}`
+    ),
     `- Confirmed by explicit policy: ${statusChirho.visionTierChirho.confirmedByPolicyCountChirho}`,
     `- Reviewed issues by explicit policy: ${statusChirho.visionTierChirho.reviewedIssueByPolicyCountChirho}`,
     `- Remaining confirmations: ${statusChirho.visionTierChirho.remainingConfirmationCountChirho}`,

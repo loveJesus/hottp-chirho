@@ -53,6 +53,8 @@ interface ExpertPackItemChirho {
   lineIndexChirho: number;
   segmentIndexChirho: number;
   currentTextChirho: string;
+  sourcePathChirho: string;
+  packetPathChirho: string;
   markdownPathChirho: string;
   priorityMatchChirho?: boolean;
 }
@@ -176,6 +178,13 @@ function assertExpertPackMatchesLiveChirho(
     );
   }
   for (const packetItemChirho of packetItemsChirho) {
+    if (
+      typeof packetItemChirho.sourcePathChirho !== "string" ||
+      typeof packetItemChirho.packetPathChirho !== "string" ||
+      typeof packetItemChirho.markdownPathChirho !== "string"
+    ) {
+      throw new Error(`Expert pack manifest malformed: ${packetItemChirho.idChirho} image path fields missing; regenerate make-expert-confirm-pack-chirho`);
+    }
     const liveItemChirho = liveByIdChirho.get(packetItemChirho.idChirho);
     if (liveItemChirho === undefined) {
       throw new Error(`Expert pack is stale: ${packetItemChirho.idChirho} is not present in live state; regenerate make-expert-confirm-pack-chirho`);
@@ -188,6 +197,15 @@ function assertExpertPackMatchesLiveChirho(
     }
     if (liveItemChirho.currentTextChirho !== packetItemChirho.currentTextChirho) {
       throw new Error(`Expert pack is stale: ${packetItemChirho.idChirho} text changed; regenerate make-expert-confirm-pack-chirho`);
+    }
+    if (!existsSync(packetItemChirho.sourcePathChirho)) {
+      throw new Error(`Expert pack is stale: ${packetItemChirho.idChirho} source image missing; regenerate make-expert-confirm-pack-chirho`);
+    }
+    if (!existsSync(packetItemChirho.packetPathChirho)) {
+      throw new Error(`Expert pack is stale: ${packetItemChirho.idChirho} packet image missing; regenerate make-expert-confirm-pack-chirho`);
+    }
+    if (!readFileSync(packetItemChirho.sourcePathChirho).equals(readFileSync(packetItemChirho.packetPathChirho))) {
+      throw new Error(`Expert pack is stale: ${packetItemChirho.idChirho} packet image differs from source scanline; regenerate make-expert-confirm-pack-chirho`);
     }
   }
   return liveByIdChirho;
