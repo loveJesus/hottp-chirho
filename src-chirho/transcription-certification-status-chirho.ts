@@ -423,6 +423,11 @@ interface CandidateScanReportSummaryChirho {
   highPriorityCountChirho: number | null;
   mediumPriorityCountChirho: number | null;
   lowPriorityCountChirho: number | null;
+  renderedCandidateLineCountChirho: number;
+  renderedHighPriorityCountChirho: number;
+  renderedMediumPriorityCountChirho: number;
+  renderedLowPriorityCountChirho: number;
+  summaryCountsMatchRenderedCandidatesChirho: boolean;
 }
 
 interface CertificationStatusChirho {
@@ -607,6 +612,13 @@ function markdownTextFieldChirho(markdownChirho: string, labelChirho: string): s
   return markdownChirho.match(new RegExp(`^- ${escapedLabelChirho}: (.+)$`, "mu"))?.[1] ?? null;
 }
 
+function candidateHeadingCountChirho(markdownChirho: string, priorityChirho?: string): number {
+  const patternChirho = priorityChirho === undefined
+    ? /^### (?:high-chirho|medium-chirho|low-chirho) score /gmu
+    : new RegExp(`^### ${priorityChirho} score `, "gmu");
+  return [...markdownChirho.matchAll(patternChirho)].length;
+}
+
 function candidateScanReportSummaryChirho(pathChirho: string, liveSpanSourceFingerprintChirho: SourceFingerprintChirho): CandidateScanReportSummaryChirho {
   const reportPathChirho = relativeProjectPathChirho(pathChirho);
   if (!existsSync(pathChirho)) {
@@ -622,6 +634,11 @@ function candidateScanReportSummaryChirho(pathChirho: string, liveSpanSourceFing
       highPriorityCountChirho: null,
       mediumPriorityCountChirho: null,
       lowPriorityCountChirho: null,
+      renderedCandidateLineCountChirho: 0,
+      renderedHighPriorityCountChirho: 0,
+      renderedMediumPriorityCountChirho: 0,
+      renderedLowPriorityCountChirho: 0,
+      summaryCountsMatchRenderedCandidatesChirho: false,
     };
   }
   const textChirho = readFileSync(pathChirho, "utf8");
@@ -632,6 +649,15 @@ function candidateScanReportSummaryChirho(pathChirho: string, liveSpanSourceFing
   const highPriorityCountChirho = markdownNumberFieldChirho(textChirho, "High priority");
   const mediumPriorityCountChirho = markdownNumberFieldChirho(textChirho, "Medium priority");
   const lowPriorityCountChirho = markdownNumberFieldChirho(textChirho, "Low priority included");
+  const renderedCandidateLineCountChirho = candidateHeadingCountChirho(textChirho);
+  const renderedHighPriorityCountChirho = candidateHeadingCountChirho(textChirho, "high-chirho");
+  const renderedMediumPriorityCountChirho = candidateHeadingCountChirho(textChirho, "medium-chirho");
+  const renderedLowPriorityCountChirho = candidateHeadingCountChirho(textChirho, "low-chirho");
+  const summaryCountsMatchRenderedCandidatesChirho =
+    candidateLineCountChirho === renderedCandidateLineCountChirho &&
+    highPriorityCountChirho === renderedHighPriorityCountChirho &&
+    mediumPriorityCountChirho === renderedMediumPriorityCountChirho &&
+    lowPriorityCountChirho === renderedLowPriorityCountChirho;
   const reportShapeOkChirho =
     generatedAtChirho !== null &&
     spanSourceFileCountChirho !== null &&
@@ -639,7 +665,8 @@ function candidateScanReportSummaryChirho(pathChirho: string, liveSpanSourceFing
     candidateLineCountChirho !== null &&
     highPriorityCountChirho !== null &&
     mediumPriorityCountChirho !== null &&
-    lowPriorityCountChirho !== null;
+    lowPriorityCountChirho !== null &&
+    summaryCountsMatchRenderedCandidatesChirho;
   return {
     reportPathChirho,
     reportExistsChirho: true,
@@ -655,6 +682,11 @@ function candidateScanReportSummaryChirho(pathChirho: string, liveSpanSourceFing
     highPriorityCountChirho,
     mediumPriorityCountChirho,
     lowPriorityCountChirho,
+    renderedCandidateLineCountChirho,
+    renderedHighPriorityCountChirho,
+    renderedMediumPriorityCountChirho,
+    renderedLowPriorityCountChirho,
+    summaryCountsMatchRenderedCandidatesChirho,
   };
 }
 
@@ -2582,10 +2614,17 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `  - Live span source files: ${scanChirho.liveSpanSourceFileCountChirho}`,
     `  - Span source fingerprint matches current spans: ${scanChirho.spanSourceFingerprintMatchesCurrentChirho}`,
     `  - Candidate lines: ${scanChirho.candidateLineCountChirho ?? "unknown"}`,
+    `  - Rendered candidate headings: ${scanChirho.renderedCandidateLineCountChirho}`,
+    `  - Summary counts match rendered candidates: ${scanChirho.summaryCountsMatchRenderedCandidatesChirho}`,
     `  - High/medium/low: ${[
       scanChirho.highPriorityCountChirho ?? "unknown",
       scanChirho.mediumPriorityCountChirho ?? "unknown",
       scanChirho.lowPriorityCountChirho ?? "unknown",
+    ].join("/")}`,
+    `  - Rendered high/medium/low: ${[
+      scanChirho.renderedHighPriorityCountChirho,
+      scanChirho.renderedMediumPriorityCountChirho,
+      scanChirho.renderedLowPriorityCountChirho,
     ].join("/")}`,
   ];
   const hallelujahReviewCountChirho =
