@@ -8,8 +8,8 @@
  */
 
 import { Database } from "bun:sqlite";
-import { existsSync, readFileSync, writeFileSync } from "fs";
-import { join } from "path";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
+import { dirname, join } from "path";
 
 import { PROGRESS_DB_PATH_CHIRHO, PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { writePassCHumanValidationBackupChirho } from "./pass-c-human-validation-backup-chirho.ts";
@@ -134,7 +134,10 @@ function loadSpanLineChirho(pathChirho: string): SpanLineChirho {
 
 function writeSpanLineChirho(pathChirho: string, lineChirho: SpanLineChirho): void {
   normalizeSpanLineTextFieldsChirho(lineChirho);
-  writeFileSync(pathChirho, `${JSON.stringify(lineChirho, null, 2)}\n`);
+  mkdirSync(dirname(pathChirho), { recursive: true });
+  const tempPathChirho = `${pathChirho}.tmp-chirho-${process.pid}-${Date.now()}`;
+  writeFileSync(tempPathChirho, `${JSON.stringify(lineChirho, null, 2)}\n`);
+  renameSync(tempPathChirho, pathChirho);
 }
 
 function tableColumnsChirho(dbChirho: Database, tableNameChirho: string): string[] {
