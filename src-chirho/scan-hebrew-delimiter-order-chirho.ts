@@ -9,10 +9,11 @@
  * it never edits spans, databases, packets, or certification state.
  */
 
-import { mkdirSync, readFileSync, writeFileSync } from "fs";
-import { dirname, join } from "path";
+import { readFileSync } from "fs";
+import { join } from "path";
 import { fileURLToPath } from "url";
 
+import { writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import { sourceFingerprintForPathsChirho, type SourceFingerprintChirho } from "./source-fingerprint-chirho.ts";
@@ -249,8 +250,10 @@ function mainChirho(): void {
   const spanSourceFingerprintChirho = sourceFingerprintForPathsChirho(scanSpanLinePathsChirho());
   const scannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(SCANNER_PATH_CHIRHO);
   const findingsChirho = scanFindingsChirho();
-  mkdirSync(dirname(outPathChirho), { recursive: true });
-  writeFileSync(outPathChirho, markdownReportChirho(findingsChirho, spanSourceFingerprintChirho, scannerSourceFingerprintChirho));
+  writeTextAtomicChirho(
+    outPathChirho,
+    markdownReportChirho(findingsChirho, spanSourceFingerprintChirho, scannerSourceFingerprintChirho)
+  );
   const suspectCountChirho = findingsChirho.filter((findingChirho) => findingChirho.statusChirho === "close-before-open-suspect-chirho").length;
   const neighborUnbalancedCountChirho = findingsChirho.filter((findingChirho) => findingChirho.statusChirho === "neighbor-unbalanced-review-chirho").length;
   console.log(

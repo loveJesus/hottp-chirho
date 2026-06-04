@@ -10,10 +10,11 @@
  * a non-certifying markdown report.
  */
 
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync } from "fs";
 import { dirname, join, relative } from "path";
 import { fileURLToPath } from "url";
 
+import { writeTextAtomicChirho } from "../../src-chirho/atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "../../src-chirho/config-chirho.ts";
 import { renderSpanLineTextChirho } from "../../src-chirho/span-line-text-chirho.ts";
 import { sourceFingerprintForPathsChirho, type SourceFingerprintChirho } from "../../src-chirho/source-fingerprint-chirho.ts";
@@ -397,7 +398,10 @@ function mainChirho(): void {
       return aChirho.lineIndexChirho - bChirho.lineIndexChirho;
     });
 
-  writeFileSync(reportPathChirho, renderReportChirho(candidatesChirho, reportPathChirho, spanSourceFingerprintChirho, scannerSourceFingerprintChirho));
+  writeTextAtomicChirho(
+    reportPathChirho,
+    renderReportChirho(candidatesChirho, reportPathChirho, spanSourceFingerprintChirho, scannerSourceFingerprintChirho)
+  );
   console.log(
     JSON.stringify(
       {
