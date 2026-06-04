@@ -9,6 +9,12 @@
  */
 
 import {
+  summarizeLatinSymbolAcceptancePolicyChirho,
+  LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO,
+  type LatinSymbolAcceptancePolicyFileChirho,
+} from "./latin-symbol-vision-acceptance-policy-chirho.ts";
+import type { LatinSymbolVisionLiveItemChirho } from "./latin-symbol-vision-live-items-chirho.ts";
+import {
   certifyingReviewerAttributionErrorChirho,
   explicitReviewerAttributionErrorChirho,
   isBlockedCertificationReviewerAttributionChirho,
@@ -126,6 +132,20 @@ const EXPERT_POLICY_LIVE_ITEM_CHIRHO: VisionTierExpertLiveItemChirho = {
   currentTextChirho: "א",
 };
 
+const LATIN_SYMBOL_POLICY_LIVE_ITEM_CHIRHO: LatinSymbolVisionLiveItemChirho = {
+  idChirho: "v1-p0001-l001-s0",
+  itemKindChirho: "span-chirho",
+  volumeChirho: 1,
+  pageChirho: 1,
+  lineIndexChirho: 1,
+  segmentIndexChirho: 0,
+  wordIndexChirho: null,
+  scriptChirho: "symbol-chirho",
+  textChirho: "3,11",
+  lineTextChirho: "3,11",
+  sourceChirho: "explicit-span-provenance-chirho",
+};
+
 function expertPolicyFileChirho(reviewerChirho: string): VisionTierExpertConfirmationFileChirho {
   return {
     schemaVersionChirho: 1,
@@ -146,6 +166,33 @@ function expertPolicyFileChirho(reviewerChirho: string): VisionTierExpertConfirm
             visionSourceChirho: EXPERT_POLICY_LIVE_ITEM_CHIRHO.visionSourceChirho,
             currentTextChirho: EXPERT_POLICY_LIVE_ITEM_CHIRHO.currentTextChirho,
             currentTextHashChirho: hashTextChirho(EXPERT_POLICY_LIVE_ITEM_CHIRHO.currentTextChirho),
+          },
+        ],
+      },
+    ],
+  };
+}
+
+function latinSymbolPolicyFileChirho(reviewerChirho: string): LatinSymbolAcceptancePolicyFileChirho {
+  return {
+    schemaVersionChirho: 1,
+    policiesChirho: [
+      {
+        policyIdChirho: `reviewer-attribution-check-${reviewerChirho}-latin-symbol-chirho`,
+        decisionChirho: LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO,
+        reviewerChirho,
+        acceptedAtChirho: "2026-06-04T00:00:00.000Z",
+        acceptCleanChirho: true,
+        rationaleChirho: "reviewer attribution invariant check",
+        scopeChirho: "script=symbol-chirho; kind=all-chirho; safeSymbolsOnly=false",
+        itemCountChirho: 1,
+        itemsChirho: [
+          {
+            itemIdChirho: LATIN_SYMBOL_POLICY_LIVE_ITEM_CHIRHO.idChirho,
+            itemKindChirho: LATIN_SYMBOL_POLICY_LIVE_ITEM_CHIRHO.itemKindChirho,
+            scriptChirho: LATIN_SYMBOL_POLICY_LIVE_ITEM_CHIRHO.scriptChirho,
+            currentTextChirho: LATIN_SYMBOL_POLICY_LIVE_ITEM_CHIRHO.textChirho,
+            currentTextHashChirho: hashTextChirho(LATIN_SYMBOL_POLICY_LIVE_ITEM_CHIRHO.textChirho),
           },
         ],
       },
@@ -175,6 +222,31 @@ function checkExpertConfirmationPolicyAttributionChirho(): void {
     )
   ) {
     throw new Error(`machine expert policy did not report reviewer attribution error: ${machineSummaryChirho.shapeErrorsChirho.join("; ")}`);
+  }
+}
+
+function checkLatinSymbolPolicyAttributionChirho(): void {
+  const humanSummaryChirho = summarizeLatinSymbolAcceptancePolicyChirho(
+    latinSymbolPolicyFileChirho("dr-smith-human-reviewer"),
+    true,
+    [LATIN_SYMBOL_POLICY_LIVE_ITEM_CHIRHO]
+  );
+  assertEqualChirho(humanSummaryChirho.policyFileShapeOkChirho, true, "human Latin/symbol policy shape");
+  assertEqualChirho(humanSummaryChirho.validAcceptedPolicyItemCountChirho, 1, "human Latin/symbol policy valid item count");
+
+  const machineSummaryChirho = summarizeLatinSymbolAcceptancePolicyChirho(
+    latinSymbolPolicyFileChirho("openai-human-chirho"),
+    true,
+    [LATIN_SYMBOL_POLICY_LIVE_ITEM_CHIRHO]
+  );
+  assertEqualChirho(machineSummaryChirho.policyFileShapeOkChirho, false, "machine-human Latin/symbol policy shape");
+  assertEqualChirho(machineSummaryChirho.validAcceptedPolicyItemCountChirho, 0, "machine-human Latin/symbol policy valid item count");
+  if (
+    !machineSummaryChirho.shapeErrorsChirho.some((errorChirho) =>
+      errorChirho.includes("is not trivial symbol punctuation")
+    )
+  ) {
+    throw new Error(`machine-human Latin/symbol policy did not report trivial-only scope error: ${machineSummaryChirho.shapeErrorsChirho.join("; ")}`);
   }
 }
 
@@ -219,6 +291,7 @@ function mainChirho(): void {
     );
   }
   checkExpertConfirmationPolicyAttributionChirho();
+  checkLatinSymbolPolicyAttributionChirho();
 
   console.log(`[${MODULE_CHIRHO}] reviewer attribution invariants passed`);
 }

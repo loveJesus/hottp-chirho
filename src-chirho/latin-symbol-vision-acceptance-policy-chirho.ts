@@ -17,7 +17,10 @@ import {
   isNontrivialSymbolTextChirho,
   type LatinSymbolVisionLiveItemChirho,
 } from "./latin-symbol-vision-live-items-chirho.ts";
-import { isGenericReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
+import {
+  isBlockedCertificationReviewerAttributionChirho,
+  isGenericReviewerAttributionChirho,
+} from "./reviewer-attribution-chirho.ts";
 
 export const LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -85,7 +88,7 @@ function policyClaimsSafeSymbolsOnlyChirho(policyChirho: LatinSymbolAcceptancePo
 
 function policyReviewerHasBroadAcceptancePrivilegeChirho(policyChirho: LatinSymbolAcceptancePolicyChirho): boolean {
   const reviewerChirho = policyChirho.reviewerChirho ?? "";
-  if (isGenericReviewerAttributionChirho(reviewerChirho)) return false;
+  if (isBlockedCertificationReviewerAttributionChirho(reviewerChirho)) return false;
   return /(^hallelujah([_-]|$)|(^|[_-])human([_-]|$))/i.test(reviewerChirho);
 }
 

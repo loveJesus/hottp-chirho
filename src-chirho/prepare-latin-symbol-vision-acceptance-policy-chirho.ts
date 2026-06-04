@@ -33,7 +33,10 @@ import {
   type LatinSymbolAcceptancePolicyChirho,
   type LatinSymbolAcceptancePolicyFileChirho,
 } from "./latin-symbol-vision-acceptance-policy-chirho.ts";
-import { assertExplicitReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
+import {
+  assertExplicitReviewerAttributionChirho,
+  isBlockedCertificationReviewerAttributionChirho,
+} from "./reviewer-attribution-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "prepare-latin-symbol-vision-acceptance-policy-chirho";
@@ -154,6 +157,9 @@ function mainChirho(): void {
     return scriptOkChirho && kindOkChirho && symbolSafetyOkChirho;
   });
   const selectedNontrivialSymbolItemsChirho = selectedItemsChirho.filter(isNontrivialSymbolTextChirho);
+  const selectedNonHumanPrivilegedItemsChirho = selectedItemsChirho.filter(
+    (itemChirho) => itemChirho.scriptChirho !== "symbol-chirho" || isNontrivialSymbolTextChirho(itemChirho)
+  );
   if (decisionChirho === LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO) {
     if (writeChirho && expectedItemCountChirho === null) {
       throw new Error("--expected-item-count-chirho is required when writing an accepted Latin/symbol policy");
@@ -169,6 +175,16 @@ function mainChirho(): void {
         expectedItemIdsChirho
       );
     }
+  }
+  if (
+    decisionChirho === LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO &&
+    isBlockedCertificationReviewerAttributionChirho(reviewerChirho) &&
+    selectedNonHumanPrivilegedItemsChirho.length !== 0
+  ) {
+    throw new Error(
+      "Refusing accepted policy with non-human-privileged reviewer and non-trivial/non-symbol item(s): " +
+        selectedNonHumanPrivilegedItemsChirho.slice(0, 8).map(shortItemLabelChirho).join(", ")
+    );
   }
   if (
     decisionChirho === LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO &&
