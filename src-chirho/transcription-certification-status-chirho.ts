@@ -595,7 +595,8 @@ function volumeReviewStartLinkKeyChirho(prefixChirho: string, volumeChirho: numb
 function itemVolumeChirho(itemChirho: { volumeChirho?: number; idChirho?: string }): number | null {
   if (typeof itemChirho.volumeChirho === "number") return itemChirho.volumeChirho;
   const matchChirho = itemChirho.idChirho?.match(/^v(\d+)-/);
-  return matchChirho == null ? null : Number.parseInt(matchChirho[1], 10);
+  const volumeTextChirho = matchChirho?.[1];
+  return volumeTextChirho === undefined ? null : Number.parseInt(volumeTextChirho, 10);
 }
 
 function countByVolumeChirho(itemsChirho: Array<{ volumeChirho?: number; idChirho?: string }>): Record<string, number> {
@@ -816,8 +817,8 @@ function expertReviewStartUrlChirho(
   return itemIdChirho === null ? null : expertReviewUrlChirho(scriptChirho, priorityChirho, itemIdChirho, volumeChirho);
 }
 
-function withReviewStartTextChirho(urlChirho: string | null): string {
-  return urlChirho === null ? "" : `; first pending: ${urlChirho}`;
+function withReviewStartTextChirho(urlChirho: string | null | undefined): string {
+  return urlChirho == null ? "" : `; first pending: ${urlChirho}`;
 }
 
 function blankVisionTierApplyCommandTemplateChirho(idChirho: string, expectedReviewerRoleChirho: string | null): string {
