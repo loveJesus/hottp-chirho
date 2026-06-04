@@ -17,6 +17,12 @@ import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { writePassCHumanValidationBackupChirho } from "./pass-c-human-validation-backup-chirho.ts";
+import {
+  RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_1_2_CHIRHO,
+  RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_3_5_CHIRHO,
+  RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO,
+  rawHebrewReviewTierForSpanChirho,
+} from "./raw-hebrew-review-tier-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
@@ -517,17 +523,15 @@ function defaultScriptVerdictChirho(statusChirho: string, hintSummaryChirho: str
 function tierForSpanChirho(spanChirho: ReportSpanChirho): string {
   if (spanChirho.validationStatusChirho === "unknown-script-chirho") return "unknown-script-chirho";
   if (spanChirho.validationStatusChirho === "suspect-text-chirho") return "suspect-text-chirho";
-  if (spanChirho.validationStatusChirho === "all-token-validated-chirho") return "spot-check-chirho";
-  if (spanChirho.volumeChirho >= 3) return "primary-vols-3-5-chirho";
-  return "primary-vol-2-chirho";
+  return rawHebrewReviewTierForSpanChirho(spanChirho);
 }
 
 function queuePriorityChirho(spanChirho: ReportSpanChirho): number {
   const tierChirho = tierForSpanChirho(spanChirho);
   if (tierChirho === "unknown-script-chirho") return 0;
   if (tierChirho === "suspect-text-chirho") return 0;
-  if (tierChirho === "primary-vols-3-5-chirho") return 0;
-  if (tierChirho === "primary-vol-2-chirho") return 1000;
+  if (tierChirho === RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_3_5_CHIRHO) return 0;
+  if (tierChirho === RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_1_2_CHIRHO) return 1000;
   return 2000;
 }
 
@@ -1064,9 +1068,9 @@ function pageHtmlChirho(): string {
       <label class="label-chirho" for="tier-filter-chirho">Tier</label>
       <select id="tier-filter-chirho">
         <option value="all-chirho">All</option>
-        <option value="primary-vols-3-5-chirho">Primary vols 3-5</option>
-        <option value="primary-vol-2-chirho">Primary vol 2</option>
-        <option value="spot-check-chirho">Spot check</option>
+        <option value="${RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_3_5_CHIRHO}">Primary vols 3-5</option>
+        <option value="${RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_1_2_CHIRHO}">Primary vols 1-2</option>
+        <option value="${RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO}">Spot check</option>
         <option value="suspect-text-chirho">Suspect text</option>
         <option value="unknown-script-chirho">Unknown script</option>
       </select>
