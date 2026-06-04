@@ -593,6 +593,7 @@ interface HebrewDelimiterOrderAuditSummaryChirho {
   renderedNeighborUnbalancedReviewCountChirho: number;
   neighborUnbalancedCoveredByReviewCountChirho: number;
   neighborUnbalancedUncoveredByReviewCountChirho: number;
+  neighborUnbalancedCoveredSamplesChirho: string[];
   neighborUnbalancedUncoveredSamplesChirho: string[];
   summaryCountsMatchRenderedRowsChirho: boolean;
 }
@@ -973,6 +974,7 @@ function hebrewDelimiterOrderAuditSummaryChirho(
       renderedNeighborUnbalancedReviewCountChirho: 0,
       neighborUnbalancedCoveredByReviewCountChirho: 0,
       neighborUnbalancedUncoveredByReviewCountChirho: 0,
+      neighborUnbalancedCoveredSamplesChirho: [],
       neighborUnbalancedUncoveredSamplesChirho: [],
       summaryCountsMatchRenderedRowsChirho: false,
     };
@@ -1038,6 +1040,9 @@ function hebrewDelimiterOrderAuditSummaryChirho(
     renderedNeighborUnbalancedReviewCountChirho,
     neighborUnbalancedCoveredByReviewCountChirho: neighborUnbalancedCoveredRowsChirho.length,
     neighborUnbalancedUncoveredByReviewCountChirho: neighborUnbalancedUncoveredRowsChirho.length,
+    neighborUnbalancedCoveredSamplesChirho: neighborUnbalancedCoveredRowsChirho
+      .slice(0, 8)
+      .map((rowChirho) => rowChirho.locationTextChirho),
     neighborUnbalancedUncoveredSamplesChirho: neighborUnbalancedUncoveredRowsChirho
       .slice(0, 8)
       .map((rowChirho) => rowChirho.locationTextChirho),
@@ -3518,6 +3523,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `  - Close-before-open suspects: ${scanChirho.closeBeforeOpenSuspectCountChirho ?? "unknown"} (rendered ${scanChirho.renderedCloseBeforeOpenSuspectCountChirho})`,
     `  - Neighbor-unbalanced review rows: ${scanChirho.neighborUnbalancedReviewCountChirho ?? "unknown"} (rendered ${scanChirho.renderedNeighborUnbalancedReviewCountChirho})`,
     `  - Neighbor-unbalanced rows covered by raw/expert review: ${scanChirho.neighborUnbalancedCoveredByReviewCountChirho}`,
+    `  - Neighbor-unbalanced covered samples: ${scanChirho.neighborUnbalancedCoveredSamplesChirho.length === 0 ? "none" : scanChirho.neighborUnbalancedCoveredSamplesChirho.join(", ")}`,
     `  - Neighbor-unbalanced rows not covered by raw/expert review: ${scanChirho.neighborUnbalancedUncoveredByReviewCountChirho}`,
     `  - Neighbor-unbalanced uncovered samples: ${scanChirho.neighborUnbalancedUncoveredSamplesChirho.length === 0 ? "none" : scanChirho.neighborUnbalancedUncoveredSamplesChirho.join(", ")}`,
   ];
