@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T12:20:45.406Z",
+  "generatedAtChirho": "2026-06-04T12:26:35.788Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 839,
+  "countChirho": 841,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8393,6 +8393,26 @@
       "scriptChirho": "greek-chirho",
       "utf8TextChirho": "ὁ",
       "notesChirho": "Migrated the existing vol 4 p150 line 32 vision-tier `ὁ` row from segment 5 to segment 6 after splitting preceding `ὁδοῖς μου et le` and adding the printed `𝔊pal:` colon; original OCR garble was `d`. Exact Greek remains expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 29,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "967 4",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": "967 ≠",
+      "notesChirho": "Cleaned vol 3 p152 line 29 apparatus symbol after scanline review: the print reads `967 ≠` between Greek `‘ἡγούμενος` and `ἀφηγούμενος`; current OCR stored the not-equal sign as `4`. Stored as symbol-chirho vision-tier for Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 31,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "967 +",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": "967 ±",
+      "notesChirho": "Cleaned vol 3 p152 line 31 apparatus symbol after scanline review: the print reads `967 ±` between Greek `κρίνειν` and `κρῖσιν`; current OCR stored the plus-minus sign as plain `+`. Stored as symbol-chirho vision-tier for Latin/symbol proofing."
     }
   ]
 }

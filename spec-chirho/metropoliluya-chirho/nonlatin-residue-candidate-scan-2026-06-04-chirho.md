@@ -3,7 +3,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Non-Latin Residue Candidate Scan Chirho
 
-Generated: 2026-06-04T12:22:05.350Z
+Generated: 2026-06-04T12:28:33.184Z
 
 This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, or apparatus residue inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.
 
@@ -11,9 +11,9 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 
 ## Summary
 
-- Candidate lines: 30
+- Candidate lines: 28
 - High priority: 1
-- Medium priority: 23
+- Medium priority: 21
 - Low priority included: 6
 
 ## Candidates
@@ -57,26 +57,6 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 - Line text: `de remplacer les deux קֶשֶׁר du vs 12 par קדש , obtenant ainsi pour les vss 12-14 : (12)`
 - Suspicious spans:
   - S2 french-chirho: `du vs 12 par` (short-garble-near-nonlatin-chirho; neighbors hebrew-chirho / hebrew-chirho)
-
-### medium-chirho score 5: vol 3 p0152 L029
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-3-chirho/page-0152-chirho/line-029-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-3-chirho/page-0152-chirho/line-029-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-3-chirho/page-0152-chirho/line-029-chirho.png)
-- Line text: `en 46,12a: ‘ἡγούμενος 967 4 ἀφηγούμενος Cpl et rel.[11]`
-- Suspicious spans:
-  - S2 french-chirho: `967 4` (short-garble-near-nonlatin-chirho; neighbors greek-chirho / greek-chirho)
-
-### medium-chirho score 5: vol 3 p0152 L031
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-3-chirho/page-0152-chirho/line-031-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-3-chirho/page-0152-chirho/line-031-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-3-chirho/page-0152-chirho/line-031-chirho.png)
-- Line text: `en 44,24a: κρίνειν 967 + κρῖσιν Cpl ≠ διακρίνειν vel διακρῖναι rel.[12]`
-- Suspicious spans:
-  - S2 french-chirho: `967 +` (short-garble-near-nonlatin-chirho; neighbors greek-chirho / greek-chirho)
 
 ### medium-chirho score 5: vol 4 p0148 L017
 
