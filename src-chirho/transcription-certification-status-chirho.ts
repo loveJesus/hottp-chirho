@@ -36,6 +36,7 @@ import {
   PASS_C_HUMAN_VALIDATION_BACKUP_PATH_CHIRHO,
   readPassCHumanValidationBackupFileChirho,
 } from "./pass-c-human-validation-backup-chirho.ts";
+import { spanSourceFingerprintForTargetsChirho } from "./source-fingerprint-chirho.ts";
 import {
   scanNonNfcSpanTextFieldsChirho,
   scanSpanLinePathsChirho,
@@ -136,15 +137,23 @@ const ALLOWED_WLC_CORRECTION_FLAGS_CHIRHO = new Set([
 
 interface ExportReportChirho {
   generatedAtChirho?: string;
+  spanSourceFileCountChirho?: number;
+  spanSourceFingerprintChirho?: string;
   strictPassedChirho?: boolean;
   issueCountChirho?: number;
   issuesChirho?: ExportIssueChirho[];
+  pagesChirho?: ExportPageReportChirho[];
   unknownSpanCountChirho?: number;
   nonNfcSpanCountChirho?: number;
   hebrewSpanCountChirho?: number;
   passCOcrHebrewSpanCountChirho?: number;
   crnnValidatedHebrewSpanCountChirho?: number;
   d1PagesWithoutSpansChirho?: unknown[];
+}
+
+interface ExportPageReportChirho {
+  volumeChirho?: number;
+  pageChirho?: number;
 }
 
 interface ExportIssueChirho {
@@ -369,6 +378,9 @@ interface CertificationStatusChirho {
     issueCodeCountsChirho: Record<string, number>;
     issueSummariesChirho: string[];
     guardedWlcCorrectionCommandsChirho: GuardedWlcCorrectionCommandChirho[];
+    spanSourceFileCountChirho: number | null;
+    liveSpanSourceFileCountChirho: number;
+    spanSourceFingerprintMatchesCurrentChirho: boolean;
     unknownSpanCountChirho: number;
     nonNfcSpanCountChirho: number;
     d1GapPageCountChirho: number;
@@ -831,6 +843,18 @@ function countIssueCodesChirho(issuesChirho: ExportIssueChirho[]): Record<string
   return countsChirho;
 }
 
+function exportReportTargetsChirho(exportReportChirho: ExportReportChirho): Array<{ volumeChirho: number; pageChirho: number }> {
+  return (exportReportChirho.pagesChirho ?? [])
+    .filter(
+      (pageChirho): pageChirho is { volumeChirho: number; pageChirho: number } =>
+        typeof pageChirho.volumeChirho === "number" && typeof pageChirho.pageChirho === "number"
+    )
+    .map((pageChirho) => ({
+      volumeChirho: pageChirho.volumeChirho,
+      pageChirho: pageChirho.pageChirho,
+    }));
+}
+
 function summarizeIssueChirho(issueChirho: ExportIssueChirho): string {
   const locationChirho = [
     typeof issueChirho.volumeChirho === "number" ? `vol ${issueChirho.volumeChirho}` : null,
@@ -939,6 +963,15 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     !exportReportExistsChirho ||
     (typeof exportReportChirho.strictPassedChirho === "boolean" &&
       typeof exportReportChirho.issueCountChirho === "number");
+  const exportReportTargetsResultChirho = exportReportTargetsChirho(exportReportChirho);
+  const liveSpanSourceFingerprintChirho = spanSourceFingerprintForTargetsChirho(exportReportTargetsResultChirho);
+  const exportReportHasSpanSourceFingerprintChirho =
+    typeof exportReportChirho.spanSourceFileCountChirho === "number" &&
+    typeof exportReportChirho.spanSourceFingerprintChirho === "string";
+  const exportReportSpanSourceFingerprintMatchesCurrentChirho =
+    exportReportHasSpanSourceFingerprintChirho &&
+    exportReportChirho.spanSourceFileCountChirho === liveSpanSourceFingerprintChirho.fileCountChirho &&
+    exportReportChirho.spanSourceFingerprintChirho === liveSpanSourceFingerprintChirho.sha256Chirho;
   const rawHebrewReportShapeOkChirho =
     !rawHebrewReportExistsChirho ||
     (Array.isArray(rawReportChirho.spansChirho) &&
@@ -1027,6 +1060,9 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     issueCodeCountsChirho: countIssueCodesChirho(exportReportChirho.issuesChirho ?? []),
     issueSummariesChirho: (exportReportChirho.issuesChirho ?? []).slice(0, 12).map(summarizeIssueChirho),
     guardedWlcCorrectionCommandsChirho: guardedWlcCorrectionCommandsChirho(),
+    spanSourceFileCountChirho: exportReportChirho.spanSourceFileCountChirho ?? null,
+    liveSpanSourceFileCountChirho: liveSpanSourceFingerprintChirho.fileCountChirho,
+    spanSourceFingerprintMatchesCurrentChirho: exportReportSpanSourceFingerprintMatchesCurrentChirho,
     unknownSpanCountChirho: exportReportChirho.unknownSpanCountChirho ?? 0,
     nonNfcSpanCountChirho: exportReportChirho.nonNfcSpanCountChirho ?? 0,
     d1GapPageCountChirho: exportReportChirho.d1PagesWithoutSpansChirho?.length ?? 0,
@@ -1326,6 +1362,21 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   }
   if (latinSymbolAcceptancePolicyExistsChirho && !latinSymbolPolicySummaryChirho.policyFileShapeOkChirho) {
     remainingWorkChirho.push("Latin/symbol acceptance policy is malformed; fix or regenerate prepare-latin-symbol-vision-acceptance-policy-chirho");
+  }
+  if (
+    exportReportExistsChirho &&
+    exportReportShapeOkChirho &&
+    !exportReportHasSpanSourceFingerprintChirho
+  ) {
+    remainingWorkChirho.push("strict export report lacks a span-source fingerprint; regenerate export-markdown-chirho --all --strict");
+  }
+  if (
+    exportReportExistsChirho &&
+    exportReportShapeOkChirho &&
+    exportReportHasSpanSourceFingerprintChirho &&
+    !exportReportSpanSourceFingerprintMatchesCurrentChirho
+  ) {
+    remainingWorkChirho.push("strict export report span-source fingerprint does not match live span files; regenerate export-markdown-chirho --all --strict");
   }
   if (!structuralChirho.strictPassedChirho || structuralChirho.issueCountChirho !== 0) {
     remainingWorkChirho.push("structural export strict gate is not clean");
@@ -1663,6 +1714,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     `- Export report exists: ${statusChirho.artifactsChirho.exportReportExistsChirho}`,
     `- Export report shape OK: ${statusChirho.artifactsChirho.exportReportShapeOkChirho}`,
+    `- Export span-source files in report: ${statusChirho.structuralChirho.spanSourceFileCountChirho ?? "unknown"}`,
+    `- Live span-source files for report pages: ${statusChirho.structuralChirho.liveSpanSourceFileCountChirho}`,
+    `- Export span-source fingerprint matches live spans: ${statusChirho.structuralChirho.spanSourceFingerprintMatchesCurrentChirho}`,
     `- Strict passed: ${statusChirho.structuralChirho.strictPassedChirho}`,
     `- Issues: ${statusChirho.structuralChirho.issueCountChirho}`,
     `- Issue code counts: ${issueCodeCountsChirho || "none"}`,

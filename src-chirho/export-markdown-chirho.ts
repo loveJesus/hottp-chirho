@@ -32,6 +32,7 @@ import {
 import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO, VOLUMES_CHIRHO } from "./config-chirho.ts";
+import { spanSourceFingerprintForTargetsChirho } from "./source-fingerprint-chirho.ts";
 import { isNfcTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "export-markdown-chirho";
@@ -267,6 +268,8 @@ interface ExportReportChirho {
   sourceDirChirho: string;
   outDirChirho: string;
   d1DbPathChirho: string | null;
+  spanSourceFileCountChirho: number;
+  spanSourceFingerprintChirho: string;
   d1PageCountChirho: number | null;
   d1WordPageCountChirho: number | null;
   d1PagesWithoutSpansChirho: TargetPageChirho[];
@@ -1282,6 +1285,7 @@ async function runExportChirho(optionsChirho: CliOptionsChirho): Promise<ExportR
   }
 
   const pageReportsChirho = pageExportsChirho.map((pageChirho) => pageReportChirho(optionsChirho.outDirChirho, pageChirho));
+  const spanSourceFingerprintChirho = spanSourceFingerprintForTargetsChirho(targetsChirho);
   const issuesChirho = pageExportsChirho.flatMap((pageChirho) =>
     pageChirho.issuesChirho.map((issueChirho) => ({
       ...issueChirho,
@@ -1299,6 +1303,8 @@ async function runExportChirho(optionsChirho: CliOptionsChirho): Promise<ExportR
     sourceDirChirho: SPANS_DIR_CHIRHO,
     outDirChirho: optionsChirho.outDirChirho,
     d1DbPathChirho: d1AuditChirho?.dbPathChirho ?? null,
+    spanSourceFileCountChirho: spanSourceFingerprintChirho.fileCountChirho,
+    spanSourceFingerprintChirho: spanSourceFingerprintChirho.sha256Chirho,
     d1PageCountChirho: d1AuditChirho?.pagesInD1Chirho.length ?? null,
     d1WordPageCountChirho: d1AuditChirho?.pagesWithWordsChirho.length ?? null,
     d1PagesWithoutSpansChirho: d1AuditChirho?.pagesWithoutSpansChirho ?? [],
