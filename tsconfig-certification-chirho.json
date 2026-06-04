@@ -15,6 +15,7 @@
     "src-chirho/latin-symbol-vision-review-server-chirho.ts",
     "src-chirho/vision-tier-expert-review-server-chirho.ts",
     "src-chirho/review-servers-chirho.ts",
+    "src-chirho/check-certification-chirho.ts",
     "spec-chirho/metropoliluya-chirho/make-pass-c-hebrew-human-pack-2026-05-31-chirho.ts",
     "spec-chirho/metropoliluya-chirho/make-expert-confirm-pack-2026-05-31-chirho.ts",
     "spec-chirho/metropoliluya-chirho/make-latin-symbol-vision-pack-2026-05-31-chirho.ts"
