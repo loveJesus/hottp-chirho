@@ -1153,7 +1153,8 @@ function pageHtmlChirho(): string {
     function currentItemChirho() { return activeQueueChirho()[indexChirho]; }
     const hebrewTypewriterMarksChirho = [
       { labelChirho: "◌ֽ", valueChirho: "ֽ", titleChirho: "Meteg U+05BD" },
-      { labelChirho: "־", valueChirho: "־", titleChirho: "Maqaf U+05BE" },
+      { labelChirho: "־", valueChirho: "־", titleChirho: "Maqqef U+05BE" },
+      { labelChirho: "׃", valueChirho: "׃", titleChirho: "Sof pasuq U+05C3" },
       { labelChirho: "◌ְ", valueChirho: "ְ", titleChirho: "Sheva U+05B0" },
       { labelChirho: "◌ֱ", valueChirho: "ֱ", titleChirho: "Hataf segol U+05B1" },
       { labelChirho: "◌ֲ", valueChirho: "ֲ", titleChirho: "Hataf patah U+05B2" },
@@ -1163,11 +1164,14 @@ function pageHtmlChirho(): string {
       { labelChirho: "◌ֶ", valueChirho: "ֶ", titleChirho: "Segol U+05B6" },
       { labelChirho: "◌ַ", valueChirho: "ַ", titleChirho: "Patah U+05B7" },
       { labelChirho: "◌ָ", valueChirho: "ָ", titleChirho: "Qamats U+05B8" },
+      { labelChirho: "◌ׇ", valueChirho: "ׇ", titleChirho: "Qamats qatan U+05C7" },
       { labelChirho: "◌ֹ", valueChirho: "ֹ", titleChirho: "Holam U+05B9" },
       { labelChirho: "◌ֻ", valueChirho: "ֻ", titleChirho: "Qubuts U+05BB" },
       { labelChirho: "◌ּ", valueChirho: "ּ", titleChirho: "Dagesh U+05BC" },
       { labelChirho: "◌ׁ", valueChirho: "ׁ", titleChirho: "Shin dot U+05C1" },
-      { labelChirho: "◌ׂ", valueChirho: "ׂ", titleChirho: "Sin dot U+05C2" }
+      { labelChirho: "◌ׂ", valueChirho: "ׂ", titleChirho: "Sin dot U+05C2" },
+      { labelChirho: "◌֖", valueChirho: "֖", titleChirho: "Tipcha U+0596" },
+      { labelChirho: "◌֑", valueChirho: "֑", titleChirho: "Etnachta U+0591" }
     ];
     async function loadValidationsChirho() {
       const responseChirho = await fetch("/api-chirho/validations-chirho");
