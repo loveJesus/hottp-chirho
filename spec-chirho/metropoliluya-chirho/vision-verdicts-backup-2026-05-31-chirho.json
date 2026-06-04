@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T10:02:36.216Z",
+  "generatedAtChirho": "2026-06-04T10:19:21.516Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 803,
+  "countChirho": 813,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8033,6 +8033,106 @@
       "scriptChirho": "french-chirho",
       "utf8TextChirho": "s'étaient tenus les pieds des prêtres” (cf. vs 9), au vs 8 “selon le nombre des tribus d'Is-",
       "notesChirho": "Corrected vol 1 p149 line 19 OCR punctuation after second-witness scanline review: the print reads `(cf. vs 9),`, with a closing parenthesis balancing `(cf.`, not the stored brace `}`. Stored as french-chirho vision-tier cleanup; no other line text changed."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 150,
+      "lineIndexChirho": 16,
+      "segmentIndexChirho": 0,
+      "garbleTextChirho": "Rabhlfs / inexploitées{2?",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "certains choix de Rahlfs, Ziegler a souvent laissé ces possibilités inexploitées429. Avant",
+      "notesChirho": "Cleaned vol 3 p150 line 16 after second-witness scanline review: the print reads `Rahlfs` (no OCR-inserted b) and the residue `{2?` is the superscript footnote marker `429` before the period. Existing corpus convention stores footnote markers as plain trailing digits, e.g. `essentiels433.`. Stored as french-chirho vision-tier cleanup, not silently certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 21,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "old Greek span swallowed .967",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "λέγει κύριος",
+      "notesChirho": "Reboxed the Greek phrase `λέγει κύριος` after second-witness scanline review so the following `.967` apparatus siglum is no longer swallowed by this span. Stored as greek-chirho vision-tier; exact Greek text and geometry remain Greek expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 21,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "omitted .967 + fragmented ≠ / +0",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": ".967 ≠ +",
+      "notesChirho": "Recovered the apparatus sequence `.967 ≠ +` after second-witness scanline review. The leading dot before 967 is printed, `≠ +` is printed, and the plus remains apparatus punctuation rather than part of the Greek article. Stored as symbol-chirho vision-tier for Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 21,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "+0 / θεός",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "ὁ θεός",
+      "notesChirho": "Recovered Greek `ὁ θεός` after second-witness scanline review. The OCR read the rough-breathing omicron `ὁ` as `0`/`6`; the repaired span stores U+1F41 omicron with rough breathing plus `θεός` with final sigma. Stored as greek-chirho vision-tier for Greek expert confirmation."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 22,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "old Greek span swallowed .967",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "λέγει κύριος",
+      "notesChirho": "Reboxed the Greek phrase `λέγει κύριος` after second-witness scanline review so the following `.967` apparatus siglum is no longer swallowed by this span. Stored as greek-chirho vision-tier; exact Greek text and geometry remain Greek expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 22,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "omitted .967 / OCR 4 +6",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": ".967 ≠ +",
+      "notesChirho": "Recovered the apparatus sequence `.967 ≠ +` after second-witness scanline review. The leading dot before 967 is printed, `≠ +` is printed, and the plus remains apparatus punctuation rather than part of the Greek article. Stored as symbol-chirho vision-tier for Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 22,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "4 +6 / θεός",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "ὁ θεός",
+      "notesChirho": "Recovered Greek `ὁ θεός` after second-witness scanline review. The OCR read the rough-breathing omicron `ὁ` as `0`/`6`; the repaired span stores U+1F41 omicron with rough breathing plus `θεός` with final sigma. Stored as greek-chirho vision-tier for Greek expert confirmation."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 23,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "old Greek span swallowed .967",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "λέγει κύριος",
+      "notesChirho": "Reboxed the Greek phrase `λέγει κύριος` after second-witness scanline review so the following `.967` apparatus siglum is no longer swallowed by this span. Stored as greek-chirho vision-tier; exact Greek text and geometry remain Greek expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 23,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "omitted .967 + fragmented ≠ / +6",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": ".967 ≠ +",
+      "notesChirho": "Recovered the apparatus sequence `.967 ≠ +` after second-witness scanline review. The leading dot before 967 is printed, `≠ +` is printed, and the plus remains apparatus punctuation rather than part of the Greek article. Stored as symbol-chirho vision-tier for Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 23,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "+6 / θεός",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "ὁ θεός",
+      "notesChirho": "Recovered Greek `ὁ θεός` after second-witness scanline review. The OCR read the rough-breathing omicron `ὁ` as `0`/`6`; the repaired span stores U+1F41 omicron with rough breathing plus `θεός` with final sigma. Stored as greek-chirho vision-tier for Greek expert confirmation."
     }
   ]
 }
