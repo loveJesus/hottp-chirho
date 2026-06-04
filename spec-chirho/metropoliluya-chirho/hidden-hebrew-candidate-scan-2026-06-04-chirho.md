@@ -3,14 +3,14 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Hidden Hebrew Candidate Scan Chirho
 
-Generated: 2026-06-04T06:04:56.731Z
+Generated: 2026-06-04T06:17:38.898Z
 
 This is a machine-assisted review queue, not a certification result. It flags lines where OCR may have rendered printed Hebrew as valid-looking French, Latin, symbols, or digit garbage. Every item still needs visual review against the scanline before any span repair.
 
 ## Summary
 
-- Candidate lines: 39
-- High priority: 22
+- Candidate lines: 38
+- High priority: 21
 - Medium priority: 17
 - Low priority included: 0
 
@@ -157,16 +157,6 @@ Priority is heuristic: scripture/citation context, existing Hebrew spans, digit/
 - Line text: `Comme NEB le fera, le *G faisait déjà de 1711 נקשה ורעב 2 le sujet du verbe. En ces con-`
 - Suspicious spans:
   - S0 french-chirho: `Comme NEB le fera, le *G faisait déjà de 1711` (dense-digit-cluster-chirho; neighbors none / hebrew-chirho)
-
-### high-chirho score 8: vol 3 p0149 L025
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-dense-digit-cluster-chirho`, `suspicious-span-adjacent-to-hebrew-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-3-chirho/page-0149-chirho/line-025-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-3-chirho/page-0149-chirho/line-025-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-3-chirho/page-0149-chirho/line-025-chirho.png)
-- Line text: `est de l'hébreu, il est vrai que c'est par 709 87 וְתוּשִׁיָּה Kip? y יִקְרָא Dip que les mss`
-- Suspicious spans:
-  - S0 french-chirho: `est de l'hébreu, il est vrai que c'est par 709 87` (dense-digit-cluster-chirho; neighbors none / hebrew-chirho)
 
 ### high-chirho score 8: vol 3 p0151 L010
 

@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T06:03:41.199Z",
+  "generatedAtChirho": "2026-06-04T06:16:37.046Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 784,
+  "countChirho": 785,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7843,6 +7843,16 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "נְשִׂיאֵי אֶת־עַמִּי.",
       "notesChirho": "Recovered printed Hebrew phrase from digit/quote garbage and a wrong raw Pass-C assignment; Claude and Codex second-witnessed the scanline as נְשִׂיאֵי אֶת־עַמִּי. Stored with its printed period as vision-chirho; exact letters, vowels, marks, and punctuation remain expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 149,
+      "lineIndexChirho": 25,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "709 87 + Kip? y + Dip around partial וְתוּשִׁיָּה / יִקְרָא",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "קוֹל יְהוָה לָעִיר יִקְרָא וְתוּשִׁיָּה יִרְאֶה שְׁמֶךָ",
+      "notesChirho": "Recovered full Micah 6:9 printed Hebrew quote from Pass-C digit/Latin garbage around two partial Hebrew islands; Claude and Codex second-witnessed the scanline. Stored as one vision-chirho span to preserve the continuous RTL quote; exact letters, vowels, and marks remain expert-confirmation tier."
     }
   ]
 }
