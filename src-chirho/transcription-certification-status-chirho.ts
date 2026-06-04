@@ -36,6 +36,10 @@ import {
   PASS_C_HUMAN_VALIDATION_BACKUP_PATH_CHIRHO,
   readPassCHumanValidationBackupFileChirho,
 } from "./pass-c-human-validation-backup-chirho.ts";
+import {
+  d1AuditFingerprintForDbPathChirho,
+  latestLocalD1PathChirho,
+} from "./d1-audit-fingerprint-chirho.ts";
 import { spanSourceFingerprintForTargetsChirho } from "./source-fingerprint-chirho.ts";
 import {
   scanNonNfcSpanTextFieldsChirho,
@@ -137,8 +141,13 @@ const ALLOWED_WLC_CORRECTION_FLAGS_CHIRHO = new Set([
 
 interface ExportReportChirho {
   generatedAtChirho?: string;
+  d1DbPathChirho?: string | null;
   spanSourceFileCountChirho?: number;
   spanSourceFingerprintChirho?: string;
+  d1AuditFingerprintChirho?: string | null;
+  d1AuditPageRowCountChirho?: number | null;
+  d1AuditWordRowCountChirho?: number | null;
+  d1AuditOcrSuggestionRowCountChirho?: number | null;
   strictPassedChirho?: boolean;
   issueCountChirho?: number;
   issuesChirho?: ExportIssueChirho[];
@@ -381,6 +390,16 @@ interface CertificationStatusChirho {
     spanSourceFileCountChirho: number | null;
     liveSpanSourceFileCountChirho: number;
     spanSourceFingerprintMatchesCurrentChirho: boolean;
+    d1AuditDbPathChirho: string | null;
+    liveD1AuditDbPathChirho: string | null;
+    d1AuditPageRowCountChirho: number | null;
+    liveD1AuditPageRowCountChirho: number | null;
+    d1AuditWordRowCountChirho: number | null;
+    liveD1AuditWordRowCountChirho: number | null;
+    d1AuditOcrSuggestionRowCountChirho: number | null;
+    liveD1AuditOcrSuggestionRowCountChirho: number | null;
+    d1AuditFingerprintMatchesCurrentChirho: boolean | null;
+    d1AuditFingerprintReadErrorChirho: string | null;
     unknownSpanCountChirho: number;
     nonNfcSpanCountChirho: number;
     d1GapPageCountChirho: number;
@@ -972,6 +991,27 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     exportReportHasSpanSourceFingerprintChirho &&
     exportReportChirho.spanSourceFileCountChirho === liveSpanSourceFingerprintChirho.fileCountChirho &&
     exportReportChirho.spanSourceFingerprintChirho === liveSpanSourceFingerprintChirho.sha256Chirho;
+  const liveD1AuditDbPathChirho = latestLocalD1PathChirho();
+  let liveD1AuditFingerprintChirho: ReturnType<typeof d1AuditFingerprintForDbPathChirho> = null;
+  let d1AuditFingerprintReadErrorChirho: string | null = null;
+  try {
+    liveD1AuditFingerprintChirho = d1AuditFingerprintForDbPathChirho(liveD1AuditDbPathChirho);
+  } catch (errorChirho) {
+    d1AuditFingerprintReadErrorChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
+  }
+  const exportReportHasD1AuditFingerprintChirho =
+    typeof exportReportChirho.d1AuditFingerprintChirho === "string" &&
+    typeof exportReportChirho.d1AuditPageRowCountChirho === "number" &&
+    typeof exportReportChirho.d1AuditWordRowCountChirho === "number" &&
+    typeof exportReportChirho.d1AuditOcrSuggestionRowCountChirho === "number";
+  const exportReportD1AuditFingerprintMatchesCurrentChirho =
+    d1AuditFingerprintReadErrorChirho === null &&
+    exportReportHasD1AuditFingerprintChirho &&
+    liveD1AuditFingerprintChirho !== null &&
+    exportReportChirho.d1AuditPageRowCountChirho === liveD1AuditFingerprintChirho.pageRowCountChirho &&
+    exportReportChirho.d1AuditWordRowCountChirho === liveD1AuditFingerprintChirho.wordRowCountChirho &&
+    exportReportChirho.d1AuditOcrSuggestionRowCountChirho === liveD1AuditFingerprintChirho.ocrSuggestionRowCountChirho &&
+    exportReportChirho.d1AuditFingerprintChirho === liveD1AuditFingerprintChirho.sha256Chirho;
   const rawHebrewReportShapeOkChirho =
     !rawHebrewReportExistsChirho ||
     (Array.isArray(rawReportChirho.spansChirho) &&
@@ -1063,6 +1103,17 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     spanSourceFileCountChirho: exportReportChirho.spanSourceFileCountChirho ?? null,
     liveSpanSourceFileCountChirho: liveSpanSourceFingerprintChirho.fileCountChirho,
     spanSourceFingerprintMatchesCurrentChirho: exportReportSpanSourceFingerprintMatchesCurrentChirho,
+    d1AuditDbPathChirho: exportReportChirho.d1DbPathChirho ?? null,
+    liveD1AuditDbPathChirho,
+    d1AuditPageRowCountChirho: exportReportChirho.d1AuditPageRowCountChirho ?? null,
+    liveD1AuditPageRowCountChirho: liveD1AuditFingerprintChirho?.pageRowCountChirho ?? null,
+    d1AuditWordRowCountChirho: exportReportChirho.d1AuditWordRowCountChirho ?? null,
+    liveD1AuditWordRowCountChirho: liveD1AuditFingerprintChirho?.wordRowCountChirho ?? null,
+    d1AuditOcrSuggestionRowCountChirho: exportReportChirho.d1AuditOcrSuggestionRowCountChirho ?? null,
+    liveD1AuditOcrSuggestionRowCountChirho: liveD1AuditFingerprintChirho?.ocrSuggestionRowCountChirho ?? null,
+    d1AuditFingerprintMatchesCurrentChirho:
+      liveD1AuditFingerprintChirho === null ? null : exportReportD1AuditFingerprintMatchesCurrentChirho,
+    d1AuditFingerprintReadErrorChirho,
     unknownSpanCountChirho: exportReportChirho.unknownSpanCountChirho ?? 0,
     nonNfcSpanCountChirho: exportReportChirho.nonNfcSpanCountChirho ?? 0,
     d1GapPageCountChirho: exportReportChirho.d1PagesWithoutSpansChirho?.length ?? 0,
@@ -1377,6 +1428,40 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     !exportReportSpanSourceFingerprintMatchesCurrentChirho
   ) {
     remainingWorkChirho.push("strict export report span-source fingerprint does not match live span files; regenerate export-markdown-chirho --all --strict");
+  }
+  if (d1AuditFingerprintReadErrorChirho !== null) {
+    remainingWorkChirho.push(`D1 audit fingerprint scan failed: ${d1AuditFingerprintReadErrorChirho}`);
+  }
+  if (
+    exportReportExistsChirho &&
+    exportReportShapeOkChirho &&
+    exportReportChirho.d1DbPathChirho !== null &&
+    exportReportChirho.d1DbPathChirho !== undefined &&
+    !exportReportHasD1AuditFingerprintChirho
+  ) {
+    remainingWorkChirho.push("strict export report lacks a D1 audit fingerprint; regenerate export-markdown-chirho --all --strict");
+  }
+  if (
+    exportReportExistsChirho &&
+    exportReportShapeOkChirho &&
+    exportReportChirho.d1DbPathChirho !== null &&
+    exportReportChirho.d1DbPathChirho !== undefined &&
+    exportReportHasD1AuditFingerprintChirho &&
+    d1AuditFingerprintReadErrorChirho === null &&
+    liveD1AuditFingerprintChirho === null
+  ) {
+    remainingWorkChirho.push("strict export report used D1, but no current local D1 sqlite is available for fingerprint comparison");
+  }
+  if (
+    exportReportExistsChirho &&
+    exportReportShapeOkChirho &&
+    exportReportChirho.d1DbPathChirho !== null &&
+    exportReportChirho.d1DbPathChirho !== undefined &&
+    exportReportHasD1AuditFingerprintChirho &&
+    liveD1AuditFingerprintChirho !== null &&
+    !exportReportD1AuditFingerprintMatchesCurrentChirho
+  ) {
+    remainingWorkChirho.push("strict export report D1 audit fingerprint does not match current D1 witness rows; regenerate export-markdown-chirho --all --strict");
   }
   if (!structuralChirho.strictPassedChirho || structuralChirho.issueCountChirho !== 0) {
     remainingWorkChirho.push("structural export strict gate is not clean");
@@ -1717,6 +1802,20 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Export span-source files in report: ${statusChirho.structuralChirho.spanSourceFileCountChirho ?? "unknown"}`,
     `- Live span-source files for report pages: ${statusChirho.structuralChirho.liveSpanSourceFileCountChirho}`,
     `- Export span-source fingerprint matches live spans: ${statusChirho.structuralChirho.spanSourceFingerprintMatchesCurrentChirho}`,
+    `- Export D1 audit path: ${statusChirho.structuralChirho.d1AuditDbPathChirho ?? "none"}`,
+    `- Live D1 audit path: ${statusChirho.structuralChirho.liveD1AuditDbPathChirho ?? "none"}`,
+    `- D1 audit fingerprint read error: ${statusChirho.structuralChirho.d1AuditFingerprintReadErrorChirho ?? "none"}`,
+    `- Export D1 page/word/OCR-suggestion rows: ${[
+      statusChirho.structuralChirho.d1AuditPageRowCountChirho ?? "unknown",
+      statusChirho.structuralChirho.d1AuditWordRowCountChirho ?? "unknown",
+      statusChirho.structuralChirho.d1AuditOcrSuggestionRowCountChirho ?? "unknown",
+    ].join("/")}`,
+    `- Live D1 page/word/OCR-suggestion rows: ${[
+      statusChirho.structuralChirho.liveD1AuditPageRowCountChirho ?? "unknown",
+      statusChirho.structuralChirho.liveD1AuditWordRowCountChirho ?? "unknown",
+      statusChirho.structuralChirho.liveD1AuditOcrSuggestionRowCountChirho ?? "unknown",
+    ].join("/")}`,
+    `- Export D1 audit fingerprint matches live D1: ${statusChirho.structuralChirho.d1AuditFingerprintMatchesCurrentChirho ?? "not-applicable"}`,
     `- Strict passed: ${statusChirho.structuralChirho.strictPassedChirho}`,
     `- Issues: ${statusChirho.structuralChirho.issueCountChirho}`,
     `- Issue code counts: ${issueCodeCountsChirho || "none"}`,
