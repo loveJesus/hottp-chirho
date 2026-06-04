@@ -658,6 +658,29 @@ function candidateScanReportSummaryChirho(pathChirho: string, liveSpanSourceFing
   };
 }
 
+function candidateScanRemainingWorkChirho(
+  labelChirho: string,
+  scanChirho: CandidateScanReportSummaryChirho,
+  regenerateCommandChirho: string
+): string[] {
+  const remainingWorkChirho: string[] = [];
+  if (!scanChirho.reportExistsChirho) {
+    remainingWorkChirho.push(`${labelChirho} scanner report is missing; run ${regenerateCommandChirho}`);
+    return remainingWorkChirho;
+  }
+  if (!scanChirho.reportShapeOkChirho) {
+    remainingWorkChirho.push(`${labelChirho} scanner report is malformed; regenerate with ${regenerateCommandChirho}`);
+    return remainingWorkChirho;
+  }
+  if (!scanChirho.spanSourceFingerprintMatchesCurrentChirho) {
+    remainingWorkChirho.push(`${labelChirho} scanner report span-source fingerprint does not match current spans; rerun ${regenerateCommandChirho}`);
+  }
+  if ((scanChirho.candidateLineCountChirho ?? 0) !== 0) {
+    remainingWorkChirho.push(`${scanChirho.candidateLineCountChirho} ${labelChirho} strict-blind candidate line(s) remain; visually review and repair or justify before certification`);
+  }
+  return remainingWorkChirho;
+}
+
 function shellSingleQuoteChirho(valueChirho: string): string {
   return `'${valueChirho.replace(/'/g, `'\\''`)}'`;
 }
@@ -2041,6 +2064,18 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   if (latinSymbolAcceptancePolicyExistsChirho && !latinSymbolPolicySummaryChirho.policyFileShapeOkChirho) {
     remainingWorkChirho.push("Latin/symbol acceptance policy is malformed; fix or regenerate prepare-latin-symbol-vision-acceptance-policy-chirho");
   }
+  remainingWorkChirho.push(
+    ...candidateScanRemainingWorkChirho(
+      "hidden Hebrew",
+      strictBlindScansChirho.hiddenHebrewChirho,
+      "bun run spec-chirho/metropoliluya-chirho/find-hidden-hebrew-candidates-2026-06-04-chirho.ts"
+    ),
+    ...candidateScanRemainingWorkChirho(
+      "non-Latin residue",
+      strictBlindScansChirho.nonLatinResidueChirho,
+      "bun run spec-chirho/metropoliluya-chirho/find-nonlatin-residue-candidates-2026-06-04-chirho.ts"
+    )
+  );
   if (
     exportReportExistsChirho &&
     exportReportShapeOkChirho &&
@@ -2680,7 +2715,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     "## Strict-Blind Scanner Reports",
     "",
-    "These heuristic reports do not certify text and do not change completion math; they surface whether the latest saved scanner queues still contain machine-detected hidden-text candidates.",
+    "These heuristic reports do not certify text. A missing, malformed, stale, or nonzero scanner report blocks completion because unresolved strict-blind candidates are incompatible with a flawless-transcription claim.",
     "",
     ...candidateScanLinesChirho("Hidden Hebrew detector", statusChirho.strictBlindScansChirho.hiddenHebrewChirho),
     ...candidateScanLinesChirho("Non-Latin residue detector", statusChirho.strictBlindScansChirho.nonLatinResidueChirho),
