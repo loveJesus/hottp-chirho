@@ -194,6 +194,39 @@ interface QueueItemChirho extends ReportSpanChirho {
   priorityChirho: number;
 }
 
+interface RawReviewDisplayGuardChirho {
+  expectedLiveSpanTextChirho?: unknown;
+  expectedReportTextChirho?: unknown;
+  expectedLineTextChirho?: unknown;
+  expectedValidationStatusChirho?: unknown;
+  expectedCurrentScriptChirho?: unknown;
+  expectedOriginalTextHashChirho?: unknown;
+  expectedSpanXMinPxChirho?: unknown;
+  expectedSpanWidthPxChirho?: unknown;
+  expectedLineWidthPxChirho?: unknown;
+  expectedLineHeightPxChirho?: unknown;
+  expectedLineImageHashChirho?: unknown;
+  expectedLineImageWidthPxChirho?: unknown;
+  expectedLineImageHeightPxChirho?: unknown;
+}
+
+interface RawReviewSubmitRequestChirho extends RawReviewDisplayGuardChirho {
+  keyChirho: string;
+  issueFlagsChirho?: unknown;
+  scriptVerdictChirho?: unknown;
+  correctedTextChirho: string;
+  notesChirho: string;
+  reviewerChirho?: unknown;
+  certifyCleanChirho?: unknown;
+}
+
+interface RawReviewUndoRequestChirho {
+  expectedLatestValidationIdChirho?: unknown;
+  expectedLatestValidationKeyChirho?: unknown;
+  expectedLatestValidationReviewerChirho?: unknown;
+  expectedLatestValidationUpdatedAtChirho?: unknown;
+}
+
 interface LineWordBoxRowChirho {
   line_x_min_chirho: number | null;
   line_y_min_chirho: number | null;
@@ -710,6 +743,80 @@ function assertQueueItemStillLiveChirho(itemChirho: QueueItemChirho): void {
   }
 }
 
+function rawDisplayMismatchChirho(
+  requestChirho: RawReviewDisplayGuardChirho,
+  itemChirho: QueueItemChirho
+): string | null {
+  const stringComparisonsChirho = [
+    ["expectedLiveSpanTextChirho", itemChirho.liveSpanTextChirho],
+    ["expectedReportTextChirho", itemChirho.textChirho],
+    ["expectedLineTextChirho", itemChirho.lineTextChirho],
+    ["expectedValidationStatusChirho", itemChirho.validationStatusChirho],
+    ["expectedCurrentScriptChirho", itemChirho.currentScriptChirho],
+    ["expectedOriginalTextHashChirho", itemChirho.originalTextHashChirho],
+  ] as const;
+  for (const [fieldChirho, currentValueChirho] of stringComparisonsChirho) {
+    const submittedValueChirho = requestChirho[fieldChirho];
+    if (typeof submittedValueChirho !== "string") return `${fieldChirho} is missing`;
+    if (submittedValueChirho !== currentValueChirho) return `${fieldChirho} no longer matches current queue item`;
+  }
+  const numberComparisonsChirho = [
+    ["expectedSpanXMinPxChirho", itemChirho.spanXMinPxChirho],
+    ["expectedSpanWidthPxChirho", itemChirho.spanWidthPxChirho],
+    ["expectedLineWidthPxChirho", itemChirho.lineWidthPxChirho],
+    ["expectedLineHeightPxChirho", itemChirho.lineHeightPxChirho],
+    ["expectedLineImageWidthPxChirho", itemChirho.lineImageWidthPxChirho],
+    ["expectedLineImageHeightPxChirho", itemChirho.lineImageHeightPxChirho],
+  ] as const;
+  for (const [fieldChirho, currentValueChirho] of numberComparisonsChirho) {
+    const submittedValueChirho = requestChirho[fieldChirho];
+    if (typeof submittedValueChirho !== "number") return `${fieldChirho} is missing`;
+    if (submittedValueChirho !== currentValueChirho) return `${fieldChirho} no longer matches current queue item`;
+  }
+  if (typeof requestChirho.expectedLineImageHashChirho !== "string") return "expectedLineImageHashChirho is missing";
+  if (requestChirho.expectedLineImageHashChirho !== itemChirho.lineImageHashChirho) {
+    return "expectedLineImageHashChirho no longer matches current queue item";
+  }
+  return null;
+}
+
+function latestValidationMismatchChirho(
+  requestChirho: RawReviewUndoRequestChirho,
+  latestChirho: {
+    id_chirho: number;
+    volume_chirho: number;
+    page_chirho: number;
+    line_index_chirho: number;
+    segment_index_chirho: number;
+    reviewer_chirho: string;
+    updated_at_chirho: string;
+  }
+): string | null {
+  if (typeof requestChirho.expectedLatestValidationIdChirho !== "number") {
+    return "expectedLatestValidationIdChirho is missing";
+  }
+  if (requestChirho.expectedLatestValidationIdChirho !== latestChirho.id_chirho) {
+    return "expectedLatestValidationIdChirho no longer matches latest validation";
+  }
+  const keyChirho = spanKeyChirho({
+    volumeChirho: latestChirho.volume_chirho,
+    pageChirho: latestChirho.page_chirho,
+    lineIndexChirho: latestChirho.line_index_chirho,
+    segmentIndexChirho: latestChirho.segment_index_chirho,
+  });
+  const stringComparisonsChirho = [
+    ["expectedLatestValidationKeyChirho", keyChirho],
+    ["expectedLatestValidationReviewerChirho", latestChirho.reviewer_chirho],
+    ["expectedLatestValidationUpdatedAtChirho", latestChirho.updated_at_chirho],
+  ] as const;
+  for (const [fieldChirho, currentValueChirho] of stringComparisonsChirho) {
+    const submittedValueChirho = requestChirho[fieldChirho];
+    if (typeof submittedValueChirho !== "string") return `${fieldChirho} is missing`;
+    if (submittedValueChirho !== currentValueChirho) return `${fieldChirho} no longer matches latest validation`;
+  }
+  return null;
+}
+
 function loadHebrewQueueChirho(): LoadedQueueChirho {
   const reportChirho = loadReportChirho();
   return {
@@ -945,7 +1052,7 @@ SELECT id_chirho FROM pass_c_human_validations_chirho
  LIMIT 1`);
 
 const latestCurrentValidationStmtChirho = dbChirho.prepare(`
-SELECT id_chirho, volume_chirho, page_chirho, line_index_chirho, segment_index_chirho, reviewer_chirho
+SELECT id_chirho, volume_chirho, page_chirho, line_index_chirho, segment_index_chirho, reviewer_chirho, updated_at_chirho
   FROM pass_c_human_validations_chirho
  WHERE is_current_chirho = 1 AND verdict_chirho <> 'undo-chirho' AND schema_version_chirho >= 2
  ORDER BY updated_at_chirho DESC, id_chirho DESC
@@ -1196,6 +1303,7 @@ function pageHtmlChirho(): string {
     const scriptVerdictOptionsChirho = ${scriptJsonChirho(SCRIPT_VERDICT_OPTIONS_CHIRHO)};
     const serverReviewerChirho = ${scriptJsonChirho(reviewerChirho)};
     const genericReviewerIdsChirho = new Set(${scriptJsonChirho([...GENERIC_REVIEWER_IDS_CHIRHO])});
+    let validationRowsChirho = [];
     let validationsChirho = new Map();
     let indexChirho = 0;
     const initialSearchParamsChirho = new URLSearchParams(window.location.search);
@@ -1314,6 +1422,32 @@ function pageHtmlChirho(): string {
     function validationCountsAsIssueForItemChirho(rowChirho, itemChirho) {
       return validationFreshForItemChirho(rowChirho, itemChirho) &&
         rowChirho.verdict_chirho === "reviewed-issues-chirho";
+    }
+    function displayGuardForItemChirho(itemChirho) {
+      return {
+        expectedLiveSpanTextChirho: itemChirho.liveSpanTextChirho,
+        expectedReportTextChirho: itemChirho.textChirho,
+        expectedLineTextChirho: itemChirho.lineTextChirho,
+        expectedValidationStatusChirho: itemChirho.validationStatusChirho,
+        expectedCurrentScriptChirho: itemChirho.currentScriptChirho,
+        expectedOriginalTextHashChirho: itemChirho.originalTextHashChirho,
+        expectedSpanXMinPxChirho: itemChirho.spanXMinPxChirho,
+        expectedSpanWidthPxChirho: itemChirho.spanWidthPxChirho,
+        expectedLineWidthPxChirho: itemChirho.lineWidthPxChirho,
+        expectedLineHeightPxChirho: itemChirho.lineHeightPxChirho,
+        expectedLineImageHashChirho: itemChirho.lineImageHashChirho,
+        expectedLineImageWidthPxChirho: itemChirho.lineImageWidthPxChirho,
+        expectedLineImageHeightPxChirho: itemChirho.lineImageHeightPxChirho
+      };
+    }
+    function latestValidationGuardChirho() {
+      const latestChirho = validationRowsChirho[0] ?? null;
+      return {
+        expectedLatestValidationIdChirho: latestChirho?.id_chirho ?? null,
+        expectedLatestValidationKeyChirho: latestChirho?.key_chirho ?? null,
+        expectedLatestValidationReviewerChirho: latestChirho?.reviewer_chirho ?? null,
+        expectedLatestValidationUpdatedAtChirho: latestChirho?.updated_at_chirho ?? null
+      };
     }
     function activeQueueChirho() {
       const volumeChirho = volumeFilterNumberChirho();
@@ -1466,7 +1600,8 @@ function pageHtmlChirho(): string {
     async function loadValidationsChirho() {
       const responseChirho = await fetch("/api-chirho/validations-chirho");
       const dataChirho = await responseChirho.json();
-      validationsChirho = new Map(dataChirho.validationsChirho.map((rowChirho) => [rowChirho.key_chirho, rowChirho]));
+      validationRowsChirho = dataChirho.validationsChirho;
+      validationsChirho = new Map(validationRowsChirho.map((rowChirho) => [rowChirho.key_chirho, rowChirho]));
       clampIndexChirho(indexChirho);
     }
     function setStatusChirho(messageChirho) { document.getElementById("status-chirho").textContent = messageChirho; }
@@ -1855,7 +1990,8 @@ function pageHtmlChirho(): string {
           notesChirho,
           scriptVerdictChirho,
           reviewerChirho,
-          certifyCleanChirho: cleanReviewAcknowledgedChirho()
+          certifyCleanChirho: cleanReviewAcknowledgedChirho(),
+          ...displayGuardForItemChirho(itemChirho)
         })
       });
       const dataChirho = await responseChirho.json();
@@ -1863,6 +1999,10 @@ function pageHtmlChirho(): string {
         setStatusChirho(dataChirho.errorChirho || "Save failed");
         return;
       }
+      validationRowsChirho = [
+        dataChirho.rowChirho,
+        ...validationRowsChirho.filter((rowChirho) => rowChirho.key_chirho !== itemChirho.keyChirho)
+      ];
       validationsChirho.set(itemChirho.keyChirho, dataChirho.rowChirho);
       setStatusChirho("Saved " + dataChirho.rowChirho.verdict_chirho);
       clampIndexChirho(indexChirho);
@@ -1873,7 +2013,11 @@ function pageHtmlChirho(): string {
         setStatusChirho("Saved issue view is read-only");
         return;
       }
-      const responseChirho = await fetch("/api-chirho/undo-last-chirho", { method: "POST" });
+      const responseChirho = await fetch("/api-chirho/undo-last-chirho", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(latestValidationGuardChirho())
+      });
       const dataChirho = await responseChirho.json();
       if (!dataChirho.okChirho) {
         setStatusChirho("Undo failed");
@@ -1992,15 +2136,7 @@ Bun.serve({
       return jsonResponseChirho({ validationsChirho: validationsChirho() });
     }
     if (urlChirho.pathname === "/api-chirho/submit-chirho" && reqChirho.method === "POST") {
-      const bodyChirho = (await reqChirho.json()) as {
-        keyChirho: string;
-        issueFlagsChirho?: unknown;
-        scriptVerdictChirho?: unknown;
-        correctedTextChirho: string;
-        notesChirho: string;
-        reviewerChirho?: unknown;
-        certifyCleanChirho?: unknown;
-      };
+      const bodyChirho = (await reqChirho.json()) as RawReviewSubmitRequestChirho;
       const itemChirho = queueByKeyChirho.get(bodyChirho.keyChirho);
       if (!itemChirho) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown key" }, 404);
       try {
@@ -2009,6 +2145,13 @@ Bun.serve({
         return jsonResponseChirho({
           okChirho: false,
           errorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+        }, 409);
+      }
+      const staleDisplayChirho = rawDisplayMismatchChirho(bodyChirho, itemChirho);
+      if (staleDisplayChirho !== null) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: `Raw Hebrew review item is stale: ${staleDisplayChirho}; reload review state`,
         }, 409);
       }
       const issueFlagsChirho = sanitizeIssueFlagsChirho(bodyChirho.issueFlagsChirho);
@@ -2088,6 +2231,7 @@ Bun.serve({
       return jsonResponseChirho({ okChirho: true, rowChirho });
     }
     if (urlChirho.pathname === "/api-chirho/undo-last-chirho" && reqChirho.method === "POST") {
+      const bodyChirho = (await reqChirho.json().catch(() => ({}))) as RawReviewUndoRequestChirho;
       const latestChirho = latestCurrentValidationStmtChirho.get() as
         | {
             id_chirho: number;
@@ -2096,9 +2240,17 @@ Bun.serve({
             line_index_chirho: number;
             segment_index_chirho: number;
             reviewer_chirho: string;
+            updated_at_chirho: string;
           }
         | undefined;
       if (!latestChirho) return jsonResponseChirho({ okChirho: false, errorChirho: "nothing to undo" }, 404);
+      const latestMismatchChirho = latestValidationMismatchChirho(bodyChirho, latestChirho);
+      if (latestMismatchChirho !== null) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: `Raw Hebrew undo target is stale: ${latestMismatchChirho}; reload review state`,
+        }, 409);
+      }
       const keyChirho = spanKeyChirho({
         volumeChirho: latestChirho.volume_chirho,
         pageChirho: latestChirho.page_chirho,
