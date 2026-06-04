@@ -9,8 +9,9 @@ This is a machine-assisted visual precheck, not a human certification. Do not us
 this file to decrement the certification gate or apply a clean verdict. It is only
 meant to help Hallelujah decide where to look first in the raw Hebrew queue.
 
-Scope checked: first three items in the raw Hebrew `primary-vols-3-5-chirho`
-unvalidated lane at `http://localhost:8766/?validation-status-chirho=unvalidated-chirho&tier-chirho=primary-vols-3-5-chirho`.
+Scope checked: all six vol 3 items in the raw Hebrew
+`primary-vols-3-5-chirho` unvalidated lane at
+`http://localhost:8766/?validation-status-chirho=unvalidated-chirho&tier-chirho=primary-vols-3-5-chirho`.
 
 ## Observations
 
@@ -31,6 +32,24 @@ unvalidated lane at `http://localhost:8766/?validation-status-chirho=unvalidated
   - Live text: `שִׁלְחוֹת`
   - Visual precheck: crop is centered on the target word; no obvious crop or segmentation issue. The word is visually blurrier than the first two and the machine witness is weak, so this deserves a careful human look.
   - Human check still needed: exact letters and niqqud, especially because the available machine witness does not validate it.
+
+- `vol 3 p151 L21 S2`:
+  `http://localhost:8766/?validation-status-chirho=unvalidated-chirho&tier-chirho=primary-vols-3-5-chirho&item-chirho=3%3A151%3A21%3A2`
+  - Live text: `“אֶת־עַמִּי`
+  - Visual precheck: crop is centered on the target span. The Hebrew phrase is visible at review resolution, and the left quote/punctuation appears bundled with the Hebrew span.
+  - Human check still needed: exact Hebrew letters/niqqud/marks, and whether the leading quote belongs in this Hebrew span or should be treated as punctuation/segmentation.
+
+- `vol 3 p151 L36 S2`:
+  `http://localhost:8766/?validation-status-chirho=unvalidated-chirho&tier-chirho=primary-vols-3-5-chirho&item-chirho=3%3A151%3A36%3A2`
+  - Live text: `גְּבוּל`
+  - Visual precheck: crop is centered on the target word; no obvious crop or segmentation issue. The printed letters and visible pointing look plausible for the live text at review resolution.
+  - Human check still needed: exact niqqud/marks against the print.
+
+- `vol 3 p151 L46 S2`:
+  `http://localhost:8766/?validation-status-chirho=unvalidated-chirho&tier-chirho=primary-vols-3-5-chirho&item-chirho=3%3A151%3A46%3A2`
+  - Live text: `פְּאֵר`
+  - Visual precheck: crop is centered on the target word; no obvious crop or segmentation issue. The print looks plausible for the live text at review resolution, though the machine witness is weak enough that this should still get a careful human look.
+  - Human check still needed: exact letters and niqqud/marks against the print.
 
 ## Result
 
