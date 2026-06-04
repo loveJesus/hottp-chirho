@@ -90,7 +90,7 @@ const REPAIRED_RENDERED_CHIRHO =
   "respondre à l'hébreu בְּעבְרוֹ בַּיַּרְדֵּן נִכְרְתוּ מֵי הַיַּרְדֵּן, elle ne fait que copier la Vet Lat (ms";
 const RECOVERED_HEBREW_CHIRHO = "בְּעבְרוֹ בַּיַּרְדֵּן נִכְרְתוּ מֵי הַיַּרְדֵּן,";
 const VISION_NOTES_CHIRHO =
-  "Expanded the too-narrow vol 1 p149 line 36 Hebrew span: Codex visually confirmed that the scanline prints the full phrase `בְּעבְרוֹ בַּיַּרְדֵּן נִכְרְתוּ מֵי הַיַּרְדֵּן` across x260..690, while the old S1 box covered only an interior slice and the old S2 text `a 17722 772 122` was the remaining Hebrew pixels mis-OCR'd as digits. The comma is attached to the widened span so the rendered French continuation reads cleanly. Stored as vision-chirho; exact printed vowels/marks, comma placement, and segmentation remain Hebrew/WLC expert-confirmation tier.";
+  "Expanded the too-narrow vol 1 p149 line 36 Hebrew span: Codex visually confirmed that the scanline prints the full phrase `בְּעבְרוֹ בַּיַּרְדֵּן נִכְרְתוּ מֵי הַיַּרְדֵּן` across x361..710, while the old S1 box covered only an interior slice and the old S2 text `a 17722 772 122` was the remaining Hebrew pixels mis-OCR'd as digits. A follow-up geometry audit corrected an earlier too-far-left x260 boundary so the French `l'hébreu` tail remains in S0. The comma is attached to the widened span so the rendered French continuation reads cleanly. Stored as vision-chirho; exact printed vowels/marks, comma placement, and segmentation remain Hebrew/WLC expert-confirmation tier.";
 
 function loadJsonChirho<TChirho>(pathChirho: string): TChirho {
   return JSON.parse(readFileSync(pathChirho, "utf8")) as TChirho;
@@ -151,7 +151,17 @@ function validateTilingChirho(lineChirho: SpanLineChirho): void {
 function stateForLineChirho(lineChirho: SpanLineChirho): "pre-repair-chirho" | "already-applied-chirho" | "unknown-chirho" {
   const renderedChirho = normalizeTextForStorageChirho(renderedLineChirho(lineChirho));
   if (renderedChirho === normalizeTextForStorageChirho(EXPECTED_RENDERED_CHIRHO)) return "pre-repair-chirho";
-  if (renderedChirho === normalizeTextForStorageChirho(REPAIRED_RENDERED_CHIRHO)) return "already-applied-chirho";
+  if (renderedChirho === normalizeTextForStorageChirho(REPAIRED_RENDERED_CHIRHO)) {
+    const spansChirho = sortedSpansChirho(lineChirho);
+    const repairedGeometryChirho =
+      spansChirho[0]?.xMinPxChirho === 0 &&
+      spansChirho[0]?.widthPxChirho === 361 &&
+      spansChirho[1]?.xMinPxChirho === 361 &&
+      spansChirho[1]?.widthPxChirho === 349 &&
+      spansChirho[2]?.xMinPxChirho === 710 &&
+      spansChirho[2]?.widthPxChirho === 734;
+    return repairedGeometryChirho ? "already-applied-chirho" : "pre-repair-chirho";
+  }
   return "unknown-chirho";
 }
 
@@ -165,11 +175,11 @@ function buildPlannedLineChirho(lineChirho: SpanLineChirho, appliedAtChirho: str
 
   const nextLineChirho = structuredClone(lineChirho);
   nextLineChirho.spansChirho = [
-    { ...prefixSpanChirho, segmentIndexChirho: 0, xMinPxChirho: 0, widthPxChirho: 260 },
+    { ...prefixSpanChirho, segmentIndexChirho: 0, xMinPxChirho: 0, widthPxChirho: 361 },
     {
       segmentIndexChirho: 1,
-      xMinPxChirho: 260,
-      widthPxChirho: 430,
+      xMinPxChirho: 361,
+      widthPxChirho: 349,
       scriptChirho: "hebrew-chirho",
       utf8TextChirho: normalizeTextForStorageChirho(RECOVERED_HEBREW_CHIRHO),
       provenanceChirho: "vision-chirho",
@@ -179,8 +189,8 @@ function buildPlannedLineChirho(lineChirho: SpanLineChirho, appliedAtChirho: str
     {
       ...suffixSpanChirho,
       segmentIndexChirho: 2,
-      xMinPxChirho: 690,
-      widthPxChirho: 754,
+      xMinPxChirho: 710,
+      widthPxChirho: 734,
       scriptChirho: "french-chirho",
       utf8TextChirho: "elle ne fait que copier la Vet Lat (ms",
     },
@@ -274,7 +284,7 @@ function mainChirho(): void {
         reportChirho(
           modeChirho,
           stateChirho === "already-applied-chirho" ? "already-applied-chirho" : "planned-chirho",
-          ["ready to widen vol 1 p149 L36 as one vision-chirho Hebrew span and remove the digit-garble overflow"],
+          ["ready to widen vol 1 p149 L36 as one vision-chirho Hebrew span, correct geometry to x361..710, and remove the digit-garble overflow"],
           plannedLineChirho
         ),
         null,
@@ -293,7 +303,7 @@ function mainChirho(): void {
         modeChirho,
         "applied-chirho",
         [
-          `applied vol 1 p149 L36 repair and upserted ${upsertCountChirho} durable vision verdict`,
+          `applied vol 1 p149 L36 repair/geometry correction and upserted ${upsertCountChirho} durable vision verdict`,
           "re-run export markdown, validate-pass-c-hebrew, both review packs, certification status, and hidden-Hebrew scan",
         ],
         plannedLineChirho
