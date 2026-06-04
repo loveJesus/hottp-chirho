@@ -3,14 +3,14 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Hidden Hebrew Candidate Scan Chirho
 
-Generated: 2026-06-04T07:03:28.033Z
+Generated: 2026-06-04T07:20:51.671Z
 
 This is a machine-assisted review queue, not a certification result. It flags lines where OCR may have rendered printed Hebrew as valid-looking French, Latin, symbols, short Latin/bracket garbage, or digit garbage. Every item still needs visual review against the scanline before any span repair.
 
 ## Summary
 
-- Candidate lines: 37
-- High priority: 20
+- Candidate lines: 35
+- High priority: 18
 - Medium priority: 17
 - Low priority included: 0
 
@@ -57,26 +57,6 @@ Priority is heuristic: scripture/citation context, existing Hebrew spans, digit/
 - Line text: `8,13 תַקְדִּישׁוּ [A] M 1Q-a 4Q-h G Sym V ST`
 - Suspicious spans:
   - S2 french-chirho: `[A] M 1Q-a 4Q-h G Sym V ST` (repeated-uppercase-garble-near-hebrew-line-chirho; neighbors hebrew-chirho / none)
-
-### high-chirho score 9: vol 2 p0150 L013
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-symbol-digit-garble-chirho`, `suspicious-span-adjacent-to-hebrew-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-2-chirho/page-0150-chirho/line-013-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-2-chirho/page-0150-chirho/line-013-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-2-chirho/page-0150-chirho/line-013-chirho.png)
-- Line text: `de remplacer les deux קֶשֶׁר du vs 12 par #1p, obtenant ainsi pour les vss 12-14 : (12)`
-- Suspicious spans:
-  - S2 french-chirho: `du vs 12 par #1p, obtenant ainsi pour les vss 12-14 : (12)` (symbol-digit-garble-chirho; neighbors hebrew-chirho / none)
-
-### high-chirho score 9: vol 2 p0151 L037
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-symbol-digit-garble-chirho`, `suspicious-span-adjacent-to-hebrew-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-2-chirho/page-0151-chirho/line-037-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-2-chirho/page-0151-chirho/line-037-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-2-chirho/page-0151-chirho/line-037-chirho.png)
-- Line text: `de #7p lié (comme ici) au hifil de ערץ Or la critique littéraire admet d'ordinaire que`
-- Suspicious spans:
-  - S0 french-chirho: `de #7p lié (comme ici) au hifil de` (symbol-digit-garble-chirho; neighbors none / hebrew-chirho)
 
 ### high-chirho score 9: vol 4 p0150 L013
 

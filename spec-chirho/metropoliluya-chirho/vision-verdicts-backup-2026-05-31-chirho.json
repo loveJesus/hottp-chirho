@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T07:02:15.821Z",
+  "generatedAtChirho": "2026-06-04T07:19:52.723Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 788,
+  "countChirho": 790,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7883,6 +7883,26 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "הברית הסרים מלכת [בד]ר̇ך̇ הָעָם.",
       "notesChirho": "Recovered continuing 11QMelchisédec Hebrew citation from two partial Pass-C Hebrew islands plus bracket/Latin garbage; Claude and Codex second-witnessed the scanline. Stored logical bracket placement as [בד]רך with supralinear dots over resh+kaf using the same combining dot-above convention as line 22; do not normalize this line to the similar 1QSa wording on line 24. Exact lacuna extent, dot semantics, vowels, and punctuation remain Qumran/DSS expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 150,
+      "lineIndexChirho": 13,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "#1p,",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "קדש",
+      "notesChirho": "Recovered the hidden Hebrew word after French 'par' on vol 2 p150 L13. The French context says to replace the two קֶשֶׁר readings with קדש, so this is not a duplicate קֶשֶׁר. The printed comma belongs to the resuming French punctuation span. Claude and Codex second-witnessed the scanline as consonants קדש, explicitly correcting the anchoring risk from the nearby קֶשֶׁר. Stored consonants only as vision-chirho; exact vowels/marks and punctuation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 151,
+      "lineIndexChirho": 37,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "#7p",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "קדש",
+      "notesChirho": "Recovered the hidden Hebrew word after French 'de' on vol 2 p151 L37. The scanline shows qof-dalet-shin before 'lié (comme ici) au hifil de ערץ', not קֶשֶׁר. Claude and Codex second-witnessed the scanline as consonants קדש, explicitly correcting the anchoring risk from the nearby קֶשֶׁר. Stored consonants only as vision-chirho; exact vowels/marks and punctuation remain Hebrew/WLC expert-confirmation tier."
     }
   ]
 }
