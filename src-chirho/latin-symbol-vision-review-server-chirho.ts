@@ -77,7 +77,11 @@ interface LatinSymbolReviewItemChirho extends LatinSymbolPacketItemChirho {
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
   const prefixChirho = `--${nameChirho}=`;
-  return argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho))?.slice(prefixChirho.length);
+  const matchedArgChirho = argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho));
+  if (matchedArgChirho === undefined) return undefined;
+  const valueChirho = matchedArgChirho.slice(prefixChirho.length);
+  if (valueChirho.length === 0) throw new Error(`--${nameChirho} must not be empty`);
+  return valueChirho;
 }
 
 function parsePortChirho(argsChirho: string[]): number {
@@ -153,6 +157,7 @@ function htmlChirho(): string {
     .issue-option-chirho:has(input:checked) { border-color: #bd7a1b; background: #fff7e8; }
     .clean-accept-option-chirho { display: flex; gap: 8px; align-items: flex-start; border: 1px solid #b8d5ca; background: #f2fbf7; padding: 10px; font-size: 13px; line-height: 1.35; cursor: pointer; }
     .clean-accept-option-chirho input { width: auto; margin: 3px 0 0; }
+    .reviewer-input-chirho { width: 100%; box-sizing: border-box; border: 1px solid #b8bec7; padding: 8px; margin: 6px 0 10px; }
     .notes-chirho { width: 100%; min-height: 82px; resize: vertical; box-sizing: border-box; border: 1px solid #b8bec7; padding: 9px; }
     .actions-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .actions-chirho button { border: 1px solid #aab1b9; background: white; padding: 10px; cursor: pointer; min-height: 42px; }
@@ -207,6 +212,7 @@ function htmlChirho(): string {
   <script>
     const issueFlagOptionsChirho = ${scriptJsonChirho(ISSUE_FLAG_OPTIONS_CHIRHO)};
     const symbolRiskOptionsChirho = ${scriptJsonChirho(SYMBOL_RISK_OPTIONS_CHIRHO)};
+    const serverReviewerChirho = ${scriptJsonChirho(reviewerChirho)};
     let itemsChirho = [];
     let reviewsChirho = new Map();
     let acceptedPolicyIdsChirho = new Set();
@@ -215,6 +221,7 @@ function htmlChirho(): string {
     let indexChirho = 0;
     const initialSearchParamsChirho = new URLSearchParams(window.location.search);
     let requestedItemIdChirho = initialSearchParamsChirho.get("item-chirho");
+    let reviewerChirho = storedReviewerChirho() || serverReviewerChirho || "";
 
     function textNodeChirho(valueChirho) { return document.createTextNode(valueChirho == null ? "" : String(valueChirho)); }
     function elChirho(tagChirho, attrsChirho = {}, childrenChirho = []) {
@@ -229,6 +236,18 @@ function htmlChirho(): string {
     }
     function clearChirho(nodeChirho) { while (nodeChirho.firstChild) nodeChirho.removeChild(nodeChirho.firstChild); }
     function setStatusChirho(messageChirho) { document.getElementById("status-chirho").textContent = messageChirho; }
+    function storedReviewerChirho() {
+      try { return window.localStorage.getItem("latin-symbol-reviewer-chirho") || ""; }
+      catch (_errorChirho) { return ""; }
+    }
+    function persistReviewerChirho(valueChirho) {
+      try { window.localStorage.setItem("latin-symbol-reviewer-chirho", valueChirho); }
+      catch (_errorChirho) {}
+    }
+    function currentReviewerChirho() {
+      const inputChirho = document.getElementById("reviewer-chirho");
+      return (inputChirho ? inputChirho.value : reviewerChirho).trim();
+    }
     function currentPositionTextChirho(activeCountChirho) {
       return activeCountChirho === 0 ? "item 0 of 0" : "item " + (indexChirho + 1) + " of " + activeCountChirho;
     }
@@ -335,7 +354,7 @@ function htmlChirho(): string {
       return currentIssueFlagsChirho().length === 0;
     }
     function currentReviewCanSubmitChirho() {
-      return !currentReviewWouldBeCleanChirho() || cleanAcceptAcknowledgedChirho();
+      return currentReviewerChirho().length > 0 && (!currentReviewWouldBeCleanChirho() || cleanAcceptAcknowledgedChirho());
     }
     function reviewActionTextChirho() {
       return currentIssueFlagsChirho().length === 0 ? "Accept as clean" : "Save issue";
@@ -410,6 +429,15 @@ function htmlChirho(): string {
         sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "This item has issue flags and remains pending until accepted clean." }));
       }
       const formChirho = elChirho("div", { classChirho: "box-chirho" });
+      formChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "reviewer-chirho", textChirho: "Reviewer" }));
+      const reviewerInputChirho = elChirho("input", {
+        id: "reviewer-chirho",
+        classChirho: "reviewer-input-chirho",
+        type: "text",
+        autocomplete: "name",
+        value: reviewerChirho
+      });
+      formChirho.appendChild(reviewerInputChirho);
       formChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Issue flags" }));
       formChirho.appendChild(elChirho("div", {
         classChirho: "label-chirho",
@@ -448,6 +476,11 @@ function htmlChirho(): string {
         checkboxChirho.addEventListener("change", updateContinueButtonChirho);
       }
       cleanAcceptInputChirho.addEventListener("change", updateContinueButtonChirho);
+      reviewerInputChirho.addEventListener("input", () => {
+        reviewerChirho = reviewerInputChirho.value;
+        persistReviewerChirho(reviewerChirho);
+        updateContinueButtonChirho();
+      });
       updateContinueButtonChirho();
       continueChirho.addEventListener("click", () => saveCurrentChirho(itemChirho));
       const skipChirho = elChirho("button", { type: "button", textChirho: "Skip" });
@@ -462,10 +495,17 @@ function htmlChirho(): string {
     async function saveCurrentChirho(itemChirho) {
       const flagsChirho = currentIssueFlagsChirho();
       const notesChirho = document.getElementById("notes-chirho").value;
+      const reviewerValueChirho = currentReviewerChirho();
+      if (reviewerValueChirho.length === 0) {
+        setStatusChirho("Reviewer is required.");
+        return;
+      }
       if (flagsChirho.length === 0 && !cleanAcceptAcknowledgedChirho()) {
         setStatusChirho("Check the clean acceptance box before accepting as clean.");
         return;
       }
+      reviewerChirho = reviewerValueChirho;
+      persistReviewerChirho(reviewerChirho);
       setStatusChirho("Saving...");
       const responseChirho = await fetch("/api-chirho/review-chirho", {
         method: "POST",
@@ -474,6 +514,7 @@ function htmlChirho(): string {
           idChirho: itemChirho.idChirho,
           issueFlagsChirho: flagsChirho,
           notesChirho,
+          reviewerChirho,
           acceptCleanChirho: cleanAcceptAcknowledgedChirho()
         })
       });
@@ -534,7 +575,7 @@ const portChirho = parsePortChirho(argsChirho);
 const dbPathChirho = parseArgValueChirho(argsChirho, "db") ?? PROGRESS_DB_PATH_CHIRHO;
 const backupPathChirho = parseArgValueChirho(argsChirho, "backup") ?? LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO;
 const policyPathChirho = parseArgValueChirho(argsChirho, "policy") ?? LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO;
-const reviewerChirho = parseArgValueChirho(argsChirho, "reviewer") ?? "human-chirho";
+const reviewerChirho = parseArgValueChirho(argsChirho, "reviewer")?.trim() ?? "";
 const dbChirho = new Database(dbPathChirho);
 ensureLatinSymbolReviewSchemaChirho(dbChirho);
 
@@ -603,6 +644,9 @@ Bun.serve({
         const effectiveReviewerChirho = typeof bodyChirho.reviewerChirho === "string" && bodyChirho.reviewerChirho.trim().length > 0
           ? bodyChirho.reviewerChirho.trim()
           : reviewerChirho;
+        if (effectiveReviewerChirho.length === 0) {
+          return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
+        }
         const reviewChirho = saveLatinSymbolReviewChirho({
           dbChirho,
           manifestChirho,
