@@ -1,11 +1,13 @@
 // For God so loved the world that he gave his only begotten Son,
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
-import { readFileSync, writeFileSync, existsSync } from "fs";
+import { readFileSync, existsSync } from "fs";
 import { join } from "path";
 
 import { sqliteChirho } from "./db-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
+import { normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 if (!import.meta.main) throw new Error("CLI only");
 
@@ -22,16 +24,43 @@ const maxDistanceChirho = parseInt(
 );
 const dryRunChirho = argsChirho.includes("--dry-run");
 
-const [pStartChirho, pEndChirho] = pageRangeChirho.split("-").map((nChirho) => parseInt(nChirho, 10));
-const pagesChirho = [];
+const pageRangePartsChirho = pageRangeChirho.split("-");
+const pStartChirho = Number.parseInt(pageRangePartsChirho[0] ?? "", 10);
+const pEndChirho = Number.parseInt(pageRangePartsChirho[1] ?? pageRangePartsChirho[0] ?? "", 10);
+if (!Number.isInteger(pStartChirho) || !Number.isInteger(pEndChirho) || pStartChirho > pEndChirho) {
+  throw new Error(`invalid --pages range: ${pageRangeChirho}`);
+}
+const pagesChirho: number[] = [];
 for (let pChirho = pStartChirho; pChirho <= pEndChirho; pChirho++) pagesChirho.push(pChirho);
 const placeholdersChirho = pagesChirho.map(() => "?").join(",");
+
+interface MatchRowChirho {
+  page_number_chirho: number;
+  line_index_chirho: number;
+  segment_index_chirho: number;
+  current_text_chirho: string;
+  canonical_text_chirho: string;
+  book_chirho: string;
+  chapter_chirho: number;
+  verse_chirho: number;
+}
 
 const rowsChirho = sqliteChirho
   .prepare(
     "SELECT seg.id_chirho AS segment_id_chirho, p.page_number_chirho AS page_number_chirho, sl.line_index_chirho AS line_index_chirho, seg.segment_index_chirho AS segment_index_chirho, seg.accepted_text_chirho AS current_text_chirho, bm.canonical_nikkud_chirho AS canonical_text_chirho, bm.distance_chirho AS distance_chirho, bm.book_chirho AS book_chirho, bm.chapter_chirho AS chapter_chirho, bm.verse_chirho AS verse_chirho FROM bhs_matches_chirho bm JOIN segments_chirho seg ON seg.id_chirho = bm.segment_id_chirho JOIN scanlines_chirho sl ON sl.id_chirho = seg.scanline_id_chirho JOIN pages_chirho p ON p.id_chirho = sl.page_id_chirho WHERE p.volume_number_chirho = ? AND p.page_number_chirho IN (" + placeholdersChirho + ") AND bm.distance_chirho <= ? AND bm.confidence_chirho IN ('high', 'medium') ORDER BY p.page_number_chirho, sl.line_index_chirho, seg.segment_index_chirho"
   )
-  .all(volChirho, ...pagesChirho, maxDistanceChirho);
+  .all(volChirho, ...pagesChirho, maxDistanceChirho) as MatchRowChirho[];
+
+interface SpanChirho {
+  segmentIndexChirho: number;
+  utf8TextChirho: string;
+  [keyChirho: string]: unknown;
+}
+
+interface SpanLineChirho {
+  spansChirho?: SpanChirho[];
+  [keyChirho: string]: unknown;
+}
 
 console.log("[bhs-apply] " + rowsChirho.length + " matches at distance <= " + maxDistanceChirho + (dryRunChirho ? " (dry-run)" : ""));
 
@@ -53,14 +82,25 @@ for (const rChirho of rowsChirho) {
     skippedChirho++;
     continue;
   }
-  const dataChirho = JSON.parse(readFileSync(spanFileChirho, "utf8"));
-  const spanChirho = dataChirho.spansChirho?.[rChirho.segment_index_chirho];
+  const dataChirho = JSON.parse(readFileSync(spanFileChirho, "utf8")) as SpanLineChirho;
+  const segmentIndexChirho = Number(rChirho.segment_index_chirho);
+  const spanChirho = dataChirho.spansChirho?.find(
+    (candidateChirho) => candidateChirho.segmentIndexChirho === segmentIndexChirho
+  );
   if (!spanChirho) {
-    console.warn("  span index out of range: " + spanFileChirho + " idx=" + rChirho.segment_index_chirho);
+    console.warn("  segment not found by segmentIndexChirho: " + spanFileChirho + " idx=" + rChirho.segment_index_chirho);
     skippedChirho++;
     continue;
   }
-  if (spanChirho.utf8TextChirho === rChirho.canonical_text_chirho) {
+  if (
+    normalizeTextForStorageChirho(spanChirho.utf8TextChirho) !==
+    normalizeTextForStorageChirho(String(rChirho.current_text_chirho))
+  ) {
+    console.warn("  span text drifted from D1 match row; refusing: " + spanFileChirho + " idx=" + rChirho.segment_index_chirho);
+    skippedChirho++;
+    continue;
+  }
+  if (normalizeTextForStorageChirho(spanChirho.utf8TextChirho) === normalizeTextForStorageChirho(String(rChirho.canonical_text_chirho))) {
     skippedChirho++;
     continue;
   }
@@ -70,9 +110,9 @@ for (const rChirho of rowsChirho) {
     spanChirho.utf8TextChirho + " → " + rChirho.canonical_text_chirho
   );
   if (!dryRunChirho) {
-    spanChirho.utf8TextChirho = rChirho.canonical_text_chirho;
+    spanChirho.utf8TextChirho = String(rChirho.canonical_text_chirho);
     dataChirho.agentChirho = "bhs-apply-vol-" + volChirho + "-chirho";
-    writeFileSync(spanFileChirho, JSON.stringify(dataChirho, null, 2) + "\n", "utf8");
+    writeJsonAtomicChirho(spanFileChirho, dataChirho);
     affectedPagesChirho.add(rChirho.page_number_chirho);
     appliedChirho++;
   }
