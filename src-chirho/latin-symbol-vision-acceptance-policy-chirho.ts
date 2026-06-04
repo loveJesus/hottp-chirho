@@ -14,6 +14,7 @@ import { join } from "path";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
   hashTextChirho,
+  isNontrivialSymbolTextChirho,
   type LatinSymbolVisionLiveItemChirho,
 } from "./latin-symbol-vision-live-items-chirho.ts";
 
@@ -76,6 +77,10 @@ function nonEmptyStringChirho(valueChirho: unknown): valueChirho is string {
   return typeof valueChirho === "string" && valueChirho.trim().length > 0;
 }
 
+function policyClaimsSafeSymbolsOnlyChirho(policyChirho: LatinSymbolAcceptancePolicyChirho): boolean {
+  return typeof policyChirho.scopeChirho === "string" && /\bsafeSymbolsOnly=true\b/.test(policyChirho.scopeChirho);
+}
+
 function validatePolicyShapeChirho(fileChirho: LatinSymbolAcceptancePolicyFileChirho): string[] {
   const errorsChirho: string[] = [];
   if (fileChirho.schemaVersionChirho !== 1) {
@@ -87,6 +92,7 @@ function validatePolicyShapeChirho(fileChirho: LatinSymbolAcceptancePolicyFileCh
   }
   for (const policyChirho of fileChirho.policiesChirho) {
     const policyIdChirho = policyChirho.policyIdChirho ?? "<missing-policy-id-chirho>";
+    const safeSymbolsOnlyChirho = policyClaimsSafeSymbolsOnlyChirho(policyChirho);
     if (!nonEmptyStringChirho(policyChirho.policyIdChirho)) {
       errorsChirho.push(`${policyIdChirho}: policyIdChirho must be non-empty`);
     }
@@ -129,6 +135,17 @@ function validatePolicyShapeChirho(fileChirho: LatinSymbolAcceptancePolicyFileCh
       }
       if (!nonEmptyStringChirho(itemChirho.currentTextHashChirho)) {
         errorsChirho.push(`${policyIdChirho}: currentTextHashChirho must be non-empty`);
+      }
+      if (
+        safeSymbolsOnlyChirho &&
+        typeof itemChirho.currentTextChirho === "string" &&
+        (itemChirho.scriptChirho !== "symbol-chirho" ||
+          isNontrivialSymbolTextChirho({
+            scriptChirho: itemChirho.scriptChirho ?? "",
+            textChirho: itemChirho.currentTextChirho,
+          }))
+      ) {
+        errorsChirho.push(`${policyIdChirho}: safeSymbolsOnly=true item ${itemChirho.itemIdChirho ?? "<missing-item-id-chirho>"} is not trivial symbol punctuation`);
       }
     }
   }
