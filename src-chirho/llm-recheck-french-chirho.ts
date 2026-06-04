@@ -16,6 +16,7 @@
  *   bun src-chirho/llm-recheck-french-chirho.ts --vol=1 --page=150
  */
 
+import { writeJsonAtomicChirho, writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import { sqliteChirho } from "./db-chirho.ts";
 import { findFrenchMissesChirho } from "./dict-check-chirho.ts";
 
@@ -160,7 +161,12 @@ if (import.meta.main) {
   if (singlePageChirho) {
     pagesChirho = [parseInt(singlePageChirho, 10)];
   } else if (pageRangeChirho) {
-    const [aChirho, bChirho] = pageRangeChirho.split("-").map((nChirho) => parseInt(nChirho, 10));
+    const pageRangePartsChirho = pageRangeChirho.split("-");
+    const aChirho = Number.parseInt(pageRangePartsChirho[0] ?? "", 10);
+    const bChirho = Number.parseInt(pageRangePartsChirho[1] ?? pageRangePartsChirho[0] ?? "", 10);
+    if (!Number.isInteger(aChirho) || !Number.isInteger(bChirho) || aChirho > bChirho) {
+      throw new Error(`invalid --pages range: ${pageRangeChirho}`);
+    }
     for (let pChirho = aChirho; pChirho <= bChirho; pChirho++) pagesChirho.push(pChirho);
   } else {
     console.error("Usage: --vol=N --pages=A-B  OR  --page=N");
@@ -176,7 +182,7 @@ if (import.meta.main) {
     process.exit(0);
   }
 
-  const { writeFileSync, mkdirSync, existsSync } = await import("fs");
+  const { mkdirSync, existsSync } = await import("fs");
   const { join } = await import("path");
   const outDirChirho = join(process.cwd(), "workspace-chirho", "llm-recheck-chirho");
   if (!existsSync(outDirChirho)) mkdirSync(outDirChirho, { recursive: true });
@@ -195,8 +201,8 @@ if (import.meta.main) {
     }));
     const promptPathChirho = join(outDirChirho, `vol-${volChirho}-batch-${batchNumChirho}-prompt-chirho.txt`);
     const metaPathChirho = join(outDirChirho, `vol-${volChirho}-batch-${batchNumChirho}-meta-chirho.json`);
-    writeFileSync(promptPathChirho, promptChirho, "utf8");
-    writeFileSync(metaPathChirho, JSON.stringify(metaChirho, null, 2), "utf8");
+    writeTextAtomicChirho(promptPathChirho, promptChirho);
+    writeJsonAtomicChirho(metaPathChirho, metaChirho);
     console.log(`[llm-recheck] Batch ${batchNumChirho}: ${batchChirho.length} items → ${promptPathChirho}`);
   }
   console.log(`\nNext: pass each prompt file to a subagent. Save the agent's JSON-array reply alongside the prompt as ...-verdicts-chirho.json. Then run:\n  bun src-chirho/llm-recheck-apply-chirho.ts --vol=${volChirho}`);

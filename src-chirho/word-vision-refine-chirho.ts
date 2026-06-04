@@ -15,10 +15,11 @@
  *   bun src-chirho/word-vision-refine-chirho.ts --vol=1 --page=150
  */
 
-import { existsSync, mkdirSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync } from "fs";
 import { join } from "path";
 import { spawnSync } from "child_process";
 
+import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { sqliteChirho } from "./db-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
@@ -178,7 +179,7 @@ if (import.meta.main) {
     `page-${String(pageChirho).padStart(4, "0")}-chirho`,
     `word-vision-manifest-chirho.json`
   );
-  writeFileSync(manifestPathChirho, JSON.stringify(jobsChirho, null, 2), "utf8");
+  writeJsonAtomicChirho(manifestPathChirho, jobsChirho);
 
   console.log(
     `[word-vision-refine] Cropped ${jobsChirho.length} segments → ${segOutDirChirho}`

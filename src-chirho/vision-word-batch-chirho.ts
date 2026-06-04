@@ -30,10 +30,11 @@
  * results-chirho.json back into the batch directory.
  */
 
-import { existsSync, readdirSync, writeFileSync, mkdirSync } from "fs";
+import { existsSync, readdirSync, mkdirSync } from "fs";
 import { join } from "path";
 import { Database } from "bun:sqlite";
 
+import { writeJsonAtomicChirho, writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { initDbChirho, sqliteChirho } from "./db-chirho.ts";
 import { runCmdChirho, ensureDirChirho, logChirho } from "./utils-chirho.ts";
@@ -210,12 +211,8 @@ async function cropPhaseChirho(volChirho: number, pageNumChirho: number): Promis
       batchNumChirho: bChirho,
       wordsChirho: entriesChirho,
     };
-    writeFileSync(
-      join(batchDirChirho, "words-meta-chirho.json"),
-      JSON.stringify(manifestChirho, null, 2),
-      "utf8"
-    );
-    writeFileSync(join(batchDirChirho, "prompt-chirho.md"), buildPromptChirho(entriesChirho), "utf8");
+    writeJsonAtomicChirho(join(batchDirChirho, "words-meta-chirho.json"), manifestChirho);
+    writeTextAtomicChirho(join(batchDirChirho, "prompt-chirho.md"), buildPromptChirho(entriesChirho));
   }
 
   logChirho(MODULE_CHIRHO, `wrote ${Math.ceil(toVisionChirho.length / BATCH_SIZE_CHIRHO)} batches to ${outRootChirho}`);
