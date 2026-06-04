@@ -129,6 +129,12 @@ const ZECHARIAH_TIPCHA_CONFIRMATION_AID_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "zechariah-tipcha-confirmation-2026-06-03-chirho.md"
 );
+const SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "syriac-blank-transcription-handoff-2026-06-04-chirho.md"
+);
 const LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -2501,6 +2507,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     ...expertVolumeLaneLinesChirho,
     `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,
     `- Reviewer scope and primer guide: \`${relativeProjectPathChirho(REVIEWER_SCOPE_GUIDE_PATH_CHIRHO)}\``,
+    `- Syriac blank transcription handoff: \`${relativeProjectPathChirho(SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO)}\` (for v3-p0151-l010-s3; no proposed text)`,
     `- Resolved Zechariah historical aid: \`${relativeProjectPathChirho(ZECHARIAH_TIPCHA_CONFIRMATION_AID_PATH_CHIRHO)}\``,
     ...guardedWlcCorrectionCommandLinesChirho,
     "",
