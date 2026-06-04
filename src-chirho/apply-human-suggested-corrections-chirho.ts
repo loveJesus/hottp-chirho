@@ -15,6 +15,7 @@ import { join } from "path";
 
 import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { assertCertifyingReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
 import {
   normalizeSpanLineTextFieldsChirho,
   scanSpanLinePathsChirho,
@@ -50,6 +51,7 @@ interface CorrectableSpanChirho extends SpanLikeChirho {
   humanCorrectedFromTextChirho?: string;
   humanCorrectionSourceChirho?: string;
   humanCorrectionIssueFlagsChirho?: string[];
+  humanCorrectionReviewerChirho?: string;
   provenanceChirho?: string;
 }
 
@@ -176,7 +178,8 @@ function applyCorrectionChirho(
   spanChirho: CorrectableSpanChirho,
   resultChirho: CorrectionResultChirho,
   appliedAtChirho: string,
-  certifyHumanChirho: boolean
+  certifyHumanChirho: boolean,
+  reviewerChirho: string | null
 ): void {
   if (resultChirho.suggestedTextChirho === null) throw new Error("cannot apply missing suggestion");
   spanChirho.utf8TextChirho = resultChirho.suggestedTextChirho;
@@ -187,7 +190,11 @@ function applyCorrectionChirho(
   spanChirho.humanCorrectionIssueFlagsChirho = resultChirho.issueFlagsChirho;
   spanChirho.humanReviewStatusChirho = "reviewed-corrected-chirho";
   spanChirho.humanIssueFlagsChirho = [];
-  if (certifyHumanChirho) spanChirho.provenanceChirho = "human-chirho";
+  if (certifyHumanChirho) {
+    if (reviewerChirho === null) throw new Error("--reviewer-chirho is required with --certify-human");
+    spanChirho.provenanceChirho = "human-chirho";
+    spanChirho.humanCorrectionReviewerChirho = reviewerChirho;
+  }
   normalizeSpanLineTextFieldsChirho({ spansChirho: [spanChirho] });
 }
 
@@ -195,6 +202,14 @@ function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const applyChirho = argsChirho.includes("--apply");
   const certifyHumanChirho = argsChirho.includes("--certify-human");
+  const reviewerArgChirho = parseArgValueChirho(argsChirho, "reviewer-chirho");
+  const reviewerChirho = reviewerArgChirho === undefined ? null : reviewerArgChirho.trim();
+  if (certifyHumanChirho) {
+    if (reviewerChirho === null || reviewerChirho.length === 0) {
+      throw new Error("--reviewer-chirho is required with --certify-human");
+    }
+    assertCertifyingReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
+  }
   const targetValidationIdChirho = parseIntegerArgChirho(parseArgValueChirho(argsChirho, "validation-id-chirho"), "validation-id-chirho");
   const targetSuggestedTextArgChirho = parseArgValueChirho(argsChirho, "suggested-text-chirho");
   const targetSuggestedTextChirho = targetSuggestedTextArgChirho === undefined
@@ -219,10 +234,10 @@ function mainChirho(): void {
       const resultChirho = evaluateCorrectionChirho(linePathChirho, lineChirho, spanChirho, optionsChirho);
       if (resultChirho === null) continue;
       if (applyChirho && resultChirho.statusChirho === "planned-chirho") {
-        applyCorrectionChirho(spanChirho, resultChirho, appliedAtChirho, certifyHumanChirho);
+        applyCorrectionChirho(spanChirho, resultChirho, appliedAtChirho, certifyHumanChirho, reviewerChirho);
         resultChirho.statusChirho = "applied-chirho";
         resultChirho.messageChirho = certifyHumanChirho
-          ? "applied WLC suggestion and stamped human provenance"
+          ? "applied WLC suggestion and stamped human provenance with explicit reviewer"
           : "applied WLC suggestion without changing provenance";
         lineChangedChirho = true;
         appliedCountChirho += 1;
@@ -241,6 +256,7 @@ function mainChirho(): void {
     generatedAtChirho: appliedAtChirho,
     appliedChirho: applyChirho,
     certifyHumanChirho,
+    reviewerChirho: certifyHumanChirho ? reviewerChirho : null,
     targetValidationIdChirho,
     targetSuggestedTextChirho,
     allowedIssueFlagsChirho: [...ALLOWED_WLC_CORRECTION_FLAGS_CHIRHO],

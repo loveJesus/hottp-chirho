@@ -1769,6 +1769,7 @@ function pageHtmlChirho(): string {
         if (typeof itemChirho.wlcSuggestedTextChirho === "string" && itemChirho.wlcSuggestedTextChirho.length > 0) {
           const guardedCommandChirho =
             "bun run apply-human-suggested-corrections-chirho -- --apply --certify-human " +
+            "--reviewer-chirho=<explicit-human-reviewer-id-chirho> " +
             "--validation-id-chirho=" + savedValidationChirho.id_chirho + " " +
             "--suggested-text-chirho=" + shellSingleQuoteChirho(itemChirho.wlcSuggestedTextChirho);
           const suggestionBoxChirho = elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [

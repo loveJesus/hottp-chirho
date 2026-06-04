@@ -71,7 +71,9 @@ Specifically:
 - maqqef between `וְגַם` and `חֲמָת`
 - tipcha on `מָ`
 
-The guarded path was applied:
+The guarded path was applied. The current version of the first command also
+requires `--reviewer-chirho=<explicit-human-reviewer-id-chirho>` when
+`--certify-human` is used:
 
 1. `bun run apply-human-suggested-corrections-chirho -- --apply --certify-human --validation-id-chirho=3 --suggested-text-chirho='וְגַם־חֲמָ֖ת'`
 2. `bun run spec-chirho/metropoliluya-chirho/repair-vol3-p148-l59-zechariah-quote-2026-06-01-chirho.ts --apply`

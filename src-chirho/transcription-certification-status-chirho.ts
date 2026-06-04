@@ -1411,6 +1411,7 @@ function guardedWlcCorrectionCommandsChirho(): GuardedWlcCorrectionCommandChirho
         suggestedTextChirho,
         commandChirho:
           "bun run apply-human-suggested-corrections-chirho -- --apply --certify-human " +
+          "--reviewer-chirho=<explicit-human-reviewer-id-chirho> " +
           `--validation-id-chirho=${spanChirho.humanValidationIdChirho} ` +
           `--suggested-text-chirho=${shellSingleQuoteChirho(suggestedTextChirho)}`,
       });
