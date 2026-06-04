@@ -18,6 +18,14 @@ import { join } from "path";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { writePassCHumanValidationBackupChirho } from "./pass-c-human-validation-backup-chirho.ts";
 import {
+  RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO,
+  RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO,
+  RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO,
+  RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO,
+  rawHebrewAttentionKindsChirho,
+  rawHebrewAttentionReasonsChirho,
+} from "./raw-hebrew-review-triage-chirho.ts";
+import {
   RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_1_2_CHIRHO,
   RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_3_5_CHIRHO,
   RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO,
@@ -175,6 +183,8 @@ interface QueueItemChirho extends ReportSpanChirho {
   lineMarkerHeightPctChirho: number;
   originalTextHashChirho: string;
   tierChirho: string;
+  attentionKindsChirho: string[];
+  attentionReasonsChirho: string[];
   priorityChirho: number;
 }
 
@@ -622,6 +632,8 @@ function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): Queue
         lineMarkerHeightPctChirho: zoomChirho.lineMarkerHeightPctChirho,
         originalTextHashChirho: hashTextChirho(liveSpanTextChirho),
         tierChirho: tierForSpanChirho(spanChirho),
+        attentionKindsChirho: rawHebrewAttentionKindsChirho(spanChirho),
+        attentionReasonsChirho: rawHebrewAttentionReasonsChirho(spanChirho),
         priorityChirho: queuePriorityChirho(spanChirho),
       };
     })
@@ -1086,6 +1098,14 @@ function pageHtmlChirho(): string {
         <option value="suspect-text-chirho">Suspect text</option>
         <option value="unknown-script-chirho">Unknown script</option>
       </select>
+      <label class="label-chirho" for="attention-filter-chirho">Attention</label>
+      <select id="attention-filter-chirho">
+        <option value="all-chirho">All</option>
+        <option value="${RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO}">Low confidence</option>
+        <option value="${RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO}">Multi-token</option>
+        <option value="${RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO}">Delimiter notation</option>
+        <option value="${RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO}">No direct read</option>
+      </select>
       <label class="label-chirho" for="volume-filter-chirho">Volume</label>
       <select id="volume-filter-chirho">
         <option value="all-chirho">All</option>
@@ -1155,6 +1175,11 @@ function pageHtmlChirho(): string {
       initialSearchParamsChirho.get("tier-chirho"),
       "all-chirho"
     );
+    let attentionFilterChirho = selectValueOrDefaultChirho(
+      "attention-filter-chirho",
+      initialSearchParamsChirho.get("attention-chirho"),
+      "all-chirho"
+    );
     let volumeFilterChirho = selectValueOrDefaultChirho(
       "volume-filter-chirho",
       initialSearchParamsChirho.get("volume-chirho"),
@@ -1164,6 +1189,7 @@ function pageHtmlChirho(): string {
       document.getElementById("review-state-filter-chirho").value = reviewStateFilterChirho;
       document.getElementById("validation-status-filter-chirho").value = validationStatusFilterChirho;
       document.getElementById("tier-filter-chirho").value = tierFilterChirho;
+      document.getElementById("attention-filter-chirho").value = attentionFilterChirho;
       document.getElementById("volume-filter-chirho").value = volumeFilterChirho;
     }
     function volumeFilterNumberChirho() {
@@ -1176,6 +1202,7 @@ function pageHtmlChirho(): string {
       if (reviewStateFilterChirho !== "pending-chirho") paramsChirho.set("review-state-chirho", reviewStateFilterChirho);
       if (validationStatusFilterChirho !== "all-chirho") paramsChirho.set("validation-status-chirho", validationStatusFilterChirho);
       if (tierFilterChirho !== "all-chirho") paramsChirho.set("tier-chirho", tierFilterChirho);
+      if (attentionFilterChirho !== "all-chirho") paramsChirho.set("attention-chirho", attentionFilterChirho);
       if (volumeFilterChirho !== "all-chirho") paramsChirho.set("volume-chirho", volumeFilterChirho);
       const itemChirho = currentItemChirho();
       if (itemChirho) paramsChirho.set("item-chirho", itemChirho.keyChirho);
@@ -1206,6 +1233,7 @@ function pageHtmlChirho(): string {
         ) &&
         (validationStatusFilterChirho === "all-chirho" || itemChirho.validationStatusChirho === validationStatusFilterChirho) &&
         (tierFilterChirho === "all-chirho" || itemChirho.tierChirho === tierFilterChirho) &&
+        (attentionFilterChirho === "all-chirho" || itemChirho.attentionKindsChirho.includes(attentionFilterChirho)) &&
         (volumeChirho === null || itemChirho.volumeChirho === volumeChirho)
       );
     }
@@ -1492,6 +1520,8 @@ function pageHtmlChirho(): string {
         elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.scriptHintSummaryChirho }),
         elChirho("div", { textChirho: "Tier" }),
         elChirho("div", { classChirho: "tier-chirho", textChirho: itemChirho.tierChirho }),
+        elChirho("div", { textChirho: "Attention" }),
+        elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.attentionReasonsChirho.length === 0 ? "none" : itemChirho.attentionReasonsChirho.join("; ") }),
         elChirho("div", { textChirho: "Hash" }),
         elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.originalTextHashChirho.slice(0, 16) }),
         elChirho("div", { textChirho: "Skeletons" }),
@@ -1703,6 +1733,12 @@ function pageHtmlChirho(): string {
     });
     document.getElementById("tier-filter-chirho").addEventListener("change", (eventChirho) => {
       tierFilterChirho = eventChirho.target.value;
+      requestedItemKeyChirho = null;
+      indexChirho = 0;
+      renderChirho();
+    });
+    document.getElementById("attention-filter-chirho").addEventListener("change", (eventChirho) => {
+      attentionFilterChirho = eventChirho.target.value;
       requestedItemKeyChirho = null;
       indexChirho = 0;
       renderChirho();
