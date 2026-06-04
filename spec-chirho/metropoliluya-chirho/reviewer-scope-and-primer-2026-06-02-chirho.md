@@ -7,11 +7,12 @@ This guide keeps the certification boundary honest: use primers to orient your e
 
 ## Current Review Lanes
 
-- Hebrew/WLC and Greek: Hallelujah can work these first. Use `http://localhost:8766/` for the 125 raw Hebrew spans and `http://localhost:8771/` filtered to `hebrew-chirho` or `greek-chirho` for vision-tier expert confirmations.
+- Current counts move as reviews land; trust `workspace-chirho/certification-status-chirho/status-chirho.md` for live totals and pending counts.
+- Hebrew/WLC and Greek: Hallelujah can work these first. Use `http://localhost:8766/` for raw Hebrew spans and `http://localhost:8771/` filtered to `hebrew-chirho` or `greek-chirho` for vision-tier expert confirmations.
 - Hebrew-script Aramaic/Targum: do not treat this as ordinary Hebrew. Confirm consonants if clear, but route exact Aramaic vocalization, dagesh/sheen-dot details, and Targum wording to a Targum/Aramaic reviewer.
 - Syriac: route to a Syriac reader. A non-reader can spot obvious crop/context problems, but should not certify letters, vowel points, or Peshitta punctuation.
 - Arabic: route to an Arabist. A non-reader can spot segmentation/crop problems, but should not certify letters, dots, vowels, or lexical choices.
-- Latin/symbol vision: use `http://localhost:8770/`. The `Symbol risk` filter separates the four accepted trivial punctuation-like items from witness sigla, references, and ornament guesses that require actual proofread decisions.
+- Latin/symbol vision: use `http://localhost:8770/`. The `Symbol risk` filter separates accepted/pending trivial punctuation-like items from witness sigla, references, and ornament guesses that require actual proofread decisions.
 
 ## Live Tools
 
