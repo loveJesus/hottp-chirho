@@ -3,14 +3,14 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Hidden Hebrew Candidate Scan Chirho
 
-Generated: 2026-06-04T09:23:13.818Z
+Generated: 2026-06-04T09:41:55.339Z
 
 This is a machine-assisted review queue, not a certification result. It flags lines where OCR may have rendered printed Hebrew as valid-looking French, Latin, symbols, short Latin/bracket garbage, or digit garbage. Every item still needs visual review against the scanline before any span repair.
 
 ## Summary
 
-- Candidate lines: 12
-- High priority: 4
+- Candidate lines: 11
+- High priority: 3
 - Medium priority: 8
 - Low priority included: 0
 
@@ -27,16 +27,6 @@ Priority is heuristic: scripture/citation context, existing Hebrew spans, digit/
 - Line text: `un לְ- d'accusatif en 2 S 3,30 et en Ps 135,11, alors qu'aucun לְ-`
 - Suspicious spans:
   - S2 french-chirho: `d'accusatif en 2 S 3,30 et en Ps 135,11, alors qu'aucun` (dense-digit-cluster-chirho; neighbors hebrew-chirho / hebrew-chirho)
-
-### high-chirho score 8: vol 3 p0151 L010
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-dense-digit-cluster-chirho`, `suspicious-span-adjacent-to-hebrew-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-3-chirho/page-0151-chirho/line-010-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-3-chirho/page-0151-chirho/line-010-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-3-chirho/page-0151-chirho/line-010-chirho.png)
-- Line text: `vise à traduire ni] au sens de “émissions d'eau” (553 שִׁלְחוֹת comme l'interprète`
-- Suspicious spans:
-  - S0 french-chirho: `vise à traduire ni] au sens de “émissions d'eau” (553` (dense-digit-cluster-chirho; neighbors none / hebrew-chirho)
 
 ### high-chirho score 8: vol 5 p0052 L005
 

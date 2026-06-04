@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T09:22:44.251Z",
+  "generatedAtChirho": "2026-06-04T09:40:17.289Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 799,
+  "countChirho": 801,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7993,6 +7993,26 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "בְּעבְרוֹ בַּיַּרְדֵּן נִכְרְתוּ מֵי הַיַּרְדֵּן,",
       "notesChirho": "Expanded the too-narrow vol 1 p149 line 36 Hebrew span: Codex visually confirmed that the scanline prints the full phrase `בְּעבְרוֹ בַּיַּרְדֵּן נִכְרְתוּ מֵי הַיַּרְדֵּן` across x361..710, while the old S1 box covered only an interior slice and the old S2 text `a 17722 772 122` was the remaining Hebrew pixels mis-OCR'd as digits. A follow-up geometry audit corrected an earlier too-far-left x260 boundary so the French `l'hébreu` tail remains in S0. The comma is attached to the widened span so the rendered French continuation reads cleanly. Stored as vision-chirho; exact printed vowels/marks, comma placement, and segmentation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 151,
+      "lineIndexChirho": 10,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "ni] + old misboxed S1 at x872..1008",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "שִׁלְחוֹת",
+      "notesChirho": "Reboxed the vol 3 p151 line 10 Hebrew word from the old mispositioned S1 at x872..1008 to x210..305. Claude and Codex second-witnessed the scanline as `שִׁלְחוֹת`; the old French-span garble `ni]` was the Hebrew pixels. Stored as vision-chirho because this geometry repair is machine-witnessed, not human-certified; exact printed letters, vowels/marks, and segmentation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 151,
+      "lineIndexChirho": 10,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "(553",
+      "scriptChirho": "syriac-chirho",
+      "utf8TextChirho": "",
+      "notesChirho": "Pinned the vol 3 p151 line 10 Syrohexapla gloss box at x767..950 after the open parenthesis and before the comma. Claude and Codex second-witnessed the script/geometry as two Syriac words, with visible Syriac letter forms and seyame/plural dots, but neither can responsibly transcribe exact letters at this resolution. The text is intentionally left empty so strict export emits an EMPTY-SPAN marker and remains blocked until a Syriac/Syrohexapla expert supplies the exact printed text."
     }
   ]
 }
