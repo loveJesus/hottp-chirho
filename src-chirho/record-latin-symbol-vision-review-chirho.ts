@@ -5,7 +5,7 @@
  * Record append-only proofread decisions for Latin/symbol vision packet items.
  *
  * Examples:
- *   bun run record-latin-symbol-vision-review-chirho --id=v1-p0148-l036-w6 --verdict=accepted-clean --reviewer=hallelujah-chirho
+ *   bun run record-latin-symbol-vision-review-chirho --id=v1-p0148-l036-w6 --verdict=accepted-clean --reviewer=hallelujah-chirho --accept-clean-chirho
  *   bun run record-latin-symbol-vision-review-chirho --id=v3-p0148-l005-s0 --verdict=reviewed-issues --issue-flags=punctuation-chirho --notes="check spacing"
  */
 
@@ -55,8 +55,9 @@ function parseIssueFlagsChirho(valueChirho: string | undefined): string[] {
 
 function usageChirho(): string {
   return [
-    `Usage: bun run ${MODULE_CHIRHO} --id=<packet-item-id> --verdict=<accepted-clean|reviewed-issues> --reviewer=<reviewer-chirho> [--issue-flags=a,b] [--notes=text]`,
+    `Usage: bun run ${MODULE_CHIRHO} --id=<packet-item-id> --verdict=<accepted-clean|reviewed-issues> --reviewer=<reviewer-chirho> [--accept-clean-chirho] [--issue-flags=a,b] [--notes=text]`,
     "",
+    "Accepted-clean writes require --accept-clean-chirho after checking the target crop and full line against the print.",
     "Use --export-backup[=path] to write a committable JSON backup of current review rows.",
     "Use --list-pending to print the first unreviewed packet IDs.",
   ].join("\n");
@@ -122,6 +123,10 @@ function mainChirho(): void {
   }
   const verdictChirho = normalizeVerdictChirho(parseArgValueChirho(argsChirho, "verdict"));
   const issueFlagsChirho = parseIssueFlagsChirho(parseArgValueChirho(argsChirho, "issue-flags"));
+  if (verdictChirho === "accepted-clean-chirho" && !argsChirho.includes("--accept-clean-chirho")) {
+    dbChirho.close();
+    throw new Error("--accept-clean-chirho is required for accepted-clean after checking the target crop and full line against the print");
+  }
   const reviewerChirho = parseArgValueChirho(argsChirho, "reviewer") ?? "human-chirho";
   const notesChirho = parseArgValueChirho(argsChirho, "notes") ?? null;
   const reviewChirho = saveLatinSymbolReviewChirho({
