@@ -66,10 +66,11 @@ interface ReattributionResultChirho {
 function usageChirho(): string {
   return [
     `Usage: bun run ${MODULE_CHIRHO} -- --validation-id-chirho=<id> [--validation-id-chirho=<id> ...] --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--expected-live-text-chirho=<current-live-text>] [--apply-chirho]`,
-    `       bun run ${MODULE_CHIRHO} -- --all-generic-chirho --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--apply-chirho]`,
+    `       bun run ${MODULE_CHIRHO} -- --all-generic-chirho --expected-generic-row-count-chirho=<count> --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--apply-chirho]`,
     "",
     "Dry-run is the default. Applying writes append-only superseding rows and refreshes the Pass-C human validation backup.",
     "Only current schema-v2 rows with blank/generic reviewer attribution can be reattributed.",
+    "--expected-generic-row-count-chirho is required for --all-generic-chirho with --apply-chirho; it fails closed if the generic row count changed since the status report was read.",
     "--expected-live-text-chirho is optional and only supported for a single --validation-id-chirho row; it fails closed if the live span text has drifted since the status report was read.",
     "--expected-live-text-hash-chirho=<id>:<sha256> may be repeated for exact batch reattribution; when present, every selected row must have a matching live text hash.",
   ].join("\n");
@@ -111,6 +112,16 @@ function parseValidationIdsChirho(argsChirho: string[]): number[] {
     return idChirho;
   });
   return [...new Set(idsChirho)];
+}
+
+function parseOptionalNonnegativeIntegerChirho(argsChirho: string[], nameChirho: string): number | undefined {
+  const valueChirho = parseArgValueChirho(argsChirho, nameChirho);
+  if (valueChirho === undefined) return undefined;
+  const parsedChirho = Number.parseInt(valueChirho, 10);
+  if (!Number.isInteger(parsedChirho) || parsedChirho < 0 || String(parsedChirho) !== valueChirho.trim()) {
+    throw new Error(`invalid --${nameChirho}=${valueChirho}`);
+  }
+  return parsedChirho;
 }
 
 function keyForRowChirho(rowChirho: PassCHumanValidationRowChirho): string {
@@ -303,6 +314,25 @@ function assertExpectedLiveTextHashesChirho(
   }
 }
 
+function assertExpectedGenericRowCountChirho(
+  rowsChirho: PassCHumanValidationRowChirho[],
+  allGenericChirho: boolean,
+  applyChirho: boolean,
+  expectedGenericRowCountChirho: number | undefined
+): void {
+  if (!allGenericChirho && expectedGenericRowCountChirho !== undefined) {
+    throw new Error("--expected-generic-row-count-chirho is only supported with --all-generic-chirho");
+  }
+  if (allGenericChirho && applyChirho && expectedGenericRowCountChirho === undefined) {
+    throw new Error("--expected-generic-row-count-chirho is required when applying --all-generic-chirho");
+  }
+  if (expectedGenericRowCountChirho !== undefined && rowsChirho.length !== expectedGenericRowCountChirho) {
+    throw new Error(
+      `generic row count drifted; expected ${expectedGenericRowCountChirho}, current ${rowsChirho.length}`
+    );
+  }
+}
+
 function reattributionNoteChirho(
   existingNotesChirho: string | null,
   previousReviewerChirho: string,
@@ -401,6 +431,7 @@ function mainChirho(): void {
   const rationaleChirho = requiredArgValueChirho(argsChirho, "rationale-chirho");
   const expectedLiveTextChirho = parseArgValueChirho(argsChirho, "expected-live-text-chirho");
   const expectedLiveTextHashesChirho = parseExpectedLiveTextHashesChirho(argsChirho);
+  const expectedGenericRowCountChirho = parseOptionalNonnegativeIntegerChirho(argsChirho, "expected-generic-row-count-chirho");
   const dbPathChirho = parseArgValueChirho(argsChirho, "db-chirho") ?? PROGRESS_DB_PATH_CHIRHO;
   const backupPathChirho =
     parseArgValueChirho(argsChirho, "backup-chirho") ?? PASS_C_HUMAN_VALIDATION_BACKUP_PATH_CHIRHO;
@@ -411,6 +442,7 @@ function mainChirho(): void {
       ? loadGenericRowsChirho(dbChirho)
       : loadRowsByIdChirho(dbChirho, validationIdsChirho);
     assertRowsEligibleChirho(rowsChirho, validationIdsChirho);
+    assertExpectedGenericRowCountChirho(rowsChirho, allGenericChirho, applyChirho, expectedGenericRowCountChirho);
     assertExpectedLiveTextChirho(rowsChirho, expectedLiveTextChirho, allGenericChirho);
     assertExpectedLiveTextHashesChirho(rowsChirho, expectedLiveTextHashesChirho);
     if (rowsChirho.length === 0) {
