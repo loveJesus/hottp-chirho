@@ -70,6 +70,7 @@ import { normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 import {
   expectedVisionTierReviewerRoleChirho,
   readVisionTierExpertConfirmationFileChirho,
+  reviewerRoleMatchesScriptChirho,
   summarizeVisionTierExpertConfirmationsChirho,
   VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO,
 } from "./vision-tier-expert-confirmation-policy-chirho.ts";
@@ -141,6 +142,12 @@ const SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO = join(
   "spec-chirho",
   "metropoliluya-chirho",
   "syriac-blank-transcription-handoff-2026-06-04-chirho.md"
+);
+const EXPERT_SUPPLIED_VISION_TEXT_BACKUP_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "expert-supplied-vision-transcriptions-2026-06-04-chirho.json"
 );
 const HIDDEN_HEBREW_CANDIDATE_SCAN_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -331,6 +338,65 @@ interface ExpertPackImageDriftChirho {
   packetPathChirho: string;
 }
 
+interface ExpertSuppliedVisionTextRecordChirho {
+  itemIdChirho?: string;
+  volumeChirho?: number;
+  pageChirho?: number;
+  lineIndexChirho?: number;
+  segmentIndexChirho?: number;
+  scriptChirho?: string;
+  previousTextChirho?: string;
+  suppliedTextChirho?: string;
+  suppliedTextHashChirho?: string;
+  reviewerChirho?: string;
+  reviewerRoleChirho?: string;
+  rationaleChirho?: string;
+  appliedAtChirho?: string;
+  sourcePathChirho?: string;
+  packetPathChirho?: string;
+  linePathChirho?: string;
+}
+
+interface ExpertSuppliedVisionTextBackupChirho {
+  schemaVersionChirho?: number;
+  recordsChirho?: ExpertSuppliedVisionTextRecordChirho[];
+}
+
+interface ExpertSuppliedVisionTextLiveSpanChirho extends SpanLikeChirho {
+  segmentIndexChirho: number;
+  scriptChirho: string;
+  utf8TextChirho: string;
+  provenanceChirho?: string;
+  expertTranscriptionStatusChirho?: string;
+  expertTranscribedAtChirho?: string;
+  expertTranscriptionReviewerChirho?: string;
+  expertTranscriptionReviewerRoleChirho?: string;
+  expertTranscriptionRationaleChirho?: string;
+  expertTranscriptionPreviousTextChirho?: string;
+  expertTranscriptionSourceChirho?: string;
+}
+
+interface ExpertSuppliedVisionTextLiveSpanRecordChirho {
+  itemIdChirho: string;
+  linePathChirho: string;
+  volumeChirho: number;
+  pageChirho: number;
+  lineIndexChirho: number;
+  segmentIndexChirho: number;
+  spanChirho: ExpertSuppliedVisionTextLiveSpanChirho;
+}
+
+interface ExpertSuppliedVisionTextBackupSummaryChirho {
+  backupRecordsChirho: number;
+  liveAppliedSpansChirho: number;
+  duplicateBackupRecordCountChirho: number;
+  backupRecordsMissingLiveSpanChirho: number;
+  liveAppliedSpansMissingBackupChirho: number;
+  staleBackupRecordCountChirho: number;
+  shapeErrorsChirho: string[];
+  driftSamplesChirho: string[];
+}
+
 interface LatinSymbolPackItemChirho extends PacketImageHashFieldsChirho {
   idChirho: string;
   textChirho: string;
@@ -498,6 +564,7 @@ interface CertificationStatusChirho {
     rawHebrewPackManifestExistsChirho: boolean;
     passCHumanValidationBackupExistsChirho: boolean;
     expertPackManifestExistsChirho: boolean;
+    expertSuppliedVisionTextBackupExistsChirho: boolean;
     visionTierExpertConfirmationPolicyExistsChirho: boolean;
     latinSymbolPackManifestExistsChirho: boolean;
     latinSymbolReviewBackupExistsChirho: boolean;
@@ -507,6 +574,7 @@ interface CertificationStatusChirho {
     rawHebrewPackManifestShapeOkChirho: boolean;
     passCHumanValidationBackupShapeOkChirho: boolean;
     expertPackManifestShapeOkChirho: boolean;
+    expertSuppliedVisionTextBackupShapeOkChirho: boolean;
     visionTierExpertConfirmationPolicyShapeOkChirho: boolean;
     latinSymbolPackManifestShapeOkChirho: boolean;
     latinSymbolReviewBackupShapeOkChirho: boolean;
@@ -647,6 +715,7 @@ interface CertificationStatusChirho {
   };
   humanValidationDbChirho: HumanValidationSummaryChirho;
   passCHumanValidationBackupChirho: PassCHumanValidationBackupSummaryChirho;
+  expertSuppliedVisionTextBackupChirho: ExpertSuppliedVisionTextBackupSummaryChirho;
   visionTierExpertConfirmationPolicyChirho: VisionTierExpertConfirmationSummaryForStatusChirho;
   latinSymbolReviewDbChirho: LatinSymbolReviewSummaryChirho;
   latinSymbolReviewBackupChirho: LatinSymbolReviewBackupSummaryChirho;
@@ -1473,6 +1542,244 @@ function expertPackImageDriftsChirho(itemsChirho: ExpertPackVisionItemChirho[]):
   return driftsChirho;
 }
 
+function pathMatchesCurrentChirho(recordPathChirho: string, currentPathChirho: string): boolean {
+  return (
+    recordPathChirho === currentPathChirho ||
+    recordPathChirho === relativeProjectPathChirho(currentPathChirho) ||
+    join(PROJECT_ROOT_CHIRHO, recordPathChirho) === currentPathChirho
+  );
+}
+
+function expertSuppliedVisionTextRecordShapeErrorsChirho(
+  recordChirho: ExpertSuppliedVisionTextRecordChirho,
+  indexChirho: number
+): string[] {
+  const prefixChirho = `recordsChirho[${indexChirho}]`;
+  const errorsChirho: string[] = [];
+  const stringFieldsChirho = [
+    "itemIdChirho",
+    "scriptChirho",
+    "previousTextChirho",
+    "suppliedTextChirho",
+    "suppliedTextHashChirho",
+    "reviewerChirho",
+    "reviewerRoleChirho",
+    "rationaleChirho",
+    "appliedAtChirho",
+    "sourcePathChirho",
+    "packetPathChirho",
+    "linePathChirho",
+  ] as const;
+  const numberFieldsChirho = [
+    "volumeChirho",
+    "pageChirho",
+    "lineIndexChirho",
+    "segmentIndexChirho",
+  ] as const;
+  for (const fieldChirho of stringFieldsChirho) {
+    if (typeof recordChirho[fieldChirho] !== "string") errorsChirho.push(`${prefixChirho}.${fieldChirho} missing`);
+  }
+  for (const fieldChirho of numberFieldsChirho) {
+    if (typeof recordChirho[fieldChirho] !== "number") errorsChirho.push(`${prefixChirho}.${fieldChirho} missing`);
+  }
+  if (errorsChirho.length !== 0) return errorsChirho;
+  const suppliedTextChirho = normalizeTextForStorageChirho(recordChirho.suppliedTextChirho!);
+  if (suppliedTextChirho.length === 0) errorsChirho.push(`${prefixChirho}.suppliedTextChirho is empty`);
+  if (recordChirho.suppliedTextChirho !== suppliedTextChirho) errorsChirho.push(`${prefixChirho}.suppliedTextChirho is not NFC-normalized`);
+  if (recordChirho.suppliedTextHashChirho !== hashTextChirho(suppliedTextChirho)) {
+    errorsChirho.push(`${prefixChirho}.suppliedTextHashChirho does not match suppliedTextChirho`);
+  }
+  const expectedItemIdChirho = expertItemIdForLocationChirho({
+    volumeChirho: recordChirho.volumeChirho!,
+    pageChirho: recordChirho.pageChirho!,
+    lineIndexChirho: recordChirho.lineIndexChirho!,
+    segmentIndexChirho: recordChirho.segmentIndexChirho!,
+  });
+  if (recordChirho.itemIdChirho !== expectedItemIdChirho) {
+    errorsChirho.push(`${prefixChirho}.itemIdChirho does not match location fields`);
+  }
+  if (!reviewerRoleMatchesScriptChirho(recordChirho.scriptChirho!, recordChirho.reviewerRoleChirho!)) {
+    errorsChirho.push(`${prefixChirho}.reviewerRoleChirho does not match scriptChirho`);
+  }
+  if (recordChirho.reviewerChirho!.trim().length === 0) errorsChirho.push(`${prefixChirho}.reviewerChirho is empty`);
+  if (recordChirho.rationaleChirho!.trim().length === 0) errorsChirho.push(`${prefixChirho}.rationaleChirho is empty`);
+  return errorsChirho;
+}
+
+function expertSuppliedVisionTextBackupShapeErrorsChirho(
+  backupChirho: ExpertSuppliedVisionTextBackupChirho,
+  existsChirho: boolean
+): string[] {
+  if (!existsChirho) return [];
+  const errorsChirho: string[] = [];
+  if (backupChirho.schemaVersionChirho !== 1) errorsChirho.push("schemaVersionChirho must be 1");
+  if (!Array.isArray(backupChirho.recordsChirho)) {
+    errorsChirho.push("recordsChirho must be an array");
+    return errorsChirho;
+  }
+  backupChirho.recordsChirho.forEach((recordChirho, indexChirho) => {
+    errorsChirho.push(...expertSuppliedVisionTextRecordShapeErrorsChirho(recordChirho, indexChirho));
+  });
+  return errorsChirho;
+}
+
+function expertSuppliedVisionTextBackupRecordsChirho(
+  backupChirho: ExpertSuppliedVisionTextBackupChirho,
+  shapeOkChirho: boolean
+): Required<ExpertSuppliedVisionTextRecordChirho>[] {
+  if (!shapeOkChirho) return [];
+  return (backupChirho.recordsChirho ?? []) as Required<ExpertSuppliedVisionTextRecordChirho>[];
+}
+
+function liveExpertSuppliedVisionTextSpansChirho(): ExpertSuppliedVisionTextLiveSpanRecordChirho[] {
+  const recordsChirho: ExpertSuppliedVisionTextLiveSpanRecordChirho[] = [];
+  for (const linePathChirho of scanSpanLinePathsChirho()) {
+    const lineChirho = JSON.parse(readFileSync(linePathChirho, "utf8")) as SpanLineLikeChirho;
+    if (
+      typeof lineChirho.volumeChirho !== "number" ||
+      typeof lineChirho.pageChirho !== "number" ||
+      typeof lineChirho.lineIndexChirho !== "number"
+    ) {
+      continue;
+    }
+    for (const spanChirho of lineChirho.spansChirho ?? []) {
+      const spanWithExpertChirho = spanChirho as ExpertSuppliedVisionTextLiveSpanChirho;
+      if (spanWithExpertChirho.expertTranscriptionStatusChirho !== "expert-supplied-text-applied-chirho") continue;
+      if (
+        typeof spanWithExpertChirho.segmentIndexChirho !== "number" ||
+        typeof spanWithExpertChirho.scriptChirho !== "string" ||
+        typeof spanWithExpertChirho.utf8TextChirho !== "string"
+      ) {
+        continue;
+      }
+      recordsChirho.push({
+        itemIdChirho: expertItemIdForLocationChirho({
+          volumeChirho: lineChirho.volumeChirho,
+          pageChirho: lineChirho.pageChirho,
+          lineIndexChirho: lineChirho.lineIndexChirho,
+          segmentIndexChirho: spanWithExpertChirho.segmentIndexChirho,
+        }),
+        linePathChirho,
+        volumeChirho: lineChirho.volumeChirho,
+        pageChirho: lineChirho.pageChirho,
+        lineIndexChirho: lineChirho.lineIndexChirho,
+        segmentIndexChirho: spanWithExpertChirho.segmentIndexChirho,
+        spanChirho: spanWithExpertChirho,
+      });
+    }
+  }
+  return recordsChirho;
+}
+
+function summarizeExpertSuppliedVisionTextBackupChirho(paramsChirho: {
+  recordsChirho: Required<ExpertSuppliedVisionTextRecordChirho>[];
+  liveAppliedSpansChirho: ExpertSuppliedVisionTextLiveSpanRecordChirho[];
+  liveItemsByIdChirho: Map<string, { scriptChirho: string; visionSourceChirho: string; currentTextChirho: string }>;
+  manifestItemsByIdChirho: Map<string, ExpertPackVisionItemChirho>;
+  shapeErrorsChirho: string[];
+}): ExpertSuppliedVisionTextBackupSummaryChirho {
+  const backupRecordsByIdChirho = new Map<string, Required<ExpertSuppliedVisionTextRecordChirho>>();
+  const duplicateIdsChirho = new Set<string>();
+  for (const recordChirho of paramsChirho.recordsChirho) {
+    if (backupRecordsByIdChirho.has(recordChirho.itemIdChirho)) duplicateIdsChirho.add(recordChirho.itemIdChirho);
+    backupRecordsByIdChirho.set(recordChirho.itemIdChirho, recordChirho);
+  }
+  const liveAppliedByIdChirho = new Map(
+    paramsChirho.liveAppliedSpansChirho.map((recordChirho) => [recordChirho.itemIdChirho, recordChirho])
+  );
+  const driftSamplesChirho: string[] = [];
+  let backupRecordsMissingLiveSpanChirho = 0;
+  let liveAppliedSpansMissingBackupChirho = 0;
+  let staleBackupRecordCountChirho = 0;
+
+  for (const recordChirho of backupRecordsByIdChirho.values()) {
+    const liveAppliedChirho = liveAppliedByIdChirho.get(recordChirho.itemIdChirho);
+    const liveItemChirho = paramsChirho.liveItemsByIdChirho.get(recordChirho.itemIdChirho);
+    const manifestItemChirho = paramsChirho.manifestItemsByIdChirho.get(recordChirho.itemIdChirho);
+    if (liveAppliedChirho === undefined) {
+      backupRecordsMissingLiveSpanChirho += 1;
+      driftSamplesChirho.push(`${recordChirho.itemIdChirho}: backup record has no matching live expert-supplied span`);
+      continue;
+    }
+    const spanChirho = liveAppliedChirho.spanChirho;
+    const suppliedTextChirho = normalizeTextForStorageChirho(recordChirho.suppliedTextChirho);
+    const mismatchesChirho: string[] = [];
+    if (liveItemChirho === undefined) mismatchesChirho.push("missing-live-vision-item-chirho");
+    if (manifestItemChirho === undefined) mismatchesChirho.push("missing-expert-manifest-item-chirho");
+    if (liveItemChirho !== undefined && liveItemChirho.visionSourceChirho !== "explicit-span-chirho") {
+      mismatchesChirho.push("live-vision-source-not-explicit-span-chirho");
+    }
+    if (liveItemChirho !== undefined && liveItemChirho.scriptChirho !== recordChirho.scriptChirho) {
+      mismatchesChirho.push("live-script-mismatch-chirho");
+    }
+    if (liveItemChirho !== undefined && liveItemChirho.currentTextChirho !== suppliedTextChirho) {
+      mismatchesChirho.push("live-current-text-mismatch-chirho");
+    }
+    if (manifestItemChirho !== undefined && manifestItemChirho.scriptChirho !== recordChirho.scriptChirho) {
+      mismatchesChirho.push("manifest-script-mismatch-chirho");
+    }
+    if (manifestItemChirho !== undefined && manifestItemChirho.currentTextChirho !== suppliedTextChirho) {
+      mismatchesChirho.push("manifest-current-text-mismatch-chirho");
+    }
+    if (manifestItemChirho !== undefined && !pathMatchesCurrentChirho(recordChirho.sourcePathChirho, manifestItemChirho.sourcePathChirho)) {
+      mismatchesChirho.push("manifest-source-path-mismatch-chirho");
+    }
+    if (manifestItemChirho !== undefined && !pathMatchesCurrentChirho(recordChirho.packetPathChirho, manifestItemChirho.packetPathChirho)) {
+      mismatchesChirho.push("manifest-packet-path-mismatch-chirho");
+    }
+    if (!pathMatchesCurrentChirho(recordChirho.linePathChirho, liveAppliedChirho.linePathChirho)) {
+      mismatchesChirho.push("line-path-mismatch-chirho");
+    }
+    if (spanChirho.provenanceChirho !== "vision-chirho") mismatchesChirho.push("span-provenance-mismatch-chirho");
+    if (normalizeTextForStorageChirho(spanChirho.utf8TextChirho) !== suppliedTextChirho) {
+      mismatchesChirho.push("span-text-mismatch-chirho");
+    }
+    if (spanChirho.expertTranscriptionSourceChirho !== "expert-supplied-vision-text-chirho") {
+      mismatchesChirho.push("span-source-mismatch-chirho");
+    }
+    if (spanChirho.expertTranscribedAtChirho !== recordChirho.appliedAtChirho) {
+      mismatchesChirho.push("span-applied-at-mismatch-chirho");
+    }
+    if (spanChirho.expertTranscriptionReviewerChirho !== recordChirho.reviewerChirho) {
+      mismatchesChirho.push("span-reviewer-mismatch-chirho");
+    }
+    if (spanChirho.expertTranscriptionReviewerRoleChirho !== recordChirho.reviewerRoleChirho) {
+      mismatchesChirho.push("span-reviewer-role-mismatch-chirho");
+    }
+    if (spanChirho.expertTranscriptionRationaleChirho !== recordChirho.rationaleChirho) {
+      mismatchesChirho.push("span-rationale-mismatch-chirho");
+    }
+    if (spanChirho.expertTranscriptionPreviousTextChirho !== recordChirho.previousTextChirho) {
+      mismatchesChirho.push("span-previous-text-mismatch-chirho");
+    }
+    if (recordChirho.suppliedTextHashChirho !== hashTextChirho(suppliedTextChirho)) {
+      mismatchesChirho.push("backup-hash-mismatch-chirho");
+    }
+    if (mismatchesChirho.length !== 0) {
+      staleBackupRecordCountChirho += 1;
+      driftSamplesChirho.push(`${recordChirho.itemIdChirho}: ${mismatchesChirho.join(",")}`);
+    }
+  }
+
+  for (const liveAppliedChirho of paramsChirho.liveAppliedSpansChirho) {
+    if (!backupRecordsByIdChirho.has(liveAppliedChirho.itemIdChirho)) {
+      liveAppliedSpansMissingBackupChirho += 1;
+      driftSamplesChirho.push(`${liveAppliedChirho.itemIdChirho}: live expert-supplied span missing from backup`);
+    }
+  }
+
+  return {
+    backupRecordsChirho: paramsChirho.recordsChirho.length,
+    liveAppliedSpansChirho: paramsChirho.liveAppliedSpansChirho.length,
+    duplicateBackupRecordCountChirho: duplicateIdsChirho.size,
+    backupRecordsMissingLiveSpanChirho,
+    liveAppliedSpansMissingBackupChirho,
+    staleBackupRecordCountChirho,
+    shapeErrorsChirho: paramsChirho.shapeErrorsChirho,
+    driftSamplesChirho: driftSamplesChirho.slice(0, 8),
+  };
+}
+
 function rowKeyChirho(rowChirho: Pick<HumanValidationDbRowChirho, "volume_chirho" | "page_chirho" | "line_index_chirho" | "segment_index_chirho">): string {
   return [
     rowChirho.volume_chirho,
@@ -1764,6 +2071,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const rawHebrewPackManifestExistsChirho = existsSync(RAW_HEBREW_PACK_MANIFEST_PATH_CHIRHO);
   const passCHumanValidationBackupExistsChirho = existsSync(PASS_C_HUMAN_VALIDATION_BACKUP_PATH_CHIRHO);
   const expertPackManifestExistsChirho = existsSync(EXPERT_PACK_MANIFEST_PATH_CHIRHO);
+  const expertSuppliedVisionTextBackupExistsChirho = existsSync(EXPERT_SUPPLIED_VISION_TEXT_BACKUP_PATH_CHIRHO);
   const visionTierExpertConfirmationPolicyExistsChirho = existsSync(VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO);
   const latinSymbolPackManifestExistsChirho = existsSync(LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO);
   const latinSymbolReviewBackupExistsChirho = existsSync(LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO);
@@ -1776,6 +2084,10 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   );
   const passCHumanValidationBackupFileChirho = readPassCHumanValidationBackupFileChirho();
   const expertManifestChirho = readJsonFileChirho<ExpertPackManifestChirho>(EXPERT_PACK_MANIFEST_PATH_CHIRHO, {});
+  const expertSuppliedVisionTextBackupFileChirho = readJsonFileChirho<ExpertSuppliedVisionTextBackupChirho>(
+    EXPERT_SUPPLIED_VISION_TEXT_BACKUP_PATH_CHIRHO,
+    {}
+  );
   const visionTierExpertConfirmationFileChirho = readVisionTierExpertConfirmationFileChirho();
   const latinSymbolManifestChirho = readJsonFileChirho<LatinSymbolPackManifestChirho>(
     LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO,
@@ -1873,6 +2185,13 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
           typeof itemChirho.packetPathChirho === "string" &&
           typeof itemChirho.markdownPathChirho === "string"
       ));
+  const expertSuppliedVisionTextBackupShapeErrorsResultChirho =
+    expertSuppliedVisionTextBackupShapeErrorsChirho(
+      expertSuppliedVisionTextBackupFileChirho,
+      expertSuppliedVisionTextBackupExistsChirho
+    );
+  const expertSuppliedVisionTextBackupShapeOkChirho =
+    expertSuppliedVisionTextBackupShapeErrorsResultChirho.length === 0;
   const latinSymbolPackManifestShapeOkChirho =
     !latinSymbolPackManifestExistsChirho ||
     (Array.isArray(latinSymbolManifestChirho.itemsChirho) &&
@@ -2048,6 +2367,18 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     expertManifestItemsChirho.map((itemChirho) => [itemChirho.idChirho, itemChirho])
   );
   const expertManifestItemIdsChirho = new Set(expertManifestItemsChirho.map((itemChirho) => itemChirho.idChirho));
+  const expertSuppliedVisionTextBackupRecordsResultChirho = expertSuppliedVisionTextBackupRecordsChirho(
+    expertSuppliedVisionTextBackupFileChirho,
+    expertSuppliedVisionTextBackupShapeOkChirho
+  );
+  const liveExpertSuppliedVisionTextSpansResultChirho = liveExpertSuppliedVisionTextSpansChirho();
+  const expertSuppliedVisionTextBackupSummaryChirho = summarizeExpertSuppliedVisionTextBackupChirho({
+    recordsChirho: expertSuppliedVisionTextBackupRecordsResultChirho,
+    liveAppliedSpansChirho: liveExpertSuppliedVisionTextSpansResultChirho,
+    liveItemsByIdChirho: visionTierLiveItemsByIdChirho,
+    manifestItemsByIdChirho: expertManifestItemsByIdChirho,
+    shapeErrorsChirho: expertSuppliedVisionTextBackupShapeErrorsResultChirho,
+  });
   const blankVisionTierHandoffsResultChirho = blankVisionTierHandoffsChirho(
     exportReportChirho.issuesChirho ?? [],
     expertManifestItemsByIdChirho,
@@ -2360,6 +2691,9 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   if (expertPackManifestExistsChirho && !expertPackManifestShapeOkChirho) {
     remainingWorkChirho.push("expert confirmation manifest is malformed; regenerate make-expert-confirm-pack-chirho");
   }
+  if (expertSuppliedVisionTextBackupExistsChirho && !expertSuppliedVisionTextBackupShapeOkChirho) {
+    remainingWorkChirho.push("expert-supplied vision text backup is malformed; fix or rerun apply-expert-supplied-vision-text-chirho for the affected item");
+  }
   if (
     visionTierExpertConfirmationPolicyExistsChirho &&
     !visionTierConfirmationSummaryChirho.policyFileShapeOkChirho
@@ -2567,6 +2901,36 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   ) {
     remainingWorkChirho.push(`${visionTierManifestMarkdownPathDriftsChirho.length} expert confirmation packet markdown image path drift(s); regenerate make-expert-confirm-pack-chirho`);
   }
+  if (
+    expertSuppliedVisionTextBackupSummaryChirho.liveAppliedSpansChirho !== 0 &&
+    !expertSuppliedVisionTextBackupExistsChirho
+  ) {
+    remainingWorkChirho.push("expert-supplied vision text backup is missing for live supplied-text span(s); rerun apply-expert-supplied-vision-text-chirho or restore the backup");
+  }
+  if (
+    expertSuppliedVisionTextBackupShapeOkChirho &&
+    expertSuppliedVisionTextBackupSummaryChirho.duplicateBackupRecordCountChirho !== 0
+  ) {
+    remainingWorkChirho.push(`${expertSuppliedVisionTextBackupSummaryChirho.duplicateBackupRecordCountChirho} duplicate expert-supplied vision text backup record(s) need cleanup`);
+  }
+  if (
+    expertSuppliedVisionTextBackupShapeOkChirho &&
+    expertSuppliedVisionTextBackupSummaryChirho.backupRecordsMissingLiveSpanChirho !== 0
+  ) {
+    remainingWorkChirho.push(`${expertSuppliedVisionTextBackupSummaryChirho.backupRecordsMissingLiveSpanChirho} expert-supplied vision text backup record(s) no longer match a live supplied-text span`);
+  }
+  if (
+    expertSuppliedVisionTextBackupShapeOkChirho &&
+    expertSuppliedVisionTextBackupSummaryChirho.liveAppliedSpansMissingBackupChirho !== 0
+  ) {
+    remainingWorkChirho.push(`${expertSuppliedVisionTextBackupSummaryChirho.liveAppliedSpansMissingBackupChirho} live expert-supplied vision text span(s) are missing from the backup`);
+  }
+  if (
+    expertSuppliedVisionTextBackupShapeOkChirho &&
+    expertSuppliedVisionTextBackupSummaryChirho.staleBackupRecordCountChirho !== 0
+  ) {
+    remainingWorkChirho.push(`${expertSuppliedVisionTextBackupSummaryChirho.staleBackupRecordCountChirho} expert-supplied vision text backup record(s) are stale against live span/manifest state`);
+  }
   if (visionTierConfirmationSummaryChirho.staleConfirmedPolicyItemCountChirho !== 0) {
     remainingWorkChirho.push(
       `${visionTierConfirmationSummaryChirho.staleConfirmedPolicyItemCountChirho} vision-tier expert confirmation item(s) are stale against current live span text`
@@ -2760,6 +3124,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       rawHebrewPackManifestExistsChirho,
       passCHumanValidationBackupExistsChirho,
       expertPackManifestExistsChirho,
+      expertSuppliedVisionTextBackupExistsChirho,
       visionTierExpertConfirmationPolicyExistsChirho,
       latinSymbolPackManifestExistsChirho,
       latinSymbolReviewBackupExistsChirho,
@@ -2769,6 +3134,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       rawHebrewPackManifestShapeOkChirho,
       passCHumanValidationBackupShapeOkChirho: passCHumanValidationBackupShapeOkResultChirho,
       expertPackManifestShapeOkChirho,
+      expertSuppliedVisionTextBackupShapeOkChirho,
       visionTierExpertConfirmationPolicyShapeOkChirho: visionTierConfirmationSummaryChirho.policyFileShapeOkChirho,
       latinSymbolPackManifestShapeOkChirho,
       latinSymbolReviewBackupShapeOkChirho,
@@ -2782,6 +3148,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     strictBlindScansChirho,
     humanValidationDbChirho: humanSummaryChirho,
     passCHumanValidationBackupChirho: passCHumanValidationBackupSummaryChirho,
+    expertSuppliedVisionTextBackupChirho: expertSuppliedVisionTextBackupSummaryChirho,
     visionTierExpertConfirmationPolicyChirho: visionTierConfirmationSummaryForStatusChirho,
     latinSymbolReviewDbChirho: latinSymbolReviewSummaryChirho,
     latinSymbolReviewBackupChirho: latinSymbolReviewBackupSummaryChirho,
@@ -3157,6 +3524,19 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Confirmed by explicit policy: ${statusChirho.visionTierChirho.confirmedByPolicyCountChirho}`,
     `- Reviewed issues by explicit policy: ${statusChirho.visionTierChirho.reviewedIssueByPolicyCountChirho}`,
     `- Remaining confirmations: ${statusChirho.visionTierChirho.remainingConfirmationCountChirho}`,
+    "",
+    "## Expert-Supplied Vision Text Backup",
+    "",
+    `- Backup exists: ${statusChirho.artifactsChirho.expertSuppliedVisionTextBackupExistsChirho}`,
+    `- Backup shape OK: ${statusChirho.artifactsChirho.expertSuppliedVisionTextBackupShapeOkChirho}`,
+    `- Backup records: ${statusChirho.expertSuppliedVisionTextBackupChirho.backupRecordsChirho}`,
+    `- Live supplied-text spans: ${statusChirho.expertSuppliedVisionTextBackupChirho.liveAppliedSpansChirho}`,
+    `- Duplicate backup records: ${statusChirho.expertSuppliedVisionTextBackupChirho.duplicateBackupRecordCountChirho}`,
+    `- Backup records missing live span: ${statusChirho.expertSuppliedVisionTextBackupChirho.backupRecordsMissingLiveSpanChirho}`,
+    `- Live supplied-text spans missing backup: ${statusChirho.expertSuppliedVisionTextBackupChirho.liveAppliedSpansMissingBackupChirho}`,
+    `- Stale backup records: ${statusChirho.expertSuppliedVisionTextBackupChirho.staleBackupRecordCountChirho}`,
+    `- Shape errors: ${statusChirho.expertSuppliedVisionTextBackupChirho.shapeErrorsChirho.length === 0 ? "none" : statusChirho.expertSuppliedVisionTextBackupChirho.shapeErrorsChirho.join("; ")}`,
+    `- Drift samples: ${statusChirho.expertSuppliedVisionTextBackupChirho.driftSamplesChirho.length === 0 ? "none" : statusChirho.expertSuppliedVisionTextBackupChirho.driftSamplesChirho.join("; ")}`,
     "",
     "## Vision-Tier Expert Confirmation Policy",
     "",
