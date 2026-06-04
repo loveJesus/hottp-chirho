@@ -65,6 +65,7 @@ interface ReviewRequestChirho {
   issueFlagsChirho?: unknown;
   notesChirho?: string;
   reviewerChirho?: string;
+  acceptCleanChirho?: unknown;
 }
 
 interface LatinSymbolReviewItemChirho extends LatinSymbolPacketItemChirho {
@@ -147,9 +148,12 @@ function htmlChirho(): string {
     .issue-option-chirho { display: flex; gap: 7px; align-items: center; border: 1px solid #d6d9dd; padding: 8px; min-height: 38px; box-sizing: border-box; cursor: pointer; }
     .issue-option-chirho input { margin: 0; }
     .issue-option-chirho:has(input:checked) { border-color: #bd7a1b; background: #fff7e8; }
+    .clean-accept-option-chirho { display: flex; gap: 8px; align-items: flex-start; border: 1px solid #b8d5ca; background: #f2fbf7; padding: 10px; font-size: 13px; line-height: 1.35; cursor: pointer; }
+    .clean-accept-option-chirho input { width: auto; margin: 3px 0 0; }
     .notes-chirho { width: 100%; min-height: 82px; resize: vertical; box-sizing: border-box; border: 1px solid #b8bec7; padding: 9px; }
     .actions-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
     .actions-chirho button { border: 1px solid #aab1b9; background: white; padding: 10px; cursor: pointer; min-height: 42px; }
+    .actions-chirho button:disabled { cursor: not-allowed; opacity: 0.55; }
     .actions-chirho button:hover, .toolbar-chirho button:hover { background: #edf1f4; }
     .continue-chirho { color: #116149; border-color: #499b7f !important; font-weight: 750; }
     .warning-chirho { border-left: 4px solid #bd7a1b; background: #fff7e8; padding: 10px; font-size: 13px; color: #704000; }
@@ -321,6 +325,15 @@ function htmlChirho(): string {
     function currentIssueFlagsChirho() {
       return [...document.querySelectorAll(".issue-option-chirho input:checked")].map((nodeChirho) => nodeChirho.value);
     }
+    function cleanAcceptAcknowledgedChirho() {
+      return document.getElementById("accept-clean-chirho")?.checked === true;
+    }
+    function currentReviewWouldBeCleanChirho() {
+      return currentIssueFlagsChirho().length === 0;
+    }
+    function currentReviewCanSubmitChirho() {
+      return !currentReviewWouldBeCleanChirho() || cleanAcceptAcknowledgedChirho();
+    }
     function reviewActionTextChirho() {
       return currentIssueFlagsChirho().length === 0 ? "Accept as clean" : "Save issue";
     }
@@ -395,7 +408,7 @@ function htmlChirho(): string {
       formChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Issue flags" }));
       formChirho.appendChild(elChirho("div", {
         classChirho: "label-chirho",
-        textChirho: "No checked issue flags records accepted-clean and removes this item from pending. Check a flag for any wrong letter/digit/siglum, punctuation, spacing, crop, split, missing text, or extra text."
+        textChirho: "A clean acceptance requires the checkbox below. Check a flag for any wrong letter/digit/siglum, punctuation, spacing, crop, split, missing text, or extra text."
       }));
       const issueGridChirho = elChirho("div", { classChirho: "issue-grid-chirho" });
       for (const optionChirho of issueFlagOptionsChirho) {
@@ -411,6 +424,11 @@ function htmlChirho(): string {
         issueGridChirho.appendChild(labelChirho);
       }
       formChirho.appendChild(issueGridChirho);
+      const cleanAcceptInputChirho = elChirho("input", { id: "accept-clean-chirho", type: "checkbox" });
+      formChirho.appendChild(elChirho("label", { classChirho: "clean-accept-option-chirho", for: "accept-clean-chirho" }, [
+        cleanAcceptInputChirho,
+        textNodeChirho("I checked the target crop and full line against the print; if no issue flags are checked, this item is intentionally accepted clean.")
+      ]));
       formChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Notes" }));
       const notesChirho = elChirho("textarea", { classChirho: "notes-chirho", id: "notes-chirho" });
       notesChirho.value = reviewChirho?.notesChirho ?? "";
@@ -419,10 +437,13 @@ function htmlChirho(): string {
       const continueChirho = elChirho("button", { classChirho: "continue-chirho", type: "button", textChirho: reviewActionTextChirho() });
       const updateContinueButtonChirho = () => {
         continueChirho.textContent = reviewActionTextChirho();
+        continueChirho.disabled = !currentReviewCanSubmitChirho();
       };
       for (const checkboxChirho of issueGridChirho.querySelectorAll("input")) {
         checkboxChirho.addEventListener("change", updateContinueButtonChirho);
       }
+      cleanAcceptInputChirho.addEventListener("change", updateContinueButtonChirho);
+      updateContinueButtonChirho();
       continueChirho.addEventListener("click", () => saveCurrentChirho(itemChirho));
       const skipChirho = elChirho("button", { type: "button", textChirho: "Skip" });
       skipChirho.addEventListener("click", () => { indexChirho = Math.min(indexChirho + 1, Math.max(0, activeItemsChirho().length - 1)); renderChirho(); });
@@ -436,11 +457,20 @@ function htmlChirho(): string {
     async function saveCurrentChirho(itemChirho) {
       const flagsChirho = currentIssueFlagsChirho();
       const notesChirho = document.getElementById("notes-chirho").value;
+      if (flagsChirho.length === 0 && !cleanAcceptAcknowledgedChirho()) {
+        setStatusChirho("Check the clean acceptance box before accepting as clean.");
+        return;
+      }
       setStatusChirho("Saving...");
       const responseChirho = await fetch("/api-chirho/review-chirho", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idChirho: itemChirho.idChirho, issueFlagsChirho: flagsChirho, notesChirho })
+        body: JSON.stringify({
+          idChirho: itemChirho.idChirho,
+          issueFlagsChirho: flagsChirho,
+          notesChirho,
+          acceptCleanChirho: cleanAcceptAcknowledgedChirho()
+        })
       });
       const dataChirho = await responseChirho.json();
       if (!dataChirho.okChirho) {
@@ -550,6 +580,12 @@ Bun.serve({
         const liveItemChirho = liveByIdChirho.get(bodyChirho.idChirho);
         if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);
         const issueFlagsChirho = parseLatinSymbolIssueFlagsChirho(bodyChirho.issueFlagsChirho);
+        if (issueFlagsChirho.length === 0 && bodyChirho.acceptCleanChirho !== true) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: "acceptCleanChirho acknowledgement is required for accepted-clean",
+          }, 400);
+        }
         const notesChirho = typeof bodyChirho.notesChirho === "string" && bodyChirho.notesChirho.trim().length > 0
           ? bodyChirho.notesChirho.trim()
           : null;
