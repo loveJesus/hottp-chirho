@@ -17,6 +17,7 @@ import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { writePassCHumanValidationBackupChirho } from "./pass-c-human-validation-backup-chirho.ts";
+import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "pass-c-human-validate-server-chirho";
@@ -545,10 +546,7 @@ function loadExportReportChirho(): ExportReportChirho {
 }
 
 function lineTextFromSpanLineChirho(lineChirho: SpanLineFileChirho): string {
-  return [...lineChirho.spansChirho]
-    .sort((aChirho, bChirho) => aChirho.segmentIndexChirho - bChirho.segmentIndexChirho)
-    .map((spanChirho) => spanChirho.utf8TextChirho)
-    .join("");
+  return renderSpanLineTextChirho(lineChirho);
 }
 
 function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): QueueItemChirho[] {

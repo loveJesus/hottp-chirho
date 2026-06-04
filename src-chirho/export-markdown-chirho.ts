@@ -34,6 +34,10 @@ import { join } from "path";
 import { PROJECT_ROOT_CHIRHO, VOLUMES_CHIRHO } from "./config-chirho.ts";
 import { d1AuditFingerprintForDbPathChirho } from "./d1-audit-fingerprint-chirho.ts";
 import { spanSourceFingerprintForTargetsChirho } from "./source-fingerprint-chirho.ts";
+import {
+  isRtlDominantSpanLineChirho,
+  renderSpanLineTextChirho,
+} from "./span-line-text-chirho.ts";
 import { isNfcTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "export-markdown-chirho";
@@ -59,11 +63,6 @@ const JOHN_COMMENT_CHIRHO = [
 const LINE_FILE_RE_CHIRHO = /^line-(\d+)-chirho\.json$/;
 const PAGE_DIR_RE_CHIRHO = /^page-(\d+)-chirho$/;
 const VOL_DIR_RE_CHIRHO = /^vol-(\d+)-chirho$/;
-const RTL_SCRIPTS_CHIRHO = new Set<string>([
-  "hebrew-chirho",
-  "syriac-chirho",
-  "arabic-chirho",
-]);
 const PASS_C_OCR_SCRIPTS_CHIRHO = new Set<string>([
   "hebrew-chirho",
   "greek-chirho",
@@ -683,36 +682,6 @@ function crnnSuggestionTextsForSpanChirho(
   return [...matchedTextsChirho].sort();
 }
 
-function isRtlDominantLineChirho(spansChirho: SpanChirho[]): boolean {
-  let rtlCharsChirho = 0;
-  let nonRtlCharsChirho = 0;
-  let rtlSpanCountChirho = 0;
-  for (const spanChirho of spansChirho) {
-    const charCountChirho = [...spanChirho.utf8TextChirho.replace(/\s+/g, "")].length;
-    if (RTL_SCRIPTS_CHIRHO.has(spanChirho.scriptChirho)) {
-      rtlCharsChirho += charCountChirho;
-      if (charCountChirho > 0) rtlSpanCountChirho++;
-    } else {
-      nonRtlCharsChirho += charCountChirho;
-    }
-  }
-  return rtlSpanCountChirho >= 2 && rtlCharsChirho > 0 && nonRtlCharsChirho === 0;
-}
-
-function orderedSpansForTextChirho(lineChirho: SpanLineChirho): SpanChirho[] {
-  const spansChirho = [...lineChirho.spansChirho].sort(
-    (aChirho, bChirho) => aChirho.segmentIndexChirho - bChirho.segmentIndexChirho
-  );
-  if (!isRtlDominantLineChirho(spansChirho)) return spansChirho;
-  return [...spansChirho].sort((aChirho, bChirho) => bChirho.xMinPxChirho - aChirho.xMinPxChirho);
-}
-
-function textForSpanChirho(spanChirho: SpanChirho, lineIndexChirho: number): string {
-  const textChirho = spanChirho.utf8TextChirho.trim();
-  if (textChirho.length > 0) return textChirho;
-  return `[EMPTY-SPAN-CHIRHO line=${lineIndexChirho} segment=${spanChirho.segmentIndexChirho}]`;
-}
-
 function lettersOnlyChirho(textChirho: string): string {
   return [...textChirho.normalize("NFC")]
     .filter((charChirho) => LETTER_RE_CHIRHO.test(charChirho))
@@ -1041,14 +1010,13 @@ function validateLineChirho(
     );
   }
 
-  const rtlDominantChirho = isRtlDominantLineChirho(lineChirho.spansChirho);
-  const orderedTextSpansChirho = orderedSpansForTextChirho(lineChirho);
+  const rtlDominantChirho = isRtlDominantSpanLineChirho(lineChirho.spansChirho);
 
   return {
-    textChirho: orderedTextSpansChirho
-      .map((spanChirho) => textForSpanChirho(spanChirho, lineChirho.lineIndexChirho))
-      .filter((textChirho) => textChirho.length > 0)
-      .join(" "),
+    textChirho: renderSpanLineTextChirho(lineChirho, {
+      emptySpanTextChirho: (spanChirho, renderedLineChirho) =>
+        `[EMPTY-SPAN-CHIRHO line=${renderedLineChirho.lineIndexChirho ?? lineChirho.lineIndexChirho} segment=${spanChirho.segmentIndexChirho}]`,
+    }),
     spanCountChirho: lineChirho.spansChirho.length,
     unknownSpanCountChirho,
     replacementCharCountChirho,

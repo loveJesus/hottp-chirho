@@ -6,6 +6,7 @@ import { existsSync, readFileSync, readdirSync, statSync } from "fs";
 import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 export { hashTextChirho } from "./text-normalization-chirho.ts";
@@ -157,10 +158,7 @@ function lineFilePathChirho(volumeChirho: number, pageChirho: number, lineChirho
 }
 
 function lineTextChirho(lineChirho: SpanLineChirho): string {
-  return [...lineChirho.spansChirho]
-    .sort((aChirho, bChirho) => aChirho.segmentIndexChirho - bChirho.segmentIndexChirho)
-    .map((spanChirho) => normalizeTextForStorageChirho(spanChirho.utf8TextChirho))
-    .join("");
+  return renderSpanLineTextChirho(lineChirho, { normalizeTextChirho: normalizeTextForStorageChirho });
 }
 
 function readSpanLineChirho(volumeChirho: number, pageChirho: number, lineChirho: number): SpanLineChirho {

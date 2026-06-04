@@ -37,6 +37,7 @@ import {
 import { basename, join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 
 const MODULE_CHIRHO = "validate-pass-c-hebrew-chirho";
 const SPANS_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
@@ -455,11 +456,7 @@ function addSourceCountChirho(countsChirho: Record<string, number>, sourceChirho
 }
 
 function lineTextChirho(lineChirho: SpanLineChirho): string {
-  return [...lineChirho.spansChirho]
-    .sort((aChirho, bChirho) => aChirho.segmentIndexChirho - bChirho.segmentIndexChirho)
-    .map((spanChirho) => spanChirho.utf8TextChirho.trim())
-    .filter((textChirho) => textChirho.length > 0)
-    .join(" ");
+  return renderSpanLineTextChirho(lineChirho);
 }
 
 function addWitnessChirho(

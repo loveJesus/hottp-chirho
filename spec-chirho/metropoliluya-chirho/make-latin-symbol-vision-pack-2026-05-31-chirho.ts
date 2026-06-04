@@ -17,6 +17,7 @@ import {
 import { join, relative } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "../../src-chirho/config-chirho.ts";
+import { renderSpanLineTextChirho } from "../../src-chirho/span-line-text-chirho.ts";
 
 const SPANS_ROOT_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
 const SCANLINES_ROOT_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "scanlines-chirho");
@@ -150,10 +151,7 @@ function scanlinePathChirho(volumeChirho: number, pageChirho: number, lineChirho
 }
 
 function lineTextChirho(lineChirho: SpanLineChirho): string {
-  return [...lineChirho.spansChirho]
-    .sort((aChirho, bChirho) => aChirho.segmentIndexChirho - bChirho.segmentIndexChirho)
-    .map((spanChirho) => spanChirho.utf8TextChirho)
-    .join("");
+  return renderSpanLineTextChirho(lineChirho);
 }
 
 function latestLocalD1PathChirho(): string | null {
