@@ -12,7 +12,7 @@
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
 const MODULE_CHIRHO = "review-servers-chirho";
-const CHECK_TIMEOUT_MS_CHIRHO = 1500;
+const CHECK_TIMEOUT_MS_CHIRHO = 3000;
 const START_TIMEOUT_MS_CHIRHO = 8000;
 
 interface ReviewServerChirho {
@@ -20,6 +20,7 @@ interface ReviewServerChirho {
   labelChirho: string;
   portChirho: number;
   scriptPathChirho: string;
+  probePathsChirho: string[];
 }
 
 interface ServerCheckChirho {
@@ -27,6 +28,7 @@ interface ServerCheckChirho {
   runningChirho: boolean;
   statusChirho: number | null;
   errorChirho: string | null;
+  checkedUrlsChirho: string[];
 }
 
 const REVIEW_SERVERS_CHIRHO: ReviewServerChirho[] = [
@@ -35,18 +37,21 @@ const REVIEW_SERVERS_CHIRHO: ReviewServerChirho[] = [
     labelChirho: "Raw Hebrew live validator",
     portChirho: 8766,
     scriptPathChirho: "src-chirho/pass-c-human-validate-server-chirho.ts",
+    probePathsChirho: ["/", "/api-chirho/validations-chirho"],
   },
   {
     keyChirho: "latin-symbol-chirho",
     labelChirho: "Latin/symbol live reviewer",
     portChirho: 8770,
     scriptPathChirho: "src-chirho/latin-symbol-vision-review-server-chirho.ts",
+    probePathsChirho: ["/", "/api-chirho/state-chirho"],
   },
   {
     keyChirho: "expert-non-latin-chirho",
     labelChirho: "Expert non-Latin live reviewer",
     portChirho: 8771,
     scriptPathChirho: "src-chirho/vision-tier-expert-review-server-chirho.ts",
+    probePathsChirho: ["/", "/api-chirho/state-chirho"],
   },
 ];
 
@@ -63,30 +68,50 @@ function serverUrlChirho(serviceChirho: ReviewServerChirho): string {
   return `http://localhost:${serviceChirho.portChirho}/`;
 }
 
+function serverProbeUrlChirho(serviceChirho: ReviewServerChirho, probePathChirho: string): string {
+  return new URL(probePathChirho, serverUrlChirho(serviceChirho)).toString();
+}
+
 async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChirho = CHECK_TIMEOUT_MS_CHIRHO): Promise<ServerCheckChirho> {
-  const abortControllerChirho = new AbortController();
-  const timeoutChirho = setTimeout(() => abortControllerChirho.abort(), timeoutMsChirho);
-  try {
-    const responseChirho = await fetch(serverUrlChirho(serviceChirho), {
-      signal: abortControllerChirho.signal,
-    });
-    return {
-      serviceChirho,
-      runningChirho: responseChirho.ok,
-      statusChirho: responseChirho.status,
-      errorChirho: responseChirho.ok ? null : `HTTP ${responseChirho.status}`,
-    };
-  } catch (errorChirho) {
-    const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
-    return {
-      serviceChirho,
-      runningChirho: false,
-      statusChirho: null,
-      errorChirho: messageChirho,
-    };
-  } finally {
-    clearTimeout(timeoutChirho);
+  const checkedUrlsChirho: string[] = [];
+  for (const probePathChirho of serviceChirho.probePathsChirho) {
+    const probeUrlChirho = serverProbeUrlChirho(serviceChirho, probePathChirho);
+    checkedUrlsChirho.push(probeUrlChirho);
+    const abortControllerChirho = new AbortController();
+    const timeoutChirho = setTimeout(() => abortControllerChirho.abort(), timeoutMsChirho);
+    try {
+      const responseChirho = await fetch(probeUrlChirho, {
+        signal: abortControllerChirho.signal,
+      });
+      if (!responseChirho.ok) {
+        return {
+          serviceChirho,
+          runningChirho: false,
+          statusChirho: responseChirho.status,
+          errorChirho: `${probePathChirho} HTTP ${responseChirho.status}`,
+          checkedUrlsChirho,
+        };
+      }
+    } catch (errorChirho) {
+      const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
+      return {
+        serviceChirho,
+        runningChirho: false,
+        statusChirho: null,
+        errorChirho: `${probePathChirho} ${messageChirho}`,
+        checkedUrlsChirho,
+      };
+    } finally {
+      clearTimeout(timeoutChirho);
+    }
   }
+  return {
+    serviceChirho,
+    runningChirho: true,
+    statusChirho: 200,
+    errorChirho: null,
+    checkedUrlsChirho,
+  };
 }
 
 async function waitForServerChirho(serviceChirho: ReviewServerChirho): Promise<ServerCheckChirho> {
@@ -102,7 +127,10 @@ async function waitForServerChirho(serviceChirho: ReviewServerChirho): Promise<S
 function printCheckChirho(checkChirho: ServerCheckChirho): void {
   const urlChirho = serverUrlChirho(checkChirho.serviceChirho);
   if (checkChirho.runningChirho) {
-    console.log(`[${MODULE_CHIRHO}] ok ${checkChirho.serviceChirho.labelChirho}: ${urlChirho}`);
+    console.log(
+      `[${MODULE_CHIRHO}] ok ${checkChirho.serviceChirho.labelChirho}: ${urlChirho}` +
+        ` (${checkChirho.checkedUrlsChirho.length} probe(s))`
+    );
     return;
   }
   console.log(
