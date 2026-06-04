@@ -6,9 +6,9 @@
  *
  * Default is a dry-run JSON preview with decisionChirho=draft-chirho. Writing an
  * accepted policy requires explicit --decision-chirho=accepted-clean-policy-chirho
- * plus reviewer and rationale. Symbol-labeled items that are not trivial
- * punctuation are excluded by --safe-symbols-only-chirho and cannot be accepted
- * in bulk without an explicit override.
+ * plus reviewer, rationale, and --accept-clean-chirho. Symbol-labeled items
+ * that are not trivial punctuation are excluded by --safe-symbols-only-chirho
+ * and cannot be accepted in bulk without an explicit override.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
@@ -74,6 +74,7 @@ function writePolicyFileChirho(pathChirho: string, fileChirho: LatinSymbolAccept
 function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const writeChirho = argsChirho.includes("--write-chirho");
+  const acceptCleanChirho = argsChirho.includes("--accept-clean-chirho");
   const safeSymbolsOnlyChirho = argsChirho.includes("--safe-symbols-only-chirho");
   const allowNontrivialSymbolTextChirho =
     argsChirho.includes("--allow-nontrivial-symbol-text-chirho") ||
@@ -114,6 +115,11 @@ function mainChirho(): void {
   if (decisionChirho === LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO) {
     if (reviewerChirho.trim().length === 0) throw new Error("--reviewer-chirho is required for accepted policy");
     if (rationaleChirho.trim().length === 0) throw new Error("--rationale-chirho is required for accepted policy");
+    if (!acceptCleanChirho) {
+      throw new Error(
+        "--accept-clean-chirho is required for accepted policy after checking every selected item crop and full line against the print"
+      );
+    }
   }
 
   const liveItemsChirho = latinSymbolVisionLiveItemsChirho();
