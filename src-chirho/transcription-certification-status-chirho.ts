@@ -760,6 +760,8 @@ interface CertificationStatusChirho {
     pendingVolumeCountsChirho: Record<string, number>;
     pendingPriorityItemCountChirho: number;
     pendingAppendixItemCountChirho: number;
+    pendingNonblankTextItemCountChirho: number;
+    pendingBlankTextItemCountChirho: number;
     manifestCountMatchesCurrentChirho: boolean;
     manifestIdsMatchCurrentChirho: boolean;
     manifestTextMatchesCurrentChirho: boolean;
@@ -1295,12 +1297,14 @@ function expertReviewUrlChirho(
   scriptChirho?: string,
   priorityChirho?: string,
   itemIdChirho?: string,
-  volumeChirho?: number
+  volumeChirho?: number,
+  textStateChirho?: string
 ): string {
   const entriesChirho: Array<[string, string]> = [];
   if (scriptChirho !== undefined) entriesChirho.push(["script-chirho", scriptChirho]);
   if (priorityChirho !== undefined) entriesChirho.push(["priority-chirho", priorityChirho]);
   if (volumeChirho !== undefined) entriesChirho.push(["volume-chirho", volumeFilterValueChirho(volumeChirho)]);
+  if (textStateChirho !== undefined) entriesChirho.push(["text-state-chirho", textStateChirho]);
   if (itemIdChirho !== undefined) entriesChirho.push(["item-chirho", itemIdChirho]);
   const queryChirho = urlQueryChirho(entriesChirho);
   return queryChirho.length === 0 ? "http://localhost:8771/" : `http://localhost:8771/?${queryChirho}`;
@@ -1461,7 +1465,8 @@ function firstExpertPendingItemIdChirho(
   itemsChirho: ExpertPackVisionItemChirho[],
   scriptChirho?: string,
   priorityChirho?: string,
-  volumeChirho?: number
+  volumeChirho?: number,
+  textStateChirho?: string
 ): string | null {
   const itemChirho = itemsChirho.find((candidateChirho) =>
     (scriptChirho === undefined || candidateChirho.scriptChirho === scriptChirho) &&
@@ -1470,7 +1475,12 @@ function firstExpertPendingItemIdChirho(
       (priorityChirho === "priority-chirho" && candidateChirho.priorityMatchChirho === true) ||
       (priorityChirho === "appendix-chirho" && candidateChirho.priorityMatchChirho !== true)
     ) &&
-    (volumeChirho === undefined || itemVolumeChirho(candidateChirho) === volumeChirho)
+    (volumeChirho === undefined || itemVolumeChirho(candidateChirho) === volumeChirho) &&
+    (
+      textStateChirho === undefined ||
+      (textStateChirho === "blank-chirho" && candidateChirho.currentTextChirho.trim().length === 0) ||
+      (textStateChirho === "nonblank-chirho" && candidateChirho.currentTextChirho.trim().length !== 0)
+    )
   );
   return itemChirho === undefined ? null : itemChirho.idChirho;
 }
@@ -1519,10 +1529,11 @@ function expertReviewStartUrlChirho(
   itemsChirho: ExpertPackVisionItemChirho[],
   scriptChirho?: string,
   priorityChirho?: string,
-  volumeChirho?: number
+  volumeChirho?: number,
+  textStateChirho?: string
 ): string | null {
-  const itemIdChirho = firstExpertPendingItemIdChirho(itemsChirho, scriptChirho, priorityChirho, volumeChirho);
-  return itemIdChirho === null ? null : expertReviewUrlChirho(scriptChirho, priorityChirho, itemIdChirho, volumeChirho);
+  const itemIdChirho = firstExpertPendingItemIdChirho(itemsChirho, scriptChirho, priorityChirho, volumeChirho, textStateChirho);
+  return itemIdChirho === null ? null : expertReviewUrlChirho(scriptChirho, priorityChirho, itemIdChirho, volumeChirho, textStateChirho);
 }
 
 function withReviewStartTextChirho(urlChirho: string | null | undefined): string {
@@ -2960,6 +2971,8 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     pendingVolumeCountsChirho: countByVolumeChirho(pendingExpertManifestItemsChirho),
     pendingPriorityItemCountChirho: pendingExpertManifestItemsChirho.filter((itemChirho) => itemChirho.priorityMatchChirho).length,
     pendingAppendixItemCountChirho: pendingExpertManifestItemsChirho.filter((itemChirho) => !itemChirho.priorityMatchChirho).length,
+    pendingNonblankTextItemCountChirho: pendingExpertManifestItemsChirho.filter((itemChirho) => itemChirho.currentTextChirho.trim().length !== 0).length,
+    pendingBlankTextItemCountChirho: pendingExpertManifestItemsChirho.filter((itemChirho) => itemChirho.currentTextChirho.trim().length === 0).length,
     manifestCountMatchesCurrentChirho: visionTierManifestCountMatchesCurrentChirho,
     manifestIdsMatchCurrentChirho: visionTierManifestIdsMatchCurrentChirho,
     manifestTextMatchesCurrentChirho: visionTierManifestTextMatchesCurrentChirho,
@@ -3620,6 +3633,20 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       "nontrivial-symbol-chirho"
     ),
     expertAllChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho),
+    expertNonblankChirho: expertReviewStartUrlChirho(
+      pendingExpertManifestItemsChirho,
+      undefined,
+      undefined,
+      undefined,
+      "nonblank-chirho"
+    ),
+    expertBlankChirho: expertReviewStartUrlChirho(
+      pendingExpertManifestItemsChirho,
+      undefined,
+      undefined,
+      undefined,
+      "blank-chirho"
+    ),
     expertPriorityChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, undefined, "priority-chirho"),
     expertAppendixChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, undefined, "appendix-chirho"),
     expertHebrewChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, "hebrew-chirho"),
@@ -3997,6 +4024,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "- Latin/symbol pending counts subtract accepted-clean reviews and accepted explicit policies; open issue reviews keep items pending.",
     `- Latin/symbol image packet: \`${relativeProjectPathChirho(LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Expert non-Latin live reviewer: http://localhost:8771/ (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s); command: \`bun run vision-tier-expert-review-chirho\`${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertAllChirho)})`,
+    `- Expert non-Latin has-text lane: ${expertReviewUrlChirho(undefined, undefined, undefined, undefined, "nonblank-chirho")} (${statusChirho.visionTierChirho.pendingNonblankTextItemCountChirho} pending confirmation(s) with current text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertNonblankChirho)})`,
+    `- Expert non-Latin blank-text lane: ${expertReviewUrlChirho(undefined, undefined, undefined, undefined, "blank-chirho")} (${statusChirho.visionTierChirho.pendingBlankTextItemCountChirho} pending blank item(s) requiring supplied text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertBlankChirho)})`,
     `- Expert priority lane: ${expertReviewUrlChirho(undefined, "priority-chirho")} (${statusChirho.visionTierChirho.pendingPriorityItemCountChirho} pending of ${expertPriorityCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertPriorityChirho)})`,
     `- Expert appendix lane: ${expertReviewUrlChirho(undefined, "appendix-chirho")} (${statusChirho.visionTierChirho.pendingAppendixItemCountChirho} pending of ${expertAppendixCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertAppendixChirho)})`,
     `- Expert Hebrew/WLC lane: ${expertReviewUrlChirho("hebrew-chirho")} (${pendingExpertScriptCountChirho("hebrew-chirho")} pending of ${expertScriptCountChirho("hebrew-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertHebrewChirho)})`,
@@ -4161,6 +4190,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Live vision-tier items: ${statusChirho.visionTierChirho.liveVisionItemCountChirho}`,
     `- Live counts: ${liveVisionCountsChirho || "none"}`,
     `- Live pending items: ${statusChirho.visionTierChirho.pendingVisionItemCountChirho}`,
+    `- Live pending text states: nonblank-chirho=${statusChirho.visionTierChirho.pendingNonblankTextItemCountChirho}, blank-chirho=${statusChirho.visionTierChirho.pendingBlankTextItemCountChirho}`,
     `- Live pending counts: ${Object.entries(statusChirho.visionTierChirho.pendingVisionCountsChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
     `- Manifest count matches current state: ${statusChirho.visionTierChirho.manifestCountMatchesCurrentChirho}`,
     `- Manifest IDs match current state: ${statusChirho.visionTierChirho.manifestIdsMatchCurrentChirho}`,
