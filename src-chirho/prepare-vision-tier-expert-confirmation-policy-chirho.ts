@@ -18,7 +18,7 @@ import {
   expectedItemGuardArgsChirho,
   parseExpectedItemIdsChirho,
 } from "./expected-item-guard-chirho.ts";
-import { assertExplicitReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
+import { assertCertifyingReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 import {
   expectedVisionTierReviewerRoleChirho,
@@ -120,7 +120,7 @@ function mainChirho(): void {
   }
   if (decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO) {
     if (reviewerChirho.trim().length === 0) throw new Error("--reviewer-chirho is required for confirmed policy");
-    assertExplicitReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
+    assertCertifyingReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
     if (reviewerRoleChirho.trim().length === 0) throw new Error("--reviewer-role-chirho is required for confirmed policy");
     if (rationaleChirho.trim().length === 0) throw new Error("--rationale-chirho is required for confirmed policy");
     if (!certifyExactChirho) {
