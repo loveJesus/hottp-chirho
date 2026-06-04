@@ -3,7 +3,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Non-Latin Residue Candidate Scan Chirho
 
-Generated: 2026-06-04T13:14:21.460Z
+Generated: 2026-06-04T13:57:58.257Z
 
 This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, or apparatus residue inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.
 
@@ -11,22 +11,12 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 
 ## Summary
 
-- Candidate lines: 16
+- Candidate lines: 15
 - High priority: 0
-- Medium priority: 13
+- Medium priority: 12
 - Low priority included: 3
 
 ## Candidates
-
-### medium-chirho score 5: vol 1 p0151 L015
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-1-chirho/page-0151-chirho/line-015-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-1-chirho/page-0151-chirho/line-015-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-1-chirho/page-0151-chirho/line-015-chirho.png)
-- Line text: `6,20 הָעָם y" [B] M g V S T // lic : Gom`
-- Suspicious spans:
-  - S2 french-chirho: `y" [B]` (short-garble-near-nonlatin-chirho; neighbors hebrew-chirho / latin-non-french-chirho)
 
 ### medium-chirho score 5: vol 5 p0051 L004
 

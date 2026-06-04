@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T13:46:43.397Z",
+  "generatedAtChirho": "2026-06-04T13:57:30.524Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 869,
+  "countChirho": 871,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8693,6 +8693,26 @@
       "scriptChirho": "greek-chirho",
       "utf8TextChirho": "καὶ",
       "notesChirho": "Split vol 4 p150 line 31 old mixed symbol/Greek span so printed Greek `καὶ` has its own greek-chirho vision-tier span before `διδοὺς`; exact Greek remains expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 1,
+      "pageChirho": 151,
+      "lineIndexChirho": 15,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "הָעָם + y\" hidden continuation",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "וירע העם",
+      "notesChirho": "Recovered vol 1 p151 line 15 Joshua 6:20 Hebrew phrase from old partial pass-c `הָעָם` plus OCR fragment `y\"`. Scanline shows the two-word phrase before [B]; WLC Joshua 6:20 corroborates וַיָּרַע הָעָם, but stored consonantal `וירע העם` remains vision-chirho pending Hebrew/WLC expert confirmation of exact vowels/marks."
+    },
+    {
+      "volumeChirho": 1,
+      "pageChirho": 151,
+      "lineIndexChirho": 15,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "y\" [B]",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "[B]",
+      "notesChirho": "Split bracketed [B] witness label from old OCR fragment `y\" [B]`; label remains vision-tier Latin/French proofing, not certified."
     }
   ]
 }
