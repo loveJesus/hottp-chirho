@@ -10,8 +10,8 @@ This is a machine-assisted visual precheck, not a human certification. Do not us
 this file to decrement the certification gate or apply a clean verdict. It is only
 meant to help Hallelujah decide where to look first in the raw Hebrew queue.
 
-Current scope: this file is now a historical pre-review note plus one current
-raw Hebrew vol 3 target. The live raw Hebrew vol 3 lane currently has one
+Current scope: this file is now a historical pre-review note plus selected
+current raw Hebrew targets. The live raw Hebrew vol 3 lane currently has one
 pending item:
 `http://localhost:8766/?volume-chirho=vol-3-chirho&item-chirho=3%3A151%3A36%3A2`.
 
@@ -27,6 +27,18 @@ review servers and certification status remain authoritative.
   - Current line text: `γεῖσος mot qui réapparaît en Éz 43,13.17 pour 13, en 1R 7 9 pour גְּבוּל et en Jr`
   - Visual precheck: crop is centered on the target word; no obvious crop or segmentation issue. The printed letters and visible pointing look plausible for the live text at review resolution.
   - Human check still needed: exact niqqud/marks against the print.
+
+## Raw Vol 1 Spot-Check Visual Precheck
+
+This item is in the all-token spot-check lane. The token witness is useful
+evidence, not certification.
+
+- `vol 1 p152 L4 S4`:
+  `http://localhost:8766/?validation-status-chirho=all-token-validated-chirho&tier-chirho=spot-check-chirho&volume-chirho=vol-1-chirho&item-chirho=1%3A152%3A4%3A4`
+  - Live text: `למשפחות`
+  - Current line text: `7,17A מִשְׁפַּחַת [D] MT // spont : m t plur / schem (assim 14) : G VS clav למשפחות`
+  - Visual precheck: the crop cleanly boxes the final Hebrew word after `clav`; the neighboring sigla and French/Latin apparatus text sit outside the target box, and no obvious clipping or swallowed text is visible.
+  - Human check still needed: exact consonants and whether the bare consonantal spelling is what the print intends in this apparatus context.
 
 ## Raw Attention-Lane Visual Precheck
 
