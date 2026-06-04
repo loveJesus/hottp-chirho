@@ -574,6 +574,9 @@ function htmlChirho(): string {
     }
     function clearChirho(nodeChirho) { while (nodeChirho.firstChild) nodeChirho.removeChild(nodeChirho.firstChild); }
     function setStatusChirho(messageChirho) { document.getElementById("status-chirho").textContent = messageChirho; }
+    function currentPositionTextChirho(activeCountChirho) {
+      return activeCountChirho === 0 ? "item 0 of 0" : "item " + (indexChirho + 1) + " of " + activeCountChirho;
+    }
     async function copyCurrentLinkChirho() {
       const linkChirho = window.location.href;
       try {
@@ -657,7 +660,9 @@ function htmlChirho(): string {
       const confirmedChirho = itemsChirho.filter((itemChirho) => itemChirho.confirmedChirho).length;
       const issueReportedChirho = itemsChirho.filter((itemChirho) => itemChirho.issueReportedChirho).length;
       document.getElementById("summary-chirho").textContent =
-        activeChirho + " pending in filter, " + confirmedChirho + " confirmed, " + issueReportedChirho + " issue-reported, " + itemsChirho.length + " total";
+        activeChirho + " pending in filter, " + confirmedChirho + " confirmed, " +
+        issueReportedChirho + " issue-reported, " + itemsChirho.length + " total, " +
+        currentPositionTextChirho(activeChirho);
     }
     function renderChirho() {
       syncUrlChirho();
