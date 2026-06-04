@@ -39,6 +39,7 @@ import {
 import {
   scanNonNfcSpanTextFieldsChirho,
   scanSpanLinePathsChirho,
+  spanLinePathChirho,
   type SpanLineLikeChirho,
   type SpanLikeChirho,
 } from "./span-nfc-chirho.ts";
@@ -208,6 +209,13 @@ interface RawHebrewPackManifestChirho {
   sourceFilterChirho?: string;
   countsChirho?: Record<string, number>;
   itemsChirho?: RawHebrewPackItemChirho[];
+}
+
+interface RawHebrewReportLiveDriftChirho {
+  idChirho: string;
+  reasonChirho: string;
+  reportTextChirho: string;
+  liveTextChirho: string | null;
 }
 
 interface ExpertPackManifestChirho {
@@ -389,6 +397,9 @@ interface CertificationStatusChirho {
     packIdsMatchCurrentChirho: boolean;
     packTextMatchesCurrentChirho: boolean;
     packStatusMatchesCurrentChirho: boolean;
+    liveReportMatchesSpanFilesChirho: boolean;
+    liveReportDriftCountChirho: number;
+    liveReportDriftSamplesChirho: string[];
   };
   visionTierChirho: {
     d1ReadErrorChirho: string | null;
@@ -547,6 +558,89 @@ function rawHebrewPackItemIdChirho(
     `l${String(spanChirho.lineIndexChirho).padStart(3, "0")}`,
     `s${spanChirho.segmentIndexChirho}`,
   ].join("-");
+}
+
+function clippedTextChirho(textChirho: string | null, maxLengthChirho = 80): string {
+  if (textChirho === null) return "null";
+  if (textChirho.length <= maxLengthChirho) return textChirho;
+  return `${textChirho.slice(0, maxLengthChirho - 3)}...`;
+}
+
+function summarizeRawHebrewReportLiveDriftChirho(driftChirho: RawHebrewReportLiveDriftChirho): string {
+  return [
+    driftChirho.idChirho,
+    driftChirho.reasonChirho,
+    `report="${clippedTextChirho(driftChirho.reportTextChirho)}"`,
+    `live="${clippedTextChirho(driftChirho.liveTextChirho)}"`,
+  ].join(" ");
+}
+
+function rawHebrewReportLiveDriftsChirho(rawSpansChirho: RawHebrewSpanChirho[]): RawHebrewReportLiveDriftChirho[] {
+  const driftsChirho: RawHebrewReportLiveDriftChirho[] = [];
+  for (const spanChirho of rawSpansChirho) {
+    const idChirho = rawHebrewPackItemIdChirho(spanChirho);
+    const reportTextChirho = normalizeTextForStorageChirho(spanChirho.textChirho);
+    const linePathChirho = spanLinePathChirho(
+      spanChirho.volumeChirho,
+      spanChirho.pageChirho,
+      spanChirho.lineIndexChirho
+    );
+    if (!existsSync(linePathChirho)) {
+      driftsChirho.push({
+        idChirho,
+        reasonChirho: "missing-line-file-chirho",
+        reportTextChirho,
+        liveTextChirho: null,
+      });
+      continue;
+    }
+
+    let lineChirho: SpanLineLikeChirho;
+    try {
+      lineChirho = JSON.parse(readFileSync(linePathChirho, "utf8")) as SpanLineLikeChirho;
+    } catch (errorChirho) {
+      driftsChirho.push({
+        idChirho,
+        reasonChirho: `line-json-error-chirho:${errorChirho instanceof Error ? errorChirho.message : String(errorChirho)}`,
+        reportTextChirho,
+        liveTextChirho: null,
+      });
+      continue;
+    }
+
+    const liveSpanChirho = (lineChirho.spansChirho ?? []).find(
+      (candidateChirho) => candidateChirho.segmentIndexChirho === spanChirho.segmentIndexChirho
+    );
+    if (liveSpanChirho === undefined) {
+      driftsChirho.push({
+        idChirho,
+        reasonChirho: "missing-segment-chirho",
+        reportTextChirho,
+        liveTextChirho: null,
+      });
+      continue;
+    }
+    if (typeof liveSpanChirho.utf8TextChirho !== "string") {
+      driftsChirho.push({
+        idChirho,
+        reasonChirho: "missing-live-text-chirho",
+        reportTextChirho,
+        liveTextChirho: null,
+      });
+      continue;
+    }
+
+    const liveTextChirho = normalizeTextForStorageChirho(liveSpanChirho.utf8TextChirho);
+    if (liveTextChirho !== reportTextChirho) {
+      driftsChirho.push({
+        idChirho,
+        reasonChirho: "text-drift-chirho",
+        reportTextChirho,
+        liveTextChirho,
+      });
+    }
+  }
+  return driftsChirho;
 }
 
 function rowKeyChirho(rowChirho: Pick<HumanValidationDbRowChirho, "volume_chirho" | "page_chirho" | "line_index_chirho" | "segment_index_chirho">): string {
@@ -907,6 +1001,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       const packetItemChirho = rawHebrewPackItemsByIdChirho.get(rawHebrewPackItemIdChirho(spanChirho));
       return packetItemChirho !== undefined && packetItemChirho.validationStatusChirho === spanChirho.validationStatusChirho;
     });
+  const rawHebrewReportLiveDriftsResultChirho = rawHebrewReportLiveDriftsChirho(rawSpansChirho);
   const humanValidationRowsChirho = validationRowsChirho(dbPathChirho);
   const humanSummaryChirho = summarizeHumanValidationsChirho(humanValidationRowsChirho, rawSpansChirho);
   const livePendingRawSpansChirho = rawPendingSpansChirho(rawSpansChirho, humanValidationRowsChirho);
@@ -967,6 +1062,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     packIdsMatchCurrentChirho: rawHebrewPackIdsMatchCurrentChirho,
     packTextMatchesCurrentChirho: rawHebrewPackTextMatchesCurrentChirho,
     packStatusMatchesCurrentChirho: rawHebrewPackStatusMatchesCurrentChirho,
+    liveReportMatchesSpanFilesChirho: rawHebrewReportLiveDriftsResultChirho.length === 0,
+    liveReportDriftCountChirho: rawHebrewReportLiveDriftsResultChirho.length,
+    liveReportDriftSamplesChirho: rawHebrewReportLiveDriftsResultChirho
+      .slice(0, 8)
+      .map(summarizeRawHebrewReportLiveDriftChirho),
   };
   const visionTierLiveSnapshotChirho = visionTierExpertLiveSnapshotChirho();
   const visionTierLiveItemsChirho = visionTierLiveSnapshotChirho.itemsChirho;
@@ -1246,6 +1346,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   }
   if (structuralChirho.passCOcrHebrewSpanCountChirho !== 0) {
     remainingWorkChirho.push(`${structuralChirho.passCOcrHebrewSpanCountChirho} raw Pass-C Hebrew span(s) still need human certification`);
+  }
+  if (rawHebrewReportLiveDriftsResultChirho.length !== 0) {
+    remainingWorkChirho.push(
+      `${rawHebrewReportLiveDriftsResultChirho.length} raw Hebrew validation report item(s) do not match live span files; regenerate validate-pass-c-hebrew-chirho --all and make-pass-c-hebrew-human-pack-chirho`
+    );
   }
   if (
     rawSpansChirho.length !== 0 &&
@@ -1589,6 +1694,11 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Packet IDs match current report: ${statusChirho.rawHebrewChirho.packIdsMatchCurrentChirho}`,
     `- Packet text matches current report: ${statusChirho.rawHebrewChirho.packTextMatchesCurrentChirho}`,
     `- Packet validation statuses match current report: ${statusChirho.rawHebrewChirho.packStatusMatchesCurrentChirho}`,
+    `- Raw report matches live span files: ${statusChirho.rawHebrewChirho.liveReportMatchesSpanFilesChirho}`,
+    `- Raw report live drift items: ${statusChirho.rawHebrewChirho.liveReportDriftCountChirho}`,
+    ...statusChirho.rawHebrewChirho.liveReportDriftSamplesChirho.map(
+      (sampleChirho) => `  - ${sampleChirho}`
+    ),
     `- Live pending spans: ${statusChirho.rawHebrewChirho.livePendingSpanCountChirho}`,
     `- Tokens: ${statusChirho.rawHebrewChirho.reportTokenCountChirho}`,
     `- Unvalidated spans: ${statusChirho.rawHebrewChirho.unvalidatedSpanCountChirho}`,
