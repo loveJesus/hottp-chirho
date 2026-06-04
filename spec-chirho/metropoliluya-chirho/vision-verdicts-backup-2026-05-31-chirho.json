@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T13:10:00.000Z",
+  "generatedAtChirho": "2026-06-04T13:22:25.177Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 851,
+  "countChirho": 854,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -470,9 +470,39 @@
       "lineIndexChirho": 4,
       "segmentIndexChirho": 10,
       "garbleTextChirho": "voc ( clav 4 31ù-5",
+      "scriptChirho": "latin-non-french-chirho",
+      "utf8TextChirho": "voc:",
+      "notesChirho": "Split from old mixed Hebrew span `voc: 𝔊 clav וְאֵל`: Latin apparatus label `voc:` remains in Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 51,
+      "lineIndexChirho": 4,
+      "segmentIndexChirho": 11,
+      "garbleTextChirho": "voc ( clav 4 31ù-5",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": "𝔊",
+      "notesChirho": "Split from old mixed Hebrew span `voc: 𝔊 clav וְאֵל`: Septuagint siglum remains in Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 51,
+      "lineIndexChirho": 4,
+      "segmentIndexChirho": 12,
+      "garbleTextChirho": "voc ( clav 4 31ù-5",
+      "scriptChirho": "latin-non-french-chirho",
+      "utf8TextChirho": "clav",
+      "notesChirho": "Split from old mixed Hebrew span `voc: 𝔊 clav וְאֵל`: Latin apparatus label `clav` remains in Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 51,
+      "lineIndexChirho": 4,
+      "segmentIndexChirho": 13,
+      "garbleTextChirho": "voc ( clav 4 31ù-5",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "voc: 𝔊 clav וְאֵל",
-      "notesChirho": "Mixed: Latin abbreviations 'voc:' (vocalisation) and 'clav' (clavem/key), Septuagint siglum 𝔊, and Hebrew word וְאֵל"
+      "utf8TextChirho": "וְאֵל",
+      "notesChirho": "Split from old mixed Hebrew span `voc: 𝔊 clav וְאֵל`: the scanline shows the Hebrew word after the `clav` label. Stored as vision-chirho; exact letters and pointing remain Hebrew/WLC expert-confirmation tier."
     },
     {
       "volumeChirho": 5,
