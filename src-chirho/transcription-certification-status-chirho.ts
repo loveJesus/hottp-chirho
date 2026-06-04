@@ -265,6 +265,7 @@ interface BlankVisionTierHandoffChirho {
   scriptChirho: string | null;
   expectedReviewerRoleChirho: string | null;
   expertReviewUrlChirho: string;
+  dryRunCommandTemplateChirho: string;
   applyCommandTemplateChirho: string;
   sourcePathChirho: string | null;
   packetPathChirho: string | null;
@@ -1527,16 +1528,21 @@ function withReviewStartTextChirho(urlChirho: string | null | undefined): string
   return urlChirho == null ? "" : `; first pending: ${urlChirho}`;
 }
 
-function blankVisionTierApplyCommandTemplateChirho(idChirho: string, expectedReviewerRoleChirho: string | null): string {
-  return [
+function blankVisionTierSuppliedTextCommandTemplateChirho(
+  idChirho: string,
+  expectedReviewerRoleChirho: string | null,
+  applyChirho: boolean
+): string {
+  const commandPartsChirho = [
     "bun run apply-expert-supplied-vision-text-chirho --",
     `--id-chirho=${shellSingleQuoteChirho(idChirho)}`,
     "--supplied-text-chirho='<exact printed text>'",
     "--reviewer-chirho=<reviewer-id-chirho>",
     `--reviewer-role-chirho=${shellSingleQuoteChirho(expectedReviewerRoleChirho ?? "<expected-script-role-chirho>")}`,
     "--rationale-chirho='<why this exact text is supplied>'",
-    "--apply",
-  ].join(" ");
+  ];
+  if (applyChirho) commandPartsChirho.push("--apply");
+  return commandPartsChirho.join(" ");
 }
 
 function blankVisionTierHandoffsChirho(
@@ -1572,7 +1578,16 @@ function blankVisionTierHandoffsChirho(
         scriptChirho,
         expectedReviewerRoleChirho,
         expertReviewUrlChirho: expertReviewUrlChirho(scriptChirho ?? undefined, undefined, idChirho),
-        applyCommandTemplateChirho: blankVisionTierApplyCommandTemplateChirho(idChirho, expectedReviewerRoleChirho),
+        dryRunCommandTemplateChirho: blankVisionTierSuppliedTextCommandTemplateChirho(
+          idChirho,
+          expectedReviewerRoleChirho,
+          false
+        ),
+        applyCommandTemplateChirho: blankVisionTierSuppliedTextCommandTemplateChirho(
+          idChirho,
+          expectedReviewerRoleChirho,
+          true
+        ),
         sourcePathChirho: manifestItemChirho?.sourcePathChirho ?? null,
         packetPathChirho: manifestItemChirho?.packetPathChirho ?? null,
         markdownPathChirho: manifestItemChirho?.markdownPathChirho ?? null,
@@ -3745,7 +3760,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
           `  - Packet image: \`${handoffChirho.packetPathChirho === null ? "missing-manifest-packet-chirho" : relativeProjectPathChirho(handoffChirho.packetPathChirho)}\``,
           `  - Markdown image path: \`${handoffChirho.markdownPathChirho ?? "missing-manifest-markdown-path-chirho"}\``,
           `  - Manifest item fresh against live queue: ${handoffChirho.manifestItemFreshChirho}`,
-          `  - Expert-supplied text command after exact script-reader transcription: \`${handoffChirho.applyCommandTemplateChirho}\``,
+          `  - Expert-supplied text dry-run after exact script-reader transcription: \`${handoffChirho.dryRunCommandTemplateChirho}\``,
+          `  - Expert-supplied text apply after dry-run verification: \`${handoffChirho.applyCommandTemplateChirho}\``,
           "  - Applying supplied text removes only the EMPTY-SPAN structural marker; the item remains vision-tier until explicit expert confirmation.",
         ]);
   const guardedWlcCorrectionCommandLinesChirho = statusChirho.structuralChirho.guardedWlcCorrectionCommandsChirho.length === 0
@@ -3984,7 +4000,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Expert Hebrew/WLC lane: ${expertReviewUrlChirho("hebrew-chirho")} (${pendingExpertScriptCountChirho("hebrew-chirho")} pending of ${expertScriptCountChirho("hebrew-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertHebrewChirho)})`,
     `- Expert Greek lane: ${expertReviewUrlChirho("greek-chirho")} (${pendingExpertScriptCountChirho("greek-chirho")} pending of ${expertScriptCountChirho("greek-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertGreekChirho)})`,
     `- Expert Syriac reader lane: ${expertReviewUrlChirho("syriac-chirho")} (${pendingExpertScriptCountChirho("syriac-chirho")} pending of ${expertScriptCountChirho("syriac-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacChirho)})`,
-    "- Expert-supplied blank-span apply path: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho=<item-id-chirho> --supplied-text-chirho='<exact printed text>' --reviewer-chirho=<reviewer-id-chirho> --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>' --apply` (the item remains vision-tier until explicitly confirmed)",
+    "- Expert-supplied blank-span dry-run path: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho=<item-id-chirho> --supplied-text-chirho='<exact printed text>' --reviewer-chirho=<reviewer-id-chirho> --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>'`",
+    "- Expert-supplied blank-span apply path, only after dry-run verification: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho=<item-id-chirho> --supplied-text-chirho='<exact printed text>' --reviewer-chirho=<reviewer-id-chirho> --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>' --apply` (the item remains vision-tier until explicitly confirmed)",
     `- Expert Arabist lane: ${expertReviewUrlChirho("arabic-chirho")} (${pendingExpertScriptCountChirho("arabic-chirho")} pending of ${expertScriptCountChirho("arabic-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertArabicChirho)})`,
     ...expertVolumeLaneLinesChirho,
     `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,
