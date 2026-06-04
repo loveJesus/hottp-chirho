@@ -1070,6 +1070,8 @@ function pageHtmlChirho(): string {
         <option value="suspect-text-chirho">Suspect text</option>
         <option value="unknown-script-chirho">Unknown script</option>
       </select>
+      <button type="button" id="prev-chirho">Previous</button>
+      <button type="button" id="next-chirho">Skip</button>
     </div>
     <section class="main-chirho" id="app-chirho"></section>
   </main>
@@ -1151,6 +1153,14 @@ function pageHtmlChirho(): string {
       );
     }
     function currentItemChirho() { return activeQueueChirho()[indexChirho]; }
+    function clampIndexChirho(valueChirho) {
+      const maxIndexChirho = Math.max(0, activeQueueChirho().length - 1);
+      indexChirho = Math.min(Math.max(0, valueChirho), maxIndexChirho);
+    }
+    function moveIndexChirho(deltaChirho) {
+      clampIndexChirho(indexChirho + deltaChirho);
+      renderChirho();
+    }
     const hebrewTypewriterMarksChirho = [
       { labelChirho: "◌ֽ", valueChirho: "ֽ", titleChirho: "Meteg U+05BD" },
       { labelChirho: "־", valueChirho: "־", titleChirho: "Maqqef U+05BE" },
@@ -1217,7 +1227,7 @@ function pageHtmlChirho(): string {
       const responseChirho = await fetch("/api-chirho/validations-chirho");
       const dataChirho = await responseChirho.json();
       validationsChirho = new Map(dataChirho.validationsChirho.map((rowChirho) => [rowChirho.key_chirho, rowChirho]));
-      if (indexChirho >= activeQueueChirho().length) indexChirho = Math.max(0, activeQueueChirho().length - 1);
+      clampIndexChirho(indexChirho);
     }
     function setStatusChirho(messageChirho) { document.getElementById("status-chirho").textContent = messageChirho; }
     function renderSummaryChirho() {
@@ -1495,7 +1505,7 @@ function pageHtmlChirho(): string {
       }
       validationsChirho.set(itemChirho.keyChirho, dataChirho.rowChirho);
       setStatusChirho("Saved " + dataChirho.rowChirho.verdict_chirho);
-      if (indexChirho >= activeQueueChirho().length) indexChirho = Math.max(0, activeQueueChirho().length - 1);
+      clampIndexChirho(indexChirho);
       renderChirho();
     }
     async function undoLastChirho() {
@@ -1518,9 +1528,11 @@ function pageHtmlChirho(): string {
       const keyChirho = eventChirho.key.toLowerCase();
       if (keyChirho === "enter") submitReviewChirho();
       if (keyChirho === "u") undoLastChirho();
-      if (keyChirho === "arrowright") { indexChirho = Math.min(activeQueueChirho().length - 1, indexChirho + 1); renderChirho(); }
-      if (keyChirho === "arrowleft") { indexChirho = Math.max(0, indexChirho - 1); renderChirho(); }
+      if (keyChirho === "arrowright") moveIndexChirho(1);
+      if (keyChirho === "arrowleft") moveIndexChirho(-1);
     });
+    document.getElementById("prev-chirho").addEventListener("click", () => moveIndexChirho(-1));
+    document.getElementById("next-chirho").addEventListener("click", () => moveIndexChirho(1));
     document.getElementById("review-state-filter-chirho").addEventListener("change", (eventChirho) => {
       reviewStateFilterChirho = eventChirho.target.value;
       indexChirho = 0;
