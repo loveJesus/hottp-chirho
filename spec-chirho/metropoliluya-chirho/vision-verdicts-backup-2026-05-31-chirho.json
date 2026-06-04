@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T10:31:56.188Z",
+  "generatedAtChirho": "2026-06-04T11:38:14.430Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 814,
+  "countChirho": 817,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8143,6 +8143,36 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "אתיק",
       "notesChirho": "Human review flagged the stored פְּאֵר as wrong letters/vowels. The crop and Ezekiel 42:3 context support consonants אתיק (aleph-tav-yod-qoph) for the MT word behind κατὰ στίχον / ἐστιχισμέναι. Stored consonants only as vision-chirho; exact vowels/marks remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 16,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "old Greek span swallowed .967",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "λέγει κύριος",
+      "notesChirho": "Reboxed vol 3 p152 line 16 after scanline review: the print reads `λέγει κύριος .967 ≠ + ὁ θεός Cpl et rel.[1]`, and the old Greek phrase box swallowed the following `.967` apparatus siglum. Stored as greek-chirho vision-tier for Greek expert confirmation, not certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 16,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "OCR `4` plus omitted `.967 ≠ +` apparatus",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": ".967 ≠ +",
+      "notesChirho": "Recovered vol 3 p152 line 16 apparatus sequence `.967 ≠ +` after scanline review. The leading dot before 967 and the `≠ +` operators are printed; stored as symbol-chirho vision-tier for Latin/symbol proofing, not certified."
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 152,
+      "lineIndexChirho": 16,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "OCR `+0 es` for Greek ὁ θεός",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "ὁ θεός",
+      "notesChirho": "Recovered vol 3 p152 line 16 Greek `ὁ θεός` after scanline review. The OCR rendered the rough-breathing omicron `ὁ` and following `θεός` as French-like `+0 es`; stored as greek-chirho vision-tier for Greek expert confirmation, not certified."
     }
   ]
 }
