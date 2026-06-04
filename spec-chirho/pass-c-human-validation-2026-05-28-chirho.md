@@ -40,7 +40,7 @@ issues keep the span warning-active for correction/training.
 
 Use `Continue` for every span.
 
-- no issue boxes checked: stores `reviewed-clean-chirho`; the visible source matches the Pass-C text closely enough for the current review pass.
+- no issue boxes checked plus the explicit clean-certification checkbox: stores `reviewed-clean-chirho`; the visible source matches the Pass-C text closely enough for the current review pass.
 - one or more issue boxes checked: stores `reviewed-issues-chirho` plus `issue_flags_chirho`.
 - `undo-chirho`: append-only undo of the latest schema-v2 review row.
 
@@ -63,7 +63,7 @@ Current issue flags:
 The correction box includes a Hebrew typewriter for meteg, maqaf, common niqqud,
 dagesh, and shin/sin dots. Buttons insert at the correction cursor or replace
 the selected text. Corrected text is optional in this pass; the primary signal is
-clean review vs checked issue flags.
+explicit clean review vs checked issue flags.
 
 The review surface displays and pre-fills the live span-file text, not a stale
 report copy. If the report text ever drifts from the live span text, clean review

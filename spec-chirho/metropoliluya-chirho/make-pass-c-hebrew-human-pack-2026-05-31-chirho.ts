@@ -365,7 +365,7 @@ function markdownChirho(reportChirho: ValidationReportChirho, itemsChirho: Packe
     "",
     "This packet mirrors the live human validation queue for raw `pass-c-ocr-chirho` Hebrew spans. The red rectangle marks the span to compare against the printed line.",
     "",
-    "Use the live validator to record verdicts; this packet is a durable image+text aid. A clean review means the current text matches the print exactly enough for human certification. If anything is wrong, use the relevant issue boxes in the live validator.",
+    "Use the live validator to record verdicts; this packet is a durable image+text aid. A clean review means the current text matches the print exactly enough for human certification and requires the live validator's explicit clean-certification checkbox. If anything is wrong, use the relevant issue boxes in the live validator.",
     "",
     "Machine witnesses certify consonantal skeletons only; vowels, accents, meteg, and punctuation remain human responsibilities.",
     "",

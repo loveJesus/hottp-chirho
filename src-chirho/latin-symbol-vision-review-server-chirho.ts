@@ -4,8 +4,9 @@
 /**
  * Browser review UI for Latin/symbol vision-tier decisions.
  *
- * A clean Continue records accepted-clean-chirho. Continue with issue flags
- * records reviewed-issues-chirho and keeps the item pending.
+ * A clean Continue requires the explicit clean-acceptance checkbox and records
+ * accepted-clean-chirho. Continue with issue flags records
+ * reviewed-issues-chirho and keeps the item pending.
  */
 
 import { Database } from "bun:sqlite";
