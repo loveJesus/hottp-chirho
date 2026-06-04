@@ -160,6 +160,17 @@ const NON_LATIN_RESIDUE_CANDIDATE_SCANNER_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "find-nonlatin-residue-candidates-2026-06-04-chirho.ts"
 );
+const HEBREW_DELIMITER_ORDER_AUDIT_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "hebrew-delimiter-order-audit-2026-06-04-chirho.md"
+);
+const HEBREW_DELIMITER_ORDER_SCANNER_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "src-chirho",
+  "scan-hebrew-delimiter-order-chirho.ts"
+);
 const LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -446,6 +457,26 @@ interface CandidateScanReportSummaryChirho {
   summaryCountsMatchRenderedCandidatesChirho: boolean;
 }
 
+interface HebrewDelimiterOrderAuditSummaryChirho {
+  reportPathChirho: string;
+  reportExistsChirho: boolean;
+  reportShapeOkChirho: boolean;
+  generatedAtChirho: string | null;
+  scannerSourceFileCountChirho: number | null;
+  liveScannerSourceFileCountChirho: number;
+  scannerSourceFingerprintMatchesCurrentChirho: boolean;
+  spanSourceFileCountChirho: number | null;
+  liveSpanSourceFileCountChirho: number;
+  spanSourceFingerprintMatchesCurrentChirho: boolean;
+  hebrewDelimiterSpanCountChirho: number | null;
+  closeBeforeOpenSuspectCountChirho: number | null;
+  neighborUnbalancedReviewCountChirho: number | null;
+  renderedHebrewDelimiterSpanCountChirho: number;
+  renderedCloseBeforeOpenSuspectCountChirho: number;
+  renderedNeighborUnbalancedReviewCountChirho: number;
+  summaryCountsMatchRenderedRowsChirho: boolean;
+}
+
 interface CertificationStatusChirho {
   generatedAtChirho: string;
   reviewStartLinksChirho: Record<string, string | null>;
@@ -600,6 +631,7 @@ interface CertificationStatusChirho {
   strictBlindScansChirho: {
     hiddenHebrewChirho: CandidateScanReportSummaryChirho;
     nonLatinResidueChirho: CandidateScanReportSummaryChirho;
+    hebrewDelimiterOrderChirho: HebrewDelimiterOrderAuditSummaryChirho;
   };
   humanValidationDbChirho: HumanValidationSummaryChirho;
   passCHumanValidationBackupChirho: PassCHumanValidationBackupSummaryChirho;
@@ -745,6 +777,118 @@ function candidateScanRemainingWorkChirho(
   }
   if ((scanChirho.candidateLineCountChirho ?? 0) !== 0) {
     remainingWorkChirho.push(`${scanChirho.candidateLineCountChirho} ${labelChirho} strict-blind candidate line(s) remain; visually review and repair or justify before certification`);
+  }
+  return remainingWorkChirho;
+}
+
+function delimiterAuditRowCountChirho(markdownChirho: string, statusChirho?: string): number {
+  const patternChirho = statusChirho === undefined
+    ? /^v\d+ p\d+ L\d+ S\d+ \| /gmu
+    : new RegExp(`^v\\d+ p\\d+ L\\d+ S\\d+ \\| ${statusChirho.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")} \\| `, "gmu");
+  return [...markdownChirho.matchAll(patternChirho)].length;
+}
+
+function hebrewDelimiterOrderAuditSummaryChirho(
+  pathChirho: string,
+  liveSpanSourceFingerprintChirho: SourceFingerprintChirho,
+  liveScannerSourceFingerprintChirho: SourceFingerprintChirho
+): HebrewDelimiterOrderAuditSummaryChirho {
+  const reportPathChirho = relativeProjectPathChirho(pathChirho);
+  if (!existsSync(pathChirho)) {
+    return {
+      reportPathChirho,
+      reportExistsChirho: false,
+      reportShapeOkChirho: false,
+      generatedAtChirho: null,
+      scannerSourceFileCountChirho: null,
+      liveScannerSourceFileCountChirho: liveScannerSourceFingerprintChirho.fileCountChirho,
+      scannerSourceFingerprintMatchesCurrentChirho: false,
+      spanSourceFileCountChirho: null,
+      liveSpanSourceFileCountChirho: liveSpanSourceFingerprintChirho.fileCountChirho,
+      spanSourceFingerprintMatchesCurrentChirho: false,
+      hebrewDelimiterSpanCountChirho: null,
+      closeBeforeOpenSuspectCountChirho: null,
+      neighborUnbalancedReviewCountChirho: null,
+      renderedHebrewDelimiterSpanCountChirho: 0,
+      renderedCloseBeforeOpenSuspectCountChirho: 0,
+      renderedNeighborUnbalancedReviewCountChirho: 0,
+      summaryCountsMatchRenderedRowsChirho: false,
+    };
+  }
+  const textChirho = readFileSync(pathChirho, "utf8");
+  const generatedAtChirho = textChirho.match(/^Generated: (.+)$/mu)?.[1] ?? null;
+  const scannerSourceFileCountChirho = markdownNumberFieldChirho(textChirho, "Scanner source files");
+  const scannerSourceFingerprintChirho = markdownTextFieldChirho(textChirho, "Scanner source fingerprint");
+  const spanSourceFileCountChirho = markdownNumberFieldChirho(textChirho, "Span source files");
+  const spanSourceFingerprintChirho = markdownTextFieldChirho(textChirho, "Span source fingerprint");
+  const hebrewDelimiterSpanCountChirho = markdownNumberFieldChirho(textChirho, "Hebrew delimiter span count");
+  const closeBeforeOpenSuspectCountChirho = markdownNumberFieldChirho(textChirho, "Close-before-open suspect count");
+  const neighborUnbalancedReviewCountChirho = markdownNumberFieldChirho(textChirho, "Neighbor-unbalanced review count");
+  const renderedHebrewDelimiterSpanCountChirho = delimiterAuditRowCountChirho(textChirho);
+  const renderedCloseBeforeOpenSuspectCountChirho = delimiterAuditRowCountChirho(textChirho, "close-before-open-suspect-chirho");
+  const renderedNeighborUnbalancedReviewCountChirho = delimiterAuditRowCountChirho(textChirho, "neighbor-unbalanced-review-chirho");
+  const summaryCountsMatchRenderedRowsChirho =
+    hebrewDelimiterSpanCountChirho === renderedHebrewDelimiterSpanCountChirho &&
+    closeBeforeOpenSuspectCountChirho === renderedCloseBeforeOpenSuspectCountChirho &&
+    neighborUnbalancedReviewCountChirho === renderedNeighborUnbalancedReviewCountChirho;
+  const reportShapeOkChirho =
+    generatedAtChirho !== null &&
+    scannerSourceFileCountChirho !== null &&
+    scannerSourceFingerprintChirho !== null &&
+    spanSourceFileCountChirho !== null &&
+    spanSourceFingerprintChirho !== null &&
+    hebrewDelimiterSpanCountChirho !== null &&
+    closeBeforeOpenSuspectCountChirho !== null &&
+    neighborUnbalancedReviewCountChirho !== null &&
+    summaryCountsMatchRenderedRowsChirho;
+  return {
+    reportPathChirho,
+    reportExistsChirho: true,
+    reportShapeOkChirho,
+    generatedAtChirho,
+    scannerSourceFileCountChirho,
+    liveScannerSourceFileCountChirho: liveScannerSourceFingerprintChirho.fileCountChirho,
+    scannerSourceFingerprintMatchesCurrentChirho:
+      reportShapeOkChirho &&
+      scannerSourceFileCountChirho === liveScannerSourceFingerprintChirho.fileCountChirho &&
+      scannerSourceFingerprintChirho === liveScannerSourceFingerprintChirho.sha256Chirho,
+    spanSourceFileCountChirho,
+    liveSpanSourceFileCountChirho: liveSpanSourceFingerprintChirho.fileCountChirho,
+    spanSourceFingerprintMatchesCurrentChirho:
+      reportShapeOkChirho &&
+      spanSourceFileCountChirho === liveSpanSourceFingerprintChirho.fileCountChirho &&
+      spanSourceFingerprintChirho === liveSpanSourceFingerprintChirho.sha256Chirho,
+    hebrewDelimiterSpanCountChirho,
+    closeBeforeOpenSuspectCountChirho,
+    neighborUnbalancedReviewCountChirho,
+    renderedHebrewDelimiterSpanCountChirho,
+    renderedCloseBeforeOpenSuspectCountChirho,
+    renderedNeighborUnbalancedReviewCountChirho,
+    summaryCountsMatchRenderedRowsChirho,
+  };
+}
+
+function hebrewDelimiterOrderRemainingWorkChirho(
+  scanChirho: HebrewDelimiterOrderAuditSummaryChirho
+): string[] {
+  const remainingWorkChirho: string[] = [];
+  const regenerateCommandChirho = "bun run scan-hebrew-delimiter-order-chirho";
+  if (!scanChirho.reportExistsChirho) {
+    remainingWorkChirho.push(`Hebrew delimiter-order audit report is missing; run ${regenerateCommandChirho}`);
+    return remainingWorkChirho;
+  }
+  if (!scanChirho.reportShapeOkChirho) {
+    remainingWorkChirho.push(`Hebrew delimiter-order audit report is malformed; regenerate with ${regenerateCommandChirho}`);
+    return remainingWorkChirho;
+  }
+  if (!scanChirho.scannerSourceFingerprintMatchesCurrentChirho) {
+    remainingWorkChirho.push(`Hebrew delimiter-order audit source-code fingerprint does not match current scanner; rerun ${regenerateCommandChirho}`);
+  }
+  if (!scanChirho.spanSourceFingerprintMatchesCurrentChirho) {
+    remainingWorkChirho.push(`Hebrew delimiter-order audit span-source fingerprint does not match current spans; rerun ${regenerateCommandChirho}`);
+  }
+  if ((scanChirho.closeBeforeOpenSuspectCountChirho ?? 0) !== 0) {
+    remainingWorkChirho.push(`${scanChirho.closeBeforeOpenSuspectCountChirho} Hebrew close-before-open delimiter suspect(s) remain; visually review and repair or justify before certification`);
   }
   return remainingWorkChirho;
 }
@@ -1566,6 +1710,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const strictBlindScannerSpanSourceFingerprintChirho = sourceFingerprintForPathsChirho(scanSpanLinePathsChirho());
   const hiddenHebrewScannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(HIDDEN_HEBREW_CANDIDATE_SCANNER_PATH_CHIRHO);
   const nonLatinResidueScannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(NON_LATIN_RESIDUE_CANDIDATE_SCANNER_PATH_CHIRHO);
+  const hebrewDelimiterOrderScannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(HEBREW_DELIMITER_ORDER_SCANNER_PATH_CHIRHO);
   const exportReportShapeOkChirho =
     !exportReportExistsChirho ||
     (typeof exportReportChirho.strictPassedChirho === "boolean" &&
@@ -2086,6 +2231,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       strictBlindScannerSpanSourceFingerprintChirho,
       nonLatinResidueScannerSourceFingerprintChirho
     ),
+    hebrewDelimiterOrderChirho: hebrewDelimiterOrderAuditSummaryChirho(
+      HEBREW_DELIMITER_ORDER_AUDIT_PATH_CHIRHO,
+      strictBlindScannerSpanSourceFingerprintChirho,
+      hebrewDelimiterOrderScannerSourceFingerprintChirho
+    ),
   };
   const remainingWorkChirho: string[] = [];
   if (!exportReportExistsChirho) {
@@ -2146,7 +2296,8 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       "non-Latin residue",
       strictBlindScansChirho.nonLatinResidueChirho,
       "bun run spec-chirho/metropoliluya-chirho/find-nonlatin-residue-candidates-2026-06-04-chirho.ts"
-    )
+    ),
+    ...hebrewDelimiterOrderRemainingWorkChirho(strictBlindScansChirho.hebrewDelimiterOrderChirho)
   );
   if (
     exportReportExistsChirho &&
@@ -2670,6 +2821,23 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
       scanChirho.renderedLowPriorityCountChirho,
     ].join("/")}`,
   ];
+  const delimiterAuditLinesChirho = (scanChirho: HebrewDelimiterOrderAuditSummaryChirho): string[] => [
+    `- Hebrew delimiter-order audit: \`${scanChirho.reportPathChirho}\``,
+    `  - Report exists: ${scanChirho.reportExistsChirho}`,
+    `  - Report shape OK: ${scanChirho.reportShapeOkChirho}`,
+    `  - Generated: ${scanChirho.generatedAtChirho ?? "unknown"}`,
+    `  - Scanner source files in report: ${scanChirho.scannerSourceFileCountChirho ?? "unknown"}`,
+    `  - Live scanner source files: ${scanChirho.liveScannerSourceFileCountChirho}`,
+    `  - Scanner source fingerprint matches current scanner: ${scanChirho.scannerSourceFingerprintMatchesCurrentChirho}`,
+    `  - Span source files in report: ${scanChirho.spanSourceFileCountChirho ?? "unknown"}`,
+    `  - Live span source files: ${scanChirho.liveSpanSourceFileCountChirho}`,
+    `  - Span source fingerprint matches current spans: ${scanChirho.spanSourceFingerprintMatchesCurrentChirho}`,
+    `  - Hebrew delimiter spans: ${scanChirho.hebrewDelimiterSpanCountChirho ?? "unknown"}`,
+    `  - Rendered delimiter rows: ${scanChirho.renderedHebrewDelimiterSpanCountChirho}`,
+    `  - Summary counts match rendered rows: ${scanChirho.summaryCountsMatchRenderedRowsChirho}`,
+    `  - Close-before-open suspects: ${scanChirho.closeBeforeOpenSuspectCountChirho ?? "unknown"} (rendered ${scanChirho.renderedCloseBeforeOpenSuspectCountChirho})`,
+    `  - Neighbor-unbalanced review rows: ${scanChirho.neighborUnbalancedReviewCountChirho ?? "unknown"} (rendered ${scanChirho.renderedNeighborUnbalancedReviewCountChirho}; covered by raw/expert review, not auto-certified)`,
+  ];
   const hallelujahReviewCountChirho =
     statusChirho.rawHebrewChirho.livePendingSpanCountChirho +
     pendingExpertScriptCountChirho("hebrew-chirho") +
@@ -2797,10 +2965,11 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     "## Strict-Blind Scanner Reports",
     "",
-    "These heuristic reports do not certify text. A missing, malformed, stale, or nonzero scanner report blocks completion because unresolved strict-blind candidates are incompatible with a flawless-transcription claim.",
+    "These heuristic reports do not certify text. A missing, malformed, stale, or nonzero hidden/residue candidate report blocks completion because unresolved strict-blind candidates are incompatible with a flawless-transcription claim. The delimiter audit separately blocks stale/malformed reports and close-before-open suspects; neighbor-unbalanced damaged-text rows stay visible and remain covered by the raw/expert review queues.",
     "",
     ...candidateScanLinesChirho("Hidden Hebrew detector", statusChirho.strictBlindScansChirho.hiddenHebrewChirho),
     ...candidateScanLinesChirho("Non-Latin residue detector", statusChirho.strictBlindScansChirho.nonLatinResidueChirho),
+    ...delimiterAuditLinesChirho(statusChirho.strictBlindScansChirho.hebrewDelimiterOrderChirho),
     "",
     "## Unicode Normalization",
     "",

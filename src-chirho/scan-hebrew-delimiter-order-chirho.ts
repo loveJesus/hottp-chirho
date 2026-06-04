@@ -11,12 +11,16 @@
 
 import { mkdirSync, readFileSync, writeFileSync } from "fs";
 import { dirname, join } from "path";
+import { fileURLToPath } from "url";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
+import { sourceFingerprintForPathsChirho, type SourceFingerprintChirho } from "./source-fingerprint-chirho.ts";
 import { scanSpanLinePathsChirho } from "./span-nfc-chirho.ts";
+import { strictBlindScannerSourceFingerprintChirho } from "./strict-blind-scanner-source-fingerprint-chirho.ts";
 
 const MODULE_CHIRHO = "scan-hebrew-delimiter-order-chirho";
+const SCANNER_PATH_CHIRHO = fileURLToPath(import.meta.url);
 const DEFAULT_REPORT_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -186,7 +190,11 @@ function markdownEscapeChirho(valueChirho: string): string {
   return valueChirho.replace(/\|/g, "\\|").replace(/\n/g, " ");
 }
 
-function markdownReportChirho(findingsChirho: DelimiterFindingChirho[]): string {
+function markdownReportChirho(
+  findingsChirho: DelimiterFindingChirho[],
+  spanSourceFingerprintChirho: SourceFingerprintChirho,
+  scannerSourceFingerprintChirho: SourceFingerprintChirho
+): string {
   const byStatusChirho = new Map<string, number>();
   for (const findingChirho of findingsChirho) {
     byStatusChirho.set(findingChirho.statusChirho, (byStatusChirho.get(findingChirho.statusChirho) ?? 0) + 1);
@@ -217,6 +225,10 @@ function markdownReportChirho(findingsChirho: DelimiterFindingChirho[]): string 
     "",
     "## Summary",
     "",
+    `- Scanner source files: ${scannerSourceFingerprintChirho.fileCountChirho}`,
+    `- Scanner source fingerprint: ${scannerSourceFingerprintChirho.sha256Chirho}`,
+    `- Span source files: ${spanSourceFingerprintChirho.fileCountChirho}`,
+    `- Span source fingerprint: ${spanSourceFingerprintChirho.sha256Chirho}`,
     `- Hebrew delimiter span count: ${findingsChirho.length}`,
     `- Close-before-open suspect count: ${byStatusChirho.get("close-before-open-suspect-chirho") ?? 0}`,
     `- Neighbor-unbalanced review count: ${byStatusChirho.get("neighbor-unbalanced-review-chirho") ?? 0}`,
@@ -234,9 +246,11 @@ function markdownReportChirho(findingsChirho: DelimiterFindingChirho[]): string 
 function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const outPathChirho = parseArgValueChirho(argsChirho, "out-chirho") ?? DEFAULT_REPORT_PATH_CHIRHO;
+  const spanSourceFingerprintChirho = sourceFingerprintForPathsChirho(scanSpanLinePathsChirho());
+  const scannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(SCANNER_PATH_CHIRHO);
   const findingsChirho = scanFindingsChirho();
   mkdirSync(dirname(outPathChirho), { recursive: true });
-  writeFileSync(outPathChirho, markdownReportChirho(findingsChirho));
+  writeFileSync(outPathChirho, markdownReportChirho(findingsChirho, spanSourceFingerprintChirho, scannerSourceFingerprintChirho));
   const suspectCountChirho = findingsChirho.filter((findingChirho) => findingChirho.statusChirho === "close-before-open-suspect-chirho").length;
   const neighborUnbalancedCountChirho = findingsChirho.filter((findingChirho) => findingChirho.statusChirho === "neighbor-unbalanced-review-chirho").length;
   console.log(
