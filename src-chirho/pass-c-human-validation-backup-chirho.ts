@@ -9,7 +9,7 @@
  */
 
 import { Database } from "bun:sqlite";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
 import { dirname, join, relative } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
@@ -126,6 +126,13 @@ function projectRelativePathChirho(pathChirho: string): string {
   return pathChirho.startsWith(PROJECT_ROOT_CHIRHO)
     ? relative(PROJECT_ROOT_CHIRHO, pathChirho)
     : pathChirho;
+}
+
+function writeJsonAtomicChirho(pathChirho: string, valueChirho: unknown): void {
+  mkdirSync(dirname(pathChirho), { recursive: true });
+  const tempPathChirho = `${pathChirho}.tmp-chirho-${process.pid}-${Date.now()}`;
+  writeFileSync(tempPathChirho, `${JSON.stringify(valueChirho, null, 2)}\n`);
+  renameSync(tempPathChirho, pathChirho);
 }
 
 function spanSuggestionChirho(
@@ -308,8 +315,7 @@ export function writePassCHumanValidationBackupChirho(
     reviewCountChirho: rowsChirho.length,
     reviewsChirho: rowsChirho,
   };
-  mkdirSync(dirname(backupPathChirho), { recursive: true });
-  writeFileSync(backupPathChirho, `${JSON.stringify(backupChirho, null, 2)}\n`);
+  writeJsonAtomicChirho(backupPathChirho, backupChirho);
   return rowsChirho.length;
 }
 

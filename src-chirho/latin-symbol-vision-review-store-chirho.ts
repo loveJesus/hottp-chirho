@@ -10,7 +10,7 @@
  */
 
 import { Database } from "bun:sqlite";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
 import { dirname, join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
@@ -325,6 +325,13 @@ export function publicLatinSymbolReviewRowsChirho(dbChirho: Database): LatinSymb
   }));
 }
 
+function writeJsonAtomicChirho(pathChirho: string, valueChirho: unknown): void {
+  mkdirSync(dirname(pathChirho), { recursive: true });
+  const tempPathChirho = `${pathChirho}.tmp-chirho-${process.pid}-${Date.now()}`;
+  writeFileSync(tempPathChirho, `${JSON.stringify(valueChirho, null, 2)}\n`);
+  renameSync(tempPathChirho, pathChirho);
+}
+
 export function writeLatinSymbolReviewBackupChirho(
   dbChirho: Database,
   backupPathChirho: string,
@@ -370,8 +377,7 @@ export function writeLatinSymbolReviewBackupChirho(
       schemaVersionChirho: rowChirho.schema_version_chirho,
     })),
   };
-  mkdirSync(dirname(backupPathChirho), { recursive: true });
-  writeFileSync(backupPathChirho, `${JSON.stringify(backupChirho, null, 2)}\n`);
+  writeJsonAtomicChirho(backupPathChirho, backupChirho);
   return rowsChirho.length;
 }
 
