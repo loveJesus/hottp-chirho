@@ -3897,7 +3897,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
             const baseCommandPartsChirho = [
               "bun run reattribute-pass-c-human-validations-chirho --",
               `--validation-id-chirho=${rowChirho.idChirho}`,
-              "--reviewer-chirho=<explicit-reviewer-id-chirho>",
+              "--reviewer-chirho=<explicit-human-reviewer-id-chirho>",
               "--rationale-chirho='<why this existing row is attributable to that reviewer>'",
               ...(rowChirho.liveTextChirho === null
                 ? []
@@ -3922,7 +3922,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
       ? ["- Attribution-blocked reviewer exact-ID batch groups: none"]
       : [
           "- Attribution-blocked reviewer exact-ID batch groups:",
-          "- Use a batch command only when every row in that timestamp group is genuinely attributable to the same explicit reviewer.",
+          "- Use a batch command only when every row in that timestamp group is genuinely attributable to the same explicit human reviewer.",
           ...genericReviewerBatchGroupsChirho.flatMap((groupChirho) => {
             const verdictCountsChirho = Object.entries(groupChirho.verdictCountsChirho)
               .map(([verdictChirho, countChirho]) => `${verdictChirho}=${countChirho}`)
@@ -3932,7 +3932,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
             const baseCommandPartsChirho = [
               "bun run reattribute-pass-c-human-validations-chirho --",
               ...validationIdArgsChirho,
-              "--reviewer-chirho=<explicit-reviewer-id-chirho>",
+              "--reviewer-chirho=<explicit-human-reviewer-id-chirho>",
               "--rationale-chirho='<why every selected row is attributable to that reviewer>'",
               ...groupChirho.expectedLiveTextHashArgsChirho,
             ];
@@ -4138,7 +4138,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "- Attribution-blocked reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho=<id> --reviewer-chirho=<explicit-human-reviewer-id-chirho> --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>' --apply-chirho`",
     `- Attribution-blocked reviewer bulk dry-run path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho=<explicit-human-reviewer-id-chirho> --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>'\``,
     `- Attribution-blocked reviewer bulk apply path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho=<explicit-human-reviewer-id-chirho> --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>' --apply-chirho\``,
-    "- Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit reviewer.",
+    "- Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit human reviewer.",
     ...genericReviewerBatchLinesChirho,
     ...genericReviewerDetailLinesChirho,
     "",
