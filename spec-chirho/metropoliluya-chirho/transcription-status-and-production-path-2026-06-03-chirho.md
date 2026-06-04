@@ -26,7 +26,7 @@ This report is mostly about (2), because that is where the remaining work is.
 - 5 volumes · 46 pages · 1,789 span-line files · **4,504 spans**
 - **0 unknown spans · 0 replacement characters · 0 non-NFC spans** (Unicode normalization is enforced and gate-checked)
 - Export to markdown is span-first (the spans are the source of truth; D1 is an audit witness)
-- Strict-blind scanner reports are current and clear: hidden-Hebrew candidates **0**, non-Latin-residue candidates **0**. These reports are fail-closed: stale scanner code, stale spans, malformed summaries, or nonzero candidates block completion.
+- Strict-blind scanner reports are current and clear: hidden-Hebrew candidates **0**, non-Latin-residue candidates **0**, Hebrew close-before-open delimiter suspects **0**. These reports are fail-closed: stale scanner code, stale spans, malformed summaries, nonzero hidden/residue candidates, or delimiter rows not covered by raw/expert review block completion. The one neighbor-unbalanced Hebrew delimiter row is a damaged-text/Qumran notation review target already covered by the raw Hebrew queue, not a certification.
 
 **The certification gate** (`bun run transcription-certification-status-chirho`) currently reports **complete = false**, with three outstanding review categories:
 
@@ -52,7 +52,7 @@ All of this was built and cross-audited via the two-witness ("metropoliluya") di
 - **Non-certifying expert issue records** — the expert reviewer can flag letters/marks/punctuation/segmentation/wrong-script/wrong-source/uncertain without certifying the item. Issue records fail closed: a valid issue overrides a coexisting confirm, and the server cross-supersedes so the latest action is the only current browser-created record.
 - **Guarded correction tools** — a WLC-suggestion applier (only adjusts vowels/accents/punctuation, never consonants) and a segment-safe line-repair script (migrates review keys instead of orphaning them).
 - **A reviewer competence-routing guide** — Hebrew/Greek → Hallelujah; Syriac/Arabic/Targum vocalization → experts; with primers and the rule "confirm the exact letters against the print, not because the word is plausible from a standard text."
-- **Strict-blind scanners** — hidden-Hebrew and non-Latin-residue scanners now report zero candidates and are fingerprinted against both current spans and current detector/helper code. A missing, stale, malformed, or nonzero report blocks completion.
+- **Strict-blind scanners** — hidden-Hebrew and non-Latin-residue scanners now report zero candidates and are fingerprinted against both current spans and current detector/helper code. The Hebrew delimiter-order audit is also fingerprinted, blocks close-before-open visual-order suspects, and proves any neighbor-unbalanced damaged-text row is still covered by raw/expert review. Missing, stale, malformed, or uncovered scanner/audit findings block completion.
 
 ## 4. Honesty disciplines baked in (why this is trustworthy)
 
