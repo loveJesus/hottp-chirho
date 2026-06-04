@@ -3,30 +3,20 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Hidden Hebrew Candidate Scan Chirho
 
-Generated: 2026-06-04T05:27:01.689Z
+Generated: 2026-06-04T05:36:57.485Z
 
 This is a machine-assisted review queue, not a certification result. It flags lines where OCR may have rendered printed Hebrew as valid-looking French, Latin, symbols, or digit garbage. Every item still needs visual review against the scanline before any span repair.
 
 ## Summary
 
-- Candidate lines: 42
-- High priority: 24
-- Medium priority: 18
+- Candidate lines: 40
+- High priority: 23
+- Medium priority: 17
 - Low priority included: 0
 
 Priority is heuristic: scripture/citation context, existing Hebrew spans, digit/symbol garbage, and adjacency to Hebrew increase priority. Normal manuscript numbers and citations can still appear here as false positives.
 
 ## Candidates
-
-### high-chirho score 12: vol 2 p0148 L037
-
-- Reasons: `line-has-hebrew-span-chirho`, `line-has-dense-digit-cluster-chirho`, `line-has-symbol-digit-garble-chirho`, `suspicious-span-adjacent-to-hebrew-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-2-chirho/page-0148-chirho/line-037-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-2-chirho/page-0148-chirho/line-037-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-2-chirho/page-0148-chirho/line-037-chirho.png)
-- Line text: `lon moi, וְיַסִּירֵנִי est un futur de 12? dont la première radicale a été insérée dans la`
-- Suspicious spans:
-  - S2 french-chirho: `est un futur de 12? dont la première radicale a été insérée dans la` (dense-digit-cluster-chirho, symbol-digit-garble-chirho; neighbors hebrew-chirho / none)
 
 ### high-chirho score 10: vol 1 p0150 L032
 
@@ -267,16 +257,6 @@ Priority is heuristic: scripture/citation context, existing Hebrew spans, digit/
 - Line text: `Écrivant en lemme לְמָ֣ס sans ‘alef ’, SAADYA traduit le vs 14: الـى *8`
 - Suspicious spans:
   - S6 french-chirho: `*8` (symbol-digit-garble-chirho; neighbors arabic-chirho / none)
-
-### medium-chirho score 6: vol 4 p0148 L028
-
-- Reasons: `line-has-scripture-reference-chirho`, `line-has-symbol-digit-garble-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-4-chirho/page-0148-chirho/line-028-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-4-chirho/page-0148-chirho/line-028-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-4-chirho/page-0148-chirho/line-028-chirho.png)
-- Line text: `42,4 et Qo 12,6 où }11? et JT) se rattachent évidemment`
-- Suspicious spans:
-  - S0 french-chirho: `42,4 et Qo 12,6 où }11? et JT) se rattachent évidemment` (symbol-digit-garble-chirho; neighbors none / none)
 
 ### medium-chirho score 6: vol 5 p0052 L013
 

@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T05:10:36.490Z",
+  "generatedAtChirho": "2026-06-04T05:36:20.697Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 779,
+  "countChirho": 782,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7793,6 +7793,36 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "מַרְכְּבֹתֶיךָ",
       "notesChirho": "Recovered from printed Hebrew mis-OCR rendered as + 772279; Habakkuk 3:8 WLC corroborates מַרְכְּבֹתֶיךָ יְשׁוּעָה, with exact printed pointing routed to expert confirmation."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 148,
+      "lineIndexChirho": 37,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "12?",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "יסר",
+      "notesChirho": "Recovered from printed Hebrew root mis-OCR rendered as \"12?\" after \"est un futur de\"; Claude and Codex second-witnessed the scanline as יסר. Stored as vision-chirho; exact printed form remains expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 148,
+      "lineIndexChirho": 28,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "}11?",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "יָרוּץ",
+      "notesChirho": "Recovered from printed Hebrew mis-OCR rendered as \"}11?\" in the Qo 12,6 discussion; Claude and Codex second-witnessed the scanline as יָרוּץ. Stored as vision-chirho; exact vowel/accent confirmation remains expert tier."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 148,
+      "lineIndexChirho": 28,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "JT)",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "וְתָרוּץ",
+      "notesChirho": "Recovered from printed Hebrew mis-OCR rendered as \"JT)\" in the Qo 12,6 discussion; Claude and Codex second-witnessed the scanline as וְתָרוּץ. Stored as vision-chirho; exact vowel/accent confirmation remains expert tier."
     }
   ]
 }
