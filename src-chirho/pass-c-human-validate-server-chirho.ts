@@ -12,6 +12,7 @@
  */
 
 import { Database } from "bun:sqlite";
+import { createHash as createHashChirho } from "crypto";
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
@@ -171,6 +172,7 @@ interface QueueItemChirho extends ReportSpanChirho {
   lineWidthPxChirho: number;
   lineHeightPxChirho: number;
   lineImagePathChirho: string;
+  lineImageHashChirho: string | null;
   lineImageWidthPxChirho: number;
   lineImageHeightPxChirho: number;
   zoomCropXMinPxChirho: number;
@@ -356,6 +358,11 @@ function pngSizeChirho(pathChirho: string): { widthChirho: number; heightChirho:
     widthChirho: bytesChirho.readUInt32BE(16),
     heightChirho: bytesChirho.readUInt32BE(20),
   };
+}
+
+function fileSha256Chirho(pathChirho: string): string | null {
+  if (!existsSync(pathChirho)) return null;
+  return createHashChirho("sha256").update(readFileSync(pathChirho)).digest("hex");
 }
 
 function lineWordBoxesForSpanChirho(
@@ -593,7 +600,8 @@ function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): Queue
       );
       const hintSummaryChirho = scriptHintSummaryChirho(candidateWordsChirho);
       const lineImagePathChirho = scanlineImagePathChirho(spanChirho);
-      const lineImageSizeChirho = existsSync(lineImagePathChirho)
+      const lineImageHashChirho = fileSha256Chirho(lineImagePathChirho);
+      const lineImageSizeChirho = lineImageHashChirho !== null
         ? pngSizeChirho(lineImagePathChirho)
         : {
             widthChirho: lineChirho.lineWidthPxChirho,
@@ -624,6 +632,7 @@ function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): Queue
         lineWidthPxChirho: lineChirho.lineWidthPxChirho,
         lineHeightPxChirho: lineChirho.lineHeightPxChirho,
         lineImagePathChirho,
+        lineImageHashChirho,
         lineImageWidthPxChirho: lineImageSizeChirho.widthChirho,
         lineImageHeightPxChirho: lineImageSizeChirho.heightChirho,
         zoomCropXMinPxChirho: zoomChirho.cropXMinPxChirho,
@@ -655,6 +664,16 @@ function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): Queue
 }
 
 function assertQueueItemStillLiveChirho(itemChirho: QueueItemChirho): void {
+  if (itemChirho.lineImageHashChirho === null) {
+    throw new Error(`Raw Hebrew review queue is stale: line image was missing at startup for ${itemChirho.keyChirho}; restart/regenerate review state`);
+  }
+  const liveLineImageHashChirho = fileSha256Chirho(itemChirho.lineImagePathChirho);
+  if (liveLineImageHashChirho === null) {
+    throw new Error(`Raw Hebrew review queue is stale: line image missing for ${itemChirho.keyChirho}; restart/regenerate review state`);
+  }
+  if (liveLineImageHashChirho !== itemChirho.lineImageHashChirho) {
+    throw new Error(`Raw Hebrew review queue is stale: line image changed for ${itemChirho.keyChirho}; restart/regenerate review state`);
+  }
   const lineChirho = JSON.parse(readFileSync(lineFilePathChirho(itemChirho), "utf8")) as SpanLineFileChirho;
   const spanChirho = lineChirho.spansChirho.find(
     (candidateChirho) => candidateChirho.segmentIndexChirho === itemChirho.segmentIndexChirho
@@ -969,6 +988,7 @@ function witnessSnapshotChirho(itemChirho: QueueItemChirho): string {
     tokenValidationsChirho: itemChirho.tokenValidationsChirho,
     directWordReadsChirho: itemChirho.directWordReadsChirho,
     lineImagePathChirho: itemChirho.lineImagePathChirho,
+    lineImageHashChirho: itemChirho.lineImageHashChirho,
   });
 }
 
