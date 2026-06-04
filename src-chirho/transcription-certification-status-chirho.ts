@@ -669,6 +669,7 @@ interface CertificationStatusChirho {
     blankVisionTierHandoffsChirho: BlankVisionTierHandoffChirho[];
     spanSourceFileCountChirho: number | null;
     liveSpanSourceFileCountChirho: number;
+    liveSpanCountChirho: number;
     spanSourceFingerprintMatchesCurrentChirho: boolean;
     d1AuditDbPathChirho: string | null;
     liveD1AuditDbPathChirho: string | null;
@@ -2343,6 +2344,15 @@ function sumCountsChirho(countsChirho: Record<string, number>): number {
   return Object.values(countsChirho).reduce((sumChirho, countChirho) => sumChirho + countChirho, 0);
 }
 
+function liveSpanCountForPathsChirho(pathsChirho: string[]): number {
+  let countChirho = 0;
+  for (const pathChirho of pathsChirho) {
+    const lineChirho = JSON.parse(readFileSync(pathChirho, "utf8")) as SpanLineLikeChirho;
+    countChirho += lineChirho.spansChirho?.length ?? 0;
+  }
+  return countChirho;
+}
+
 function countIssueCodesChirho(issuesChirho: ExportIssueChirho[]): Record<string, number> {
   const countsChirho: Record<string, number> = {};
   for (const issueChirho of issuesChirho) {
@@ -2484,7 +2494,9 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const nonNfcSpanFilesChirho = new Set(
     nonNfcSpanTextFieldsChirho.map((findingChirho) => findingChirho.relativePathChirho)
   );
-  const strictBlindScannerSpanSourceFingerprintChirho = sourceFingerprintForPathsChirho(scanSpanLinePathsChirho());
+  const liveSpanLinePathsChirho = scanSpanLinePathsChirho();
+  const liveSpanCountChirho = liveSpanCountForPathsChirho(liveSpanLinePathsChirho);
+  const strictBlindScannerSpanSourceFingerprintChirho = sourceFingerprintForPathsChirho(liveSpanLinePathsChirho);
   const hiddenHebrewScannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(HIDDEN_HEBREW_CANDIDATE_SCANNER_PATH_CHIRHO);
   const nonLatinResidueScannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(NON_LATIN_RESIDUE_CANDIDATE_SCANNER_PATH_CHIRHO);
   const hebrewDelimiterOrderScannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(HEBREW_DELIMITER_ORDER_SCANNER_PATH_CHIRHO);
@@ -2682,6 +2694,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     blankVisionTierHandoffsChirho: [] as BlankVisionTierHandoffChirho[],
     spanSourceFileCountChirho: exportReportChirho.spanSourceFileCountChirho ?? null,
     liveSpanSourceFileCountChirho: liveSpanSourceFingerprintChirho.fileCountChirho,
+    liveSpanCountChirho,
     spanSourceFingerprintMatchesCurrentChirho: exportReportSpanSourceFingerprintMatchesCurrentChirho,
     d1AuditDbPathChirho: exportReportChirho.d1DbPathChirho ?? null,
     liveD1AuditDbPathChirho,
@@ -3878,6 +3891,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Export report shape OK: ${statusChirho.artifactsChirho.exportReportShapeOkChirho}`,
     `- Export span-source files in report: ${statusChirho.structuralChirho.spanSourceFileCountChirho ?? "unknown"}`,
     `- Live span-source files for report pages: ${statusChirho.structuralChirho.liveSpanSourceFileCountChirho}`,
+    `- Live span count for report pages: ${statusChirho.structuralChirho.liveSpanCountChirho}`,
     `- Export span-source fingerprint matches live spans: ${statusChirho.structuralChirho.spanSourceFingerprintMatchesCurrentChirho}`,
     `- Export D1 audit path: ${statusChirho.structuralChirho.d1AuditDbPathChirho ?? "none"}`,
     `- Live D1 audit path: ${statusChirho.structuralChirho.liveD1AuditDbPathChirho ?? "none"}`,
