@@ -654,6 +654,31 @@ function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): Queue
     );
 }
 
+function assertQueueItemStillLiveChirho(itemChirho: QueueItemChirho): void {
+  const lineChirho = JSON.parse(readFileSync(lineFilePathChirho(itemChirho), "utf8")) as SpanLineFileChirho;
+  const spanChirho = lineChirho.spansChirho.find(
+    (candidateChirho) => candidateChirho.segmentIndexChirho === itemChirho.segmentIndexChirho
+  );
+  if (spanChirho === undefined) {
+    throw new Error(`Raw Hebrew review queue is stale: live segment missing for ${itemChirho.keyChirho}`);
+  }
+  const liveTextChirho = normalizeTextForStorageChirho(spanChirho.utf8TextChirho);
+  if (liveTextChirho !== itemChirho.liveSpanTextChirho) {
+    throw new Error(`Raw Hebrew review queue is stale: live text changed for ${itemChirho.keyChirho}; restart/regenerate review state`);
+  }
+  if (spanChirho.scriptChirho !== itemChirho.currentScriptChirho) {
+    throw new Error(`Raw Hebrew review queue is stale: live script changed for ${itemChirho.keyChirho}; restart/regenerate review state`);
+  }
+  const liveLineTextChirho = lineTextFromSpanLineChirho(lineChirho);
+  if (liveLineTextChirho !== itemChirho.lineTextChirho) {
+    throw new Error(`Raw Hebrew review queue is stale: live line text changed for ${itemChirho.keyChirho}; restart/regenerate review state`);
+  }
+  const liveHashChirho = hashTextChirho(liveTextChirho);
+  if (liveHashChirho !== itemChirho.originalTextHashChirho) {
+    throw new Error(`Raw Hebrew review queue is stale: live text hash changed for ${itemChirho.keyChirho}; restart/regenerate review state`);
+  }
+}
+
 function loadHebrewQueueChirho(): LoadedQueueChirho {
   const reportChirho = loadReportChirho();
   return {
@@ -1946,6 +1971,14 @@ Bun.serve({
       };
       const itemChirho = queueByKeyChirho.get(bodyChirho.keyChirho);
       if (!itemChirho) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown key" }, 404);
+      try {
+        assertQueueItemStillLiveChirho(itemChirho);
+      } catch (errorChirho) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+        }, 409);
+      }
       const issueFlagsChirho = sanitizeIssueFlagsChirho(bodyChirho.issueFlagsChirho);
       const scriptVerdictChirho = queueModeChirho === "unknown-script-chirho"
         ? sanitizeScriptVerdictChirho(bodyChirho.scriptVerdictChirho)
@@ -2042,6 +2075,14 @@ Bun.serve({
       });
       const itemChirho = queueByKeyChirho.get(keyChirho);
       if (!itemChirho) return jsonResponseChirho({ okChirho: false, errorChirho: "undo target not in queue" }, 404);
+      try {
+        assertQueueItemStillLiveChirho(itemChirho);
+      } catch (errorChirho) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+        }, 409);
+      }
       const rowChirho = saveDecisionChirho(
         itemChirho,
         "undo-chirho",
