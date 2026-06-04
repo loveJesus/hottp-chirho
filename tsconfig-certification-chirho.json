@@ -1,0 +1,22 @@
+// For God so loved the world that he gave his only begotten Son,
+// that whoever believes in him should not perish but have eternal life. John 3:16
+{
+  "extends": "./tsconfig.json",
+  "include": [
+    "src-chirho/transcription-certification-status-chirho.ts",
+    "src-chirho/apply-expert-supplied-vision-text-chirho.ts",
+    "src-chirho/record-latin-symbol-vision-review-chirho.ts",
+    "src-chirho/reattribute-pass-c-human-validations-chirho.ts",
+    "src-chirho/apply-pass-c-human-validations-chirho.ts",
+    "src-chirho/apply-human-suggested-corrections-chirho.ts",
+    "src-chirho/prepare-latin-symbol-vision-acceptance-policy-chirho.ts",
+    "src-chirho/prepare-vision-tier-expert-confirmation-policy-chirho.ts",
+    "src-chirho/pass-c-human-validate-server-chirho.ts",
+    "src-chirho/latin-symbol-vision-review-server-chirho.ts",
+    "src-chirho/vision-tier-expert-review-server-chirho.ts",
+    "src-chirho/review-servers-chirho.ts",
+    "spec-chirho/metropoliluya-chirho/make-pass-c-hebrew-human-pack-2026-05-31-chirho.ts",
+    "spec-chirho/metropoliluya-chirho/make-expert-confirm-pack-2026-05-31-chirho.ts",
+    "spec-chirho/metropoliluya-chirho/make-latin-symbol-vision-pack-2026-05-31-chirho.ts"
+  ]
+}

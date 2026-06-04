@@ -32,6 +32,7 @@
     "vision-tier-expert-review-chirho": "bun run src-chirho/vision-tier-expert-review-server-chirho.ts",
     "review-servers-chirho": "bun run src-chirho/review-servers-chirho.ts",
     "apply-expert-supplied-vision-text-chirho": "bun run src-chirho/apply-expert-supplied-vision-text-chirho.ts",
+    "typecheck-certification-chirho": "bunx tsc --noEmit --project tsconfig-certification-chirho.json",
     "vision-transcribe-unknown-chirho": "bun run src-chirho/vision-transcribe-unknown-chirho.ts",
     "upload-chirho": "bun run src-chirho/upload-chirho.ts"
   },
