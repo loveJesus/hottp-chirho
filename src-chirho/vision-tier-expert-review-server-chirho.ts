@@ -73,6 +73,7 @@ interface ExpertReviewItemChirho extends ExpertPackItemChirho {
   confirmedChirho: boolean;
   issueReportedChirho: boolean;
   openIssueChirho: ExpertOpenIssueChirho | null;
+  textIsBlankChirho: boolean;
 }
 
 interface ConfirmRequestChirho {
@@ -472,6 +473,7 @@ function reviewItemsForStateChirho(
     confirmedChirho: confirmedIdsChirho.has(itemChirho.idChirho),
     issueReportedChirho: reviewedIssueIdsChirho.has(itemChirho.idChirho),
     openIssueChirho: openIssueDetailsByIdChirho.get(itemChirho.idChirho) ?? null,
+    textIsBlankChirho: itemChirho.currentTextChirho.trim().length === 0,
   }));
 }
 
@@ -668,6 +670,9 @@ function htmlChirho(): string {
     function certifyExactCheckedChirho() {
       return document.getElementById("certify-exact-chirho")?.checked === true;
     }
+    function itemTextIsBlankChirho(itemChirho) {
+      return typeof itemChirho.currentTextChirho !== "string" || itemChirho.currentTextChirho.trim().length === 0 || itemChirho.textIsBlankChirho === true;
+    }
     function saveReviewerFieldsChirho() {
       localStorage.setItem("expertReviewerChirho", fieldValueChirho("reviewer-chirho"));
       localStorage.setItem("expertReviewerRoleChirho", fieldValueChirho("reviewer-role-chirho"));
@@ -749,6 +754,12 @@ function htmlChirho(): string {
         classChirho: "warning-chirho",
         textChirho: "Confirm only if you can certify this script's exact letters and relevant marks against the printed line. If this is outside your competence or uncertain, use Report issue for crop/source/segmentation problems or Skip."
       }));
+      if (itemTextIsBlankChirho(itemChirho)) {
+        sideChirho.appendChild(elChirho("div", {
+          classChirho: "warning-chirho",
+          textChirho: "This item has no current text. Do not confirm an empty transcription; use Report issue or the expert-supplied text apply path after a script reader supplies the exact printed text."
+        }));
+      }
 
       const formChirho = elChirho("div", { classChirho: "box-chirho input-grid-chirho" });
       formChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "reviewer-chirho", textChirho: "Reviewer" }));
@@ -758,6 +769,7 @@ function htmlChirho(): string {
       formChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "rationale-chirho", textChirho: "Rationale" }));
       formChirho.appendChild(elChirho("textarea", { id: "rationale-chirho", textChirho: localStorage.getItem("expertRationaleChirho") || "" }));
       const certifyInputChirho = elChirho("input", { id: "certify-exact-chirho", type: "checkbox" });
+      if (itemTextIsBlankChirho(itemChirho)) certifyInputChirho.disabled = true;
       const certifyLabelChirho = elChirho("label", { classChirho: "certify-option-chirho", for: "certify-exact-chirho" }, [
         certifyInputChirho,
         document.createTextNode("I can certify this item's exact printed letters and relevant marks for the displayed script.")
@@ -775,7 +787,7 @@ function htmlChirho(): string {
       const confirmChirho = elChirho("button", { classChirho: "confirm-chirho", type: "button", textChirho: "Confirm" });
       confirmChirho.disabled = true;
       certifyInputChirho.addEventListener("change", () => {
-        confirmChirho.disabled = !certifyExactCheckedChirho();
+        confirmChirho.disabled = itemTextIsBlankChirho(itemChirho) || !certifyExactCheckedChirho();
       });
       confirmChirho.addEventListener("click", () => confirmCurrentChirho(itemChirho));
       const issueChirho = elChirho("button", { classChirho: "issue-chirho", type: "button", textChirho: "Report issue" });
@@ -791,6 +803,10 @@ function htmlChirho(): string {
       appChirho.appendChild(sideChirho);
     }
     async function confirmCurrentChirho(itemChirho) {
+      if (itemTextIsBlankChirho(itemChirho)) {
+        setStatusChirho("Blank current text cannot be confirmed; apply expert-supplied text first.");
+        return;
+      }
       if (!certifyExactCheckedChirho()) {
         setStatusChirho("Check the exact-certification box before confirming this item.");
         return;
@@ -928,6 +944,9 @@ Bun.serve({
         const { manifestChirho, liveItemsChirho, liveByIdChirho } = loadCurrentStateChirho(policyPathChirho);
         const liveItemChirho = liveByIdChirho.get(itemIdChirho);
         if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);
+        if (liveItemChirho.currentTextChirho.trim().length === 0) {
+          return jsonResponseChirho({ okChirho: false, errorChirho: "blank currentTextChirho cannot be confirmed; apply expert-supplied text first" }, 400);
+        }
         const roleErrorChirho = reviewerRoleErrorChirho(liveItemChirho, reviewerRoleChirho);
         if (roleErrorChirho !== null) return jsonResponseChirho({ okChirho: false, errorChirho: roleErrorChirho }, 400);
         const policyChirho = saveConfirmationChirho({

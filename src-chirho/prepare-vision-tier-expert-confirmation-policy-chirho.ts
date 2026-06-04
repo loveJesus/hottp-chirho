@@ -113,6 +113,14 @@ function mainChirho(): void {
   });
   if (decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO) {
     assertReviewerRoleMatchesSelectedItemsChirho(selectedItemsChirho, reviewerRoleChirho);
+    const blankItemsChirho = selectedItemsChirho
+      .filter((itemChirho) => itemChirho.currentTextChirho.trim().length === 0)
+      .map((itemChirho) => itemChirho.idChirho);
+    if (blankItemsChirho.length !== 0) {
+      throw new Error(
+        `confirmed expert policy cannot certify blank currentTextChirho item(s): ${blankItemsChirho.join(", ")}; apply expert-supplied text first`
+      );
+    }
   }
   const nowChirho = new Date().toISOString();
   const policyChirho: VisionTierExpertConfirmationPolicyChirho = {

@@ -208,6 +208,11 @@ function validateConfirmationShapeChirho(fileChirho: VisionTierExpertConfirmatio
       }
       if (typeof itemChirho.currentTextChirho !== "string") {
         errorsChirho.push(`${policyIdChirho}: currentTextChirho must be a string`);
+      } else if (
+        policyChirho.decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO &&
+        itemChirho.currentTextChirho.trim().length === 0
+      ) {
+        errorsChirho.push(`${policyIdChirho}: confirmed policy cannot certify blank currentTextChirho; apply expert-supplied text first`);
       }
       if (!nonEmptyStringChirho(itemChirho.currentTextHashChirho)) {
         errorsChirho.push(`${policyIdChirho}: currentTextHashChirho must be non-empty`);
