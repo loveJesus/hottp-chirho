@@ -3,7 +3,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Non-Latin Residue Candidate Scan Chirho
 
-Generated: 2026-06-04T13:01:33.646Z
+Generated: 2026-06-04T13:14:21.460Z
 
 This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, or apparatus residue inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.
 
@@ -11,10 +11,10 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 
 ## Summary
 
-- Candidate lines: 17
+- Candidate lines: 16
 - High priority: 0
 - Medium priority: 13
-- Low priority included: 4
+- Low priority included: 3
 
 ## Candidates
 
@@ -167,16 +167,6 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 - Line text: `5,5C צָמִים {B} 𝔐 // err exeg: 𝔊 !" α′ σ′ 𝔙 𝔖 𝔗`
 - Suspicious spans:
   - S8 symbol-chirho: `α′ σ′ 𝔙 𝔖 𝔗` (greek-chars-in-non-greek-span-chirho; neighbors french-chirho / none)
-
-### low-chirho score 4: vol 5 p0058 L002
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-5-chirho/page-0058-chirho/line-002-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-5-chirho/page-0058-chirho/line-002-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-5-chirho/page-0058-chirho/line-002-chirho.png)
-- Line text: `5,15B מִפִּיהֶם {B} 𝔐 𝖲 // facil styl m 𝔙 s 𝔗 מִּיהֶם / lic: 𝔊`
-- Suspicious spans:
-  - S10 symbol-chirho: `𝔗 מִּיהֶם` (hebrew-chars-in-non-hebrew-span-chirho; neighbors french-chirho / french-chirho)
 
 ### low-chirho score 4: vol 5 p0151 L016
 

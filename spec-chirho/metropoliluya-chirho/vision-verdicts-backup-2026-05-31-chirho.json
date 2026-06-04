@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T12:58:47.000Z",
+  "generatedAtChirho": "2026-06-04T13:10:00.000Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 850,
+  "countChirho": 851,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -3221,14 +3221,24 @@
       "segmentIndexChirho": 10,
       "garbleTextChirho": "*: ,6ù. 0ı",
       "scriptChirho": "symbol-chirho",
-      "utf8TextChirho": "𝔗 מִּיהֶם",
-      "notesChirho": "Targum siglum + Hebrew variant reading: pe+hiriq+dagesh omitted (mem-initial dropped), yod, he+segol, mem-sofit"
+      "utf8TextChirho": "𝔗",
+      "notesChirho": "Split from old mixed span `𝔗 מִּיהֶם`: the Targum siglum remains in the Latin/symbol review lane."
     },
     {
       "volumeChirho": 5,
       "pageChirho": 58,
       "lineIndexChirho": 2,
-      "segmentIndexChirho": 12,
+      "segmentIndexChirho": 11,
+      "garbleTextChirho": "Hebrew variant embedded in old S10 `𝔗 מִּיהֶם`",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "מִּיהֶם",
+      "notesChirho": "Split from old mixed symbol span `𝔗 מִּיהֶם`: the scanline shows this pointed Hebrew variant reading after the Targum siglum. Stored as vision-chirho; exact letters and pointing remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 58,
+      "lineIndexChirho": 2,
+      "segmentIndexChirho": 13,
       "garbleTextChirho": "(",
       "scriptChirho": "symbol-chirho",
       "utf8TextChirho": "𝔊",
