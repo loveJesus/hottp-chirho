@@ -681,6 +681,18 @@ function assertQueueItemStillLiveChirho(itemChirho: QueueItemChirho): void {
   if (spanChirho === undefined) {
     throw new Error(`Raw Hebrew review queue is stale: live segment missing for ${itemChirho.keyChirho}`);
   }
+  if (
+    lineChirho.lineWidthPxChirho !== itemChirho.lineWidthPxChirho ||
+    lineChirho.lineHeightPxChirho !== itemChirho.lineHeightPxChirho
+  ) {
+    throw new Error(`Raw Hebrew review queue is stale: live line geometry changed for ${itemChirho.keyChirho}; restart/regenerate review state`);
+  }
+  if (
+    spanChirho.xMinPxChirho !== itemChirho.spanXMinPxChirho ||
+    spanChirho.widthPxChirho !== itemChirho.spanWidthPxChirho
+  ) {
+    throw new Error(`Raw Hebrew review queue is stale: live span geometry changed for ${itemChirho.keyChirho}; restart/regenerate review state`);
+  }
   const liveTextChirho = normalizeTextForStorageChirho(spanChirho.utf8TextChirho);
   if (liveTextChirho !== itemChirho.liveSpanTextChirho) {
     throw new Error(`Raw Hebrew review queue is stale: live text changed for ${itemChirho.keyChirho}; restart/regenerate review state`);
