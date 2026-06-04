@@ -85,6 +85,31 @@ function checkRejectedCertifyHumanChirho(extraArgsChirho: string[], expectedMess
   }
 }
 
+function checkRejectedApplyChirho(extraArgsChirho: string[], expectedMessageChirho: string): void {
+  const tempChirho = tempReportChirho();
+  try {
+    const argsChirho = applyArgsChirho(tempChirho.reportPathChirho, [
+      "--apply",
+      "--validation-id-chirho=999999",
+      "--suggested-text-chirho=א",
+      ...extraArgsChirho,
+    ]);
+    const resultChirho = runCommandChirho(argsChirho);
+    const combinedOutputChirho = `${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`;
+    assertCheckChirho(
+      resultChirho.exitCodeChirho !== 0,
+      `rejected apply command unexpectedly succeeded: ${commandTextChirho(argsChirho)}`
+    );
+    assertCheckChirho(
+      combinedOutputChirho.includes(expectedMessageChirho),
+      `rejected apply command failed for the wrong reason: ${combinedOutputChirho}`
+    );
+    assertCheckChirho(!existsSync(tempChirho.reportPathChirho), "rejected apply command wrote a report file");
+  } finally {
+    rmSync(tempChirho.dirChirho, { force: true, recursive: true });
+  }
+}
+
 function checkHumanCertifyDryRunChirho(): void {
   const tempChirho = tempReportChirho();
   try {
@@ -104,6 +129,11 @@ function checkHumanCertifyDryRunChirho(): void {
 }
 
 function mainChirho(): void {
+  checkRejectedApplyChirho([], "--reviewer-chirho is required with --apply");
+  checkRejectedApplyChirho(
+    ["--reviewer-chirho=codex-gpt5-chirho"],
+    "--reviewer-chirho must identify a human reviewer; machine reviewer codex-gpt5-chirho cannot certify"
+  );
   checkRejectedCertifyHumanChirho([], "--reviewer-chirho is required with --certify-human");
   checkRejectedCertifyHumanChirho(
     ["--reviewer-chirho=codex-gpt5-chirho"],

@@ -188,12 +188,12 @@ function applyCorrectionChirho(
   spanChirho.humanCorrectedFromTextChirho = resultChirho.originalTextChirho;
   spanChirho.humanCorrectionSourceChirho = resultChirho.suggestionSourceChirho ?? undefined;
   spanChirho.humanCorrectionIssueFlagsChirho = resultChirho.issueFlagsChirho;
+  if (reviewerChirho !== null) spanChirho.humanCorrectionReviewerChirho = reviewerChirho;
   spanChirho.humanReviewStatusChirho = "reviewed-corrected-chirho";
   spanChirho.humanIssueFlagsChirho = [];
   if (certifyHumanChirho) {
     if (reviewerChirho === null) throw new Error("--reviewer-chirho is required with --certify-human");
     spanChirho.provenanceChirho = "human-chirho";
-    spanChirho.humanCorrectionReviewerChirho = reviewerChirho;
   }
   normalizeSpanLineTextFieldsChirho({ spansChirho: [spanChirho] });
 }
@@ -204,6 +204,15 @@ function mainChirho(): void {
   const certifyHumanChirho = argsChirho.includes("--certify-human");
   const reviewerArgChirho = parseArgValueChirho(argsChirho, "reviewer-chirho");
   const reviewerChirho = reviewerArgChirho === undefined ? null : reviewerArgChirho.trim();
+  if (certifyHumanChirho && (reviewerChirho === null || reviewerChirho.length === 0)) {
+    throw new Error("--reviewer-chirho is required with --certify-human");
+  }
+  if (applyChirho) {
+    if (reviewerChirho === null || reviewerChirho.length === 0) {
+      throw new Error("--reviewer-chirho is required with --apply");
+    }
+    assertCertifyingReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
+  }
   if (certifyHumanChirho) {
     if (reviewerChirho === null || reviewerChirho.length === 0) {
       throw new Error("--reviewer-chirho is required with --certify-human");
@@ -256,7 +265,7 @@ function mainChirho(): void {
     generatedAtChirho: appliedAtChirho,
     appliedChirho: applyChirho,
     certifyHumanChirho,
-    reviewerChirho: certifyHumanChirho ? reviewerChirho : null,
+    reviewerChirho: applyChirho || certifyHumanChirho ? reviewerChirho : null,
     targetValidationIdChirho,
     targetSuggestedTextChirho,
     allowedIssueFlagsChirho: [...ALLOWED_WLC_CORRECTION_FLAGS_CHIRHO],
