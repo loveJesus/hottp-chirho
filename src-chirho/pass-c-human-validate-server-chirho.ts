@@ -1173,6 +1173,38 @@ function pageHtmlChirho(): string {
       { labelChirho: "◌֖", valueChirho: "֖", titleChirho: "Tipcha U+0596" },
       { labelChirho: "◌֑", valueChirho: "֑", titleChirho: "Etnachta U+0591" }
     ];
+    const combiningHebrewMarkReChirho = /[\u0591-\u05BD\u05BF-\u05C2\u05C4-\u05C5\u05C7]/u;
+    const hebrewTypewriterTitleByValueChirho = new Map(
+      hebrewTypewriterMarksChirho.map((markChirho) => [markChirho.valueChirho, markChirho.titleChirho])
+    );
+    function charCountsChirho(valueChirho) {
+      const countsChirho = new Map();
+      for (const charChirho of Array.from(String(valueChirho ?? "").normalize("NFC"))) {
+        countsChirho.set(charChirho, (countsChirho.get(charChirho) ?? 0) + 1);
+      }
+      return countsChirho;
+    }
+    function displayMarkChirho(charChirho) {
+      return (combiningHebrewMarkReChirho.test(charChirho) ? "◌" : "") + charChirho;
+    }
+    function extraNamedMarksChirho(fromTextChirho, toTextChirho) {
+      const fromCountsChirho = charCountsChirho(fromTextChirho);
+      const toCountsChirho = charCountsChirho(toTextChirho);
+      const marksChirho = [];
+      for (const [charChirho, toCountChirho] of toCountsChirho.entries()) {
+        const titleChirho = hebrewTypewriterTitleByValueChirho.get(charChirho);
+        if (!titleChirho) continue;
+        const extraCountChirho = toCountChirho - (fromCountsChirho.get(charChirho) ?? 0);
+        for (let indexChirho = 0; indexChirho < extraCountChirho; indexChirho++) {
+          marksChirho.push(titleChirho + " " + displayMarkChirho(charChirho));
+        }
+      }
+      return marksChirho;
+    }
+    function suggestedMarkDeltaTextChirho(fromTextChirho, toTextChirho) {
+      const marksChirho = extraNamedMarksChirho(fromTextChirho, toTextChirho);
+      return marksChirho.length > 0 ? marksChirho.join("; ") : "No named typewriter mark additions detected";
+    }
     async function loadValidationsChirho() {
       const responseChirho = await fetch("/api-chirho/validations-chirho");
       const dataChirho = await responseChirho.json();
@@ -1305,6 +1337,8 @@ function pageHtmlChirho(): string {
           const suggestionBoxChirho = elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
             elChirho("div", { textChirho: "WLC suggestion" }),
             elChirho("div", { classChirho: spanTextClassChirho(itemChirho), textChirho: itemChirho.wlcSuggestedTextChirho }),
+            elChirho("div", { textChirho: "Marks to confirm" }),
+            elChirho("div", { classChirho: "mono-chirho", textChirho: suggestedMarkDeltaTextChirho(itemChirho.liveSpanTextChirho, itemChirho.wlcSuggestedTextChirho) }),
             elChirho("div", { textChirho: "Source" }),
             elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.wlcSuggestionSourceChirho ?? "unknown-chirho" }),
             elChirho("div", { textChirho: "After confirmation" }),
