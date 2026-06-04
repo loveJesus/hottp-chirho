@@ -13,9 +13,10 @@
  * regenerated with the supplied text.
  */
 
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
-import { dirname, join } from "path";
+import { existsSync, readFileSync } from "fs";
+import { join } from "path";
 
+import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
   EXPERT_MARKDOWN_PATH_PAIRS_CHIRHO,
@@ -191,13 +192,6 @@ function spanLinePathChirho(parsedChirho: ParsedItemIdChirho): string {
 
 function loadJsonChirho<TChirho>(pathChirho: string): TChirho {
   return JSON.parse(readFileSync(pathChirho, "utf8")) as TChirho;
-}
-
-function writeJsonAtomicChirho(pathChirho: string, valueChirho: unknown): void {
-  mkdirSync(dirname(pathChirho), { recursive: true });
-  const tempPathChirho = `${pathChirho}.tmp-chirho-${process.pid}-${Date.now()}`;
-  writeFileSync(tempPathChirho, `${JSON.stringify(valueChirho, null, 2)}\n`);
-  renameSync(tempPathChirho, pathChirho);
 }
 
 function sortedSpansChirho(lineChirho: SpanLineChirho): SpanChirho[] {

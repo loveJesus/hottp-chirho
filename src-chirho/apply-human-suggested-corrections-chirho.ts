@@ -10,9 +10,10 @@
  * punctuation. Dry-run is the default.
  */
 
-import { mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
-import { dirname, join } from "path";
+import { readFileSync } from "fs";
+import { join } from "path";
 
+import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
   normalizeSpanLineTextFieldsChirho,
@@ -81,13 +82,6 @@ interface ApplyOptionsChirho {
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
   const prefixChirho = `--${nameChirho}=`;
   return argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho))?.slice(prefixChirho.length);
-}
-
-function writeJsonAtomicChirho(pathChirho: string, valueChirho: unknown): void {
-  mkdirSync(dirname(pathChirho), { recursive: true });
-  const tempPathChirho = `${pathChirho}.tmp-chirho-${process.pid}-${Date.now()}`;
-  writeFileSync(tempPathChirho, `${JSON.stringify(valueChirho, null, 2)}\n`);
-  renameSync(tempPathChirho, pathChirho);
 }
 
 function hebrewSkeletonChirho(textChirho: string): string {

@@ -9,9 +9,9 @@
  * rationale, and --certify-exact-chirho.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import { dirname } from "path";
+import { existsSync, readFileSync } from "fs";
 
+import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { assertExplicitReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 import {
@@ -60,8 +60,7 @@ function loadPolicyFileChirho(pathChirho: string): VisionTierExpertConfirmationF
 }
 
 function writePolicyFileChirho(pathChirho: string, fileChirho: VisionTierExpertConfirmationFileChirho): void {
-  mkdirSync(dirname(pathChirho), { recursive: true });
-  writeFileSync(pathChirho, `${JSON.stringify(fileChirho, null, 2)}\n`);
+  writeJsonAtomicChirho(pathChirho, fileChirho);
 }
 
 function assertReviewerRoleMatchesSelectedItemsChirho(selectedItemsChirho: { scriptChirho: string }[], reviewerRoleChirho: string): void {

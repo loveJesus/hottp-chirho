@@ -11,9 +11,9 @@
  * and cannot be accepted in bulk without an explicit override.
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import { dirname } from "path";
+import { existsSync, readFileSync } from "fs";
 
+import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import {
   isMixedSymbolTextChirho,
   isNontrivialSymbolTextChirho,
@@ -68,8 +68,7 @@ function loadPolicyFileChirho(pathChirho: string): LatinSymbolAcceptancePolicyFi
 }
 
 function writePolicyFileChirho(pathChirho: string, fileChirho: LatinSymbolAcceptancePolicyFileChirho): void {
-  mkdirSync(dirname(pathChirho), { recursive: true });
-  writeFileSync(pathChirho, `${JSON.stringify(fileChirho, null, 2)}\n`);
+  writeJsonAtomicChirho(pathChirho, fileChirho);
 }
 
 function mainChirho(): void {

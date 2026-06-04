@@ -9,9 +9,10 @@
  */
 
 import { Database } from "bun:sqlite";
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
-import { dirname, join, relative } from "path";
+import { existsSync, readFileSync } from "fs";
+import { join, relative } from "path";
 
+import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
 export const PASS_C_HUMAN_VALIDATION_BACKUP_PATH_CHIRHO = join(
@@ -126,13 +127,6 @@ function projectRelativePathChirho(pathChirho: string): string {
   return pathChirho.startsWith(PROJECT_ROOT_CHIRHO)
     ? relative(PROJECT_ROOT_CHIRHO, pathChirho)
     : pathChirho;
-}
-
-function writeJsonAtomicChirho(pathChirho: string, valueChirho: unknown): void {
-  mkdirSync(dirname(pathChirho), { recursive: true });
-  const tempPathChirho = `${pathChirho}.tmp-chirho-${process.pid}-${Date.now()}`;
-  writeFileSync(tempPathChirho, `${JSON.stringify(valueChirho, null, 2)}\n`);
-  renameSync(tempPathChirho, pathChirho);
 }
 
 function spanSuggestionChirho(

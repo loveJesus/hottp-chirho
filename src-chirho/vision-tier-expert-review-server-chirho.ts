@@ -8,9 +8,10 @@
  * artifact. Wrong or uncertain items should be skipped rather than confirmed.
  */
 
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
-import { dirname, join, resolve } from "path";
+import { existsSync, readFileSync } from "fs";
+import { join, resolve } from "path";
 
+import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
   explicitReviewerAttributionErrorChirho,
@@ -244,10 +245,7 @@ function loadPolicyFileForWriteChirho(pathChirho: string): VisionTierExpertConfi
 }
 
 function writePolicyFileAtomicChirho(pathChirho: string, fileChirho: VisionTierExpertConfirmationFileChirho & Record<string, unknown>): void {
-  mkdirSync(dirname(pathChirho), { recursive: true });
-  const tempPathChirho = `${pathChirho}.tmp-${process.pid}-${Date.now()}-chirho`;
-  writeFileSync(tempPathChirho, `${JSON.stringify(fileChirho, null, 2)}\n`);
-  renameSync(tempPathChirho, pathChirho);
+  writeJsonAtomicChirho(pathChirho, fileChirho);
 }
 
 function policyIdForItemChirho(itemChirho: VisionTierExpertLiveItemChirho): string {

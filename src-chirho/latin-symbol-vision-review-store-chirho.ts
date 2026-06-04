@@ -10,9 +10,10 @@
  */
 
 import { Database } from "bun:sqlite";
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "fs";
-import { dirname, join } from "path";
+import { existsSync, readFileSync } from "fs";
+import { join } from "path";
 
+import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
   hashTextChirho,
@@ -323,13 +324,6 @@ export function publicLatinSymbolReviewRowsChirho(dbChirho: Database): LatinSymb
     currentTextHashChirho: rowChirho.current_text_hash_chirho,
     updatedAtChirho: rowChirho.updated_at_chirho,
   }));
-}
-
-function writeJsonAtomicChirho(pathChirho: string, valueChirho: unknown): void {
-  mkdirSync(dirname(pathChirho), { recursive: true });
-  const tempPathChirho = `${pathChirho}.tmp-chirho-${process.pid}-${Date.now()}`;
-  writeFileSync(tempPathChirho, `${JSON.stringify(valueChirho, null, 2)}\n`);
-  renameSync(tempPathChirho, pathChirho);
 }
 
 export function writeLatinSymbolReviewBackupChirho(
