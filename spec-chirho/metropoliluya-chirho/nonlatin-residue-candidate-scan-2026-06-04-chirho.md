@@ -3,7 +3,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Non-Latin Residue Candidate Scan Chirho
 
-Generated: 2026-06-04T12:28:33.184Z
+Generated: 2026-06-04T12:37:04.791Z
 
 This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, or apparatus residue inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.
 
@@ -11,9 +11,9 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 
 ## Summary
 
-- Candidate lines: 28
+- Candidate lines: 20
 - High priority: 1
-- Medium priority: 21
+- Medium priority: 13
 - Low priority included: 6
 
 ## Candidates
@@ -28,16 +28,6 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 - Suspicious spans:
   - S8 symbol-chirho: `σ′ 𝔙 𝔗 מְ` (greek-chars-in-non-greek-span-chirho:witness-symbol-review-chirho, hebrew-chars-in-non-hebrew-span-chirho:witness-symbol-review-chirho; neighbors french-chirho / french-chirho)
 
-### medium-chirho score 5: vol 1 p0148 L038
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-1-chirho/page-0148-chirho/line-038-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-1-chirho/page-0148-chirho/line-038-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-1-chirho/page-0148-chirho/line-038-chirho.png)
-- Line text: `1. בְּרִית y semble surdéterminé par un article et un génitif.`
-- Suspicious spans:
-  - S0 french-chirho: `1.` (short-garble-near-nonlatin-chirho; neighbors none / hebrew-chirho)
-
 ### medium-chirho score 5: vol 1 p0151 L015
 
 - Reasons: `line-has-suspicious-span-chirho`
@@ -47,46 +37,6 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 - Line text: `6,20 הָעָם y" [B] M g V S T // lic : Gom`
 - Suspicious spans:
   - S2 french-chirho: `y" [B]` (short-garble-near-nonlatin-chirho; neighbors hebrew-chirho / latin-non-french-chirho)
-
-### medium-chirho score 5: vol 2 p0150 L013
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-2-chirho/page-0150-chirho/line-013-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-2-chirho/page-0150-chirho/line-013-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-2-chirho/page-0150-chirho/line-013-chirho.png)
-- Line text: `de remplacer les deux קֶשֶׁר du vs 12 par קדש , obtenant ainsi pour les vss 12-14 : (12)`
-- Suspicious spans:
-  - S2 french-chirho: `du vs 12 par` (short-garble-near-nonlatin-chirho; neighbors hebrew-chirho / hebrew-chirho)
-
-### medium-chirho score 5: vol 4 p0148 L017
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-4-chirho/page-0148-chirho/line-017-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-4-chirho/page-0148-chirho/line-017-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-4-chirho/page-0148-chirho/line-017-chirho.png)
-- Line text: `20 lire 11 (πεφραγμένος C'est l'une des nombreuses confusions`
-- Suspicious spans:
-  - S0 french-chirho: `20 lire 11` (short-garble-near-nonlatin-chirho; neighbors none / greek-chirho)
-
-### medium-chirho score 5: vol 4 p0152 L024
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-4-chirho/page-0152-chirho/line-024-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-4-chirho/page-0152-chirho/line-024-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-4-chirho/page-0152-chirho/line-024-chirho.png)
-- Line text: `[R]NEB lit בָמוֹת avec le 𝔊 quand elle donne: “who makes me`
-- Suspicious spans:
-  - S0 french-chirho: `[R]NEB lit` (short-garble-near-nonlatin-chirho; neighbors none / hebrew-chirho)
-
-### medium-chirho score 5: vol 5 p0050 L006
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-5-chirho/page-0050-chirho/line-006-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-5-chirho/page-0050-chirho/line-006-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-5-chirho/page-0050-chirho/line-006-chirho.png)
-- Line text: `Berlin Or fol 4 et Urbinates 1 vocalisent וּלְטַטִּית .`
-- Suspicious spans:
-  - S2 french-chirho: `1 vocalisent` (short-garble-near-nonlatin-chirho; neighbors latin-non-french-chirho / hebrew-chirho)
 
 ### medium-chirho score 5: vol 5 p0051 L004
 
@@ -117,16 +67,6 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 - Line text: `à σ′ . C'est: αὐτὸς δὲ πρὸς ἐνόπλων ἀρθήσεται .* La mise au pluriel`
 - Suspicious spans:
   - S1 symbol-chirho: `σ′` (greek-chars-in-non-greek-span-chirho:witness-symbol-review-chirho; neighbors french-chirho / french-chirho)
-
-### medium-chirho score 5: vol 5 p0053 L009
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-5-chirho/page-0053-chirho/line-009-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-5-chirho/page-0053-chirho/line-009-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-5-chirho/page-0053-chirho/line-009-chirho.png)
-- Line text: `יְדַבְּרוּנֵיהּ . Le ms Urbinates 1 donne יְדַבְּרֻנֵיהּ .`
-- Suspicious spans:
-  - S3 french-chirho: `1 donne` (short-garble-near-nonlatin-chirho; neighbors latin-non-french-chirho / hebrew-chirho)
 
 ### medium-chirho score 5: vol 5 p0053 L012
 
@@ -178,16 +118,6 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 - Suspicious spans:
   - S1 symbol-chirho: `σ′` (greek-chars-in-non-greek-span-chirho:witness-symbol-review-chirho; neighbors french-chirho / french-chirho)
 
-### medium-chirho score 5: vol 5 p0054 L023
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-5-chirho/page-0054-chirho/line-023-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-5-chirho/page-0054-chirho/line-023-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-5-chirho/page-0054-chirho/line-023-chirho.png)
-- Line text: `טוֹבִים , la 6 e par אֶלָּא בִּתְפִלָּה et la 7 e par אֶלָּא בְּשַׂק וָאֵפֶר . La Pesiqta`
-- Suspicious spans:
-  - S3 french-chirho: `et la 7 e par` (short-garble-near-nonlatin-chirho; neighbors hebrew-chirho / hebrew-chirho)
-
 ### medium-chirho score 5: vol 5 p0060 L016
 
 - Reasons: `line-has-suspicious-span-chirho`
@@ -197,16 +127,6 @@ Witness sigla and symbol spans can be legitimate mixed-script apparatus; those r
 - Line text: `par les catenæ. Ziegler l'attribue à σ′ sans motiver cela.`
 - Suspicious spans:
   - S3 symbol-chirho: `σ′` (greek-chars-in-non-greek-span-chirho:witness-symbol-review-chirho; neighbors french-chirho / french-chirho)
-
-### medium-chirho score 5: vol 5 p0064 L008
-
-- Reasons: `line-has-suspicious-span-chirho`
-- Span file: `workspace-chirho/spans-chirho/vol-5-chirho/page-0064-chirho/line-008-chirho.json`
-- Scanline: `workspace-chirho/scanlines-chirho/vol-5-chirho/page-0064-chirho/line-008-chirho.png`
-![scanline](../../workspace-chirho/scanlines-chirho/vol-5-chirho/page-0064-chirho/line-008-chirho.png)
-- Line text: `de Ex 16,21 pour cette traduction de לְמָ֣ס . Le verbe لـشي à la 3e forme`
-- Suspicious spans:
-  - S4 french-chirho: `à la 3e forme` (short-garble-near-nonlatin-chirho; neighbors arabic-chirho / none)
 
 ### medium-chirho score 5: vol 5 p0066 L015
 

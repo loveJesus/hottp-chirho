@@ -38,7 +38,7 @@ const GREEK_APPARATUS_LABEL_RE_CHIRHO = /λέγει κύριος/u;
 const APPARATUS_TARGET_RE_CHIRHO = /\.967\s+≠\s+\+/u;
 const SHORT_GARBAGE_RE_CHIRHO = /^(?=.{2,14}$)(?=.*[0-9{}[\]£?+])[\p{L}0-9{}[\]£?+ "'”“.-]+$/u;
 const BENIGN_SHORT_RE_CHIRHO =
-  /^(?:\d{1,2}|[A-Z]|\{[A-Z]\}|\[[A-Z]\]|Cpl|Cpl et rel\.\[\d+\]|rel\.\[\d+\]|\+\s+rel\.\[\d+\]|vel|et|en\s+\d+\s+par|et en\s+\d+\s+par|\+|≠)$/u;
+  /^(?:\d{1,2}|\d{1,2}\.|\d{1,2}\s+lire|\d+\s+vocalisent|\d+\s+donne|[A-Z]|\{[A-Z]\}|\[[A-Z]\]|\[R\]NEB lit|Cpl|Cpl et rel\.\[\d+\]|rel\.\[\d+\]|\+\s+rel\.\[\d+\]|vel|et|du vs \d{1,2} par|en\s+\d+\s+par|et en\s+\d+\s+par|et la \d+\s+e par|à la \d+e forme|\+|≠)$/u;
 
 interface SpanChirho {
   segmentIndexChirho: number;

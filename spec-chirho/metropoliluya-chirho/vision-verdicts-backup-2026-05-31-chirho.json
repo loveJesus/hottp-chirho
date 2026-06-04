@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T12:26:35.788Z",
+  "generatedAtChirho": "2026-06-04T12:35:14.698Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 841,
+  "countChirho": 842,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8413,6 +8413,16 @@
       "scriptChirho": "symbol-chirho",
       "utf8TextChirho": "967 ±",
       "notesChirho": "Cleaned vol 3 p152 line 31 apparatus symbol after scanline review: the print reads `967 ±` between Greek `κρίνειν` and `κρῖσιν`; current OCR stored the plus-minus sign as plain `+`. Stored as symbol-chirho vision-tier for Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 4,
+      "pageChirho": 148,
+      "lineIndexChirho": 17,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "11",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "גָדוּר",
+      "notesChirho": "Recovered vol 4 p148 line 17 hidden Hebrew from the old OCR `11`: scanline reads `20 lire גָדוּר (πεφραγμένος)`. Greek `πεφραγμένος` corroborates the fenced/enclosed reading; exact Hebrew pointing remains Hebrew/WLC expert-confirmation tier."
     }
   ]
 }
