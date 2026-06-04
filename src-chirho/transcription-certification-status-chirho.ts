@@ -557,6 +557,14 @@ interface GenericHumanValidationReviewerRowChirho {
   issueFlagsChirho: string[];
   scriptVerdictChirho: string | null;
   appliedAtChirho: string | null;
+  liveSpanExistsChirho: boolean;
+  liveSpanReadErrorChirho: string | null;
+  liveTextChirho: string | null;
+  liveScriptChirho: string | null;
+  liveProvenanceChirho: string | null;
+  liveHumanValidationIdChirho: number | null;
+  liveHumanValidationVerdictChirho: string | null;
+  liveTextMatchesOriginalChirho: boolean | null;
 }
 
 interface PassCHumanValidationBackupSummaryChirho {
@@ -2030,7 +2038,75 @@ function issueFlagsFromDbTextChirho(issueFlagsTextChirho: string | null): string
   }
 }
 
+interface HumanValidationLiveSpanChirho extends SpanLikeChirho {
+  segmentIndexChirho: number;
+  scriptChirho?: string;
+  utf8TextChirho?: string;
+  provenanceChirho?: string;
+  humanValidationIdChirho?: number;
+  humanValidationVerdictChirho?: string;
+}
+
+interface HumanValidationLiveSpanContextChirho {
+  liveSpanExistsChirho: boolean;
+  liveSpanReadErrorChirho: string | null;
+  liveTextChirho: string | null;
+  liveScriptChirho: string | null;
+  liveProvenanceChirho: string | null;
+  liveHumanValidationIdChirho: number | null;
+  liveHumanValidationVerdictChirho: string | null;
+  liveTextMatchesOriginalChirho: boolean | null;
+}
+
+function liveSpanContextForHumanValidationRowChirho(
+  rowChirho: HumanValidationDbRowChirho
+): HumanValidationLiveSpanContextChirho {
+  const emptyChirho: HumanValidationLiveSpanContextChirho = {
+    liveSpanExistsChirho: false,
+    liveSpanReadErrorChirho: null,
+    liveTextChirho: null,
+    liveScriptChirho: null,
+    liveProvenanceChirho: null,
+    liveHumanValidationIdChirho: null,
+    liveHumanValidationVerdictChirho: null,
+    liveTextMatchesOriginalChirho: null,
+  };
+  const pathChirho = spanLinePathChirho(rowChirho.volume_chirho, rowChirho.page_chirho, rowChirho.line_index_chirho);
+  if (!existsSync(pathChirho)) return emptyChirho;
+  try {
+    const lineChirho = JSON.parse(readFileSync(pathChirho, "utf8")) as SpanLineLikeChirho;
+    const spanChirho = lineChirho.spansChirho?.find(
+      (candidateChirho): candidateChirho is HumanValidationLiveSpanChirho =>
+        candidateChirho.segmentIndexChirho === rowChirho.segment_index_chirho
+    );
+    if (spanChirho === undefined) return emptyChirho;
+    const liveTextChirho =
+      typeof spanChirho.utf8TextChirho === "string"
+        ? normalizeTextForStorageChirho(spanChirho.utf8TextChirho)
+        : null;
+    return {
+      liveSpanExistsChirho: true,
+      liveSpanReadErrorChirho: null,
+      liveTextChirho,
+      liveScriptChirho: typeof spanChirho.scriptChirho === "string" ? spanChirho.scriptChirho : null,
+      liveProvenanceChirho: typeof spanChirho.provenanceChirho === "string" ? spanChirho.provenanceChirho : null,
+      liveHumanValidationIdChirho:
+        typeof spanChirho.humanValidationIdChirho === "number" ? spanChirho.humanValidationIdChirho : null,
+      liveHumanValidationVerdictChirho:
+        typeof spanChirho.humanValidationVerdictChirho === "string" ? spanChirho.humanValidationVerdictChirho : null,
+      liveTextMatchesOriginalChirho:
+        liveTextChirho === null ? null : liveTextChirho === normalizeTextForStorageChirho(rowChirho.original_text_chirho),
+    };
+  } catch (errorChirho) {
+    return {
+      ...emptyChirho,
+      liveSpanReadErrorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+    };
+  }
+}
+
 function genericReviewerRowDetailChirho(rowChirho: HumanValidationDbRowChirho): GenericHumanValidationReviewerRowChirho {
+  const liveSpanContextChirho = liveSpanContextForHumanValidationRowChirho(rowChirho);
   return {
     idChirho: rowChirho.id_chirho,
     locationChirho: rowKeyChirho(rowChirho),
@@ -2045,6 +2121,7 @@ function genericReviewerRowDetailChirho(rowChirho: HumanValidationDbRowChirho): 
     issueFlagsChirho: issueFlagsFromDbTextChirho(rowChirho.issue_flags_chirho),
     scriptVerdictChirho: rowChirho.script_verdict_chirho,
     appliedAtChirho: rowChirho.applied_at_chirho,
+    ...liveSpanContextChirho,
   };
 }
 
@@ -3707,6 +3784,17 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
               : markdownInlineCodeChirho(rowChirho.correctedTextChirho);
             const scriptVerdictChirho = rowChirho.scriptVerdictChirho ?? "none";
             const appliedChirho = rowChirho.appliedAtChirho ?? "not-applied-chirho";
+            const liveTextChirho = rowChirho.liveTextChirho === null
+              ? "none"
+              : markdownInlineCodeChirho(rowChirho.liveTextChirho);
+            const liveTextMatchesOriginalChirho = rowChirho.liveTextMatchesOriginalChirho === null
+              ? "not-applicable-chirho"
+              : String(rowChirho.liveTextMatchesOriginalChirho);
+            const liveSpanStatusChirho = rowChirho.liveSpanReadErrorChirho !== null
+              ? `read-error-chirho ${markdownInlineCodeChirho(rowChirho.liveSpanReadErrorChirho)}`
+              : rowChirho.liveSpanExistsChirho
+                ? "present-chirho"
+                : "missing-chirho";
             const commandChirho = [
               "bun run reattribute-pass-c-human-validations-chirho --",
               `--validation-id-chirho=${rowChirho.idChirho}`,
@@ -3718,6 +3806,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
               `  - id ${rowChirho.idChirho} (${rowChirho.locationChirho}; current reviewer ${rowChirho.reviewerChirho})`,
               `    - Verdict: ${rowChirho.verdictChirho}; applied: ${appliedChirho}; script verdict: ${scriptVerdictChirho}; issue flags: ${flagsChirho}`,
               `    - Original text: ${markdownInlineCodeChirho(rowChirho.originalTextChirho)}; corrected text: ${correctionChirho}`,
+              `    - Live span: ${liveSpanStatusChirho}; text: ${liveTextChirho}; script: ${rowChirho.liveScriptChirho ?? "none-chirho"}; provenance: ${rowChirho.liveProvenanceChirho ?? "none-chirho"}; human validation id/verdict: ${rowChirho.liveHumanValidationIdChirho ?? "none-chirho"}/${rowChirho.liveHumanValidationVerdictChirho ?? "none-chirho"}; text matches original: ${liveTextMatchesOriginalChirho}`,
               `    - Reattribute command: \`${commandChirho}\``,
             ];
           }),
