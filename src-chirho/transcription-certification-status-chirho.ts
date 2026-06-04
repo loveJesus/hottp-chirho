@@ -991,6 +991,8 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     exportReportHasSpanSourceFingerprintChirho &&
     exportReportChirho.spanSourceFileCountChirho === liveSpanSourceFingerprintChirho.fileCountChirho &&
     exportReportChirho.spanSourceFingerprintChirho === liveSpanSourceFingerprintChirho.sha256Chirho;
+  const exportReportUsesD1AuditChirho =
+    exportReportChirho.d1DbPathChirho !== null && exportReportChirho.d1DbPathChirho !== undefined;
   const liveD1AuditDbPathChirho = latestLocalD1PathChirho();
   let liveD1AuditFingerprintChirho: ReturnType<typeof d1AuditFingerprintForDbPathChirho> = null;
   let d1AuditFingerprintReadErrorChirho: string | null = null;
@@ -1429,14 +1431,18 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   ) {
     remainingWorkChirho.push("strict export report span-source fingerprint does not match live span files; regenerate export-markdown-chirho --all --strict");
   }
-  if (d1AuditFingerprintReadErrorChirho !== null) {
+  if (
+    exportReportExistsChirho &&
+    exportReportShapeOkChirho &&
+    exportReportUsesD1AuditChirho &&
+    d1AuditFingerprintReadErrorChirho !== null
+  ) {
     remainingWorkChirho.push(`D1 audit fingerprint scan failed: ${d1AuditFingerprintReadErrorChirho}`);
   }
   if (
     exportReportExistsChirho &&
     exportReportShapeOkChirho &&
-    exportReportChirho.d1DbPathChirho !== null &&
-    exportReportChirho.d1DbPathChirho !== undefined &&
+    exportReportUsesD1AuditChirho &&
     !exportReportHasD1AuditFingerprintChirho
   ) {
     remainingWorkChirho.push("strict export report lacks a D1 audit fingerprint; regenerate export-markdown-chirho --all --strict");
@@ -1444,8 +1450,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   if (
     exportReportExistsChirho &&
     exportReportShapeOkChirho &&
-    exportReportChirho.d1DbPathChirho !== null &&
-    exportReportChirho.d1DbPathChirho !== undefined &&
+    exportReportUsesD1AuditChirho &&
     exportReportHasD1AuditFingerprintChirho &&
     d1AuditFingerprintReadErrorChirho === null &&
     liveD1AuditFingerprintChirho === null
@@ -1455,8 +1460,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   if (
     exportReportExistsChirho &&
     exportReportShapeOkChirho &&
-    exportReportChirho.d1DbPathChirho !== null &&
-    exportReportChirho.d1DbPathChirho !== undefined &&
+    exportReportUsesD1AuditChirho &&
     exportReportHasD1AuditFingerprintChirho &&
     liveD1AuditFingerprintChirho !== null &&
     !exportReportD1AuditFingerprintMatchesCurrentChirho
