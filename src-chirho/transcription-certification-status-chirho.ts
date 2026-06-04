@@ -87,6 +87,13 @@ const RAW_HEBREW_PACK_INDEX_PATH_CHIRHO = join(
   "2026-05-31-chirho",
   "index-chirho.md"
 );
+const RAW_HEBREW_PACK_MANIFEST_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "pass-c-hebrew-human-pack-chirho",
+  "2026-05-31-chirho",
+  "manifest-chirho.json"
+);
 const LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "workspace-chirho",
@@ -187,6 +194,20 @@ interface RawHebrewReportChirho {
   unvalidatedSpanCountChirho?: number;
   validatedTokenCountChirho?: number;
   spansChirho?: RawHebrewSpanChirho[];
+}
+
+interface RawHebrewPackItemChirho {
+  idChirho: string;
+  validationStatusChirho: string;
+  textChirho: string;
+}
+
+interface RawHebrewPackManifestChirho {
+  generatedAtChirho?: string;
+  reportGeneratedAtChirho?: string;
+  sourceFilterChirho?: string;
+  countsChirho?: Record<string, number>;
+  itemsChirho?: RawHebrewPackItemChirho[];
 }
 
 interface ExpertPackManifestChirho {
@@ -316,6 +337,7 @@ interface CertificationStatusChirho {
   artifactsChirho: {
     exportReportExistsChirho: boolean;
     rawHebrewReportExistsChirho: boolean;
+    rawHebrewPackManifestExistsChirho: boolean;
     passCHumanValidationBackupExistsChirho: boolean;
     expertPackManifestExistsChirho: boolean;
     visionTierExpertConfirmationPolicyExistsChirho: boolean;
@@ -324,6 +346,7 @@ interface CertificationStatusChirho {
     latinSymbolAcceptancePolicyExistsChirho: boolean;
     exportReportShapeOkChirho: boolean;
     rawHebrewReportShapeOkChirho: boolean;
+    rawHebrewPackManifestShapeOkChirho: boolean;
     passCHumanValidationBackupShapeOkChirho: boolean;
     expertPackManifestShapeOkChirho: boolean;
     visionTierExpertConfirmationPolicyShapeOkChirho: boolean;
@@ -360,6 +383,12 @@ interface CertificationStatusChirho {
     validatedTokenCountChirho: number;
     sourceCountsChirho: Record<string, number>;
     exportPassCOcrMatchesReportChirho: boolean;
+    packGeneratedAtChirho: string | null;
+    packItemCountChirho: number;
+    packCountMatchesCurrentChirho: boolean;
+    packIdsMatchCurrentChirho: boolean;
+    packTextMatchesCurrentChirho: boolean;
+    packStatusMatchesCurrentChirho: boolean;
   };
   visionTierChirho: {
     d1ReadErrorChirho: string | null;
@@ -507,6 +536,17 @@ function spanKeyChirho(spanChirho: Pick<RawHebrewSpanChirho, "volumeChirho" | "p
     spanChirho.lineIndexChirho,
     spanChirho.segmentIndexChirho,
   ].join(":");
+}
+
+function rawHebrewPackItemIdChirho(
+  spanChirho: Pick<RawHebrewSpanChirho, "volumeChirho" | "pageChirho" | "lineIndexChirho" | "segmentIndexChirho">
+): string {
+  return [
+    `v${spanChirho.volumeChirho}`,
+    `p${String(spanChirho.pageChirho).padStart(4, "0")}`,
+    `l${String(spanChirho.lineIndexChirho).padStart(3, "0")}`,
+    `s${spanChirho.segmentIndexChirho}`,
+  ].join("-");
 }
 
 function rowKeyChirho(rowChirho: Pick<HumanValidationDbRowChirho, "volume_chirho" | "page_chirho" | "line_index_chirho" | "segment_index_chirho">): string {
@@ -772,6 +812,7 @@ function validLatinSymbolReviewIdsChirho(
 function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const exportReportExistsChirho = existsSync(EXPORT_REPORT_PATH_CHIRHO);
   const rawHebrewReportExistsChirho = existsSync(RAW_HEBREW_REPORT_PATH_CHIRHO);
+  const rawHebrewPackManifestExistsChirho = existsSync(RAW_HEBREW_PACK_MANIFEST_PATH_CHIRHO);
   const passCHumanValidationBackupExistsChirho = existsSync(PASS_C_HUMAN_VALIDATION_BACKUP_PATH_CHIRHO);
   const expertPackManifestExistsChirho = existsSync(EXPERT_PACK_MANIFEST_PATH_CHIRHO);
   const visionTierExpertConfirmationPolicyExistsChirho = existsSync(VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO);
@@ -780,6 +821,10 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const latinSymbolAcceptancePolicyExistsChirho = existsSync(LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO);
   const exportReportChirho = readJsonFileChirho<ExportReportChirho>(EXPORT_REPORT_PATH_CHIRHO, {});
   const rawReportChirho = readJsonFileChirho<RawHebrewReportChirho>(RAW_HEBREW_REPORT_PATH_CHIRHO, {});
+  const rawHebrewPackManifestChirho = readJsonFileChirho<RawHebrewPackManifestChirho>(
+    RAW_HEBREW_PACK_MANIFEST_PATH_CHIRHO,
+    {}
+  );
   const passCHumanValidationBackupFileChirho = readPassCHumanValidationBackupFileChirho();
   const expertManifestChirho = readJsonFileChirho<ExpertPackManifestChirho>(EXPERT_PACK_MANIFEST_PATH_CHIRHO, {});
   const visionTierExpertConfirmationFileChirho = readVisionTierExpertConfirmationFileChirho();
@@ -804,6 +849,15 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     !rawHebrewReportExistsChirho ||
     (Array.isArray(rawReportChirho.spansChirho) &&
       typeof rawReportChirho.sourceFilterChirho === "string");
+  const rawHebrewPackManifestShapeOkChirho =
+    !rawHebrewPackManifestExistsChirho ||
+    (Array.isArray(rawHebrewPackManifestChirho.itemsChirho) &&
+      rawHebrewPackManifestChirho.itemsChirho.every(
+        (itemChirho) =>
+          typeof itemChirho.idChirho === "string" &&
+          typeof itemChirho.validationStatusChirho === "string" &&
+          typeof itemChirho.textChirho === "string"
+      ));
   const passCHumanValidationBackupShapeOkResultChirho = passCHumanValidationBackupShapeOkChirho(
     passCHumanValidationBackupFileChirho,
     passCHumanValidationBackupExistsChirho
@@ -829,6 +883,30 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     (latinSymbolReviewBackupFileChirho.schemaVersionChirho === 1 &&
       Array.isArray(latinSymbolReviewBackupFileChirho.reviewsChirho));
   const rawSpansChirho = rawReportChirho.spansChirho ?? [];
+  const rawHebrewPackItemsChirho = rawHebrewPackManifestShapeOkChirho
+    ? rawHebrewPackManifestChirho.itemsChirho ?? []
+    : [];
+  const rawHebrewPackItemsByIdChirho = new Map(
+    rawHebrewPackItemsChirho.map((itemChirho) => [itemChirho.idChirho, itemChirho])
+  );
+  const rawHebrewReportIdsChirho = new Set(rawSpansChirho.map(rawHebrewPackItemIdChirho));
+  const rawHebrewPackCountMatchesCurrentChirho = rawHebrewPackItemsChirho.length === rawSpansChirho.length;
+  const rawHebrewPackIdsMatchCurrentChirho =
+    rawHebrewPackCountMatchesCurrentChirho &&
+    rawHebrewPackItemsChirho.every((itemChirho) => rawHebrewReportIdsChirho.has(itemChirho.idChirho)) &&
+    rawSpansChirho.every((spanChirho) => rawHebrewPackItemsByIdChirho.has(rawHebrewPackItemIdChirho(spanChirho)));
+  const rawHebrewPackTextMatchesCurrentChirho =
+    rawHebrewPackIdsMatchCurrentChirho &&
+    rawSpansChirho.every((spanChirho) => {
+      const packetItemChirho = rawHebrewPackItemsByIdChirho.get(rawHebrewPackItemIdChirho(spanChirho));
+      return packetItemChirho !== undefined && packetItemChirho.textChirho === spanChirho.textChirho;
+    });
+  const rawHebrewPackStatusMatchesCurrentChirho =
+    rawHebrewPackIdsMatchCurrentChirho &&
+    rawSpansChirho.every((spanChirho) => {
+      const packetItemChirho = rawHebrewPackItemsByIdChirho.get(rawHebrewPackItemIdChirho(spanChirho));
+      return packetItemChirho !== undefined && packetItemChirho.validationStatusChirho === spanChirho.validationStatusChirho;
+    });
   const humanValidationRowsChirho = validationRowsChirho(dbPathChirho);
   const humanSummaryChirho = summarizeHumanValidationsChirho(humanValidationRowsChirho, rawSpansChirho);
   const livePendingRawSpansChirho = rawPendingSpansChirho(rawSpansChirho, humanValidationRowsChirho);
@@ -883,6 +961,12 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     sourceCountsChirho: rawReportChirho.sourceCountsChirho ?? {},
     exportPassCOcrMatchesReportChirho:
       structuralChirho.passCOcrHebrewSpanCountChirho === (rawReportChirho.spanCountChirho ?? rawSpansChirho.length),
+    packGeneratedAtChirho: rawHebrewPackManifestChirho.generatedAtChirho ?? null,
+    packItemCountChirho: rawHebrewPackItemsChirho.length,
+    packCountMatchesCurrentChirho: rawHebrewPackCountMatchesCurrentChirho,
+    packIdsMatchCurrentChirho: rawHebrewPackIdsMatchCurrentChirho,
+    packTextMatchesCurrentChirho: rawHebrewPackTextMatchesCurrentChirho,
+    packStatusMatchesCurrentChirho: rawHebrewPackStatusMatchesCurrentChirho,
   };
   const visionTierLiveSnapshotChirho = visionTierExpertLiveSnapshotChirho();
   const visionTierLiveItemsChirho = visionTierLiveSnapshotChirho.itemsChirho;
@@ -1101,6 +1185,9 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   if (!rawHebrewReportExistsChirho) {
     remainingWorkChirho.push("raw Hebrew validation report is missing; run validate-pass-c-hebrew-chirho --all");
   }
+  if (rawSpansChirho.length !== 0 && !rawHebrewPackManifestExistsChirho) {
+    remainingWorkChirho.push("raw Hebrew human review packet is missing; run make-pass-c-hebrew-human-pack-chirho");
+  }
   if (!expertPackManifestExistsChirho) {
     remainingWorkChirho.push("expert confirmation manifest is missing; run make-expert-confirm-pack-chirho");
   }
@@ -1115,6 +1202,9 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   }
   if (rawHebrewReportExistsChirho && !rawHebrewReportShapeOkChirho) {
     remainingWorkChirho.push("raw Hebrew validation report is malformed; regenerate validate-pass-c-hebrew-chirho --all");
+  }
+  if (rawHebrewPackManifestExistsChirho && !rawHebrewPackManifestShapeOkChirho) {
+    remainingWorkChirho.push("raw Hebrew human review packet is malformed; regenerate make-pass-c-hebrew-human-pack-chirho");
   }
   if (passCHumanValidationBackupExistsChirho && !passCHumanValidationBackupShapeOkResultChirho) {
     remainingWorkChirho.push("Pass-C human validation backup is malformed; regenerate backup-pass-c-human-validations-chirho");
@@ -1156,6 +1246,41 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   }
   if (structuralChirho.passCOcrHebrewSpanCountChirho !== 0) {
     remainingWorkChirho.push(`${structuralChirho.passCOcrHebrewSpanCountChirho} raw Pass-C Hebrew span(s) still need human certification`);
+  }
+  if (
+    rawSpansChirho.length !== 0 &&
+    rawHebrewPackManifestExistsChirho &&
+    rawHebrewPackManifestShapeOkChirho &&
+    !rawHebrewPackCountMatchesCurrentChirho
+  ) {
+    remainingWorkChirho.push("raw Hebrew human review packet count does not match current report; regenerate make-pass-c-hebrew-human-pack-chirho");
+  }
+  if (
+    rawSpansChirho.length !== 0 &&
+    rawHebrewPackManifestExistsChirho &&
+    rawHebrewPackManifestShapeOkChirho &&
+    rawHebrewPackCountMatchesCurrentChirho &&
+    !rawHebrewPackIdsMatchCurrentChirho
+  ) {
+    remainingWorkChirho.push("raw Hebrew human review packet item IDs do not match current report; regenerate make-pass-c-hebrew-human-pack-chirho");
+  }
+  if (
+    rawSpansChirho.length !== 0 &&
+    rawHebrewPackManifestExistsChirho &&
+    rawHebrewPackManifestShapeOkChirho &&
+    rawHebrewPackIdsMatchCurrentChirho &&
+    !rawHebrewPackTextMatchesCurrentChirho
+  ) {
+    remainingWorkChirho.push("raw Hebrew human review packet text does not match current report; regenerate make-pass-c-hebrew-human-pack-chirho");
+  }
+  if (
+    rawSpansChirho.length !== 0 &&
+    rawHebrewPackManifestExistsChirho &&
+    rawHebrewPackManifestShapeOkChirho &&
+    rawHebrewPackIdsMatchCurrentChirho &&
+    !rawHebrewPackStatusMatchesCurrentChirho
+  ) {
+    remainingWorkChirho.push("raw Hebrew human review packet validation statuses do not match current report; regenerate make-pass-c-hebrew-human-pack-chirho");
   }
   if (visionTierLiveSnapshotChirho.d1ReadErrorChirho !== null) {
     remainingWorkChirho.push(`D1-derived vision-tier expert item scan failed: ${visionTierLiveSnapshotChirho.d1ReadErrorChirho}`);
@@ -1288,6 +1413,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     artifactsChirho: {
       exportReportExistsChirho,
       rawHebrewReportExistsChirho,
+      rawHebrewPackManifestExistsChirho,
       passCHumanValidationBackupExistsChirho,
       expertPackManifestExistsChirho,
       visionTierExpertConfirmationPolicyExistsChirho,
@@ -1296,6 +1422,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       latinSymbolAcceptancePolicyExistsChirho,
       exportReportShapeOkChirho,
       rawHebrewReportShapeOkChirho,
+      rawHebrewPackManifestShapeOkChirho,
       passCHumanValidationBackupShapeOkChirho: passCHumanValidationBackupShapeOkResultChirho,
       expertPackManifestShapeOkChirho,
       visionTierExpertConfirmationPolicyShapeOkChirho: visionTierConfirmationSummaryChirho.policyFileShapeOkChirho,
@@ -1453,7 +1580,15 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     `- Raw Hebrew report exists: ${statusChirho.artifactsChirho.rawHebrewReportExistsChirho}`,
     `- Raw Hebrew report shape OK: ${statusChirho.artifactsChirho.rawHebrewReportShapeOkChirho}`,
+    `- Raw Hebrew packet manifest exists: ${statusChirho.artifactsChirho.rawHebrewPackManifestExistsChirho}`,
+    `- Raw Hebrew packet manifest shape OK: ${statusChirho.artifactsChirho.rawHebrewPackManifestShapeOkChirho}`,
     `- Report spans: ${statusChirho.rawHebrewChirho.reportSpanCountChirho}`,
+    `- Packet items: ${statusChirho.rawHebrewChirho.packItemCountChirho}`,
+    `- Packet generated: ${statusChirho.rawHebrewChirho.packGeneratedAtChirho ?? "unknown"}`,
+    `- Packet count matches current report: ${statusChirho.rawHebrewChirho.packCountMatchesCurrentChirho}`,
+    `- Packet IDs match current report: ${statusChirho.rawHebrewChirho.packIdsMatchCurrentChirho}`,
+    `- Packet text matches current report: ${statusChirho.rawHebrewChirho.packTextMatchesCurrentChirho}`,
+    `- Packet validation statuses match current report: ${statusChirho.rawHebrewChirho.packStatusMatchesCurrentChirho}`,
     `- Live pending spans: ${statusChirho.rawHebrewChirho.livePendingSpanCountChirho}`,
     `- Tokens: ${statusChirho.rawHebrewChirho.reportTokenCountChirho}`,
     `- Unvalidated spans: ${statusChirho.rawHebrewChirho.unvalidatedSpanCountChirho}`,
