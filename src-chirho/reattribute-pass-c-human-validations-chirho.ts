@@ -71,6 +71,7 @@ function usageChirho(): string {
     "Dry-run is the default. Applying writes append-only superseding rows and refreshes the Pass-C human validation backup.",
     "Only current schema-v2 rows with blank/generic reviewer attribution can be reattributed.",
     "--expected-generic-row-count-chirho is required for --all-generic-chirho with --apply-chirho; it fails closed if the generic row count changed since the status report was read.",
+    "--expected-live-text-hash-chirho is required for every selected row when applying --all-generic-chirho.",
     "--expected-live-text-chirho is optional and only supported for a single --validation-id-chirho row; it fails closed if the live span text has drifted since the status report was read.",
     "--expected-live-text-hash-chirho=<id>:<sha256> may be repeated for exact batch reattribution; when present, every selected row must have a matching live text hash.",
   ].join("\n");
@@ -289,9 +290,16 @@ function parseExpectedLiveTextHashesChirho(argsChirho: string[]): Map<number, st
 
 function assertExpectedLiveTextHashesChirho(
   rowsChirho: PassCHumanValidationRowChirho[],
-  expectedHashesChirho: Map<number, string>
+  expectedHashesChirho: Map<number, string>,
+  allGenericChirho: boolean,
+  applyChirho: boolean
 ): void {
-  if (expectedHashesChirho.size === 0) return;
+  if (expectedHashesChirho.size === 0) {
+    if (allGenericChirho && applyChirho) {
+      throw new Error("--expected-live-text-hash-chirho is required for every row when applying --all-generic-chirho");
+    }
+    return;
+  }
   const rowIdsChirho = new Set(rowsChirho.map((rowChirho) => rowChirho.id_chirho));
   const extraIdsChirho = [...expectedHashesChirho.keys()].filter((idChirho) => !rowIdsChirho.has(idChirho));
   if (extraIdsChirho.length > 0) {
@@ -444,7 +452,7 @@ function mainChirho(): void {
     assertRowsEligibleChirho(rowsChirho, validationIdsChirho);
     assertExpectedGenericRowCountChirho(rowsChirho, allGenericChirho, applyChirho, expectedGenericRowCountChirho);
     assertExpectedLiveTextChirho(rowsChirho, expectedLiveTextChirho, allGenericChirho);
-    assertExpectedLiveTextHashesChirho(rowsChirho, expectedLiveTextHashesChirho);
+    assertExpectedLiveTextHashesChirho(rowsChirho, expectedLiveTextHashesChirho, allGenericChirho, applyChirho);
     if (rowsChirho.length === 0) {
       console.log(`[${MODULE_CHIRHO}] no eligible row(s)`);
       return;

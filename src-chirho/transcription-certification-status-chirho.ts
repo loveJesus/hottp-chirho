@@ -3927,6 +3927,20 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
             ];
           }),
         ];
+  const genericReviewerAllLiveTextHashArgsChirho = statusChirho.humanValidationDbChirho.genericReviewerRowDetailsChirho
+    .flatMap((rowChirho) =>
+      rowChirho.liveTextHashChirho === null
+        ? []
+        : [`--expected-live-text-hash-chirho=${rowChirho.idChirho}:${rowChirho.liveTextHashChirho}`]
+    );
+  const genericReviewerBulkGuardArgsChirho = [
+    `--expected-generic-row-count-chirho=${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho}`,
+    ...genericReviewerAllLiveTextHashArgsChirho,
+  ].join(" ");
+  const genericReviewerBulkGuardLabelChirho =
+    genericReviewerAllLiveTextHashArgsChirho.length === statusChirho.humanValidationDbChirho.genericReviewerRowsChirho
+      ? "count+hash-guarded"
+      : "count-guarded; missing some live hash guards";
   return [
     "<!-- For God so loved the world that he gave his only begotten Son,",
     "that whoever believes in him should not perish but have eternal life. John 3:16 -->",
@@ -4100,8 +4114,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Legacy current rows ignored by apply/certification: ${statusChirho.humanValidationDbChirho.legacyCurrentRowsChirho}`,
     `- Generic reviewer rows: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho}`,
     "- Generic reviewer reattribution path: `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho=<id> --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why this existing row is attributable to that reviewer>' --apply-chirho`",
-    `- Generic reviewer bulk dry-run path (same explicit reviewer only, count-guarded): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho --expected-generic-row-count-chirho=${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho} --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why every current generic row is attributable to that reviewer>'\``,
-    `- Generic reviewer bulk apply path (same explicit reviewer only, count-guarded): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho --expected-generic-row-count-chirho=${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho} --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why every current generic row is attributable to that reviewer>' --apply-chirho\``,
+    `- Generic reviewer bulk dry-run path (same explicit reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why every current generic row is attributable to that reviewer>'\``,
+    `- Generic reviewer bulk apply path (same explicit reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why every current generic row is attributable to that reviewer>' --apply-chirho\``,
     "- Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit reviewer.",
     ...genericReviewerBatchLinesChirho,
     ...genericReviewerDetailLinesChirho,
