@@ -3800,6 +3800,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
               `--validation-id-chirho=${rowChirho.idChirho}`,
               "--reviewer-chirho=<explicit-reviewer-id-chirho>",
               "--rationale-chirho='<why this existing row is attributable to that reviewer>'",
+              ...(rowChirho.liveTextChirho === null
+                ? []
+                : [`--expected-live-text-chirho=${shellSingleQuoteChirho(rowChirho.liveTextChirho)}`]),
               "--apply-chirho",
             ].join(" ");
             return [

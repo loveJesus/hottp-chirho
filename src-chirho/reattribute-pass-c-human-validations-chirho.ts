@@ -10,6 +10,7 @@
  */
 
 import { Database } from "bun:sqlite";
+import { existsSync, readFileSync } from "fs";
 
 import { PROGRESS_DB_PATH_CHIRHO } from "./config-chirho.ts";
 import {
@@ -20,6 +21,8 @@ import {
   assertExplicitReviewerAttributionChirho,
   isGenericReviewerAttributionChirho,
 } from "./reviewer-attribution-chirho.ts";
+import { spanLinePathChirho, type SpanLineLikeChirho, type SpanLikeChirho } from "./span-nfc-chirho.ts";
+import { normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "reattribute-pass-c-human-validations-chirho";
 
@@ -62,11 +65,12 @@ interface ReattributionResultChirho {
 
 function usageChirho(): string {
   return [
-    `Usage: bun run ${MODULE_CHIRHO} -- --validation-id-chirho=<id> [--validation-id-chirho=<id> ...] --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--apply-chirho]`,
+    `Usage: bun run ${MODULE_CHIRHO} -- --validation-id-chirho=<id> [--validation-id-chirho=<id> ...] --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--expected-live-text-chirho=<current-live-text>] [--apply-chirho]`,
     `       bun run ${MODULE_CHIRHO} -- --all-generic-chirho --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--apply-chirho]`,
     "",
     "Dry-run is the default. Applying writes append-only superseding rows and refreshes the Pass-C human validation backup.",
     "Only current schema-v2 rows with blank/generic reviewer attribution can be reattributed.",
+    "--expected-live-text-chirho is optional and only supported for a single --validation-id-chirho row; it fails closed if the live span text has drifted since the status report was read.",
   ].join("\n");
 }
 
@@ -205,6 +209,49 @@ function assertRowsEligibleChirho(rowsChirho: PassCHumanValidationRowChirho[], r
   }
 }
 
+interface LiveSpanForReattributionChirho extends SpanLikeChirho {
+  segmentIndexChirho?: number;
+  utf8TextChirho?: string;
+}
+
+function liveSpanTextForRowChirho(rowChirho: PassCHumanValidationRowChirho): string {
+  const pathChirho = spanLinePathChirho(rowChirho.volume_chirho, rowChirho.page_chirho, rowChirho.line_index_chirho);
+  if (!existsSync(pathChirho)) {
+    throw new Error(`live span line file is missing for validation id ${rowChirho.id_chirho}: ${pathChirho}`);
+  }
+  const lineChirho = JSON.parse(readFileSync(pathChirho, "utf8")) as SpanLineLikeChirho;
+  const spanChirho = lineChirho.spansChirho?.find(
+    (candidateChirho): candidateChirho is LiveSpanForReattributionChirho =>
+      candidateChirho.segmentIndexChirho === rowChirho.segment_index_chirho
+  );
+  if (spanChirho === undefined) {
+    throw new Error(`live span segment is missing for validation id ${rowChirho.id_chirho}`);
+  }
+  if (typeof spanChirho.utf8TextChirho !== "string") {
+    throw new Error(`live span text is missing for validation id ${rowChirho.id_chirho}`);
+  }
+  return normalizeTextForStorageChirho(spanChirho.utf8TextChirho);
+}
+
+function assertExpectedLiveTextChirho(
+  rowsChirho: PassCHumanValidationRowChirho[],
+  expectedLiveTextChirho: string | undefined,
+  allGenericChirho: boolean
+): void {
+  if (expectedLiveTextChirho === undefined) return;
+  if (allGenericChirho || rowsChirho.length !== 1) {
+    throw new Error("--expected-live-text-chirho is only supported with exactly one --validation-id-chirho row");
+  }
+  const rowChirho = rowsChirho[0]!;
+  const expectedChirho = normalizeTextForStorageChirho(expectedLiveTextChirho);
+  const liveChirho = liveSpanTextForRowChirho(rowChirho);
+  if (liveChirho !== expectedChirho) {
+    throw new Error(
+      `validation id ${rowChirho.id_chirho} live text drifted; expected ${JSON.stringify(expectedChirho)}, current ${JSON.stringify(liveChirho)}`
+    );
+  }
+}
+
 function reattributionNoteChirho(
   existingNotesChirho: string | null,
   previousReviewerChirho: string,
@@ -301,6 +348,7 @@ function mainChirho(): void {
   const reviewerChirho = requiredArgValueChirho(argsChirho, "reviewer-chirho");
   assertExplicitReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
   const rationaleChirho = requiredArgValueChirho(argsChirho, "rationale-chirho");
+  const expectedLiveTextChirho = parseArgValueChirho(argsChirho, "expected-live-text-chirho");
   const dbPathChirho = parseArgValueChirho(argsChirho, "db-chirho") ?? PROGRESS_DB_PATH_CHIRHO;
   const backupPathChirho =
     parseArgValueChirho(argsChirho, "backup-chirho") ?? PASS_C_HUMAN_VALIDATION_BACKUP_PATH_CHIRHO;
@@ -311,6 +359,7 @@ function mainChirho(): void {
       ? loadGenericRowsChirho(dbChirho)
       : loadRowsByIdChirho(dbChirho, validationIdsChirho);
     assertRowsEligibleChirho(rowsChirho, validationIdsChirho);
+    assertExpectedLiveTextChirho(rowsChirho, expectedLiveTextChirho, allGenericChirho);
     if (rowsChirho.length === 0) {
       console.log(`[${MODULE_CHIRHO}] no eligible row(s)`);
       return;
