@@ -1030,8 +1030,11 @@ function pageHtmlChirho(): string {
     .issue-option-chirho { display: flex; gap: 7px; align-items: center; border: 1px solid #d6d9dd; padding: 8px; min-height: 38px; box-sizing: border-box; cursor: pointer; }
     .issue-option-chirho input { margin: 0; }
     .issue-option-chirho:has(input:checked) { border-color: #bd7a1b; background: #fff7e8; }
+    .clean-certify-option-chirho { display: flex; gap: 8px; align-items: flex-start; border: 1px solid #b8d5ca; background: #f2fbf7; padding: 10px; font-size: 13px; line-height: 1.35; cursor: pointer; }
+    .clean-certify-option-chirho input { width: auto; margin: 3px 0 0; }
     .actions-chirho { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
     .actions-chirho button { border: 1px solid #aab1b9; background: #fff; padding: 10px; cursor: pointer; min-height: 42px; }
+    .actions-chirho button:disabled { cursor: not-allowed; opacity: 0.55; }
     .actions-chirho button:hover { background: #edf1f4; }
     .continue-chirho { color: #116149; border-color: #499b7f !important; font-weight: 700; }
     .undo-chirho { color: #59636f; }
@@ -1280,6 +1283,12 @@ function pageHtmlChirho(): string {
     }
     function pendingReviewWouldBeCleanChirho(itemChirho) {
       return !pendingReviewHasEditedTextChirho(itemChirho) && pendingReviewIssueFlagsChirho().length === 0;
+    }
+    function cleanReviewAcknowledgedChirho() {
+      return document.getElementById("certify-clean-chirho")?.checked === true;
+    }
+    function cleanReviewCanSubmitChirho(itemChirho) {
+      return !pendingReviewWouldBeCleanChirho(itemChirho) || cleanReviewAcknowledgedChirho();
     }
     function cleanReviewActionTextChirho(itemChirho) {
       return pendingReviewWouldBeCleanChirho(itemChirho) ? "Accept as clean" : "Save issue";
@@ -1560,18 +1569,26 @@ function pageHtmlChirho(): string {
 
       const actionsChirho = elChirho("div", { classChirho: "actions-chirho" });
       if (reviewStateFilterChirho === "pending-chirho") {
+        const cleanCertifyInputChirho = elChirho("input", { id: "certify-clean-chirho", type: "checkbox" });
+        sideChirho.appendChild(elChirho("label", { classChirho: "clean-certify-option-chirho", for: "certify-clean-chirho" }, [
+          cleanCertifyInputChirho,
+          document.createTextNode("I checked the crop and full line against the print; if no issue boxes are checked and the text is unchanged, this exact span is intentionally reviewed clean.")
+        ]));
         sideChirho.appendChild(elChirho("div", {
           classChirho: "warning-chirho",
-          textChirho: "No checked issue boxes and no edited text saves a reviewed-clean row for this exact span. Check an issue box or edit the text if anything is wrong, split, missing, extra, or uncertain."
+          textChirho: "A clean save requires the checkbox above. Check an issue box or edit the text if anything is wrong, split, lumped, missing, extra, or uncertain."
         }));
         const continueButtonChirho = elChirho("button", { classChirho: "continue-chirho", textChirho: cleanReviewActionTextChirho(itemChirho) });
         const updateContinueButtonChirho = () => {
           continueButtonChirho.textContent = cleanReviewActionTextChirho(itemChirho);
+          continueButtonChirho.disabled = !cleanReviewCanSubmitChirho(itemChirho);
         };
         editChirho.addEventListener("input", updateContinueButtonChirho);
         for (const checkboxChirho of issueGridChirho.querySelectorAll(".issue-checkbox-chirho")) {
           checkboxChirho.addEventListener("change", updateContinueButtonChirho);
         }
+        cleanCertifyInputChirho.addEventListener("change", updateContinueButtonChirho);
+        updateContinueButtonChirho();
         continueButtonChirho.addEventListener("click", () => submitReviewChirho());
         actionsChirho.appendChild(continueButtonChirho);
         const undoButtonChirho = elChirho("button", { classChirho: "undo-chirho", textChirho: "Undo last" });
@@ -1597,10 +1614,21 @@ function pageHtmlChirho(): string {
       const issueFlagsChirho = Array.from(document.querySelectorAll(".issue-checkbox-chirho:checked"))
         .map((inputChirho) => inputChirho.value);
       const scriptVerdictChirho = document.querySelector("input[name='script-verdict-chirho']:checked")?.value ?? "";
+      if (pendingReviewWouldBeCleanChirho(itemChirho) && !cleanReviewAcknowledgedChirho()) {
+        setStatusChirho("Check the clean certification box before accepting as clean");
+        return;
+      }
       const responseChirho = await fetch("/api-chirho/submit-chirho", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ keyChirho: itemChirho.keyChirho, issueFlagsChirho, correctedTextChirho, notesChirho, scriptVerdictChirho })
+        body: JSON.stringify({
+          keyChirho: itemChirho.keyChirho,
+          issueFlagsChirho,
+          correctedTextChirho,
+          notesChirho,
+          scriptVerdictChirho,
+          certifyCleanChirho: cleanReviewAcknowledgedChirho()
+        })
       });
       const dataChirho = await responseChirho.json();
       if (!dataChirho.okChirho) {
@@ -1736,6 +1764,7 @@ Bun.serve({
         scriptVerdictChirho?: unknown;
         correctedTextChirho: string;
         notesChirho: string;
+        certifyCleanChirho?: unknown;
       };
       const itemChirho = queueByKeyChirho.get(bodyChirho.keyChirho);
       if (!itemChirho) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown key" }, 404);
@@ -1765,7 +1794,14 @@ Bun.serve({
           errorChirho: "Unknown-script review needs a script verdict or at least one issue box",
         }, 400);
       }
-      const verdictChirho = issueFlagsChirho.length === 0 && !hasEditedTextChirho
+      const cleanReviewChirho = issueFlagsChirho.length === 0 && !hasEditedTextChirho;
+      if (cleanReviewChirho && bodyChirho.certifyCleanChirho !== true) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: "certifyCleanChirho acknowledgement is required for reviewed-clean",
+        }, 400);
+      }
+      const verdictChirho = cleanReviewChirho
         ? "reviewed-clean-chirho"
         : "reviewed-issues-chirho";
       const correctedTextChirho = hasEditedTextChirho ? editedTextChirho : null;
