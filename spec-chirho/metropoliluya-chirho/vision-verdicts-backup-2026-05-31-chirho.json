@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T13:31:38.093Z",
+  "generatedAtChirho": "2026-06-04T13:46:43.397Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 861,
+  "countChirho": 869,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -1770,9 +1770,19 @@
       "lineIndexChirho": 34,
       "segmentIndexChirho": 0,
       "garbleTextChirho": "homéotéleuton -#./ ['(3-25G/...;-.] '(3-2Q(",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "homéotéleuton:",
+      "notesChirho": "Split from old mixed Greek span `homéotéleuton: πρὸς [ἐνόπλους ... ἀπὸ] ἐνόπλων`: French apparatus label remains in Latin/French proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 53,
+      "lineIndexChirho": 34,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "homéotéleuton -#./ ['(3-25G/...;-.] '(3-2Q(",
       "scriptChirho": "greek-chirho",
-      "utf8TextChirho": "homéotéleuton: πρὸς [ἐνόπλους ... ἀπὸ] ἐνόπλων",
-      "notesChirho": "Mixed span: French lead word 'homeoteleuton' + Greek pros [enoplous ... apo] enoplon; confirmed L34 image"
+      "utf8TextChirho": "πρὸς [ἐνόπλους ... ἀπὸ] ἐνόπλων",
+      "notesChirho": "Split from old mixed Greek span `homéotéleuton: πρὸς [ἐνόπλους ... ἀπὸ] ἐνόπλων`: Greek phrase remains vision-tier for Greek expert confirmation."
     },
     {
       "volumeChirho": 5,
@@ -2400,9 +2410,19 @@
       "lineIndexChirho": 13,
       "segmentIndexChirho": 1,
       "garbleTextChirho": "bilittère NI",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "bilittère",
+      "notesChirho": "Split from old mixed Hebrew span `bilittère צן`: French descriptor remains in Latin/French proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 55,
+      "lineIndexChirho": 13,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "bilittère NI",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "bilittère צן",
-      "notesChirho": "Span contains French word bilittère followed by Hebrew biliteral root צן (tsade + nun sofit, no niqqud); image shows 'sens du bilittère צן'"
+      "utf8TextChirho": "צן",
+      "notesChirho": "Split from old mixed Hebrew span `bilittère צן`: Hebrew biliteral root remains vision-tier for Hebrew/WLC expert confirmation."
     },
     {
       "volumeChirho": 5,
@@ -5890,19 +5910,39 @@
       "lineIndexChirho": 24,
       "segmentIndexChirho": 2,
       "garbleTextChirho": "ketib Ä4",
-      "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "ketib לֹא",
-      "notesChirho": "Mixed: Latin term 'ketib' + recovered Hebrew ketib form לֹא."
+      "scriptChirho": "latin-non-french-chirho",
+      "utf8TextChirho": "ketib",
+      "notesChirho": "Split from old mixed Hebrew span `ketib לֹא`: ketib label remains in Latin/symbol proofing."
     },
     {
       "volumeChirho": 5,
       "pageChirho": 65,
       "lineIndexChirho": 24,
-      "segmentIndexChirho": 4,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "ketib Ä4",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "לֹא",
+      "notesChirho": "Split from old mixed Hebrew span `ketib לֹא`: Hebrew ketib form remains vision-tier for Hebrew/WLC expert confirmation."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 65,
+      "lineIndexChirho": 24,
+      "segmentIndexChirho": 5,
+      "garbleTextChirho": "qeré ˚4",
+      "scriptChirho": "latin-non-french-chirho",
+      "utf8TextChirho": "qeré",
+      "notesChirho": "Split from old mixed Hebrew span `qeré לוֹ`: qeré label remains in Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 65,
+      "lineIndexChirho": 24,
+      "segmentIndexChirho": 6,
       "garbleTextChirho": "qeré ˚4",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "qeré לוֹ",
-      "notesChirho": "Mixed: French/Latin term 'qeré' + recovered Hebrew qere form לוֹ."
+      "utf8TextChirho": "לוֹ",
+      "notesChirho": "Split from old mixed Hebrew span `qeré לוֹ`: Hebrew qeré form remains vision-tier for Hebrew/WLC expert confirmation."
     },
     {
       "volumeChirho": 5,
@@ -6360,9 +6400,19 @@
       "lineIndexChirho": 4,
       "segmentIndexChirho": 3,
       "garbleTextChirho": "qeré Ä4",
+      "scriptChirho": "latin-non-french-chirho",
+      "utf8TextChirho": "qeré",
+      "notesChirho": "Split from old mixed Hebrew span `qeré לֹא`: qeré label remains in Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 67,
+      "lineIndexChirho": 4,
+      "segmentIndexChirho": 4,
+      "garbleTextChirho": "qeré Ä4",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "qeré לֹא",
-      "notesChirho": "Latin label 'qeré' followed by Hebrew word לֹא (lamed-holam-alef); span contains mixed Latin+Hebrew"
+      "utf8TextChirho": "לֹא",
+      "notesChirho": "Split from old mixed Hebrew span `qeré לֹא`: Hebrew qeré form remains vision-tier for Hebrew/WLC expert confirmation."
     },
     {
       "volumeChirho": 5,
@@ -6370,19 +6420,39 @@
       "lineIndexChirho": 5,
       "segmentIndexChirho": 1,
       "garbleTextChirho": "ketib 14",
-      "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "ketib לֹא",
-      "notesChirho": "Latin label 'ketib' followed by Hebrew לֹא; orientaux ketib form"
+      "scriptChirho": "latin-non-french-chirho",
+      "utf8TextChirho": "ketib",
+      "notesChirho": "Split from old mixed Hebrew span `ketib לֹא`: ketib label remains in Latin/symbol proofing."
     },
     {
       "volumeChirho": 5,
       "pageChirho": 67,
       "lineIndexChirho": 5,
-      "segmentIndexChirho": 3,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "ketib 14",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "לֹא",
+      "notesChirho": "Split from old mixed Hebrew span `ketib לֹא`: Hebrew ketib form remains vision-tier for Hebrew/WLC expert confirmation."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 67,
+      "lineIndexChirho": 5,
+      "segmentIndexChirho": 4,
+      "garbleTextChirho": "qeré 54",
+      "scriptChirho": "latin-non-french-chirho",
+      "utf8TextChirho": "qeré",
+      "notesChirho": "Split from old mixed Hebrew span `qeré לֹו`: qeré label remains in Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 67,
+      "lineIndexChirho": 5,
+      "segmentIndexChirho": 5,
       "garbleTextChirho": "qeré 54",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "qeré לֹו",
-      "notesChirho": "Latin label 'qeré' followed by Hebrew לֹו (lamed-holam-vav); orientaux qeré form"
+      "utf8TextChirho": "לֹו",
+      "notesChirho": "Split from old mixed Hebrew span `qeré לֹו`: Hebrew qeré form remains vision-tier for Hebrew/WLC expert confirmation."
     },
     {
       "volumeChirho": 5,
@@ -6400,9 +6470,19 @@
       "lineIndexChirho": 6,
       "segmentIndexChirho": 3,
       "garbleTextChirho": "qeré 54",
+      "scriptChirho": "latin-non-french-chirho",
+      "utf8TextChirho": "qeré",
+      "notesChirho": "Split from old mixed Hebrew span `qeré לֹו`: qeré label remains in Latin/symbol proofing."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 67,
+      "lineIndexChirho": 6,
+      "segmentIndexChirho": 4,
+      "garbleTextChirho": "qeré 54",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "qeré לֹו",
-      "notesChirho": "Latin label 'qeré' followed by Hebrew לֹו; occidentaux form"
+      "utf8TextChirho": "לֹו",
+      "notesChirho": "Split from old mixed Hebrew span `qeré לֹו`: Hebrew qeré form remains vision-tier for Hebrew/WLC expert confirmation."
     },
     {
       "volumeChirho": 5,
