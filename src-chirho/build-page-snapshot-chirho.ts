@@ -15,7 +15,8 @@
 import { Database as BunDbChirho } from "bun:sqlite";
 import { fileURLToPath } from "node:url";
 import path from "node:path";
-import { mkdirSync, writeFileSync } from "node:fs";
+
+import { writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 
 const __filenameChirho = fileURLToPath(import.meta.url);
 const __dirnameChirho = path.dirname(__filenameChirho);
@@ -250,8 +251,6 @@ async function mainChirho(): Promise<void> {
 
   console.log(`[build-page-snapshot] building snapshots for ${pagesChirho.length} pages`);
 
-  mkdirSync(SNAPSHOT_DIR_CHIRHO, { recursive: true });
-
   // D1 caps single statements ~100KB; snapshot JSON exceeds that. Local table
   // still stores the body (cheap, useful for offline editing), but we also
   // emit JSON files to disk so sync-to-cloud can upload to R2 (which has no
@@ -271,7 +270,7 @@ async function mainChirho(): Promise<void> {
     const { underlayJsonChirho, wordCountChirho, segmentCountChirho } = buildSnapshotJsonChirho(dbChirho, pageRowChirho);
     const r2KeyChirho = `snapshots-chirho/vol-${pageRowChirho.volume_number_chirho}-page-${String(pageRowChirho.page_number_chirho).padStart(4, "0")}-chirho.json`;
     const localFilePathChirho = path.join(SNAPSHOT_DIR_CHIRHO, `vol-${pageRowChirho.volume_number_chirho}-page-${String(pageRowChirho.page_number_chirho).padStart(4, "0")}-chirho.json`);
-    writeFileSync(localFilePathChirho, underlayJsonChirho, "utf8");
+    writeTextAtomicChirho(localFilePathChirho, underlayJsonChirho);
     upsertStmtChirho.run(pageRowChirho.id_chirho, underlayJsonChirho, r2KeyChirho);
     totalWordsChirho += wordCountChirho;
     totalSegsChirho += segmentCountChirho;

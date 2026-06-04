@@ -13,8 +13,9 @@
 //   bun src-chirho/glyph-spine-editor-chirho.ts  ->  http://localhost:8768/
 
 import { Database } from "bun:sqlite";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
-import { join, dirname } from "path";
+import { existsSync, readFileSync } from "fs";
+import { join } from "path";
+import { writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { parseGlyphKeyChirho } from "./glyph-key-chirho.ts";
 
@@ -503,8 +504,7 @@ Bun.serve({
           keyPartsChirho.cpDirChirho,
           keyPartsChirho.fileChirho.replace(/\.png$/, ".json"),
         );
-        mkdirSync(dirname(sidecarChirho), { recursive: true });
-        writeFileSync(
+        writeTextAtomicChirho(
           sidecarChirho,
           JSON.stringify(
             {
