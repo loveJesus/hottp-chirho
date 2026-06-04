@@ -110,6 +110,12 @@ const RAW_HEBREW_PACK_DIR_CHIRHO = join(
 );
 const RAW_HEBREW_PACK_INDEX_PATH_CHIRHO = join(RAW_HEBREW_PACK_DIR_CHIRHO, "index-chirho.md");
 const RAW_HEBREW_PACK_MANIFEST_PATH_CHIRHO = join(RAW_HEBREW_PACK_DIR_CHIRHO, "manifest-chirho.json");
+const RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "codex-pre-review-raw-hebrew-2026-06-04-chirho.md"
+);
 const LATIN_SYMBOL_PACK_DIR_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "workspace-chirho",
@@ -2963,6 +2969,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw Hebrew saved issue lane: ${rawHebrewReviewUrlChirho(undefined, "saved-issues-chirho")} (${statusChirho.humanValidationDbChirho.rawQueueIssueRowsChirho} read-only current issue row(s))`,
     "- Raw Hebrew pending counts match the live validator; report totals include already-saved rows.",
     `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
+    `- Raw Hebrew pre-review notes: \`${relativeProjectPathChirho(RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO)}\` (non-certifying; current/superseded notes only)`,
     `- Latin/symbol live reviewer: http://localhost:8770/ (${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} remaining decision(s); command: \`bun run latin-symbol-vision-review-chirho\`${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolAllChirho)})`,
     `- Latin/symbol French lane: ${latinSymbolReviewUrlChirho("french-chirho")} (${pendingLatinSymbolScriptCountChirho("french-chirho")} pending of ${latinSymbolFrenchCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolFrenchChirho)})`,
     `- Latin/symbol non-French lane: ${latinSymbolReviewUrlChirho("latin-non-french-chirho")} (${pendingLatinSymbolScriptCountChirho("latin-non-french-chirho")} pending of ${latinSymbolNonFrenchCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolNonFrenchChirho)})`,
