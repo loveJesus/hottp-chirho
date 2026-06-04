@@ -371,6 +371,15 @@ function htmlChirho(): string {
       return reviewerAttributionErrorChirho(currentReviewerChirho()) === null &&
         (!currentReviewWouldBeCleanChirho() || cleanAcceptAcknowledgedChirho());
     }
+    function latinSymbolReviewActionMessagesChirho() {
+      const messagesChirho = [];
+      const reviewerErrorChirho = reviewerAttributionErrorChirho(currentReviewerChirho());
+      if (reviewerErrorChirho !== null) messagesChirho.push(reviewerErrorChirho);
+      if (currentReviewWouldBeCleanChirho() && !cleanAcceptAcknowledgedChirho()) {
+        messagesChirho.push("clean acceptance checkbox required");
+      }
+      return messagesChirho;
+    }
     function reviewActionTextChirho() {
       return currentIssueFlagsChirho().length === 0 ? "Accept as clean" : "Save issue";
     }
@@ -483,13 +492,24 @@ function htmlChirho(): string {
       const notesChirho = elChirho("textarea", { classChirho: "notes-chirho", id: "notes-chirho" });
       notesChirho.value = reviewChirho?.notesChirho ?? "";
       formChirho.appendChild(notesChirho);
+      const actionStatusChirho = elChirho("div", { classChirho: "label-chirho action-status-chirho", textChirho: "" });
+      formChirho.appendChild(actionStatusChirho);
       const actionsChirho = elChirho("div", { classChirho: "actions-chirho" });
       const continueChirho = elChirho("button", { classChirho: "continue-chirho", type: "button", textChirho: reviewActionTextChirho() });
       const updateReviewerStatusChirho = () => {
         reviewerStatusChirho.textContent = reviewerAttributionErrorChirho(currentReviewerChirho()) ?? "Reviewer attribution OK.";
       };
+      const updateActionStatusChirho = () => {
+        const messagesChirho = latinSymbolReviewActionMessagesChirho();
+        actionStatusChirho.textContent = messagesChirho.length === 0
+          ? (currentReviewWouldBeCleanChirho()
+            ? "Clean acceptance requirements are currently satisfied."
+            : "Issue save requirements are currently satisfied.")
+          : "Action requirements: " + messagesChirho.join("; ") + ".";
+      };
       const updateContinueButtonChirho = () => {
         updateReviewerStatusChirho();
+        updateActionStatusChirho();
         continueChirho.textContent = reviewActionTextChirho();
         continueChirho.disabled = !currentReviewCanSubmitChirho();
       };
