@@ -65,6 +65,7 @@ import {
   type SpanLikeChirho,
 } from "./span-nfc-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
+import { strictBlindScannerSourceFingerprintChirho } from "./strict-blind-scanner-source-fingerprint-chirho.ts";
 import { normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 import {
   expectedVisionTierReviewerRoleChirho,
@@ -1563,12 +1564,8 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     nonNfcSpanTextFieldsChirho.map((findingChirho) => findingChirho.relativePathChirho)
   );
   const strictBlindScannerSpanSourceFingerprintChirho = sourceFingerprintForPathsChirho(scanSpanLinePathsChirho());
-  const hiddenHebrewScannerSourceFingerprintChirho = sourceFingerprintForPathsChirho([
-    HIDDEN_HEBREW_CANDIDATE_SCANNER_PATH_CHIRHO,
-  ]);
-  const nonLatinResidueScannerSourceFingerprintChirho = sourceFingerprintForPathsChirho([
-    NON_LATIN_RESIDUE_CANDIDATE_SCANNER_PATH_CHIRHO,
-  ]);
+  const hiddenHebrewScannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(HIDDEN_HEBREW_CANDIDATE_SCANNER_PATH_CHIRHO);
+  const nonLatinResidueScannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(NON_LATIN_RESIDUE_CANDIDATE_SCANNER_PATH_CHIRHO);
   const exportReportShapeOkChirho =
     !exportReportExistsChirho ||
     (typeof exportReportChirho.strictPassedChirho === "boolean" &&

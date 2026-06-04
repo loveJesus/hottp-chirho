@@ -18,6 +18,7 @@ import { PROJECT_ROOT_CHIRHO } from "../../src-chirho/config-chirho.ts";
 import { renderSpanLineTextChirho } from "../../src-chirho/span-line-text-chirho.ts";
 import { sourceFingerprintForPathsChirho, type SourceFingerprintChirho } from "../../src-chirho/source-fingerprint-chirho.ts";
 import { scanSpanLinePathsChirho } from "../../src-chirho/span-nfc-chirho.ts";
+import { strictBlindScannerSourceFingerprintChirho } from "../../src-chirho/strict-blind-scanner-source-fingerprint-chirho.ts";
 import { normalizeTextForStorageChirho } from "../../src-chirho/text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "find-nonlatin-residue-candidates-2026-06-04-chirho";
@@ -296,7 +297,7 @@ function mainChirho(): void {
   const reportPathChirho = reportPathArgChirho?.slice("--out-chirho=".length) ?? DEFAULT_REPORT_PATH_CHIRHO;
   const spanLinePathsChirho = scanSpanLinePathsChirho();
   const spanSourceFingerprintChirho = sourceFingerprintForPathsChirho(spanLinePathsChirho);
-  const scannerSourceFingerprintChirho = sourceFingerprintForPathsChirho([fileURLToPath(import.meta.url)]);
+  const scannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(fileURLToPath(import.meta.url));
   const candidatesChirho = spanLinePathsChirho
     .map(candidateForLineChirho)
     .filter((candidateChirho): candidateChirho is CandidateChirho => candidateChirho !== null)
