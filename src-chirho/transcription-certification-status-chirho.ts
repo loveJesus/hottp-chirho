@@ -463,6 +463,7 @@ interface HumanValidationDbRowChirho {
   verdict_chirho: string;
   certify_clean_chirho: number;
   applied_at_chirho: string | null;
+  reviewer_chirho: string;
   schema_version_chirho: number;
 }
 
@@ -530,6 +531,7 @@ interface HumanValidationSummaryChirho {
   rawQueueIssueRowsChirho: number;
   rawQueueAppliedRowsChirho: number;
   legacyCurrentRowsChirho: number;
+  genericReviewerRowsChirho: number;
 }
 
 interface PassCHumanValidationBackupSummaryChirho {
@@ -2007,6 +2009,7 @@ function validationRowsChirho(dbPathChirho: string): HumanValidationDbRowChirho[
     const hasCertifyCleanChirho = columnsChirho.has("certify_clean_chirho");
     const hasOriginalTextChirho = columnsChirho.has("original_text_chirho");
     const hasOriginalTextHashChirho = columnsChirho.has("original_text_hash_chirho");
+    const hasReviewerChirho = columnsChirho.has("reviewer_chirho");
     return dbChirho
       .query(`
         SELECT volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
@@ -2015,6 +2018,7 @@ function validationRowsChirho(dbPathChirho: string): HumanValidationDbRowChirho[
                verdict_chirho,
                ${hasCertifyCleanChirho ? "certify_clean_chirho" : "0 AS certify_clean_chirho"},
                ${hasAppliedAtChirho ? "applied_at_chirho" : "NULL AS applied_at_chirho"},
+               ${hasReviewerChirho ? "reviewer_chirho" : "'unknown-reviewer-chirho' AS reviewer_chirho"},
                ${hasSchemaVersionChirho ? "schema_version_chirho" : "1 AS schema_version_chirho"}
           FROM pass_c_human_validations_chirho
          WHERE is_current_chirho = 1
@@ -2136,6 +2140,9 @@ function summarizeHumanValidationsChirho(
   const rawKeysChirho = new Set(rawSpansChirho.map(spanKeyChirho));
   const schema2RowsChirho = rowsChirho.filter((rowChirho) => rowChirho.schema_version_chirho >= 2);
   const rawRowsChirho = schema2RowsChirho.filter((rowChirho) => rawKeysChirho.has(rowKeyChirho(rowChirho)));
+  const genericReviewerRowsChirho = schema2RowsChirho.filter(
+    (rowChirho) => rowChirho.reviewer_chirho.trim().length === 0 || rowChirho.reviewer_chirho === "human-chirho"
+  ).length;
   return {
     currentSchema2RowsChirho: schema2RowsChirho.length,
     reviewedCleanRowsChirho: schema2RowsChirho.filter((rowChirho) => rowChirho.verdict_chirho === "reviewed-clean-chirho").length,
@@ -2146,6 +2153,7 @@ function summarizeHumanValidationsChirho(
     rawQueueIssueRowsChirho: rawRowsChirho.filter((rowChirho) => rowChirho.verdict_chirho === "reviewed-issues-chirho").length,
     rawQueueAppliedRowsChirho: rawRowsChirho.filter((rowChirho) => rowChirho.applied_at_chirho !== null).length,
     legacyCurrentRowsChirho: rowsChirho.filter((rowChirho) => rowChirho.schema_version_chirho < 2).length,
+    genericReviewerRowsChirho,
   };
 }
 
@@ -3266,6 +3274,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       `${passCHumanValidationLocalRowsMissingFromBackupChirho} local Pass-C human validation row(s) need backup before certification can complete on a fresh checkout`
     );
   }
+  if (humanSummaryChirho.genericReviewerRowsChirho !== 0) {
+    remainingWorkChirho.push(
+      `${humanSummaryChirho.genericReviewerRowsChirho} current Pass-C human validation row(s) use blank/generic reviewer attribution; re-review or reattribute explicitly before certification`
+    );
+  }
   const reviewStartLinksChirho: Record<string, string | null> = {
     rawHebrewAllChirho: rawHebrewReviewStartUrlChirho(livePendingRawSpansChirho),
     rawHebrewUnvalidatedChirho: rawHebrewReviewStartUrlChirho(livePendingRawSpansChirho, "unvalidated-chirho"),
@@ -3748,6 +3761,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw queue issue rows: ${statusChirho.humanValidationDbChirho.rawQueueIssueRowsChirho}`,
     `- Raw queue applied rows: ${statusChirho.humanValidationDbChirho.rawQueueAppliedRowsChirho}`,
     `- Legacy current rows ignored by apply/certification: ${statusChirho.humanValidationDbChirho.legacyCurrentRowsChirho}`,
+    `- Generic reviewer rows: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho}`,
     "",
     "## Pass-C Human Validation Backup",
     "",
