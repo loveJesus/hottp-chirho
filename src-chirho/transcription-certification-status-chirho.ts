@@ -4007,6 +4007,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Legacy current rows ignored by apply/certification: ${statusChirho.humanValidationDbChirho.legacyCurrentRowsChirho}`,
     `- Generic reviewer rows: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho}`,
     "- Generic reviewer reattribution path: `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho=<id> --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why this existing row is attributable to that reviewer>' --apply-chirho`",
+    "- Generic reviewer bulk dry-run path (same explicit reviewer only): `bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why every current generic row is attributable to that reviewer>'`",
+    "- Generic reviewer bulk apply path (same explicit reviewer only): `bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why every current generic row is attributable to that reviewer>' --apply-chirho`",
     "- Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit reviewer.",
     ...genericReviewerDetailLinesChirho,
     "",
