@@ -6,7 +6,7 @@
  *
  * Default mode prints a draft JSON policy. Writing a confirmed policy requires
  * --write-chirho, --decision-chirho=confirmed-expert-chirho, reviewer, role,
- * rationale, and --certify-exact-chirho.
+ * rationale, --certify-exact-chirho, and --expected-item-count-chirho.
  */
 
 import { existsSync, readFileSync } from "fs";
@@ -37,6 +37,16 @@ function splitCsvChirho(valueChirho: string | undefined): string[] {
     .split(",")
     .map((partChirho) => partChirho.trim())
     .filter((partChirho) => partChirho.length > 0);
+}
+
+function parseExpectedItemCountChirho(argsChirho: string[]): number | null {
+  const valueChirho = parseArgValueChirho(argsChirho, "expected-item-count-chirho");
+  if (valueChirho === undefined) return null;
+  const countChirho = Number.parseInt(valueChirho, 10);
+  if (!Number.isInteger(countChirho) || countChirho < 0 || String(countChirho) !== valueChirho) {
+    throw new Error(`--expected-item-count-chirho must be a non-negative integer; got ${valueChirho}`);
+  }
+  return countChirho;
 }
 
 function slugChirho(valueChirho: string): string {
@@ -86,6 +96,7 @@ function mainChirho(): void {
   const reviewerRoleChirho = parseArgValueChirho(argsChirho, "reviewer-role-chirho") ?? "";
   const rationaleChirho = parseArgValueChirho(argsChirho, "rationale-chirho") ?? "";
   const outPathChirho = parseArgValueChirho(argsChirho, "out-chirho") ?? VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO;
+  const expectedItemCountChirho = parseExpectedItemCountChirho(argsChirho);
   const scopePartsChirho = [
     scriptFiltersChirho.size === 0 ? "all-scripts-chirho" : [...scriptFiltersChirho].sort().join("-"),
     idFiltersChirho.size === 0 ? "all-items-chirho" : `${idFiltersChirho.size}-ids-chirho`,
@@ -119,6 +130,14 @@ function mainChirho(): void {
     return scriptOkChirho && idOkChirho;
   });
   if (decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO) {
+    if (writeChirho && expectedItemCountChirho === null) {
+      throw new Error("--expected-item-count-chirho is required when writing a confirmed expert policy");
+    }
+    if (writeChirho && expectedItemCountChirho !== selectedItemsChirho.length) {
+      throw new Error(
+        `selected item count ${selectedItemsChirho.length} does not match --expected-item-count-chirho=${expectedItemCountChirho}`
+      );
+    }
     assertReviewerRoleMatchesSelectedItemsChirho(selectedItemsChirho, reviewerRoleChirho);
     const blankItemsChirho = selectedItemsChirho
       .filter((itemChirho) => itemChirho.currentTextChirho.trim().length === 0)

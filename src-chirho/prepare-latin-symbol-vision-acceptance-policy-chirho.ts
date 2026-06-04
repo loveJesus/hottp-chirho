@@ -6,9 +6,10 @@
  *
  * Default is a dry-run JSON preview with decisionChirho=draft-chirho. Writing an
  * accepted policy requires explicit --decision-chirho=accepted-clean-policy-chirho
- * plus reviewer, rationale, and --accept-clean-chirho. Symbol-labeled items
- * that are not trivial punctuation are excluded by --safe-symbols-only-chirho
- * and cannot be accepted in bulk without an explicit override.
+ * plus reviewer, rationale, --accept-clean-chirho, and
+ * --expected-item-count-chirho. Symbol-labeled items that are not trivial
+ * punctuation are excluded by --safe-symbols-only-chirho and cannot be accepted
+ * in bulk without an explicit override.
  */
 
 import { existsSync, readFileSync } from "fs";
@@ -41,6 +42,16 @@ function splitCsvChirho(valueChirho: string | undefined): string[] {
     .split(",")
     .map((partChirho) => partChirho.trim())
     .filter((partChirho) => partChirho.length > 0);
+}
+
+function parseExpectedItemCountChirho(argsChirho: string[]): number | null {
+  const valueChirho = parseArgValueChirho(argsChirho, "expected-item-count-chirho");
+  if (valueChirho === undefined) return null;
+  const countChirho = Number.parseInt(valueChirho, 10);
+  if (!Number.isInteger(countChirho) || countChirho < 0 || String(countChirho) !== valueChirho) {
+    throw new Error(`--expected-item-count-chirho must be a non-negative integer; got ${valueChirho}`);
+  }
+  return countChirho;
 }
 
 function slugChirho(valueChirho: string): string {
@@ -85,6 +96,7 @@ function mainChirho(): void {
   const reviewerChirho = parseArgValueChirho(argsChirho, "reviewer-chirho") ?? "";
   const rationaleChirho = parseArgValueChirho(argsChirho, "rationale-chirho") ?? "";
   const outPathChirho = parseArgValueChirho(argsChirho, "out-chirho") ?? LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO;
+  const expectedItemCountChirho = parseExpectedItemCountChirho(argsChirho);
   const scriptScopeLabelChirho =
     safeSymbolsOnlyChirho && scriptFiltersChirho.size === 0
       ? "symbol-chirho"
@@ -135,6 +147,16 @@ function mainChirho(): void {
     return scriptOkChirho && kindOkChirho && symbolSafetyOkChirho;
   });
   const selectedNontrivialSymbolItemsChirho = selectedItemsChirho.filter(isNontrivialSymbolTextChirho);
+  if (decisionChirho === LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO) {
+    if (writeChirho && expectedItemCountChirho === null) {
+      throw new Error("--expected-item-count-chirho is required when writing an accepted Latin/symbol policy");
+    }
+    if (writeChirho && expectedItemCountChirho !== selectedItemsChirho.length) {
+      throw new Error(
+        `selected item count ${selectedItemsChirho.length} does not match --expected-item-count-chirho=${expectedItemCountChirho}`
+      );
+    }
+  }
   if (
     decisionChirho === LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO &&
     selectedNontrivialSymbolItemsChirho.length !== 0 &&
