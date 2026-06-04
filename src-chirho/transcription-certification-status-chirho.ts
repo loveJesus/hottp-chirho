@@ -141,11 +141,23 @@ const HIDDEN_HEBREW_CANDIDATE_SCAN_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "hidden-hebrew-candidate-scan-2026-06-04-chirho.md"
 );
+const HIDDEN_HEBREW_CANDIDATE_SCANNER_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "find-hidden-hebrew-candidates-2026-06-04-chirho.ts"
+);
 const NON_LATIN_RESIDUE_CANDIDATE_SCAN_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
   "metropoliluya-chirho",
   "nonlatin-residue-candidate-scan-2026-06-04-chirho.md"
+);
+const NON_LATIN_RESIDUE_CANDIDATE_SCANNER_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "find-nonlatin-residue-candidates-2026-06-04-chirho.ts"
 );
 const LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -416,6 +428,9 @@ interface CandidateScanReportSummaryChirho {
   reportExistsChirho: boolean;
   reportShapeOkChirho: boolean;
   generatedAtChirho: string | null;
+  scannerSourceFileCountChirho: number | null;
+  liveScannerSourceFileCountChirho: number;
+  scannerSourceFingerprintMatchesCurrentChirho: boolean;
   spanSourceFileCountChirho: number | null;
   liveSpanSourceFileCountChirho: number;
   spanSourceFingerprintMatchesCurrentChirho: boolean;
@@ -619,7 +634,11 @@ function candidateHeadingCountChirho(markdownChirho: string, priorityChirho?: st
   return [...markdownChirho.matchAll(patternChirho)].length;
 }
 
-function candidateScanReportSummaryChirho(pathChirho: string, liveSpanSourceFingerprintChirho: SourceFingerprintChirho): CandidateScanReportSummaryChirho {
+function candidateScanReportSummaryChirho(
+  pathChirho: string,
+  liveSpanSourceFingerprintChirho: SourceFingerprintChirho,
+  liveScannerSourceFingerprintChirho: SourceFingerprintChirho
+): CandidateScanReportSummaryChirho {
   const reportPathChirho = relativeProjectPathChirho(pathChirho);
   if (!existsSync(pathChirho)) {
     return {
@@ -627,6 +646,9 @@ function candidateScanReportSummaryChirho(pathChirho: string, liveSpanSourceFing
       reportExistsChirho: false,
       reportShapeOkChirho: false,
       generatedAtChirho: null,
+      scannerSourceFileCountChirho: null,
+      liveScannerSourceFileCountChirho: liveScannerSourceFingerprintChirho.fileCountChirho,
+      scannerSourceFingerprintMatchesCurrentChirho: false,
       spanSourceFileCountChirho: null,
       liveSpanSourceFileCountChirho: liveSpanSourceFingerprintChirho.fileCountChirho,
       spanSourceFingerprintMatchesCurrentChirho: false,
@@ -643,6 +665,8 @@ function candidateScanReportSummaryChirho(pathChirho: string, liveSpanSourceFing
   }
   const textChirho = readFileSync(pathChirho, "utf8");
   const generatedAtChirho = textChirho.match(/^Generated: (.+)$/mu)?.[1] ?? null;
+  const scannerSourceFileCountChirho = markdownNumberFieldChirho(textChirho, "Scanner source files");
+  const scannerSourceFingerprintChirho = markdownTextFieldChirho(textChirho, "Scanner source fingerprint");
   const spanSourceFileCountChirho = markdownNumberFieldChirho(textChirho, "Span source files");
   const spanSourceFingerprintChirho = markdownTextFieldChirho(textChirho, "Span source fingerprint");
   const candidateLineCountChirho = markdownNumberFieldChirho(textChirho, "Candidate lines");
@@ -660,6 +684,8 @@ function candidateScanReportSummaryChirho(pathChirho: string, liveSpanSourceFing
     lowPriorityCountChirho === renderedLowPriorityCountChirho;
   const reportShapeOkChirho =
     generatedAtChirho !== null &&
+    scannerSourceFileCountChirho !== null &&
+    scannerSourceFingerprintChirho !== null &&
     spanSourceFileCountChirho !== null &&
     spanSourceFingerprintChirho !== null &&
     candidateLineCountChirho !== null &&
@@ -672,6 +698,12 @@ function candidateScanReportSummaryChirho(pathChirho: string, liveSpanSourceFing
     reportExistsChirho: true,
     reportShapeOkChirho,
     generatedAtChirho,
+    scannerSourceFileCountChirho,
+    liveScannerSourceFileCountChirho: liveScannerSourceFingerprintChirho.fileCountChirho,
+    scannerSourceFingerprintMatchesCurrentChirho:
+      reportShapeOkChirho &&
+      scannerSourceFileCountChirho === liveScannerSourceFingerprintChirho.fileCountChirho &&
+      scannerSourceFingerprintChirho === liveScannerSourceFingerprintChirho.sha256Chirho,
     spanSourceFileCountChirho,
     liveSpanSourceFileCountChirho: liveSpanSourceFingerprintChirho.fileCountChirho,
     spanSourceFingerprintMatchesCurrentChirho:
@@ -703,6 +735,9 @@ function candidateScanRemainingWorkChirho(
   if (!scanChirho.reportShapeOkChirho) {
     remainingWorkChirho.push(`${labelChirho} scanner report is malformed; regenerate with ${regenerateCommandChirho}`);
     return remainingWorkChirho;
+  }
+  if (!scanChirho.scannerSourceFingerprintMatchesCurrentChirho) {
+    remainingWorkChirho.push(`${labelChirho} scanner report source-code fingerprint does not match current scanner; rerun ${regenerateCommandChirho}`);
   }
   if (!scanChirho.spanSourceFingerprintMatchesCurrentChirho) {
     remainingWorkChirho.push(`${labelChirho} scanner report span-source fingerprint does not match current spans; rerun ${regenerateCommandChirho}`);
@@ -1528,6 +1563,12 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     nonNfcSpanTextFieldsChirho.map((findingChirho) => findingChirho.relativePathChirho)
   );
   const strictBlindScannerSpanSourceFingerprintChirho = sourceFingerprintForPathsChirho(scanSpanLinePathsChirho());
+  const hiddenHebrewScannerSourceFingerprintChirho = sourceFingerprintForPathsChirho([
+    HIDDEN_HEBREW_CANDIDATE_SCANNER_PATH_CHIRHO,
+  ]);
+  const nonLatinResidueScannerSourceFingerprintChirho = sourceFingerprintForPathsChirho([
+    NON_LATIN_RESIDUE_CANDIDATE_SCANNER_PATH_CHIRHO,
+  ]);
   const exportReportShapeOkChirho =
     !exportReportExistsChirho ||
     (typeof exportReportChirho.strictPassedChirho === "boolean" &&
@@ -2040,11 +2081,13 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const strictBlindScansChirho = {
     hiddenHebrewChirho: candidateScanReportSummaryChirho(
       HIDDEN_HEBREW_CANDIDATE_SCAN_PATH_CHIRHO,
-      strictBlindScannerSpanSourceFingerprintChirho
+      strictBlindScannerSpanSourceFingerprintChirho,
+      hiddenHebrewScannerSourceFingerprintChirho
     ),
     nonLatinResidueChirho: candidateScanReportSummaryChirho(
       NON_LATIN_RESIDUE_CANDIDATE_SCAN_PATH_CHIRHO,
-      strictBlindScannerSpanSourceFingerprintChirho
+      strictBlindScannerSpanSourceFingerprintChirho,
+      nonLatinResidueScannerSourceFingerprintChirho
     ),
   };
   const remainingWorkChirho: string[] = [];
@@ -2610,6 +2653,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `  - Report exists: ${scanChirho.reportExistsChirho}`,
     `  - Report shape OK: ${scanChirho.reportShapeOkChirho}`,
     `  - Generated: ${scanChirho.generatedAtChirho ?? "unknown"}`,
+    `  - Scanner source files in report: ${scanChirho.scannerSourceFileCountChirho ?? "unknown"}`,
+    `  - Live scanner source files: ${scanChirho.liveScannerSourceFileCountChirho}`,
+    `  - Scanner source fingerprint matches current scanner: ${scanChirho.scannerSourceFingerprintMatchesCurrentChirho}`,
     `  - Span source files in report: ${scanChirho.spanSourceFileCountChirho ?? "unknown"}`,
     `  - Live span source files: ${scanChirho.liveSpanSourceFileCountChirho}`,
     `  - Span source fingerprint matches current spans: ${scanChirho.spanSourceFingerprintMatchesCurrentChirho}`,
