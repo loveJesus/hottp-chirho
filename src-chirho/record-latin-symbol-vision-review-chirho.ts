@@ -30,6 +30,7 @@ import {
   type LatinSymbolPacketManifestChirho,
 } from "./latin-symbol-vision-review-store-chirho.ts";
 import { assertExplicitReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
+import { hashTextChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "record-latin-symbol-vision-review-chirho";
 
@@ -68,12 +69,33 @@ function parseIssueFlagsChirho(valueChirho: string | undefined): string[] {
 
 function usageChirho(): string {
   return [
-    `Usage: bun run ${MODULE_CHIRHO} --id=<packet-item-id> --verdict=<accepted-clean|reviewed-issues> --reviewer=<reviewer-chirho> [--accept-clean-chirho] [--issue-flags=a,b] [--notes=text]`,
+    `Usage: bun run ${MODULE_CHIRHO} --id=<packet-item-id> --verdict=<accepted-clean|reviewed-issues> --reviewer=<reviewer-chirho> (--expected-text-chirho=<text> | --expected-text-hash-chirho=<sha256>) [--accept-clean-chirho] [--issue-flags=a,b] [--notes=text]`,
     "",
     "Accepted-clean writes require --accept-clean-chirho after checking the target crop and full line against the print.",
+    "Every review write requires --expected-text-chirho or --expected-text-hash-chirho for the exact live item text being reviewed.",
     "Use --export-backup[=path] to write a committable JSON backup of current review rows.",
     "Use --list-pending to print the first unreviewed packet IDs.",
   ].join("\n");
+}
+
+function assertExpectedTextGuardChirho(argsChirho: string[], liveItemChirho: LatinSymbolVisionLiveItemChirho): void {
+  const expectedTextChirho = parseArgValueChirho(argsChirho, "expected-text-chirho");
+  const expectedTextHashChirho = parseArgValueChirho(argsChirho, "expected-text-hash-chirho");
+  if (expectedTextChirho === undefined && expectedTextHashChirho === undefined) {
+    throw new Error("--expected-text-chirho or --expected-text-hash-chirho is required before writing a Latin/symbol review");
+  }
+  if (expectedTextChirho !== undefined && expectedTextChirho !== liveItemChirho.textChirho) {
+    throw new Error("--expected-text-chirho does not match the current live item text");
+  }
+  const liveTextHashChirho = hashTextChirho(liveItemChirho.textChirho);
+  if (expectedTextHashChirho !== undefined) {
+    if (!/^[a-f0-9]{64}$/.test(expectedTextHashChirho)) {
+      throw new Error("--expected-text-hash-chirho must be a lowercase sha256 hex digest");
+    }
+    if (expectedTextHashChirho !== liveTextHashChirho) {
+      throw new Error("--expected-text-hash-chirho does not match the current live item text hash");
+    }
+  }
 }
 
 function exportBackupPathChirho(argsChirho: string[]): string | null {
@@ -140,6 +162,7 @@ function mainChirho(): void {
     dbChirho.close();
     throw new Error("--accept-clean-chirho is required for accepted-clean after checking the target crop and full line against the print");
   }
+  assertExpectedTextGuardChirho(argsChirho, liveItemChirho);
   const reviewerChirho = requiredArgValueChirho(argsChirho, "reviewer");
   assertExplicitReviewerAttributionChirho(reviewerChirho, "--reviewer");
   const notesChirho = parseArgValueChirho(argsChirho, "notes") ?? null;
