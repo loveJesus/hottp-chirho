@@ -4,7 +4,9 @@
 /**
  * Apply append-only Pass C human validation verdicts back to span JSON files.
  *
- * Defaults to dry-run. Use --apply to write span files and stamp applied_at.
+ * Defaults to dry-run. Use --apply with --expected-row-count-chirho and
+ * --expected-validation-id-chirho for each selected row to write span files
+ * and stamp applied_at.
  */
 
 import { Database } from "bun:sqlite";
@@ -89,6 +91,65 @@ interface ApplyResultChirho {
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
   const prefixChirho = `--${nameChirho}=`;
   return argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho))?.slice(prefixChirho.length);
+}
+
+function parseNonNegativeIntegerArgChirho(valueChirho: string | undefined, nameChirho: string): number | null {
+  if (valueChirho === undefined) return null;
+  if (!/^(0|[1-9]\d*)$/.test(valueChirho)) {
+    throw new Error(`--${nameChirho} must be a non-negative integer`);
+  }
+  return Number.parseInt(valueChirho, 10);
+}
+
+function parseExpectedValidationIdsChirho(argsChirho: string[]): Set<number> {
+  const prefixChirho = "--expected-validation-id-chirho=";
+  const expectedIdsChirho = new Set<number>();
+  for (const argChirho of argsChirho) {
+    if (!argChirho.startsWith(prefixChirho)) continue;
+    const rawIdChirho = argChirho.slice(prefixChirho.length);
+    if (!/^[1-9]\d*$/.test(rawIdChirho)) {
+      throw new Error("--expected-validation-id-chirho must be a positive integer");
+    }
+    const idChirho = Number.parseInt(rawIdChirho, 10);
+    if (expectedIdsChirho.has(idChirho)) {
+      throw new Error(`duplicate --expected-validation-id-chirho=${idChirho}`);
+    }
+    expectedIdsChirho.add(idChirho);
+  }
+  return expectedIdsChirho;
+}
+
+function sortedNumbersChirho(numbersChirho: Iterable<number>): number[] {
+  return [...numbersChirho].sort((leftChirho, rightChirho) => leftChirho - rightChirho);
+}
+
+function assertApplySelectionGuardChirho(
+  rowsChirho: HumanValidationRowChirho[],
+  expectedRowCountChirho: number | null,
+  expectedValidationIdsChirho: Set<number>
+): void {
+  if (expectedRowCountChirho === null) {
+    throw new Error("--apply requires --expected-row-count-chirho=<count>");
+  }
+  if (expectedRowCountChirho !== rowsChirho.length) {
+    throw new Error(
+      `--expected-row-count-chirho=${expectedRowCountChirho} does not match selected row count ${rowsChirho.length}`
+    );
+  }
+  if (expectedValidationIdsChirho.size !== rowsChirho.length) {
+    throw new Error(
+      "--apply requires one --expected-validation-id-chirho=<id> flag for each selected validation row"
+    );
+  }
+  const selectedIdsChirho = sortedNumbersChirho(rowsChirho.map((rowChirho) => rowChirho.id_chirho));
+  const expectedIdsChirho = sortedNumbersChirho(expectedValidationIdsChirho);
+  const selectedKeyChirho = selectedIdsChirho.join(",");
+  const expectedKeyChirho = expectedIdsChirho.join(",");
+  if (selectedKeyChirho !== expectedKeyChirho) {
+    throw new Error(
+      `--expected-validation-id-chirho set [${expectedKeyChirho}] does not match selected row ids [${selectedKeyChirho}]`
+    );
+  }
 }
 
 function parseIssueFlagsChirho(issueFlagsChirho: string | null): string[] {
@@ -305,6 +366,12 @@ function mainChirho(): void {
   const applyChirho = argsChirho.includes("--apply");
   const dbPathChirho = parseArgValueChirho(argsChirho, "db") ?? PROGRESS_DB_PATH_CHIRHO;
   const spansDirChirho = parseArgValueChirho(argsChirho, "spans-dir") ?? SPANS_DIR_CHIRHO;
+  const backupPathChirho = parseArgValueChirho(argsChirho, "backup-chirho");
+  const expectedRowCountChirho = parseNonNegativeIntegerArgChirho(
+    parseArgValueChirho(argsChirho, "expected-row-count-chirho"),
+    "expected-row-count-chirho"
+  );
+  const expectedValidationIdsChirho = parseExpectedValidationIdsChirho(argsChirho);
   const dbChirho = new Database(dbPathChirho);
   const columnsChirho = new Set(tableColumnsChirho(dbChirho, "pass_c_human_validations_chirho"));
   const queryChirho = rowQueryChirho(
@@ -314,6 +381,9 @@ function mainChirho(): void {
     columnsChirho.has("certify_clean_chirho")
   );
   const rowsChirho = dbChirho.query(queryChirho.sqlChirho).all(...queryChirho.paramsChirho) as HumanValidationRowChirho[];
+  if (applyChirho) {
+    assertApplySelectionGuardChirho(rowsChirho, expectedRowCountChirho, expectedValidationIdsChirho);
+  }
   const updateAppliedStmtChirho = dbChirho.prepare(`
     UPDATE pass_c_human_validations_chirho
        SET applied_at_chirho = ?,
@@ -324,7 +394,7 @@ function mainChirho(): void {
   const resultsChirho = rowsChirho.map((rowChirho) =>
     applyRowChirho(rowChirho, spansDirChirho, applyChirho, appliedAtChirho, updateAppliedStmtChirho)
   );
-  if (applyChirho) writePassCHumanValidationBackupChirho(dbChirho);
+  if (applyChirho) writePassCHumanValidationBackupChirho(dbChirho, backupPathChirho);
 
   console.log(`[${MODULE_CHIRHO}] mode=${applyChirho ? "apply-chirho" : "dry-run-chirho"} rowCount=${rowsChirho.length}`);
   for (const resultChirho of resultsChirho) {
