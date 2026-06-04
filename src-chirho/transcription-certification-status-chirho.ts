@@ -3971,6 +3971,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     "## Review Entry Points",
     "",
+    "- Certification verification bundle: `bun run check-certification-chirho` (runs focused typecheck, regenerates this status report, and checks review server health)",
     "- All review stations launcher/check: `bun run review-servers-chirho` (starts missing standard-port servers on 8766/8770/8771 with real DB/backup paths; use `bun run review-servers-chirho -- --check-chirho` to check only)",
     `- Raw Hebrew live validator: http://localhost:8766/ (${statusChirho.rawHebrewChirho.livePendingSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.reportSpanCountChirho} report span(s); command: \`bun run pass-c-human-validate-chirho\`${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewAllChirho)})`,
     `- Raw Hebrew unvalidated lane: ${rawHebrewReviewUrlChirho("unvalidated-chirho")} (${statusChirho.rawHebrewChirho.livePendingUnvalidatedSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.unvalidatedSpanCountChirho} report span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewUnvalidatedChirho)})`,
