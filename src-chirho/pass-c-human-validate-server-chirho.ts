@@ -1374,7 +1374,8 @@ function pageHtmlChirho(): string {
       return document.getElementById("certify-clean-chirho")?.checked === true;
     }
     function cleanReviewCanSubmitChirho(itemChirho) {
-      return currentReviewerChirho().length > 0 && (!pendingReviewWouldBeCleanChirho(itemChirho) || cleanReviewAcknowledgedChirho());
+      return reviewerAttributionErrorChirho(currentReviewerChirho()) === null &&
+        (!pendingReviewWouldBeCleanChirho(itemChirho) || cleanReviewAcknowledgedChirho());
     }
     function cleanReviewActionTextChirho(itemChirho) {
       return pendingReviewWouldBeCleanChirho(itemChirho) ? "Accept as clean" : "Save issue";
