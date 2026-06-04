@@ -1740,11 +1740,14 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     ? ["- None."]
     : statusChirho.structuralChirho.issueSummariesChirho.map((issueChirho) => `- ${issueChirho}`);
   const guardedWlcCorrectionCommandLinesChirho = statusChirho.structuralChirho.guardedWlcCorrectionCommandsChirho.length === 0
-    ? ["- Guarded WLC correction command after explicit human confirmation: none currently available"]
+    ? ["- Guarded WLC correction commands: none pending"]
     : statusChirho.structuralChirho.guardedWlcCorrectionCommandsChirho.map(
       (commandChirho) =>
         `- Guarded WLC correction command after explicit human confirmation (${commandChirho.locationChirho}): \`${commandChirho.commandChirho}\``
     );
+  const guardedWlcCorrectionRoutingLinesChirho = statusChirho.structuralChirho.guardedWlcCorrectionCommandsChirho.length === 0
+    ? ["- No guarded WLC correction is currently pending; if a new saved issue appears, confirm it against the print before applying any generated command."]
+    : ["- Apply guarded WLC corrections only after each displayed print-confirmation question is explicitly settled."];
   const hallelujahReviewCountChirho =
     statusChirho.rawHebrewChirho.livePendingSpanCountChirho +
     pendingExpertScriptCountChirho("hebrew-chirho") +
@@ -1788,7 +1791,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Expert Arabist lane: ${expertReviewUrlChirho("arabic-chirho")} (${pendingExpertScriptCountChirho("arabic-chirho")} pending of ${expertScriptCountChirho("arabic-chirho")} item(s))`,
     `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,
     `- Reviewer scope and primer guide: \`${relativeProjectPathChirho(REVIEWER_SCOPE_GUIDE_PATH_CHIRHO)}\``,
-    `- Zechariah tipcha decision aid: \`${relativeProjectPathChirho(ZECHARIAH_TIPCHA_CONFIRMATION_AID_PATH_CHIRHO)}\``,
+    `- Resolved Zechariah historical aid: \`${relativeProjectPathChirho(ZECHARIAH_TIPCHA_CONFIRMATION_AID_PATH_CHIRHO)}\``,
     ...guardedWlcCorrectionCommandLinesChirho,
     "",
     "## Suggested Review Routing",
@@ -1797,7 +1800,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- External script-expert lanes: Syriac reader + Arabist (${externalExpertReviewCountChirho} item(s)). A non-reader can flag crop or segmentation problems, but should not confirm exact letters, dots, vowels, or punctuation.`,
     "- Hebrew-script Aramaic/Targum: confirm consonants only when the print is clear; route exact Aramaic vocalization, dagesh/shin-dot details, and Targum wording to a Targum/Aramaic reviewer.",
     `- Latin/symbol proofing: ${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} item(s) remain. Use the symbol-risk lanes because witness sigla, references, and ornament guesses are not blanket-safe.`,
-    "- Apply the guarded WLC correction only after the displayed print-confirmation question is explicitly settled.",
+    ...guardedWlcCorrectionRoutingLinesChirho,
     "",
     "## Structural Export",
     "",
