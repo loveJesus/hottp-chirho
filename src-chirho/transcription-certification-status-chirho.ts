@@ -3877,7 +3877,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
               : rowChirho.liveSpanExistsChirho
                 ? "present-chirho"
                 : "missing-chirho";
-            const commandChirho = [
+            const baseCommandPartsChirho = [
               "bun run reattribute-pass-c-human-validations-chirho --",
               `--validation-id-chirho=${rowChirho.idChirho}`,
               "--reviewer-chirho=<explicit-reviewer-id-chirho>",
@@ -3885,14 +3885,16 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
               ...(rowChirho.liveTextChirho === null
                 ? []
                 : [`--expected-live-text-chirho=${shellSingleQuoteChirho(rowChirho.liveTextChirho)}`]),
-              "--apply-chirho",
-            ].join(" ");
+            ];
+            const dryRunCommandChirho = baseCommandPartsChirho.join(" ");
+            const applyCommandChirho = [...baseCommandPartsChirho, "--apply-chirho"].join(" ");
             return [
               `  - id ${rowChirho.idChirho} (${rowChirho.locationChirho}; current reviewer ${rowChirho.reviewerChirho})`,
               `    - Verdict: ${rowChirho.verdictChirho}; applied: ${appliedChirho}; script verdict: ${scriptVerdictChirho}; issue flags: ${flagsChirho}`,
               `    - Original text: ${markdownInlineCodeChirho(rowChirho.originalTextChirho)}; corrected text: ${correctionChirho}`,
               `    - Live span: ${liveSpanStatusChirho}; text: ${liveTextChirho}; script: ${rowChirho.liveScriptChirho ?? "none-chirho"}; provenance: ${rowChirho.liveProvenanceChirho ?? "none-chirho"}; human validation id/verdict: ${rowChirho.liveHumanValidationIdChirho ?? "none-chirho"}/${rowChirho.liveHumanValidationVerdictChirho ?? "none-chirho"}; text matches original: ${liveTextMatchesOriginalChirho}`,
-              `    - Reattribute command: \`${commandChirho}\``,
+              `    - Reattribute dry-run command: \`${dryRunCommandChirho}\``,
+              `    - Reattribute apply command: \`${applyCommandChirho}\``,
             ];
           }),
         ];
@@ -4113,6 +4115,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw queue applied rows: ${statusChirho.humanValidationDbChirho.rawQueueAppliedRowsChirho}`,
     `- Legacy current rows ignored by apply/certification: ${statusChirho.humanValidationDbChirho.legacyCurrentRowsChirho}`,
     `- Generic reviewer rows: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho}`,
+    "- Generic reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho=<id> --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>'`",
     "- Generic reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho=<id> --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>' --apply-chirho`",
     `- Generic reviewer bulk dry-run path (same explicit reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why every current generic row is attributable to that reviewer>'\``,
     `- Generic reviewer bulk apply path (same explicit reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why every current generic row is attributable to that reviewer>' --apply-chirho\``,
