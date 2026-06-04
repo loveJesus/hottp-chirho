@@ -24,9 +24,10 @@
 
 import { Database } from "bun:sqlite";
 import { spawnSync } from "child_process";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 
+import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROGRESS_DB_PATH_CHIRHO, PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { normalizeSpanLineTextFieldsChirho } from "./span-nfc-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
@@ -136,7 +137,7 @@ function cropModeChirho(volChirho: number, pageChirho: number): void {
     });
   }
   const templatePathChirho = join(outPageDirChirho, "verdicts-template-chirho.json");
-  writeFileSync(templatePathChirho, JSON.stringify(templateChirho, null, 2));
+  writeJsonAtomicChirho(templatePathChirho, templateChirho);
   console.log(`[${MODULE_CHIRHO}] crop mode: ${templateChirho.length} unknown span(s), ${croppedChirho} crop(s) → ${outPageDirChirho}`);
   console.log(`  line images: ${join(SCANLINES_DIR_CHIRHO, `vol-${volChirho}-chirho`, `page-${String(pageChirho).padStart(4, "0")}-chirho`)}`);
   console.log(`  fill scriptChirho + utf8TextChirho in ${templatePathChirho}, then run --verdicts=... --apply`);
@@ -168,6 +169,11 @@ function applyModeChirho(verdictsPathChirho: string, applyChirho: boolean, revie
       console.log(`[error] ${keyChirho} span text drifted since crop; refusing`); errorChirho++; continue;
     }
     const newTextChirho = normalizeTextForStorageChirho(vChirho.utf8TextChirho ?? "");
+    if (newTextChirho.length === 0) {
+      console.log(`[error] ${keyChirho} supplied text normalizes to empty; omit scriptChirho to defer`);
+      errorChirho++;
+      continue;
+    }
     console.log(`[${applyChirho ? "applied" : "planned"}] ${keyChirho} ${vChirho.scriptChirho} "${spanChirho.utf8TextChirho}" -> "${newTextChirho}"`);
     if (applyChirho) {
       const origChirho = normalizeTextForStorageChirho(spanChirho.utf8TextChirho);
@@ -176,7 +182,7 @@ function applyModeChirho(verdictsPathChirho: string, applyChirho: boolean, revie
       spanChirho.provenanceChirho = "vision-chirho";
       spanChirho.visionTranscribedAtChirho = nowChirho;
       normalizeSpanLineTextFieldsChirho(lineObjChirho);
-      writeFileSync(linePathChirho, `${JSON.stringify(lineObjChirho, null, 2)}\n`);
+      writeJsonAtomicChirho(linePathChirho, lineObjChirho);
       insertChirho.run(vChirho.volumeChirho, vChirho.pageChirho, vChirho.lineIndexChirho, vChirho.segmentIndexChirho, origChirho, hashTextChirho(origChirho), vChirho.scriptChirho, newTextChirho, vChirho.notesChirho ?? null, reviewerChirho, nowChirho, nowChirho, linePathChirho);
       appliedChirho++;
     } else plannedChirho++;
