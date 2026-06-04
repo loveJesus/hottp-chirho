@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T07:19:52.723Z",
+  "generatedAtChirho": "2026-06-04T07:34:16.156Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 790,
+  "countChirho": 791,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7903,6 +7903,16 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "קדש",
       "notesChirho": "Recovered the hidden Hebrew word after French 'de' on vol 2 p151 L37. The scanline shows qof-dalet-shin before 'lié (comme ici) au hifil de ערץ', not קֶשֶׁר. Claude and Codex second-witnessed the scanline as consonants קדש, explicitly correcting the anchoring risk from the nearby קֶשֶׁר. Stored consonants only as vision-chirho; exact vowels/marks and punctuation remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 1,
+      "pageChirho": 151,
+      "lineIndexChirho": 7,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "(1? + omitted ellipsis + N° around partial תחמד ולקחת",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "(לא תחמד ... ולקחת לך)",
+      "notesChirho": "Recovered the full Deuteronomy 7:25 Hebrew citation from hidden OCR garbage around the partial Pass-C Hebrew island. Claude and Codex second-witnessed the scanline as logical text `(לא תחמד ... ולקחת לך)`, including the printed three-dot ellipsis between תחמד and ולקחת and the closing לך. Parentheses delimit the Hebrew citation and are stored inside the Hebrew span. Exact vowels/marks, ellipsis character convention, and punctuation/parenthesis placement remain Hebrew/WLC expert-confirmation tier."
     }
   ]
 }
