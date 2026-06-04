@@ -17,6 +17,11 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { dirname, join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import {
+  EXPERT_MARKDOWN_PATH_PAIRS_CHIRHO,
+  packetMarkdownPathDriftsChirho,
+  summarizePacketMarkdownPathDriftChirho,
+} from "./packet-image-fingerprint-chirho.ts";
 import { assertExplicitReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
 import { normalizeSpanLineTextFieldsChirho } from "./span-nfc-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
@@ -241,6 +246,16 @@ function loadFreshExpertPackItemChirho(itemIdChirho: string, liveItemChirho: Vis
   if (!existsSync(packItemChirho.packetPathChirho)) throw new Error(`${itemIdChirho} packet image missing; regenerate expert pack`);
   if (!readFileSync(packItemChirho.sourcePathChirho).equals(readFileSync(packItemChirho.packetPathChirho))) {
     throw new Error(`${itemIdChirho} packet image differs from source scanline; regenerate expert pack`);
+  }
+  const markdownPathDriftsChirho = packetMarkdownPathDriftsChirho(
+    [packItemChirho],
+    EXPERT_PACK_DIR_CHIRHO,
+    EXPERT_MARKDOWN_PATH_PAIRS_CHIRHO
+  );
+  if (markdownPathDriftsChirho.length !== 0) {
+    throw new Error(
+      `${itemIdChirho} markdown image path differs from packet image; regenerate expert pack: ${summarizePacketMarkdownPathDriftChirho(markdownPathDriftsChirho[0]!)}`
+    );
   }
   return packItemChirho;
 }
