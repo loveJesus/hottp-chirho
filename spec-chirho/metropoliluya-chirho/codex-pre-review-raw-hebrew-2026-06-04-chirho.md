@@ -56,12 +56,26 @@ span was surfaced.
   - Visual precheck: the crop is a broad multi-word Hebrew phrase in an apparatus line; no obvious swallowed neighboring Latin/symbol span or clipped Hebrew word is visible. Treat this as a real human review target, not an automatic hidden-text repair.
   - Human check still needed: exact multi-word text, vowels/marks, and whether the shorter `מֵי` form is what the print says here.
 
+- `vol 1 p149 L11 S1`:
+  `http://localhost:8766/?attention-chirho=no-direct-read-chirho&item-chirho=1%3A149%3A11%3A1`
+  - Live text: `נִכְרְתוּ מֵימֵי הַיַּרְדֵּן`
+  - Attention reason: no direct CRNN crop read and multi-token Hebrew span.
+  - Visual precheck: the target crop is a broad Hebrew phrase after French `dittographie de`; no obvious clipping or swallowed neighboring French is visible. This line appears to contrast with the prior shorter `מֵי` form, so do not merge the two notes.
+  - Human check still needed: exact multi-word text, vowels/marks, and whether the longer `מֵימֵי` form is what the print says here.
+
 - `vol 2 p149 L19 S3`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=2%3A149%3A19%3A3`
   - Live text: `אָמַר`
   - Attention reason: low direct-read confidence.
   - Visual precheck: the crop is centered on the short Hebrew word and no obvious segmentation problem is visible.
   - Human check still needed: exact vowels/marks and letter confirmation.
+
+- `vol 2 p150 L37 S1`:
+  `http://localhost:8766/?attention-chirho=delimiter-notation-chirho&item-chirho=2%3A150%3A37%3A1`
+  - Live text: `(לְמִקְדָּשׁ`
+  - Attention reason: delimiter notation.
+  - Visual precheck: the crop includes the opening parenthesis and the Hebrew word; the following French `au vs 14)` is outside the Hebrew box, so the closing parenthesis is not part of this span's target crop.
+  - Human check still needed: exact vowels/marks and whether the opening parenthesis belongs inside the Hebrew span or should be treated as adjacent punctuation.
 
 - `vol 2 p150 L39 S1`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=2%3A150%3A39%3A1`
@@ -107,6 +121,8 @@ span was surfaced.
 
 - `vol 5 p150 L10 S1/S3`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A150%3A10%3A1`
+  `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A150%3A10%3A3`
+  - Item IDs: `v5-p0150-l010-s1`, `v5-p0150-l010-s3`
   - Live texts: `עָמִי` and `יָמַי`
   - Attention reason: low direct-read confidence on both short words.
   - Visual precheck: the two crops sit in the expected French phrase "d'abord ... au lieu de ..."; no word swap or segmentation defect is obvious from the packet crops.
@@ -121,6 +137,8 @@ span was surfaced.
 
 - `vol 5 p150 L11 S4/S6`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A150%3A11%3A4`
+  `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A150%3A11%3A6`
+  - Item IDs: `v5-p0150-l011-s4`, `v5-p0150-l011-s6`
   - Live texts: `קְבָרִים` and `קְבָרִים`
   - Attention reason: low direct-read confidence on both occurrences.
   - Visual precheck: the line is an "au lieu de" comparison with two separately boxed occurrences of the same Hebrew word. Both target crops are centered on their respective Hebrew words; the surrounding French `et enfin`, `au lieu de`, and `Elle traduit` sit outside the boxes.
