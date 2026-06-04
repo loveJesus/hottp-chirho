@@ -438,8 +438,12 @@ function latinSymbolReviewUrlChirho(scriptChirho: string, symbolRiskChirho?: str
   return `http://localhost:8770/?${urlQueryChirho(entriesChirho)}`;
 }
 
-function rawHebrewReviewUrlChirho(validationStatusChirho: string): string {
-  return `http://localhost:8766/?${urlQueryChirho([["validation-status-chirho", validationStatusChirho]])}`;
+function rawHebrewReviewUrlChirho(validationStatusChirho?: string, reviewStateChirho?: string): string {
+  const entriesChirho: Array<[string, string]> = [];
+  if (validationStatusChirho !== undefined) entriesChirho.push(["validation-status-chirho", validationStatusChirho]);
+  if (reviewStateChirho !== undefined) entriesChirho.push(["review-state-chirho", reviewStateChirho]);
+  const queryChirho = urlQueryChirho(entriesChirho);
+  return queryChirho.length === 0 ? "http://localhost:8766/" : `http://localhost:8766/?${queryChirho}`;
 }
 
 function expertReviewUrlChirho(scriptChirho?: string, priorityChirho?: string): string {
@@ -1392,6 +1396,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw Hebrew unvalidated lane: ${rawHebrewReviewUrlChirho("unvalidated-chirho")} (${statusChirho.rawHebrewChirho.livePendingUnvalidatedSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.unvalidatedSpanCountChirho} report span(s))`,
     `- Raw Hebrew partial-validation lane: ${rawHebrewReviewUrlChirho("partial-token-validated-chirho")} (${statusChirho.rawHebrewChirho.livePendingPartialValidatedSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.partialValidatedSpanCountChirho} report span(s))`,
     `- Raw Hebrew all-token spot-check lane: ${rawHebrewReviewUrlChirho("all-token-validated-chirho")} (${statusChirho.rawHebrewChirho.livePendingAllTokenValidatedSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.allTokenValidatedSpanCountChirho} report span(s))`,
+    `- Raw Hebrew saved issue lane: ${rawHebrewReviewUrlChirho(undefined, "saved-issues-chirho")} (${statusChirho.humanValidationDbChirho.rawQueueIssueRowsChirho} read-only current issue row(s))`,
     "- Raw Hebrew pending counts match the live validator; report totals include already-saved rows.",
     `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Latin/symbol live reviewer: http://localhost:8770/ (${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} remaining decision(s); command: \`bun run latin-symbol-vision-review-chirho\`)`,

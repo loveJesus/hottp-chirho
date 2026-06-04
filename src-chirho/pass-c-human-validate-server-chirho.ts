@@ -257,6 +257,10 @@ const SCRIPT_VERDICT_VALUES_CHIRHO = new Set(
     .map((optionChirho) => optionChirho.valueChirho)
     .filter((valueChirho) => valueChirho.length > 0)
 );
+const REVIEW_STATE_FILTER_OPTIONS_CHIRHO = [
+  { valueChirho: "pending-chirho", labelChirho: "Pending" },
+  { valueChirho: "saved-issues-chirho", labelChirho: "Saved issues" },
+] as const;
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
   const prefixChirho = `--${nameChirho}=`;
@@ -1041,6 +1045,10 @@ function pageHtmlChirho(): string {
       <div class="status-chirho" id="status-chirho"></div>
     </div>
     <div class="toolbar-chirho">
+      <label class="label-chirho" for="review-state-filter-chirho">Review</label>
+      <select id="review-state-filter-chirho">
+        ${REVIEW_STATE_FILTER_OPTIONS_CHIRHO.map((optionChirho) => `<option value="${optionChirho.valueChirho}">${optionChirho.labelChirho}</option>`).join("")}
+      </select>
       <label class="label-chirho" for="validation-status-filter-chirho">Status</label>
       <select id="validation-status-filter-chirho">
         <option value="all-chirho">All</option>
@@ -1086,6 +1094,20 @@ function pageHtmlChirho(): string {
       if (typeof valueChirho !== "string") return defaultChirho;
       return [...selectChirho.options].some((optionChirho) => optionChirho.value === valueChirho) ? valueChirho : defaultChirho;
     }
+    function parseJsonArrayChirho(valueChirho) {
+      if (typeof valueChirho !== "string" || valueChirho.length === 0) return [];
+      try {
+        const parsedChirho = JSON.parse(valueChirho);
+        return Array.isArray(parsedChirho) ? parsedChirho.filter((itemChirho) => typeof itemChirho === "string") : [];
+      } catch (_errorChirho) {
+        return [];
+      }
+    }
+    let reviewStateFilterChirho = selectValueOrDefaultChirho(
+      "review-state-filter-chirho",
+      initialSearchParamsChirho.get("review-state-chirho"),
+      "pending-chirho"
+    );
     let validationStatusFilterChirho = selectValueOrDefaultChirho(
       "validation-status-filter-chirho",
       initialSearchParamsChirho.get("validation-status-chirho"),
@@ -1097,11 +1119,13 @@ function pageHtmlChirho(): string {
       "all-chirho"
     );
     function syncFilterControlsChirho() {
+      document.getElementById("review-state-filter-chirho").value = reviewStateFilterChirho;
       document.getElementById("validation-status-filter-chirho").value = validationStatusFilterChirho;
       document.getElementById("tier-filter-chirho").value = tierFilterChirho;
     }
     function syncUrlChirho() {
       const paramsChirho = new URLSearchParams();
+      if (reviewStateFilterChirho !== "pending-chirho") paramsChirho.set("review-state-chirho", reviewStateFilterChirho);
       if (validationStatusFilterChirho !== "all-chirho") paramsChirho.set("validation-status-chirho", validationStatusFilterChirho);
       if (tierFilterChirho !== "all-chirho") paramsChirho.set("tier-chirho", tierFilterChirho);
       const queryChirho = paramsChirho.toString();
@@ -1109,7 +1133,11 @@ function pageHtmlChirho(): string {
     }
     function activeQueueChirho() {
       return queueChirho.filter((itemChirho) =>
-        !validationsChirho.has(itemChirho.keyChirho) &&
+        (
+          reviewStateFilterChirho === "pending-chirho"
+            ? !validationsChirho.has(itemChirho.keyChirho)
+            : validationsChirho.get(itemChirho.keyChirho)?.verdict_chirho === "reviewed-issues-chirho"
+        ) &&
         (validationStatusFilterChirho === "all-chirho" || itemChirho.validationStatusChirho === validationStatusFilterChirho) &&
         (tierFilterChirho === "all-chirho" || itemChirho.tierChirho === tierFilterChirho)
       );
@@ -1141,9 +1169,10 @@ function pageHtmlChirho(): string {
     }
     function setStatusChirho(messageChirho) { document.getElementById("status-chirho").textContent = messageChirho; }
     function renderSummaryChirho() {
-      const remainingChirho = activeQueueChirho().length;
+      const activeCountChirho = activeQueueChirho().length;
+      const modeLabelChirho = reviewStateFilterChirho === "pending-chirho" ? "remaining" : "saved issue row(s)";
       document.getElementById("summary-chirho").textContent =
-        remainingChirho + " remaining in filter of " + queueChirho.length + " review spans, " + validationsChirho.size + " saved";
+        activeCountChirho + " " + modeLabelChirho + " in filter of " + queueChirho.length + " review spans, " + validationsChirho.size + " saved";
     }
     function witnessTextChirho(tokenChirho) {
       if (tokenChirho.witnessesChirho.length === 0) return "none";
@@ -1191,6 +1220,8 @@ function pageHtmlChirho(): string {
       }
 
       const leftChirho = elChirho("div", { classChirho: "line-panel-chirho" });
+      const savedValidationChirho = validationsChirho.get(itemChirho.keyChirho);
+      const savedIssueFlagsChirho = new Set(parseJsonArrayChirho(savedValidationChirho?.issue_flags_chirho));
       leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Target crop" }));
       const targetWrapChirho = elChirho("div", { classChirho: "target-image-wrap-chirho" });
       const targetFrameChirho = elChirho("div", { classChirho: "target-image-frame-chirho" });
@@ -1232,7 +1263,8 @@ function pageHtmlChirho(): string {
       targetRowChirho.appendChild(elChirho("div", { classChirho: "line-text-chirho", textChirho: itemChirho.lineTextChirho }));
       targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Optional suggested text" }));
       const editChirho = elChirho("textarea", { classChirho: "edit-chirho", id: "edit-chirho" });
-      editChirho.value = itemChirho.liveSpanTextChirho;
+      editChirho.value = savedValidationChirho?.corrected_text_chirho ?? itemChirho.liveSpanTextChirho;
+      if (reviewStateFilterChirho !== "pending-chirho") editChirho.setAttribute("readonly", "true");
       targetRowChirho.appendChild(editChirho);
       targetRowChirho.appendChild(typewriterChirho());
       leftChirho.appendChild(targetRowChirho);
@@ -1247,6 +1279,12 @@ function pageHtmlChirho(): string {
       }
       if (itemChirho.hasLiveSpanTextDriftChirho) {
         sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "Live span text differs from this report. Check the relevant issue box; clean review is blocked." }));
+      }
+      if (reviewStateFilterChirho !== "pending-chirho" && savedValidationChirho) {
+        sideChirho.appendChild(elChirho("div", {
+          classChirho: "warning-chirho",
+          textChirho: "Saved issue row shown read-only. Inspect the crop and use the guarded status-report correction command only after explicit confirmation."
+        }));
       }
       const metaChirho = elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
         elChirho("div", { textChirho: "Location" }),
@@ -1330,6 +1368,8 @@ function pageHtmlChirho(): string {
           type: "checkbox",
           value: optionChirho.valueChirho
         });
+        if (savedIssueFlagsChirho.has(optionChirho.valueChirho)) inputChirho.checked = true;
+        if (reviewStateFilterChirho !== "pending-chirho") inputChirho.disabled = true;
         issueGridChirho.appendChild(elChirho("label", { classChirho: "issue-option-chirho", for: "issue-" + optionChirho.valueChirho }, [
           inputChirho,
           elChirho("span", { textChirho: optionChirho.labelChirho })
@@ -1341,22 +1381,32 @@ function pageHtmlChirho(): string {
       const notesBoxChirho = elChirho("div", { classChirho: "box-chirho" });
       notesBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Notes" }));
       const notesChirho = elChirho("textarea", { id: "notes-chirho", style: "width:100%;min-height:58px;box-sizing:border-box;" });
+      notesChirho.value = savedValidationChirho?.notes_chirho ?? "";
+      if (reviewStateFilterChirho !== "pending-chirho") notesChirho.setAttribute("readonly", "true");
       notesBoxChirho.appendChild(notesChirho);
       sideChirho.appendChild(notesBoxChirho);
 
       const actionsChirho = elChirho("div", { classChirho: "actions-chirho" });
-      const continueButtonChirho = elChirho("button", { classChirho: "continue-chirho", textChirho: "Continue" });
-      continueButtonChirho.addEventListener("click", () => submitReviewChirho());
-      actionsChirho.appendChild(continueButtonChirho);
-      const undoButtonChirho = elChirho("button", { classChirho: "undo-chirho", textChirho: "Undo last" });
-      undoButtonChirho.addEventListener("click", () => undoLastChirho());
-      actionsChirho.appendChild(undoButtonChirho);
+      if (reviewStateFilterChirho === "pending-chirho") {
+        const continueButtonChirho = elChirho("button", { classChirho: "continue-chirho", textChirho: "Continue" });
+        continueButtonChirho.addEventListener("click", () => submitReviewChirho());
+        actionsChirho.appendChild(continueButtonChirho);
+        const undoButtonChirho = elChirho("button", { classChirho: "undo-chirho", textChirho: "Undo last" });
+        undoButtonChirho.addEventListener("click", () => undoLastChirho());
+        actionsChirho.appendChild(undoButtonChirho);
+      } else {
+        actionsChirho.appendChild(elChirho("button", { disabled: "true", textChirho: "Read-only saved issue" }));
+      }
       sideChirho.appendChild(actionsChirho);
 
       appChirho.appendChild(leftChirho);
       appChirho.appendChild(sideChirho);
     }
     async function submitReviewChirho() {
+      if (reviewStateFilterChirho !== "pending-chirho") {
+        setStatusChirho("Saved issue view is read-only");
+        return;
+      }
       const itemChirho = currentItemChirho();
       if (!itemChirho) return;
       const correctedTextChirho = document.getElementById("edit-chirho").value;
@@ -1380,6 +1430,10 @@ function pageHtmlChirho(): string {
       renderChirho();
     }
     async function undoLastChirho() {
+      if (reviewStateFilterChirho !== "pending-chirho") {
+        setStatusChirho("Saved issue view is read-only");
+        return;
+      }
       const responseChirho = await fetch("/api-chirho/undo-last-chirho", { method: "POST" });
       const dataChirho = await responseChirho.json();
       if (!dataChirho.okChirho) {
@@ -1397,6 +1451,12 @@ function pageHtmlChirho(): string {
       if (keyChirho === "u") undoLastChirho();
       if (keyChirho === "arrowright") { indexChirho = Math.min(activeQueueChirho().length - 1, indexChirho + 1); renderChirho(); }
       if (keyChirho === "arrowleft") { indexChirho = Math.max(0, indexChirho - 1); renderChirho(); }
+    });
+    document.getElementById("review-state-filter-chirho").addEventListener("change", (eventChirho) => {
+      reviewStateFilterChirho = eventChirho.target.value;
+      indexChirho = 0;
+      syncUrlChirho();
+      renderChirho();
     });
     document.getElementById("validation-status-filter-chirho").addEventListener("change", (eventChirho) => {
       validationStatusFilterChirho = eventChirho.target.value;
