@@ -7,7 +7,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 We've built the full machine for turning the Barthélemy PDFs into *flawless* UTF-8 markdown, and it's working: the current 46-page working set (all 5 volumes) is transcribed into structured "spans" with **0 unknown characters, 0 broken characters, and 0 Unicode-normalization issues**, exported to markdown, and watched by a strict gate. The engineering is essentially done — what's left is **human/expert eyes confirming the non-Latin text against the printed page**, which the system now makes safe, attributable, and impossible to fake. To keep us honest, the certification gate is **deliberately RED** and will not turn green until that review actually happens — "the export passes != the text is certified."
 
-The path to production is now mostly **review, not building**. Three review stations are live: raw Hebrew (126 spans), Latin/symbol (527 decisions), and non-Latin expert (376: Hebrew 289, Greek 58, Syriac 16, Arabic 13). Hebrew and Greek are yours to confirm; Syriac/Arabic and exact Aramaic/Targum vocalization route to experts. As each item is confirmed against the print (with the reviewer's name + rationale, anchored to the exact text), the gate counts down; when it reaches zero the **certified flawless markdown is the production artifact** — the published digital critical edition. The supporting web app and OCR suggestions are already deployed; the certified text is the thing we're now reviewing toward.
+The path to production is now mostly **review, not building**. Three review stations are live: raw Hebrew (125 spans), Latin/symbol (524 remaining decisions), and non-Latin expert (377: Hebrew 290, Greek 58, Syriac 16, Arabic 13). Hebrew and Greek are yours to confirm; Syriac/Arabic and exact Aramaic/Targum vocalization route to experts. As each item is confirmed against the print (with the reviewer's name + rationale, anchored to the exact text), the gate counts down; when it reaches zero the **certified flawless markdown is the production artifact** — the published digital critical edition. The supporting web app and OCR suggestions are already deployed; the certified text is the thing we're now reviewing toward.
 
 ---
 
@@ -23,7 +23,7 @@ This report is mostly about (2), because that is where the remaining work is.
 ## 2. What we have today (verified 2026-06-03)
 
 **Transcription corpus (current working set):**
-- 5 volumes · 46 pages · 1,789 lines · **4,461 spans**
+- 5 volumes · 46 pages · 1,789 lines · **4,462 spans**
 - **0 unknown spans · 0 replacement characters · 0 non-NFC spans** (Unicode normalization is enforced and gate-checked)
 - Export to markdown is span-first (the spans are the source of truth; D1 is an audit witness)
 
@@ -31,13 +31,13 @@ This report is mostly about (2), because that is where the remaining work is.
 
 | Category | Count | Where |
 |---|---|---|
-| Raw Pass-C Hebrew spans | **126** | live validator `:8766` |
-| Non-Latin vision-tier items | **376** (Hebrew 289 · Greek 58 · Syriac 16 · Arabic 13) | expert reviewer `:8771` |
-| Latin/symbol vision decisions | **527** | reviewer `:8770` |
+| Raw Pass-C Hebrew spans | **125** | live validator `:8766` |
+| Non-Latin vision-tier items | **377** (Hebrew 290 · Greek 58 · Syriac 16 · Arabic 13) | expert reviewer `:8771` |
+| Latin/symbol vision decisions | **524 remaining** (528 total, 4 trivial punctuation accepted by explicit policy) | reviewer `:8770` |
 
-**Review progress so far:** 1 raw-Hebrew validation recorded, 0 Latin/symbol reviews, 0 expert confirmations, 0 expert issue records, 0 acceptance policies. So review has effectively just begun — **~0% certified** — which is exactly why the gate is red.
+**Review progress so far:** 1 raw-Hebrew correction has been applied (`וְגַם־חֲמָ֖ת`), 4 trivial Latin/symbol punctuation items have been accepted by explicit policy, and there are 0 expert confirmations / 0 expert issue records. So review has effectively just begun — **~0% certified** — which is exactly why the gate is red.
 
-**One open strict issue (a *good* red):** vol 3 p148 line 59 — a human flagged `וְגַםחֲמָת` as missing a maqqef; the WLC-exact correction `וְגַם־חֲמָ֖ת` (Zech 9:2) is attached and waiting on your tipcha confirmation before it's applied.
+**Strict export is now clean:** the prior vol 3 p148 line 59 issue was resolved after print confirmation. The span now stores `וְגַם־חֲמָ֖ת` as human-corrected, and the adjacent Zechariah continuation `תִּגְבׇּל־בָּ֑הּ` was recovered as vision-tier text for expert confirmation.
 
 ## 3. What we built this round (the apparatus, ~22 commits)
 
@@ -63,13 +63,12 @@ All of this was built and cross-audited via the two-witness ("metropoliluya") di
 
 ## 5. Path to production (remaining work)
 
-1. **Apply the pending corrections** *(needs your nod)* — confirm the `וְגַם־חֲמָת` tipcha against the print → apply the WLC maqqef → then the segment-safe repair recovers the adjacent Zechariah word. Do not run the guarded correction command until that print-level confirmation is explicit.
-2. **Review passes** *(the bulk of the remaining effort)*:
-   - **You:** 126 raw Hebrew (`:8766`) + Hebrew/Greek vision lanes (`:8771?script-chirho=hebrew-chirho` / `=greek-chirho`, 289 + 58).
+1. **Review passes** *(the bulk of the remaining effort)*:
+   - **You:** 125 raw Hebrew (`:8766`) + Hebrew/Greek vision lanes (`:8771?script-chirho=hebrew-chirho` / `=greek-chirho`, 290 + 58).
    - **Experts:** Syriac (16), Arabic (13), and exact Aramaic/Targum vocalization.
-   - **Latin/symbol (527):** mostly real proofreading — only 5 items are trivially blanket-safe; the witness sigla, references, ornament-guesses, French, and proper nouns each need a look.
-3. **Gate goes green.** When all three categories are certified and the strict issue is resolved, `transcription-certification-status-chirho` reports **complete = true**.
-4. **Ship.** The certified markdown is the production artifact — the published, citable, flawless digital edition. (Scaling beyond the current 46-page set reuses the exact same pipeline + gate.)
+   - **Latin/symbol (524 remaining):** mostly real proofreading — only 4 items have been accepted as trivial punctuation; the witness sigla, references, ornament-guesses, French, and proper nouns each need a look.
+2. **Gate goes green.** When all three categories are certified, `transcription-certification-status-chirho` reports **complete = true**.
+3. **Ship.** The certified markdown is the production artifact — the published, citable, flawless digital edition. (Scaling beyond the current 46-page set reuses the exact same pipeline + gate.)
 
 ## 6. Current review entry points
 

@@ -1,7 +1,7 @@
 {
-  "generatedAtChirho": "2026-06-04T01:08:22Z",
+  "generatedAtChirho": "2026-06-04T02:16:49.442Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 772,
+  "countChirho": 773,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -7723,6 +7723,16 @@
       "scriptChirho": "french-chirho",
       "utf8TextChirho": "lèverai-je?»",
       "notesChirho": "French text continuation of quoted sentence; already correct, mislabeled"
+    },
+    {
+      "volumeChirho": 3,
+      "pageChirho": 148,
+      "lineIndexChirho": 59,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "72 >23",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "תִּגְבׇּל־בָּ֑הּ",
+      "notesChirho": "Recovered the Zechariah 9:2 continuation from the printed crop: Pass-C garble \"72 >23\" corresponds to תִּגְבׇּל־בָּ֑הּ. Stored as vision-chirho; exact vowel/accent confirmation remains in the expert pack."
     }
   ]
 }

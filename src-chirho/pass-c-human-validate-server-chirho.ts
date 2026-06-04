@@ -1187,7 +1187,7 @@ function pageHtmlChirho(): string {
     function displayMarkChirho(charChirho) {
       return (combiningHebrewMarkReChirho.test(charChirho) ? "◌" : "") + charChirho;
     }
-    function extraNamedMarksChirho(fromTextChirho, toTextChirho) {
+    function namedMarkDeltasChirho(fromTextChirho, toTextChirho) {
       const fromCountsChirho = charCountsChirho(fromTextChirho);
       const toCountsChirho = charCountsChirho(toTextChirho);
       const marksChirho = [];
@@ -1196,14 +1196,22 @@ function pageHtmlChirho(): string {
         if (!titleChirho) continue;
         const extraCountChirho = toCountChirho - (fromCountsChirho.get(charChirho) ?? 0);
         for (let indexChirho = 0; indexChirho < extraCountChirho; indexChirho++) {
-          marksChirho.push(titleChirho + " " + displayMarkChirho(charChirho));
+          marksChirho.push("Add " + titleChirho + " " + displayMarkChirho(charChirho));
+        }
+      }
+      for (const [charChirho, fromCountChirho] of fromCountsChirho.entries()) {
+        const titleChirho = hebrewTypewriterTitleByValueChirho.get(charChirho);
+        if (!titleChirho) continue;
+        const removedCountChirho = fromCountChirho - (toCountsChirho.get(charChirho) ?? 0);
+        for (let indexChirho = 0; indexChirho < removedCountChirho; indexChirho++) {
+          marksChirho.push("Remove " + titleChirho + " " + displayMarkChirho(charChirho));
         }
       }
       return marksChirho;
     }
     function suggestedMarkDeltaTextChirho(fromTextChirho, toTextChirho) {
-      const marksChirho = extraNamedMarksChirho(fromTextChirho, toTextChirho);
-      return marksChirho.length > 0 ? marksChirho.join("; ") : "No named typewriter mark additions detected";
+      const marksChirho = namedMarkDeltasChirho(fromTextChirho, toTextChirho);
+      return marksChirho.length > 0 ? marksChirho.join("; ") : "No named typewriter mark additions/removals detected";
     }
     async function loadValidationsChirho() {
       const responseChirho = await fetch("/api-chirho/validations-chirho");

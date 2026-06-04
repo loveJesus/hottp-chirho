@@ -3,16 +3,19 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Zechariah Tipcha Confirmation Chirho
 
-This is a read-only decision aid for the one current strict export issue. It does not certify or apply anything.
+Resolved 2026-06-04: Hallelujah confirmed the WLC suggestion against the print, the guarded correction was applied, and the segment-safe repair recovered the adjacent Zechariah continuation. This file is now a historical decision aid, not a pending instruction.
 
 ## Target
 
 - Span file: `workspace-chirho/spans-chirho/vol-3-chirho/page-0148-chirho/line-059-chirho.json`
-- Location: vol 3, page 148, line 59, segment 1
-- Current span text: `וְגַםחֲמָת`
+- Original issue location: vol 3, page 148, line 59, segment 1
+- Original span text: `וְגַםחֲמָת`
 - Stored suggested correction: `וְגַם־חֲמָ֖ת`
 - Stored source: `WLC Zechariah 9:2`
-- Current strict issue: `human-review-issues-chirho`, validation id `3`, flags `accents-chirho` and `hebrew-punctuation-chirho`
+- Resolved strict issue: validation id `3`, flags `accents-chirho` and `hebrew-punctuation-chirho`
+- Current corrected span location: vol 3, page 148, line 59, segment 2
+- Current corrected span text: `וְגַם־חֲמָ֖ת`
+- Current recovered continuation: segment 1, `תִּגְבׇּל־בָּ֑הּ`, stored as `vision-chirho` for expert confirmation
 
 ## Local Images
 
@@ -42,8 +45,8 @@ magick workspace-chirho/scanlines-chirho/vol-3-chirho/page-0148-chirho/line-059-
 
 - Current strict-issue span: `x=460`, `width=115`
 - Adjacent garbled Zechariah continuation region: `x=344..460`
-- Existing French prefix currently includes the garble: `b) Za 9,2. Le M place 72 >23`
-- The guarded repair script is intentionally blocked until the current strict-issue span is first certified in place.
+- The original French prefix included the garble: `b) Za 9,2. Le M place 72 >23`
+- The repaired line now reads: `b) Za 9,2. Le M place תִּגְבׇּל־בָּ֑הּ וְגַם־חֲמָ֖ת au début du vs 2. Toujours par fidélité à`
 
 ## Text Evidence
 
@@ -57,9 +60,9 @@ The WLC word table normalizes away the maqqef and accent for this word:
 
 So the stored suggestion is based on the raw verse-level WLC form, not the normalized word-table form.
 
-## Decision Needed
+## Decision Outcome
 
-Hallelujah should confirm whether the printed crop supports the full suggested form:
+Hallelujah confirmed that the printed crop supports the full suggested form:
 
 `וְגַם־חֲמָ֖ת`
 
@@ -68,9 +71,9 @@ Specifically:
 - maqqef between `וְגַם` and `חֲמָת`
 - tipcha on `מָ`
 
-After explicit confirmation, the guarded path is:
+The guarded path was applied:
 
 1. `bun run apply-human-suggested-corrections-chirho -- --apply --certify-human --validation-id-chirho=3 --suggested-text-chirho='וְגַם־חֲמָ֖ת'`
-2. `bun run spec-chirho/metropoliluya-chirho/repair-vol3-p148-l59-zechariah-quote-2026-06-01-chirho.ts -- --apply`
+2. `bun run spec-chirho/metropoliluya-chirho/repair-vol3-p148-l59-zechariah-quote-2026-06-01-chirho.ts --apply`
 
-Do not run either step from this note alone.
+Do not re-run either step from this historical note unless the current span state is first checked; both tools are guarded, but this issue is already resolved.
