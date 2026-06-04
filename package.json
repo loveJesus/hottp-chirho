@@ -37,6 +37,7 @@
     "check-human-suggested-correction-cli-guards-chirho": "bun run src-chirho/check-human-suggested-correction-cli-guards-chirho.ts",
     "check-latin-symbol-review-cli-guards-chirho": "bun run src-chirho/check-latin-symbol-review-cli-guards-chirho.ts",
     "check-pass-c-human-apply-cli-guards-chirho": "bun run src-chirho/check-pass-c-human-apply-cli-guards-chirho.ts",
+    "check-pass-c-human-reattribution-cli-guards-chirho": "bun run src-chirho/check-pass-c-human-reattribution-cli-guards-chirho.ts",
     "check-pass-c-human-review-server-guards-chirho": "bun run src-chirho/check-pass-c-human-review-server-guards-chirho.ts",
     "apply-expert-supplied-vision-text-chirho": "bun run src-chirho/apply-expert-supplied-vision-text-chirho.ts",
     "typecheck-certification-chirho": "bunx tsc --noEmit --project tsconfig-certification-chirho.json",
