@@ -48,6 +48,7 @@ import {
   type SpanLineLikeChirho,
   type SpanLikeChirho,
 } from "./span-nfc-chirho.ts";
+import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import { normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 import {
   readVisionTierExpertConfirmationFileChirho,
@@ -200,6 +201,7 @@ interface RawHebrewSpanChirho {
   segmentIndexChirho: number;
   validationStatusChirho: string;
   textChirho: string;
+  lineTextChirho: string;
 }
 
 interface RawHebrewReportChirho {
@@ -219,6 +221,7 @@ interface RawHebrewPackItemChirho {
   idChirho: string;
   validationStatusChirho: string;
   textChirho: string;
+  lineTextChirho: string;
 }
 
 interface RawHebrewPackManifestChirho {
@@ -254,6 +257,7 @@ interface ExpertPackVisionItemChirho {
 interface LatinSymbolPackItemChirho {
   idChirho: string;
   textChirho: string;
+  lineTextChirho: string;
 }
 
 interface LatinSymbolPackManifestChirho {
@@ -427,6 +431,7 @@ interface CertificationStatusChirho {
     packCountMatchesCurrentChirho: boolean;
     packIdsMatchCurrentChirho: boolean;
     packTextMatchesCurrentChirho: boolean;
+    packLineTextMatchesCurrentChirho: boolean;
     packStatusMatchesCurrentChirho: boolean;
     liveReportMatchesSpanFilesChirho: boolean;
     liveReportDriftCountChirho: number;
@@ -462,6 +467,7 @@ interface CertificationStatusChirho {
     reviewPacketCountMatchesCurrentChirho: boolean;
     reviewPacketIdsMatchCurrentChirho: boolean;
     reviewPacketTextMatchesCurrentChirho: boolean;
+    reviewPacketLineTextMatchesCurrentChirho: boolean;
     reviewedCleanCountChirho: number;
     reviewedIssueCountChirho: number;
     acceptedByPolicyCountChirho: number;
@@ -606,11 +612,37 @@ function summarizeRawHebrewReportLiveDriftChirho(driftChirho: RawHebrewReportLiv
   ].join(" ");
 }
 
+function liveLineTextForStatusChirho(lineChirho: SpanLineLikeChirho): string | null {
+  if (!Array.isArray(lineChirho.spansChirho)) return null;
+  const renderSpansChirho = [];
+  for (const spanChirho of lineChirho.spansChirho) {
+    if (
+      typeof spanChirho.segmentIndexChirho !== "number" ||
+      typeof spanChirho.scriptChirho !== "string" ||
+      typeof spanChirho.utf8TextChirho !== "string"
+    ) {
+      return null;
+    }
+    const spanWithGeometryChirho = spanChirho as SpanLikeChirho & { xMinPxChirho?: unknown };
+    renderSpansChirho.push({
+      segmentIndexChirho: spanChirho.segmentIndexChirho,
+      ...(typeof spanWithGeometryChirho.xMinPxChirho === "number" ? { xMinPxChirho: spanWithGeometryChirho.xMinPxChirho } : {}),
+      scriptChirho: spanChirho.scriptChirho,
+      utf8TextChirho: spanChirho.utf8TextChirho,
+    });
+  }
+  return renderSpanLineTextChirho(
+    { lineIndexChirho: lineChirho.lineIndexChirho, spansChirho: renderSpansChirho },
+    { normalizeTextChirho: normalizeTextForStorageChirho }
+  );
+}
+
 function rawHebrewReportLiveDriftsChirho(rawSpansChirho: RawHebrewSpanChirho[]): RawHebrewReportLiveDriftChirho[] {
   const driftsChirho: RawHebrewReportLiveDriftChirho[] = [];
   for (const spanChirho of rawSpansChirho) {
     const idChirho = rawHebrewPackItemIdChirho(spanChirho);
     const reportTextChirho = normalizeTextForStorageChirho(spanChirho.textChirho);
+    const reportLineTextChirho = normalizeTextForStorageChirho(spanChirho.lineTextChirho);
     const linePathChirho = spanLinePathChirho(
       spanChirho.volumeChirho,
       spanChirho.pageChirho,
@@ -668,6 +700,24 @@ function rawHebrewReportLiveDriftsChirho(rawSpansChirho: RawHebrewSpanChirho[]):
         reasonChirho: "text-drift-chirho",
         reportTextChirho,
         liveTextChirho,
+      });
+    }
+    const liveLineTextChirho = liveLineTextForStatusChirho(lineChirho);
+    if (liveLineTextChirho === null) {
+      driftsChirho.push({
+        idChirho,
+        reasonChirho: "line-render-fields-missing-chirho",
+        reportTextChirho: reportLineTextChirho,
+        liveTextChirho: null,
+      });
+      continue;
+    }
+    if (liveLineTextChirho !== reportLineTextChirho) {
+      driftsChirho.push({
+        idChirho,
+        reasonChirho: "line-text-drift-chirho",
+        reportTextChirho: reportLineTextChirho,
+        liveTextChirho: liveLineTextChirho,
       });
     }
   }
@@ -1017,7 +1067,10 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   const rawHebrewReportShapeOkChirho =
     !rawHebrewReportExistsChirho ||
     (Array.isArray(rawReportChirho.spansChirho) &&
-      typeof rawReportChirho.sourceFilterChirho === "string");
+      typeof rawReportChirho.sourceFilterChirho === "string" &&
+      rawReportChirho.spansChirho.every(
+        (spanChirho) => typeof spanChirho.textChirho === "string" && typeof spanChirho.lineTextChirho === "string"
+      ));
   const rawHebrewPackManifestShapeOkChirho =
     !rawHebrewPackManifestExistsChirho ||
     (Array.isArray(rawHebrewPackManifestChirho.itemsChirho) &&
@@ -1025,7 +1078,8 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
         (itemChirho) =>
           typeof itemChirho.idChirho === "string" &&
           typeof itemChirho.validationStatusChirho === "string" &&
-          typeof itemChirho.textChirho === "string"
+          typeof itemChirho.textChirho === "string" &&
+          typeof itemChirho.lineTextChirho === "string"
       ));
   const passCHumanValidationBackupShapeOkResultChirho = passCHumanValidationBackupShapeOkChirho(
     passCHumanValidationBackupFileChirho,
@@ -1046,12 +1100,17 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     !latinSymbolPackManifestExistsChirho ||
     (Array.isArray(latinSymbolManifestChirho.itemsChirho) &&
       typeof latinSymbolManifestChirho.explicitSpanCountChirho === "number" &&
-      typeof latinSymbolManifestChirho.d1DerivedWordCountChirho === "number");
+      typeof latinSymbolManifestChirho.d1DerivedWordCountChirho === "number" &&
+      latinSymbolManifestChirho.itemsChirho.every(
+        (itemChirho) => typeof itemChirho.idChirho === "string" &&
+          typeof itemChirho.textChirho === "string" &&
+          typeof itemChirho.lineTextChirho === "string"
+      ));
   const latinSymbolReviewBackupShapeOkChirho =
     !latinSymbolReviewBackupExistsChirho ||
     (latinSymbolReviewBackupFileChirho.schemaVersionChirho === 1 &&
       Array.isArray(latinSymbolReviewBackupFileChirho.reviewsChirho));
-  const rawSpansChirho = rawReportChirho.spansChirho ?? [];
+  const rawSpansChirho = rawHebrewReportShapeOkChirho ? rawReportChirho.spansChirho ?? [] : [];
   const rawHebrewPackItemsChirho = rawHebrewPackManifestShapeOkChirho
     ? rawHebrewPackManifestChirho.itemsChirho ?? []
     : [];
@@ -1069,6 +1128,12 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     rawSpansChirho.every((spanChirho) => {
       const packetItemChirho = rawHebrewPackItemsByIdChirho.get(rawHebrewPackItemIdChirho(spanChirho));
       return packetItemChirho !== undefined && packetItemChirho.textChirho === spanChirho.textChirho;
+    });
+  const rawHebrewPackLineTextMatchesCurrentChirho =
+    rawHebrewPackIdsMatchCurrentChirho &&
+    rawSpansChirho.every((spanChirho) => {
+      const packetItemChirho = rawHebrewPackItemsByIdChirho.get(rawHebrewPackItemIdChirho(spanChirho));
+      return packetItemChirho !== undefined && packetItemChirho.lineTextChirho === spanChirho.lineTextChirho;
     });
   const rawHebrewPackStatusMatchesCurrentChirho =
     rawHebrewPackIdsMatchCurrentChirho &&
@@ -1150,6 +1215,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     packCountMatchesCurrentChirho: rawHebrewPackCountMatchesCurrentChirho,
     packIdsMatchCurrentChirho: rawHebrewPackIdsMatchCurrentChirho,
     packTextMatchesCurrentChirho: rawHebrewPackTextMatchesCurrentChirho,
+    packLineTextMatchesCurrentChirho: rawHebrewPackLineTextMatchesCurrentChirho,
     packStatusMatchesCurrentChirho: rawHebrewPackStatusMatchesCurrentChirho,
     liveReportMatchesSpanFilesChirho: rawHebrewReportLiveDriftsResultChirho.length === 0,
     liveReportDriftCountChirho: rawHebrewReportLiveDriftsResultChirho.length,
@@ -1329,10 +1395,16 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       const liveItemChirho = latinSymbolLiveItemsByIdChirho.get(itemChirho.idChirho);
       return liveItemChirho !== undefined && liveItemChirho.textChirho === itemChirho.textChirho;
     });
+  const latinSymbolReviewPacketLineTextMatchesCurrentChirho =
+    latinSymbolReviewPacketIdsMatchCurrentChirho &&
+    latinSymbolPacketItemsChirho.every((itemChirho) => {
+      const liveItemChirho = latinSymbolLiveItemsByIdChirho.get(itemChirho.idChirho);
+      return liveItemChirho !== undefined && liveItemChirho.lineTextChirho === itemChirho.lineTextChirho;
+    });
   const latinSymbolRemainingDecisionCountChirho =
     latinSymbolD1ReadErrorChirho !== null
       ? Math.max(currentLatinSymbolDecisionCountChirho, latinSymbolPacketItemsChirho.length)
-      : latinSymbolReviewPacketTextMatchesCurrentChirho
+      : latinSymbolReviewPacketTextMatchesCurrentChirho && latinSymbolReviewPacketLineTextMatchesCurrentChirho
       ? Math.max(0, currentLatinSymbolDecisionCountChirho - latinSymbolAcceptedDecisionIdsChirho.size)
       : currentLatinSymbolDecisionCountChirho;
   const latinSymbolVisionChirho = {
@@ -1346,6 +1418,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     reviewPacketCountMatchesCurrentChirho: latinSymbolReviewPacketCountMatchesCurrentChirho,
     reviewPacketIdsMatchCurrentChirho: latinSymbolReviewPacketIdsMatchCurrentChirho,
     reviewPacketTextMatchesCurrentChirho: latinSymbolReviewPacketTextMatchesCurrentChirho,
+    reviewPacketLineTextMatchesCurrentChirho: latinSymbolReviewPacketLineTextMatchesCurrentChirho,
     reviewedCleanCountChirho: latinSymbolReviewSummaryChirho.validReviewedCleanRowsChirho,
     reviewedIssueCountChirho: latinSymbolReviewSummaryChirho.validReviewedIssueRowsChirho,
     acceptedByPolicyCountChirho: latinSymbolPolicySummaryChirho.validAcceptedPolicyItemCountChirho,
@@ -1523,6 +1596,15 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     rawHebrewPackManifestExistsChirho &&
     rawHebrewPackManifestShapeOkChirho &&
     rawHebrewPackIdsMatchCurrentChirho &&
+    !rawHebrewPackLineTextMatchesCurrentChirho
+  ) {
+    remainingWorkChirho.push("raw Hebrew human review packet line text does not match current report; regenerate make-pass-c-hebrew-human-pack-chirho");
+  }
+  if (
+    rawSpansChirho.length !== 0 &&
+    rawHebrewPackManifestExistsChirho &&
+    rawHebrewPackManifestShapeOkChirho &&
+    rawHebrewPackIdsMatchCurrentChirho &&
     !rawHebrewPackStatusMatchesCurrentChirho
   ) {
     remainingWorkChirho.push("raw Hebrew human review packet validation statuses do not match current report; regenerate make-pass-c-hebrew-human-pack-chirho");
@@ -1612,6 +1694,16 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     !latinSymbolReviewPacketTextMatchesCurrentChirho
   ) {
     remainingWorkChirho.push("Latin/symbol vision review packet text does not match current live span/D1 text; regenerate make-latin-symbol-vision-pack-chirho");
+  }
+  if (
+    latinSymbolD1ReadErrorChirho === null &&
+    currentLatinSymbolDecisionCountChirho !== 0 &&
+    latinSymbolPackManifestExistsChirho &&
+    latinSymbolPackManifestShapeOkChirho &&
+    latinSymbolReviewPacketIdsMatchCurrentChirho &&
+    !latinSymbolReviewPacketLineTextMatchesCurrentChirho
+  ) {
+    remainingWorkChirho.push("Latin/symbol vision review packet line text does not match current live span/D1 context; regenerate make-latin-symbol-vision-pack-chirho");
   }
   if (latinSymbolReviewSummaryChirho.staleRowsChirho !== 0) {
     remainingWorkChirho.push(`${latinSymbolReviewSummaryChirho.staleRowsChirho} Latin/symbol review row(s) are stale against current live span/D1 text`);
@@ -1853,6 +1945,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Packet count matches current report: ${statusChirho.rawHebrewChirho.packCountMatchesCurrentChirho}`,
     `- Packet IDs match current report: ${statusChirho.rawHebrewChirho.packIdsMatchCurrentChirho}`,
     `- Packet text matches current report: ${statusChirho.rawHebrewChirho.packTextMatchesCurrentChirho}`,
+    `- Packet line text matches current report: ${statusChirho.rawHebrewChirho.packLineTextMatchesCurrentChirho}`,
     `- Packet validation statuses match current report: ${statusChirho.rawHebrewChirho.packStatusMatchesCurrentChirho}`,
     `- Raw report matches live span files: ${statusChirho.rawHebrewChirho.liveReportMatchesSpanFilesChirho}`,
     `- Raw report live drift items: ${statusChirho.rawHebrewChirho.liveReportDriftCountChirho}`,
@@ -1943,6 +2036,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Review packet count matches current state: ${statusChirho.latinSymbolVisionChirho.reviewPacketCountMatchesCurrentChirho}`,
     `- Review packet IDs match current state: ${statusChirho.latinSymbolVisionChirho.reviewPacketIdsMatchCurrentChirho}`,
     `- Review packet text matches current state: ${statusChirho.latinSymbolVisionChirho.reviewPacketTextMatchesCurrentChirho}`,
+    `- Review packet line text matches current state: ${statusChirho.latinSymbolVisionChirho.reviewPacketLineTextMatchesCurrentChirho}`,
     `- Accepted-clean reviews: ${statusChirho.latinSymbolVisionChirho.reviewedCleanCountChirho}`,
     `- Reviewed-issues rows: ${statusChirho.latinSymbolVisionChirho.reviewedIssueCountChirho}`,
     `- Accepted by explicit policy: ${statusChirho.latinSymbolVisionChirho.acceptedByPolicyCountChirho}`,

@@ -162,6 +162,9 @@ export function assertLatinSymbolManifestMatchesLiveChirho(
     if (liveItemChirho.textChirho !== packetItemChirho.textChirho) {
       throw new Error(`Latin/symbol packet is stale: ${packetItemChirho.idChirho} text changed; regenerate make-latin-symbol-vision-pack-chirho`);
     }
+    if (liveItemChirho.lineTextChirho !== packetItemChirho.lineTextChirho) {
+      throw new Error(`Latin/symbol packet is stale: ${packetItemChirho.idChirho} line text changed; regenerate make-latin-symbol-vision-pack-chirho`);
+    }
   }
   return liveByIdChirho;
 }
