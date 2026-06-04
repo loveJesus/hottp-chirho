@@ -34,7 +34,19 @@ const MODULE_CHIRHO = "record-latin-symbol-vision-review-chirho";
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
   const prefixChirho = `--${nameChirho}=`;
-  return argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho))?.slice(prefixChirho.length);
+  const matchedArgChirho = argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho));
+  if (matchedArgChirho === undefined) return undefined;
+  const valueChirho = matchedArgChirho.slice(prefixChirho.length);
+  if (valueChirho.length === 0) throw new Error(`--${nameChirho} must not be empty`);
+  return valueChirho;
+}
+
+function requiredArgValueChirho(argsChirho: string[], nameChirho: string): string {
+  const valueChirho = parseArgValueChirho(argsChirho, nameChirho);
+  if (valueChirho === undefined || valueChirho.trim().length === 0) {
+    throw new Error(`--${nameChirho} is required`);
+  }
+  return valueChirho.trim();
 }
 
 function normalizeVerdictChirho(valueChirho: string | undefined): string {
@@ -127,7 +139,7 @@ function mainChirho(): void {
     dbChirho.close();
     throw new Error("--accept-clean-chirho is required for accepted-clean after checking the target crop and full line against the print");
   }
-  const reviewerChirho = parseArgValueChirho(argsChirho, "reviewer") ?? "human-chirho";
+  const reviewerChirho = requiredArgValueChirho(argsChirho, "reviewer");
   const notesChirho = parseArgValueChirho(argsChirho, "notes") ?? null;
   const reviewChirho = saveLatinSymbolReviewChirho({
     dbChirho,
