@@ -135,6 +135,18 @@ const SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "syriac-blank-transcription-handoff-2026-06-04-chirho.md"
 );
+const HIDDEN_HEBREW_CANDIDATE_SCAN_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "hidden-hebrew-candidate-scan-2026-06-04-chirho.md"
+);
+const NON_LATIN_RESIDUE_CANDIDATE_SCAN_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "nonlatin-residue-candidate-scan-2026-06-04-chirho.md"
+);
 const LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -399,6 +411,17 @@ interface LatinSymbolReviewBackupSummaryChirho {
   localRowsMissingFromBackupChirho: number;
 }
 
+interface CandidateScanReportSummaryChirho {
+  reportPathChirho: string;
+  reportExistsChirho: boolean;
+  reportShapeOkChirho: boolean;
+  generatedAtChirho: string | null;
+  candidateLineCountChirho: number | null;
+  highPriorityCountChirho: number | null;
+  mediumPriorityCountChirho: number | null;
+  lowPriorityCountChirho: number | null;
+}
+
 interface CertificationStatusChirho {
   generatedAtChirho: string;
   reviewStartLinksChirho: Record<string, string | null>;
@@ -550,6 +573,10 @@ interface CertificationStatusChirho {
     liveNonNfcSpanTextFieldCountChirho: number;
     liveNonNfcSpanFileCountChirho: number;
   };
+  strictBlindScansChirho: {
+    hiddenHebrewChirho: CandidateScanReportSummaryChirho;
+    nonLatinResidueChirho: CandidateScanReportSummaryChirho;
+  };
   humanValidationDbChirho: HumanValidationSummaryChirho;
   passCHumanValidationBackupChirho: PassCHumanValidationBackupSummaryChirho;
   visionTierExpertConfirmationPolicyChirho: VisionTierExpertConfirmationSummaryForStatusChirho;
@@ -563,6 +590,50 @@ interface CertificationStatusChirho {
 function readJsonFileChirho<TChirho>(pathChirho: string, fallbackChirho: TChirho): TChirho {
   if (!existsSync(pathChirho)) return fallbackChirho;
   return JSON.parse(readFileSync(pathChirho, "utf8")) as TChirho;
+}
+
+function markdownNumberFieldChirho(markdownChirho: string, labelChirho: string): number | null {
+  const escapedLabelChirho = labelChirho.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const matchChirho = markdownChirho.match(new RegExp(`^- ${escapedLabelChirho}: (\\d+)`, "mu"));
+  if (matchChirho?.[1] === undefined) return null;
+  return Number(matchChirho[1]);
+}
+
+function candidateScanReportSummaryChirho(pathChirho: string): CandidateScanReportSummaryChirho {
+  const reportPathChirho = relativeProjectPathChirho(pathChirho);
+  if (!existsSync(pathChirho)) {
+    return {
+      reportPathChirho,
+      reportExistsChirho: false,
+      reportShapeOkChirho: false,
+      generatedAtChirho: null,
+      candidateLineCountChirho: null,
+      highPriorityCountChirho: null,
+      mediumPriorityCountChirho: null,
+      lowPriorityCountChirho: null,
+    };
+  }
+  const textChirho = readFileSync(pathChirho, "utf8");
+  const generatedAtChirho = textChirho.match(/^Generated: (.+)$/mu)?.[1] ?? null;
+  const candidateLineCountChirho = markdownNumberFieldChirho(textChirho, "Candidate lines");
+  const highPriorityCountChirho = markdownNumberFieldChirho(textChirho, "High priority");
+  const mediumPriorityCountChirho = markdownNumberFieldChirho(textChirho, "Medium priority");
+  const lowPriorityCountChirho = markdownNumberFieldChirho(textChirho, "Low priority included");
+  return {
+    reportPathChirho,
+    reportExistsChirho: true,
+    reportShapeOkChirho:
+      generatedAtChirho !== null &&
+      candidateLineCountChirho !== null &&
+      highPriorityCountChirho !== null &&
+      mediumPriorityCountChirho !== null &&
+      lowPriorityCountChirho !== null,
+    generatedAtChirho,
+    candidateLineCountChirho,
+    highPriorityCountChirho,
+    mediumPriorityCountChirho,
+    lowPriorityCountChirho,
+  };
 }
 
 function shellSingleQuoteChirho(valueChirho: string): string {
@@ -1888,6 +1959,10 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     liveNonNfcSpanTextFieldCountChirho: nonNfcSpanTextFieldsChirho.length,
     liveNonNfcSpanFileCountChirho: nonNfcSpanFilesChirho.size,
   };
+  const strictBlindScansChirho = {
+    hiddenHebrewChirho: candidateScanReportSummaryChirho(HIDDEN_HEBREW_CANDIDATE_SCAN_PATH_CHIRHO),
+    nonLatinResidueChirho: candidateScanReportSummaryChirho(NON_LATIN_RESIDUE_CANDIDATE_SCAN_PATH_CHIRHO),
+  };
   const remainingWorkChirho: string[] = [];
   if (!exportReportExistsChirho) {
     remainingWorkChirho.push("strict export report is missing; run export-markdown-chirho --all --strict");
@@ -2328,6 +2403,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     visionTierChirho,
     latinSymbolVisionChirho,
     normalizationChirho,
+    strictBlindScansChirho,
     humanValidationDbChirho: humanSummaryChirho,
     passCHumanValidationBackupChirho: passCHumanValidationBackupSummaryChirho,
     visionTierExpertConfirmationPolicyChirho: visionTierConfirmationSummaryForStatusChirho,
@@ -2433,6 +2509,18 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   const guardedWlcCorrectionRoutingLinesChirho = statusChirho.structuralChirho.guardedWlcCorrectionCommandsChirho.length === 0
     ? ["- No guarded WLC correction is currently pending; if a new saved issue appears, confirm it against the print before applying any generated command."]
     : ["- Apply guarded WLC corrections only after each displayed print-confirmation question is explicitly settled."];
+  const candidateScanLinesChirho = (labelChirho: string, scanChirho: CandidateScanReportSummaryChirho): string[] => [
+    `- ${labelChirho}: \`${scanChirho.reportPathChirho}\``,
+    `  - Report exists: ${scanChirho.reportExistsChirho}`,
+    `  - Report shape OK: ${scanChirho.reportShapeOkChirho}`,
+    `  - Generated: ${scanChirho.generatedAtChirho ?? "unknown"}`,
+    `  - Candidate lines: ${scanChirho.candidateLineCountChirho ?? "unknown"}`,
+    `  - High/medium/low: ${[
+      scanChirho.highPriorityCountChirho ?? "unknown",
+      scanChirho.mediumPriorityCountChirho ?? "unknown",
+      scanChirho.lowPriorityCountChirho ?? "unknown",
+    ].join("/")}`,
+  ];
   const hallelujahReviewCountChirho =
     statusChirho.rawHebrewChirho.livePendingSpanCountChirho +
     pendingExpertScriptCountChirho("hebrew-chirho") +
@@ -2557,6 +2645,13 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "### Blank Expert Transcription Handoff",
     "",
     ...blankVisionTierHandoffLinesChirho,
+    "",
+    "## Strict-Blind Scanner Reports",
+    "",
+    "These heuristic reports do not certify text and do not change completion math; they surface whether the latest saved scanner queues still contain machine-detected hidden-text candidates.",
+    "",
+    ...candidateScanLinesChirho("Hidden Hebrew detector", statusChirho.strictBlindScansChirho.hiddenHebrewChirho),
+    ...candidateScanLinesChirho("Non-Latin residue detector", statusChirho.strictBlindScansChirho.nonLatinResidueChirho),
     "",
     "## Unicode Normalization",
     "",
