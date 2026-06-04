@@ -23,9 +23,11 @@
  *   bun src-chirho/sync-to-cloud-chirho.ts --pilot   # only vols 1-5
  */
 
-import { existsSync, readdirSync, writeFileSync } from "fs";
+import { existsSync, readdirSync } from "fs";
 import { join } from "path";
+import type { SQLQueryBindings as SQLQueryBindingsChirho } from "bun:sqlite";
 
+import { writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import {
   PROJECT_ROOT_CHIRHO,
   IMAGES_DIR_CHIRHO,
@@ -58,7 +60,7 @@ function sqlEscapeChirho(valChirho: unknown): string {
 
 interface RowChirho { [key: string]: unknown }
 
-function fetchRowsChirho(sqlChirho: string, paramsChirho: unknown[] = []): RowChirho[] {
+function fetchRowsChirho(sqlChirho: string, paramsChirho: SQLQueryBindingsChirho[] = []): RowChirho[] {
   const stmtChirho = sqliteChirho.prepare(sqlChirho);
   return stmtChirho.all(...paramsChirho) as RowChirho[];
 }
@@ -82,7 +84,7 @@ function writeBatchedSqlChirho(
       dirChirho,
       `${prefixChirho}-${String(Math.floor(iChirho / D1_BATCH_SIZE_CHIRHO)).padStart(4, "0")}-chirho.sql`
     );
-    writeFileSync(fnChirho, chunkChirho.join("\n"), "utf8");
+    writeTextAtomicChirho(fnChirho, chunkChirho.join("\n"));
     filesChirho.push(fnChirho);
   }
   return filesChirho;

@@ -23,9 +23,10 @@
  *   4. Upload the snapshot JSON body to R2 at the underlay_r2_key path.
  */
 
-import { writeFileSync, existsSync } from "fs";
+import { existsSync } from "fs";
 import { join } from "path";
 
+import { writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { initDbChirho, sqliteChirho } from "./db-chirho.ts";
 import { runCmdChirho, logChirho, ensureDirChirho } from "./utils-chirho.ts";
@@ -56,7 +57,7 @@ function buildInsertChirho(tableChirho: string, rowChirho: RowChirho): string {
 async function applyD1Chirho(sqlChirho: string, labelChirho: string): Promise<void> {
   ensureDirChirho(SYNC_TMP_DIR_CHIRHO);
   const fnChirho = join(SYNC_TMP_DIR_CHIRHO, `one-page-${labelChirho}-chirho.sql`);
-  writeFileSync(fnChirho, sqlChirho, "utf8");
+  writeTextAtomicChirho(fnChirho, sqlChirho);
   await runCmdChirho(
     [
       "bunx", "wrangler", "d1", "execute",

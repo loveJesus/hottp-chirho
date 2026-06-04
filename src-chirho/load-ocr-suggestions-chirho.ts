@@ -24,8 +24,9 @@
  * --triage lets a per-volume probe (read_volume_page_chirho.py --out-triage) feed
  * its own triage JSON without clobbering the canonical vol-1 corpus triage.
  */
-import { readFileSync, writeFileSync, existsSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
+import { writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import { parseCliArgPrefixValueChirho } from "./utils-chirho.ts";
 
 const PROJECT_ROOT_CHIRHO = resolve(import.meta.dir, "..");
@@ -142,7 +143,7 @@ function mainChirho(): void {
     emittedChirho += 1;
   }
   linesChirho.push("COMMIT;");
-  writeFileSync(OUT_SQL_PATH_CHIRHO, linesChirho.join("\n") + "\n", "utf8");
+  writeTextAtomicChirho(OUT_SQL_PATH_CHIRHO, linesChirho.join("\n") + "\n");
 
   console.log(`triage records: ${recordsChirho.length}`);
   console.log(`  emitted INSERTs (AUTO+REVIEW, tess-Hebrew, len>=2): ${emittedChirho}`);
