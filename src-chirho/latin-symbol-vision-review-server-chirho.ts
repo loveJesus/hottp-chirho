@@ -49,15 +49,15 @@ const SYMBOL_RISK_OPTIONS_CHIRHO = [
   { valueChirho: "not-symbol-chirho", labelChirho: "Not symbol" },
 ] as const;
 const ISSUE_FLAG_OPTIONS_CHIRHO = [
-  { valueChirho: "letters-chirho", labelChirho: "Letters" },
-  { valueChirho: "punctuation-chirho", labelChirho: "Punctuation" },
-  { valueChirho: "spacing-chirho", labelChirho: "Spacing" },
-  { valueChirho: "wrong-script-chirho", labelChirho: "Wrong script" },
-  { valueChirho: "segmentation-chirho", labelChirho: "Segmentation" },
-  { valueChirho: "garbled-text-chirho", labelChirho: "Garbled text" },
-  { valueChirho: "missing-text-chirho", labelChirho: "Missing text" },
-  { valueChirho: "extra-text-chirho", labelChirho: "Extra text" },
-  { valueChirho: "wrong-language-chirho", labelChirho: "Wrong language" },
+  { valueChirho: "letters-chirho", labelChirho: "Letters", helpChirho: "Wrong base letters, digits, witness sigla, or codepoint choice." },
+  { valueChirho: "punctuation-chirho", labelChirho: "Punctuation", helpChirho: "Wrong comma, period, bracket, operator, quote, or apparatus punctuation." },
+  { valueChirho: "spacing-chirho", labelChirho: "Spacing", helpChirho: "Missing or extra space between words, references, sigla, or operators." },
+  { valueChirho: "wrong-script-chirho", labelChirho: "Wrong script", helpChirho: "The item belongs in a different script lane." },
+  { valueChirho: "segmentation-chirho", labelChirho: "Segmentation", helpChirho: "Wrong split/merge/box: multiple items lumped, one item split, or wrong crop." },
+  { valueChirho: "garbled-text-chirho", labelChirho: "Garbled text", helpChirho: "The stored text is unreadable or not what the print shows." },
+  { valueChirho: "missing-text-chirho", labelChirho: "Missing text", helpChirho: "Printed text or symbol is absent from the stored item." },
+  { valueChirho: "extra-text-chirho", labelChirho: "Extra text", helpChirho: "Stored text includes pixels that are not part of this item." },
+  { valueChirho: "wrong-language-chirho", labelChirho: "Wrong language", helpChirho: "The script is plausible, but the language/category is wrong for this review lane." },
 ];
 
 interface ReviewRequestChirho {
@@ -318,6 +318,12 @@ function htmlChirho(): string {
     }
     function currentItemChirho() { return activeItemsChirho()[indexChirho]; }
     function imageSrcChirho(pathChirho) { return "/asset-chirho?path=" + encodeURIComponent(pathChirho); }
+    function currentIssueFlagsChirho() {
+      return [...document.querySelectorAll(".issue-option-chirho input:checked")].map((nodeChirho) => nodeChirho.value);
+    }
+    function reviewActionTextChirho() {
+      return currentIssueFlagsChirho().length === 0 ? "Accept as clean" : "Save issue";
+    }
     function symbolRiskLabelChirho(valueChirho) {
       const optionChirho = symbolRiskOptionsChirho.find((candidateChirho) => candidateChirho.valueChirho === valueChirho);
       return optionChirho ? optionChirho.labelChirho : valueChirho;
@@ -387,13 +393,21 @@ function htmlChirho(): string {
       }
       const formChirho = elChirho("div", { classChirho: "box-chirho" });
       formChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Issue flags" }));
+      formChirho.appendChild(elChirho("div", {
+        classChirho: "label-chirho",
+        textChirho: "No checked issue flags records accepted-clean and removes this item from pending. Check a flag for any wrong letter/digit/siglum, punctuation, spacing, crop, split, missing text, or extra text."
+      }));
       const issueGridChirho = elChirho("div", { classChirho: "issue-grid-chirho" });
       for (const optionChirho of issueFlagOptionsChirho) {
         const inputChirho = elChirho("input", { type: "checkbox", value: optionChirho.valueChirho });
         if (reviewChirho?.issueFlagsChirho?.includes(optionChirho.valueChirho)) {
           inputChirho.checked = true;
         }
-        const labelChirho = elChirho("label", { classChirho: "issue-option-chirho" }, [inputChirho, textNodeChirho(optionChirho.labelChirho)]);
+        const labelChirho = elChirho("label", {
+          classChirho: "issue-option-chirho",
+          title: optionChirho.helpChirho,
+          "aria-label": optionChirho.labelChirho + ": " + optionChirho.helpChirho
+        }, [inputChirho, textNodeChirho(optionChirho.labelChirho)]);
         issueGridChirho.appendChild(labelChirho);
       }
       formChirho.appendChild(issueGridChirho);
@@ -402,7 +416,13 @@ function htmlChirho(): string {
       notesChirho.value = reviewChirho?.notesChirho ?? "";
       formChirho.appendChild(notesChirho);
       const actionsChirho = elChirho("div", { classChirho: "actions-chirho" });
-      const continueChirho = elChirho("button", { classChirho: "continue-chirho", type: "button", textChirho: "Continue" });
+      const continueChirho = elChirho("button", { classChirho: "continue-chirho", type: "button", textChirho: reviewActionTextChirho() });
+      const updateContinueButtonChirho = () => {
+        continueChirho.textContent = reviewActionTextChirho();
+      };
+      for (const checkboxChirho of issueGridChirho.querySelectorAll("input")) {
+        checkboxChirho.addEventListener("change", updateContinueButtonChirho);
+      }
       continueChirho.addEventListener("click", () => saveCurrentChirho(itemChirho));
       const skipChirho = elChirho("button", { type: "button", textChirho: "Skip" });
       skipChirho.addEventListener("click", () => { indexChirho = Math.min(indexChirho + 1, Math.max(0, activeItemsChirho().length - 1)); renderChirho(); });
@@ -414,7 +434,7 @@ function htmlChirho(): string {
       appChirho.appendChild(sideChirho);
     }
     async function saveCurrentChirho(itemChirho) {
-      const flagsChirho = [...document.querySelectorAll(".issue-option-chirho input:checked")].map((nodeChirho) => nodeChirho.value);
+      const flagsChirho = currentIssueFlagsChirho();
       const notesChirho = document.getElementById("notes-chirho").value;
       setStatusChirho("Saving...");
       const responseChirho = await fetch("/api-chirho/review-chirho", {
