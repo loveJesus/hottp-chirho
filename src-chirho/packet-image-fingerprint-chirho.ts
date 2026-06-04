@@ -3,6 +3,7 @@
 
 import { createHash } from "crypto";
 import { existsSync, readFileSync } from "fs";
+import { relative, resolve, sep } from "path";
 
 export interface PacketImageHashFieldsChirho {
   sourcePathChirho: string;
@@ -26,6 +27,16 @@ export interface PacketImageHashDriftChirho {
   actualHashChirho: string | null;
 }
 
+export interface PacketMarkdownPathDriftChirho {
+  idChirho: string;
+  markdownFieldChirho: string;
+  pathFieldChirho: string;
+  reasonChirho: string;
+  expectedMarkdownPathChirho: string | null;
+  actualMarkdownPathChirho: string | null;
+  absolutePathChirho: string | null;
+}
+
 interface CachedPacketImageHashChirho {
   hashChirho: string | null;
   reasonChirho: string | null;
@@ -35,6 +46,15 @@ const PACKET_IMAGE_HASH_FIELD_PAIRS_CHIRHO = [
   ["sourcePathChirho", "sourceImageHashChirho"],
   ["targetPathChirho", "targetImageHashChirho"],
   ["linePathChirho", "lineImageHashChirho"],
+] as const;
+
+export const TARGET_LINE_MARKDOWN_PATH_PAIRS_CHIRHO = [
+  ["targetPathChirho", "targetMarkdownPathChirho"],
+  ["linePathChirho", "lineMarkdownPathChirho"],
+] as const;
+
+export const EXPERT_MARKDOWN_PATH_PAIRS_CHIRHO = [
+  ["packetPathChirho", "markdownPathChirho"],
 ] as const;
 
 export function fileSha256Chirho(pathChirho: string): string {
@@ -103,6 +123,62 @@ export function packetImageHashDriftsChirho(itemsChirho: PacketImageHashItemChir
   return driftsChirho;
 }
 
+function normalizedRelativePathChirho(baseDirChirho: string, absolutePathChirho: string): string | null {
+  const baseChirho = resolve(baseDirChirho);
+  const resolvedPathChirho = resolve(absolutePathChirho);
+  if (resolvedPathChirho !== baseChirho && !resolvedPathChirho.startsWith(`${baseChirho}${sep}`)) return null;
+  return relative(baseChirho, resolvedPathChirho).split(sep).join("/");
+}
+
+export function packetMarkdownPathDriftsChirho<ItemChirho extends { idChirho: string }>(
+  itemsChirho: ItemChirho[],
+  baseDirChirho: string,
+  pairsChirho: ReadonlyArray<readonly [keyof ItemChirho & string, keyof ItemChirho & string]>
+): PacketMarkdownPathDriftChirho[] {
+  const driftsChirho: PacketMarkdownPathDriftChirho[] = [];
+  for (const itemChirho of itemsChirho) {
+    for (const [pathFieldChirho, markdownFieldChirho] of pairsChirho) {
+      const absolutePathChirho = itemChirho[pathFieldChirho];
+      const actualMarkdownPathChirho = itemChirho[markdownFieldChirho];
+      if (typeof absolutePathChirho !== "string" || typeof actualMarkdownPathChirho !== "string") {
+        driftsChirho.push({
+          idChirho: itemChirho.idChirho,
+          markdownFieldChirho,
+          pathFieldChirho,
+          reasonChirho: "missing-markdown-path-field-chirho",
+          expectedMarkdownPathChirho: null,
+          actualMarkdownPathChirho: typeof actualMarkdownPathChirho === "string" ? actualMarkdownPathChirho : null,
+          absolutePathChirho: typeof absolutePathChirho === "string" ? absolutePathChirho : null,
+        });
+        continue;
+      }
+      const expectedMarkdownPathChirho = normalizedRelativePathChirho(baseDirChirho, absolutePathChirho);
+      if (expectedMarkdownPathChirho === null) {
+        driftsChirho.push({
+          idChirho: itemChirho.idChirho,
+          markdownFieldChirho,
+          pathFieldChirho,
+          reasonChirho: "absolute-path-outside-packet-chirho",
+          expectedMarkdownPathChirho,
+          actualMarkdownPathChirho,
+          absolutePathChirho,
+        });
+      } else if (actualMarkdownPathChirho !== expectedMarkdownPathChirho) {
+        driftsChirho.push({
+          idChirho: itemChirho.idChirho,
+          markdownFieldChirho,
+          pathFieldChirho,
+          reasonChirho: "markdown-path-drift-chirho",
+          expectedMarkdownPathChirho,
+          actualMarkdownPathChirho,
+          absolutePathChirho,
+        });
+      }
+    }
+  }
+  return driftsChirho;
+}
+
 export function summarizePacketImageHashDriftChirho(driftChirho: PacketImageHashDriftChirho): string {
   const expectedChirho = driftChirho.expectedHashChirho === null
     ? "expected=null"
@@ -117,5 +193,16 @@ export function summarizePacketImageHashDriftChirho(driftChirho: PacketImageHash
     expectedChirho,
     actualChirho,
     `path="${driftChirho.pathChirho}"`,
+  ].join(" ");
+}
+
+export function summarizePacketMarkdownPathDriftChirho(driftChirho: PacketMarkdownPathDriftChirho): string {
+  return [
+    driftChirho.idChirho,
+    driftChirho.markdownFieldChirho,
+    driftChirho.reasonChirho,
+    `expected="${driftChirho.expectedMarkdownPathChirho ?? "null"}"`,
+    `actual="${driftChirho.actualMarkdownPathChirho ?? "null"}"`,
+    `absolute="${driftChirho.absolutePathChirho ?? "null"}"`,
   ].join(" ");
 }

@@ -20,6 +20,8 @@ import {
 } from "./latin-symbol-vision-live-items-chirho.ts";
 import {
   packetImageHashDriftsChirho,
+  packetMarkdownPathDriftsChirho,
+  TARGET_LINE_MARKDOWN_PATH_PAIRS_CHIRHO,
   type PacketImageHashFieldsChirho,
 } from "./packet-image-fingerprint-chirho.ts";
 
@@ -155,6 +157,8 @@ export function assertLatinSymbolManifestMatchesLiveChirho(
       typeof packetItemChirho.sourcePathChirho !== "string" ||
       typeof packetItemChirho.targetPathChirho !== "string" ||
       typeof packetItemChirho.linePathChirho !== "string" ||
+      typeof packetItemChirho.targetMarkdownPathChirho !== "string" ||
+      typeof packetItemChirho.lineMarkdownPathChirho !== "string" ||
       typeof packetItemChirho.sourceImageHashChirho !== "string" ||
       typeof packetItemChirho.targetImageHashChirho !== "string" ||
       typeof packetItemChirho.lineImageHashChirho !== "string"
@@ -184,6 +188,16 @@ export function assertLatinSymbolManifestMatchesLiveChirho(
   if (imageDriftsChirho.length !== 0) {
     throw new Error(
       `Latin/symbol packet is stale: ${imageDriftsChirho.length} image hash drift(s); regenerate make-latin-symbol-vision-pack-chirho`
+    );
+  }
+  const markdownPathDriftsChirho = packetMarkdownPathDriftsChirho(
+    packetItemsChirho,
+    LATIN_SYMBOL_PACK_DIR_CHIRHO,
+    TARGET_LINE_MARKDOWN_PATH_PAIRS_CHIRHO
+  );
+  if (markdownPathDriftsChirho.length !== 0) {
+    throw new Error(
+      `Latin/symbol packet is stale: ${markdownPathDriftsChirho.length} markdown image path drift(s); regenerate make-latin-symbol-vision-pack-chirho`
     );
   }
   return liveByIdChirho;

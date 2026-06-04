@@ -37,8 +37,12 @@ import {
   readPassCHumanValidationBackupFileChirho,
 } from "./pass-c-human-validation-backup-chirho.ts";
 import {
+  EXPERT_MARKDOWN_PATH_PAIRS_CHIRHO,
   packetImageHashDriftsChirho,
+  packetMarkdownPathDriftsChirho,
+  summarizePacketMarkdownPathDriftChirho,
   summarizePacketImageHashDriftChirho,
+  TARGET_LINE_MARKDOWN_PATH_PAIRS_CHIRHO,
   type PacketImageHashFieldsChirho,
 } from "./packet-image-fingerprint-chirho.ts";
 import {
@@ -78,48 +82,33 @@ const RAW_HEBREW_REPORT_PATH_CHIRHO = join(
   "pass-c-hebrew-validation-chirho",
   "pass-c-hebrew-validation-chirho.json"
 );
-const EXPERT_PACK_MANIFEST_PATH_CHIRHO = join(
+const EXPERT_PACK_DIR_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "workspace-chirho",
   "expert-confirm-pack-chirho",
-  "2026-05-31-chirho",
-  "manifest-chirho.json"
+  "2026-05-31-chirho"
 );
+const EXPERT_PACK_MANIFEST_PATH_CHIRHO = join(EXPERT_PACK_DIR_CHIRHO, "manifest-chirho.json");
 const EXPERT_PACK_INDEX_PATH_CHIRHO = join(
-  PROJECT_ROOT_CHIRHO,
-  "workspace-chirho",
-  "expert-confirm-pack-chirho",
-  "2026-05-31-chirho",
+  EXPERT_PACK_DIR_CHIRHO,
   "index-chirho.md"
 );
-const RAW_HEBREW_PACK_INDEX_PATH_CHIRHO = join(
+const RAW_HEBREW_PACK_DIR_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "workspace-chirho",
   "pass-c-hebrew-human-pack-chirho",
-  "2026-05-31-chirho",
-  "index-chirho.md"
+  "2026-05-31-chirho"
 );
-const RAW_HEBREW_PACK_MANIFEST_PATH_CHIRHO = join(
-  PROJECT_ROOT_CHIRHO,
-  "workspace-chirho",
-  "pass-c-hebrew-human-pack-chirho",
-  "2026-05-31-chirho",
-  "manifest-chirho.json"
-);
-const LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO = join(
+const RAW_HEBREW_PACK_INDEX_PATH_CHIRHO = join(RAW_HEBREW_PACK_DIR_CHIRHO, "index-chirho.md");
+const RAW_HEBREW_PACK_MANIFEST_PATH_CHIRHO = join(RAW_HEBREW_PACK_DIR_CHIRHO, "manifest-chirho.json");
+const LATIN_SYMBOL_PACK_DIR_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "workspace-chirho",
   "latin-symbol-vision-pack-chirho",
-  "2026-05-31-chirho",
-  "manifest-chirho.json"
+  "2026-05-31-chirho"
 );
-const LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO = join(
-  PROJECT_ROOT_CHIRHO,
-  "workspace-chirho",
-  "latin-symbol-vision-pack-chirho",
-  "2026-05-31-chirho",
-  "index-chirho.md"
-);
+const LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO = join(LATIN_SYMBOL_PACK_DIR_CHIRHO, "manifest-chirho.json");
+const LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO = join(LATIN_SYMBOL_PACK_DIR_CHIRHO, "index-chirho.md");
 const REVIEWER_SCOPE_GUIDE_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -227,6 +216,8 @@ interface RawHebrewPackItemChirho extends PacketImageHashFieldsChirho {
   validationStatusChirho: string;
   textChirho: string;
   lineTextChirho: string;
+  targetMarkdownPathChirho: string;
+  lineMarkdownPathChirho: string;
 }
 
 interface RawHebrewPackManifestChirho {
@@ -273,6 +264,8 @@ interface LatinSymbolPackItemChirho extends PacketImageHashFieldsChirho {
   idChirho: string;
   textChirho: string;
   lineTextChirho: string;
+  targetMarkdownPathChirho: string;
+  lineMarkdownPathChirho: string;
 }
 
 interface LatinSymbolPackManifestChirho {
@@ -450,6 +443,9 @@ interface CertificationStatusChirho {
     packImagesMatchCurrentChirho: boolean;
     packImageDriftCountChirho: number;
     packImageDriftSamplesChirho: string[];
+    packMarkdownPathsMatchCurrentChirho: boolean;
+    packMarkdownPathDriftCountChirho: number;
+    packMarkdownPathDriftSamplesChirho: string[];
     packStatusMatchesCurrentChirho: boolean;
     liveReportMatchesSpanFilesChirho: boolean;
     liveReportDriftCountChirho: number;
@@ -473,6 +469,9 @@ interface CertificationStatusChirho {
     manifestImagesMatchCurrentChirho: boolean;
     manifestImageDriftCountChirho: number;
     manifestImageDriftSamplesChirho: string[];
+    manifestMarkdownPathsMatchCurrentChirho: boolean;
+    manifestMarkdownPathDriftCountChirho: number;
+    manifestMarkdownPathDriftSamplesChirho: string[];
     confirmedByPolicyCountChirho: number;
     reviewedIssueByPolicyCountChirho: number;
     remainingConfirmationCountChirho: number;
@@ -492,6 +491,9 @@ interface CertificationStatusChirho {
     reviewPacketImagesMatchCurrentChirho: boolean;
     reviewPacketImageDriftCountChirho: number;
     reviewPacketImageDriftSamplesChirho: string[];
+    reviewPacketMarkdownPathsMatchCurrentChirho: boolean;
+    reviewPacketMarkdownPathDriftCountChirho: number;
+    reviewPacketMarkdownPathDriftSamplesChirho: string[];
     reviewedCleanCountChirho: number;
     reviewedIssueCountChirho: number;
     acceptedByPolicyCountChirho: number;
@@ -1150,6 +1152,8 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
           typeof itemChirho.sourcePathChirho === "string" &&
           typeof itemChirho.targetPathChirho === "string" &&
           typeof itemChirho.linePathChirho === "string" &&
+          typeof itemChirho.targetMarkdownPathChirho === "string" &&
+          typeof itemChirho.lineMarkdownPathChirho === "string" &&
           typeof itemChirho.sourceImageHashChirho === "string" &&
           typeof itemChirho.targetImageHashChirho === "string" &&
           typeof itemChirho.lineImageHashChirho === "string"
@@ -1184,6 +1188,8 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
           typeof itemChirho.sourcePathChirho === "string" &&
           typeof itemChirho.targetPathChirho === "string" &&
           typeof itemChirho.linePathChirho === "string" &&
+          typeof itemChirho.targetMarkdownPathChirho === "string" &&
+          typeof itemChirho.lineMarkdownPathChirho === "string" &&
           typeof itemChirho.sourceImageHashChirho === "string" &&
           typeof itemChirho.targetImageHashChirho === "string" &&
           typeof itemChirho.lineImageHashChirho === "string"
@@ -1224,6 +1230,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       return packetItemChirho !== undefined && packetItemChirho.validationStatusChirho === spanChirho.validationStatusChirho;
     });
   const rawHebrewPackImageDriftsChirho = packetImageHashDriftsChirho(rawHebrewPackItemsChirho);
+  const rawHebrewPackMarkdownPathDriftsChirho = packetMarkdownPathDriftsChirho(
+    rawHebrewPackItemsChirho,
+    RAW_HEBREW_PACK_DIR_CHIRHO,
+    TARGET_LINE_MARKDOWN_PATH_PAIRS_CHIRHO
+  );
   const rawHebrewReportLiveDriftsResultChirho = rawHebrewReportLiveDriftsChirho(rawSpansChirho);
   const humanValidationRowsChirho = validationRowsChirho(dbPathChirho);
   const humanSummaryChirho = summarizeHumanValidationsChirho(humanValidationRowsChirho, rawSpansChirho);
@@ -1304,6 +1315,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     packImageDriftSamplesChirho: rawHebrewPackImageDriftsChirho
       .slice(0, 8)
       .map(summarizePacketImageHashDriftChirho),
+    packMarkdownPathsMatchCurrentChirho: rawHebrewPackMarkdownPathDriftsChirho.length === 0,
+    packMarkdownPathDriftCountChirho: rawHebrewPackMarkdownPathDriftsChirho.length,
+    packMarkdownPathDriftSamplesChirho: rawHebrewPackMarkdownPathDriftsChirho
+      .slice(0, 8)
+      .map(summarizePacketMarkdownPathDriftChirho),
     packStatusMatchesCurrentChirho: rawHebrewPackStatusMatchesCurrentChirho,
     liveReportMatchesSpanFilesChirho: rawHebrewReportLiveDriftsResultChirho.length === 0,
     liveReportDriftCountChirho: rawHebrewReportLiveDriftsResultChirho.length,
@@ -1338,6 +1354,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
       );
     });
   const visionTierManifestImageDriftsChirho = expertPackImageDriftsChirho(expertManifestItemsChirho);
+  const visionTierManifestMarkdownPathDriftsChirho = packetMarkdownPathDriftsChirho(
+    expertManifestItemsChirho,
+    EXPERT_PACK_DIR_CHIRHO,
+    EXPERT_MARKDOWN_PATH_PAIRS_CHIRHO
+  );
   const visionTierConfirmationSummaryChirho = summarizeVisionTierExpertConfirmationsChirho(
     visionTierExpertConfirmationFileChirho,
     visionTierExpertConfirmationPolicyExistsChirho,
@@ -1397,6 +1418,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     manifestImageDriftSamplesChirho: visionTierManifestImageDriftsChirho
       .slice(0, 8)
       .map(summarizeExpertPackImageDriftChirho),
+    manifestMarkdownPathsMatchCurrentChirho: visionTierManifestMarkdownPathDriftsChirho.length === 0,
+    manifestMarkdownPathDriftCountChirho: visionTierManifestMarkdownPathDriftsChirho.length,
+    manifestMarkdownPathDriftSamplesChirho: visionTierManifestMarkdownPathDriftsChirho
+      .slice(0, 8)
+      .map(summarizePacketMarkdownPathDriftChirho),
     confirmedByPolicyCountChirho: visionTierConfirmationSummaryChirho.validConfirmedPolicyItemCountChirho,
     reviewedIssueByPolicyCountChirho: visionTierConfirmationSummaryChirho.validReviewedIssuePolicyItemCountChirho,
     remainingConfirmationCountChirho: visionTierRemainingConfirmationCountChirho,
@@ -1497,12 +1523,20 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     });
   const latinSymbolReviewPacketImageDriftsChirho = packetImageHashDriftsChirho(latinSymbolPacketItemsChirho);
   const latinSymbolReviewPacketImagesMatchCurrentChirho = latinSymbolReviewPacketImageDriftsChirho.length === 0;
+  const latinSymbolReviewPacketMarkdownPathDriftsChirho = packetMarkdownPathDriftsChirho(
+    latinSymbolPacketItemsChirho,
+    LATIN_SYMBOL_PACK_DIR_CHIRHO,
+    TARGET_LINE_MARKDOWN_PATH_PAIRS_CHIRHO
+  );
+  const latinSymbolReviewPacketMarkdownPathsMatchCurrentChirho =
+    latinSymbolReviewPacketMarkdownPathDriftsChirho.length === 0;
   const latinSymbolRemainingDecisionCountChirho =
     latinSymbolD1ReadErrorChirho !== null
       ? Math.max(currentLatinSymbolDecisionCountChirho, latinSymbolPacketItemsChirho.length)
       : latinSymbolReviewPacketTextMatchesCurrentChirho &&
           latinSymbolReviewPacketLineTextMatchesCurrentChirho &&
-          latinSymbolReviewPacketImagesMatchCurrentChirho
+          latinSymbolReviewPacketImagesMatchCurrentChirho &&
+          latinSymbolReviewPacketMarkdownPathsMatchCurrentChirho
       ? Math.max(0, currentLatinSymbolDecisionCountChirho - latinSymbolAcceptedDecisionIdsChirho.size)
       : currentLatinSymbolDecisionCountChirho;
   const latinSymbolVisionChirho = {
@@ -1522,6 +1556,11 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     reviewPacketImageDriftSamplesChirho: latinSymbolReviewPacketImageDriftsChirho
       .slice(0, 8)
       .map(summarizePacketImageHashDriftChirho),
+    reviewPacketMarkdownPathsMatchCurrentChirho: latinSymbolReviewPacketMarkdownPathsMatchCurrentChirho,
+    reviewPacketMarkdownPathDriftCountChirho: latinSymbolReviewPacketMarkdownPathDriftsChirho.length,
+    reviewPacketMarkdownPathDriftSamplesChirho: latinSymbolReviewPacketMarkdownPathDriftsChirho
+      .slice(0, 8)
+      .map(summarizePacketMarkdownPathDriftChirho),
     reviewedCleanCountChirho: latinSymbolReviewSummaryChirho.validReviewedCleanRowsChirho,
     reviewedIssueCountChirho: latinSymbolReviewSummaryChirho.validReviewedIssueRowsChirho,
     acceptedByPolicyCountChirho: latinSymbolPolicySummaryChirho.validAcceptedPolicyItemCountChirho,
@@ -1715,6 +1754,14 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     rawSpansChirho.length !== 0 &&
     rawHebrewPackManifestExistsChirho &&
     rawHebrewPackManifestShapeOkChirho &&
+    rawHebrewPackMarkdownPathDriftsChirho.length !== 0
+  ) {
+    remainingWorkChirho.push(`${rawHebrewPackMarkdownPathDriftsChirho.length} raw Hebrew human review packet markdown image path drift(s); regenerate make-pass-c-hebrew-human-pack-chirho`);
+  }
+  if (
+    rawSpansChirho.length !== 0 &&
+    rawHebrewPackManifestExistsChirho &&
+    rawHebrewPackManifestShapeOkChirho &&
     rawHebrewPackIdsMatchCurrentChirho &&
     !rawHebrewPackStatusMatchesCurrentChirho
   ) {
@@ -1755,6 +1802,13 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     visionTierManifestImageDriftsChirho.length !== 0
   ) {
     remainingWorkChirho.push(`${visionTierManifestImageDriftsChirho.length} expert confirmation packet image(s) do not match source scanline images; regenerate make-expert-confirm-pack-chirho`);
+  }
+  if (
+    expertPackManifestExistsChirho &&
+    expertPackManifestShapeOkChirho &&
+    visionTierManifestMarkdownPathDriftsChirho.length !== 0
+  ) {
+    remainingWorkChirho.push(`${visionTierManifestMarkdownPathDriftsChirho.length} expert confirmation packet markdown image path drift(s); regenerate make-expert-confirm-pack-chirho`);
   }
   if (visionTierConfirmationSummaryChirho.staleConfirmedPolicyItemCountChirho !== 0) {
     remainingWorkChirho.push(
@@ -1830,6 +1884,14 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
     latinSymbolReviewPacketImageDriftsChirho.length !== 0
   ) {
     remainingWorkChirho.push(`${latinSymbolReviewPacketImageDriftsChirho.length} Latin/symbol vision review packet image hash drift(s); regenerate make-latin-symbol-vision-pack-chirho`);
+  }
+  if (
+    currentLatinSymbolDecisionCountChirho !== 0 &&
+    latinSymbolPackManifestExistsChirho &&
+    latinSymbolPackManifestShapeOkChirho &&
+    latinSymbolReviewPacketMarkdownPathDriftsChirho.length !== 0
+  ) {
+    remainingWorkChirho.push(`${latinSymbolReviewPacketMarkdownPathDriftsChirho.length} Latin/symbol vision review packet markdown image path drift(s); regenerate make-latin-symbol-vision-pack-chirho`);
   }
   if (latinSymbolReviewSummaryChirho.staleRowsChirho !== 0) {
     remainingWorkChirho.push(`${latinSymbolReviewSummaryChirho.staleRowsChirho} Latin/symbol review row(s) are stale against current live span/D1 text`);
@@ -2077,6 +2139,11 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     ...statusChirho.rawHebrewChirho.packImageDriftSamplesChirho.map(
       (sampleChirho) => `  - ${sampleChirho}`
     ),
+    `- Packet markdown image paths match hashed files: ${statusChirho.rawHebrewChirho.packMarkdownPathsMatchCurrentChirho}`,
+    `- Packet markdown image path drift items: ${statusChirho.rawHebrewChirho.packMarkdownPathDriftCountChirho}`,
+    ...statusChirho.rawHebrewChirho.packMarkdownPathDriftSamplesChirho.map(
+      (sampleChirho) => `  - ${sampleChirho}`
+    ),
     `- Packet validation statuses match current report: ${statusChirho.rawHebrewChirho.packStatusMatchesCurrentChirho}`,
     `- Raw report matches live span files: ${statusChirho.rawHebrewChirho.liveReportMatchesSpanFilesChirho}`,
     `- Raw report live drift items: ${statusChirho.rawHebrewChirho.liveReportDriftCountChirho}`,
@@ -2131,6 +2198,11 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     ...statusChirho.visionTierChirho.manifestImageDriftSamplesChirho.map(
       (sampleChirho) => `  - ${sampleChirho}`
     ),
+    `- Manifest markdown image paths match packet files: ${statusChirho.visionTierChirho.manifestMarkdownPathsMatchCurrentChirho}`,
+    `- Manifest markdown image path drift items: ${statusChirho.visionTierChirho.manifestMarkdownPathDriftCountChirho}`,
+    ...statusChirho.visionTierChirho.manifestMarkdownPathDriftSamplesChirho.map(
+      (sampleChirho) => `  - ${sampleChirho}`
+    ),
     `- Confirmed by explicit policy: ${statusChirho.visionTierChirho.confirmedByPolicyCountChirho}`,
     `- Reviewed issues by explicit policy: ${statusChirho.visionTierChirho.reviewedIssueByPolicyCountChirho}`,
     `- Remaining confirmations: ${statusChirho.visionTierChirho.remainingConfirmationCountChirho}`,
@@ -2176,6 +2248,11 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Review packet image hashes match current files: ${statusChirho.latinSymbolVisionChirho.reviewPacketImagesMatchCurrentChirho}`,
     `- Review packet image hash drift items: ${statusChirho.latinSymbolVisionChirho.reviewPacketImageDriftCountChirho}`,
     ...statusChirho.latinSymbolVisionChirho.reviewPacketImageDriftSamplesChirho.map(
+      (sampleChirho) => `  - ${sampleChirho}`
+    ),
+    `- Review packet markdown image paths match hashed files: ${statusChirho.latinSymbolVisionChirho.reviewPacketMarkdownPathsMatchCurrentChirho}`,
+    `- Review packet markdown image path drift items: ${statusChirho.latinSymbolVisionChirho.reviewPacketMarkdownPathDriftCountChirho}`,
+    ...statusChirho.latinSymbolVisionChirho.reviewPacketMarkdownPathDriftSamplesChirho.map(
       (sampleChirho) => `  - ${sampleChirho}`
     ),
     `- Accepted-clean reviews: ${statusChirho.latinSymbolVisionChirho.reviewedCleanCountChirho}`,

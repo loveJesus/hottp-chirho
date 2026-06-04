@@ -14,6 +14,10 @@ import { dirname, join, resolve } from "path";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 import {
+  EXPERT_MARKDOWN_PATH_PAIRS_CHIRHO,
+  packetMarkdownPathDriftsChirho,
+} from "./packet-image-fingerprint-chirho.ts";
+import {
   expectedVisionTierReviewerRoleChirho,
   readVisionTierExpertConfirmationFileChirho,
   reviewerRoleMatchesScriptChirho,
@@ -207,6 +211,16 @@ function assertExpertPackMatchesLiveChirho(
     if (!readFileSync(packetItemChirho.sourcePathChirho).equals(readFileSync(packetItemChirho.packetPathChirho))) {
       throw new Error(`Expert pack is stale: ${packetItemChirho.idChirho} packet image differs from source scanline; regenerate make-expert-confirm-pack-chirho`);
     }
+  }
+  const markdownPathDriftsChirho = packetMarkdownPathDriftsChirho(
+    packetItemsChirho,
+    EXPERT_PACK_DIR_CHIRHO,
+    EXPERT_MARKDOWN_PATH_PAIRS_CHIRHO
+  );
+  if (markdownPathDriftsChirho.length !== 0) {
+    throw new Error(
+      `Expert pack is stale: ${markdownPathDriftsChirho.length} markdown image path drift(s); regenerate make-expert-confirm-pack-chirho`
+    );
   }
   return liveByIdChirho;
 }
