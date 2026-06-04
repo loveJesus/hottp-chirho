@@ -6,7 +6,7 @@
  *
  * Default mode prints a draft JSON policy. Writing a confirmed policy requires
  * --write-chirho, --decision-chirho=confirmed-expert-chirho, reviewer, role,
- * and rationale.
+ * rationale, and --certify-exact-chirho.
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "fs";
@@ -78,6 +78,7 @@ function assertReviewerRoleMatchesSelectedItemsChirho(selectedItemsChirho: { scr
 function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const writeChirho = argsChirho.includes("--write-chirho");
+  const certifyExactChirho = argsChirho.includes("--certify-exact-chirho");
   const scriptFiltersChirho = new Set(splitCsvChirho(parseArgValueChirho(argsChirho, "script-chirho")));
   const idFiltersChirho = new Set(splitCsvChirho(parseArgValueChirho(argsChirho, "id-chirho")));
   const decisionChirho = parseArgValueChirho(argsChirho, "decision-chirho") ?? VISION_TIER_EXPERT_CONFIRMATION_DRAFT_CHIRHO;
@@ -103,6 +104,11 @@ function mainChirho(): void {
     if (reviewerChirho.trim().length === 0) throw new Error("--reviewer-chirho is required for confirmed policy");
     if (reviewerRoleChirho.trim().length === 0) throw new Error("--reviewer-role-chirho is required for confirmed policy");
     if (rationaleChirho.trim().length === 0) throw new Error("--rationale-chirho is required for confirmed policy");
+    if (!certifyExactChirho) {
+      throw new Error(
+        "--certify-exact-chirho is required for confirmed policy after checking the exact printed letters and relevant marks"
+      );
+    }
   }
 
   const liveItemsChirho = visionTierExpertLiveItemsChirho();
