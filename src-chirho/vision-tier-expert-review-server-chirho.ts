@@ -14,6 +14,7 @@ import { join, resolve } from "path";
 import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
+  certifyingReviewerAttributionErrorChirho,
   explicitReviewerAttributionErrorChirho,
   GENERIC_REVIEWER_IDS_CHIRHO,
 } from "./reviewer-attribution-chirho.ts";
@@ -1076,7 +1077,7 @@ Bun.serve({
           return jsonResponseChirho({ okChirho: false, errorChirho: "certifyExactChirho acknowledgement is required" }, 400);
         }
         if (reviewerChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
-        const reviewerErrorChirho = explicitReviewerAttributionErrorChirho(reviewerChirho);
+        const reviewerErrorChirho = certifyingReviewerAttributionErrorChirho(reviewerChirho);
         if (reviewerErrorChirho !== null) return jsonResponseChirho({ okChirho: false, errorChirho: reviewerErrorChirho }, 400);
         if (reviewerRoleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerRoleChirho is required" }, 400);
         if (rationaleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "rationaleChirho is required" }, 400);

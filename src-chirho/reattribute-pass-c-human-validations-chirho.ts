@@ -18,8 +18,8 @@ import {
   writePassCHumanValidationBackupChirho,
 } from "./pass-c-human-validation-backup-chirho.ts";
 import {
-  assertExplicitReviewerAttributionChirho,
-  isGenericReviewerAttributionChirho,
+  assertCertifyingReviewerAttributionChirho,
+  isBlockedCertificationReviewerAttributionChirho,
 } from "./reviewer-attribution-chirho.ts";
 import { spanLinePathChirho, type SpanLineLikeChirho, type SpanLikeChirho } from "./span-nfc-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
@@ -69,8 +69,8 @@ function usageChirho(): string {
     `       bun run ${MODULE_CHIRHO} -- --all-generic-chirho --expected-generic-row-count-chirho=<count> --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--apply-chirho]`,
     "",
     "Dry-run is the default. Applying writes append-only superseding rows and refreshes the Pass-C human validation backup.",
-    "Only current schema-v2 rows with blank/generic reviewer attribution can be reattributed.",
-    "--expected-generic-row-count-chirho is required for --all-generic-chirho with --apply-chirho; it fails closed if the generic row count changed since the status report was read.",
+    "Only current schema-v2 rows with blank/generic/machine reviewer attribution can be reattributed.",
+    "--expected-generic-row-count-chirho is required for --all-generic-chirho with --apply-chirho; it fails closed if the attribution-blocked row count changed since the status report was read.",
     "--expected-live-text-hash-chirho is required for every selected row when applying --all-generic-chirho.",
     "Any --apply-chirho write requires a live-text drift guard: --expected-live-text-chirho for a single exact-ID row, or --expected-live-text-hash-chirho=<id>:<sha256> for every selected row.",
     "--expected-live-text-chirho is only supported for a single --validation-id-chirho row; it fails closed if the live span text has drifted since the status report was read.",
@@ -206,7 +206,7 @@ function loadGenericRowsChirho(dbChirho: Database): PassCHumanValidationRowChirh
     )
     .all()
     .filter((rowChirho) =>
-      isGenericReviewerAttributionChirho((rowChirho as PassCHumanValidationRowChirho).reviewer_chirho)
+      isBlockedCertificationReviewerAttributionChirho((rowChirho as PassCHumanValidationRowChirho).reviewer_chirho)
     ) as PassCHumanValidationRowChirho[];
 }
 
@@ -217,7 +217,7 @@ function assertRowsEligibleChirho(rowsChirho: PassCHumanValidationRowChirho[], r
   for (const rowChirho of rowsChirho) {
     if (rowChirho.is_current_chirho !== 1) throw new Error(`validation id ${rowChirho.id_chirho} is not current`);
     if (rowChirho.schema_version_chirho < 2) throw new Error(`validation id ${rowChirho.id_chirho} is not schema-v2`);
-    if (!isGenericReviewerAttributionChirho(rowChirho.reviewer_chirho)) {
+    if (!isBlockedCertificationReviewerAttributionChirho(rowChirho.reviewer_chirho)) {
       throw new Error(`validation id ${rowChirho.id_chirho} already has explicit reviewer ${rowChirho.reviewer_chirho}`);
     }
   }
@@ -450,7 +450,7 @@ function mainChirho(): void {
   }
   if (!allGenericChirho && validationIdsChirho.length === 0) throw new Error(usageChirho());
   const reviewerChirho = requiredArgValueChirho(argsChirho, "reviewer-chirho");
-  assertExplicitReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
+  assertCertifyingReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
   const rationaleChirho = requiredArgValueChirho(argsChirho, "rationale-chirho");
   const expectedLiveTextChirho = parseArgValueChirho(argsChirho, "expected-live-text-chirho");
   const expectedLiveTextHashesChirho = parseExpectedLiveTextHashesChirho(argsChirho);

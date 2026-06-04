@@ -42,6 +42,7 @@ import {
   type LatinSymbolPacketManifestChirho,
 } from "./latin-symbol-vision-review-store-chirho.ts";
 import {
+  certifyingReviewerAttributionErrorChirho,
   explicitReviewerAttributionErrorChirho,
   GENERIC_REVIEWER_IDS_CHIRHO,
 } from "./reviewer-attribution-chirho.ts";
@@ -742,7 +743,9 @@ Bun.serve({
         if (effectiveReviewerChirho.length === 0) {
           return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
         }
-        const reviewerErrorChirho = explicitReviewerAttributionErrorChirho(effectiveReviewerChirho);
+        const reviewerErrorChirho = issueFlagsChirho.length === 0
+          ? certifyingReviewerAttributionErrorChirho(effectiveReviewerChirho)
+          : explicitReviewerAttributionErrorChirho(effectiveReviewerChirho);
         if (reviewerErrorChirho !== null) {
           return jsonResponseChirho({ okChirho: false, errorChirho: reviewerErrorChirho }, 400);
         }

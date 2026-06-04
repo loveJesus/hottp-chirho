@@ -68,7 +68,7 @@ import {
   RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO,
   rawHebrewReviewTierForSpanChirho,
 } from "./raw-hebrew-review-tier-chirho.ts";
-import { isGenericReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
+import { isBlockedCertificationReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
 import {
   sourceFingerprintForPathsChirho,
   spanLinePathsForTargetsChirho,
@@ -1867,8 +1867,8 @@ function expertSuppliedVisionTextRecordShapeErrorsChirho(
     errorsChirho.push(`${prefixChirho}.reviewerRoleChirho does not match scriptChirho`);
   }
   if (recordChirho.reviewerChirho!.trim().length === 0) errorsChirho.push(`${prefixChirho}.reviewerChirho is empty`);
-  if (isGenericReviewerAttributionChirho(recordChirho.reviewerChirho!)) {
-    errorsChirho.push(`${prefixChirho}.reviewerChirho must identify the explicit reviewer`);
+  if (isBlockedCertificationReviewerAttributionChirho(recordChirho.reviewerChirho!)) {
+    errorsChirho.push(`${prefixChirho}.reviewerChirho must identify the explicit human reviewer`);
   }
   if (recordChirho.rationaleChirho!.trim().length === 0) errorsChirho.push(`${prefixChirho}.rationaleChirho is empty`);
   return errorsChirho;
@@ -1962,7 +1962,7 @@ function summarizeExpertSuppliedVisionTextBackupChirho(paramsChirho: {
   let genericReviewerRecordCountChirho = 0;
 
   for (const recordChirho of backupRecordsByIdChirho.values()) {
-    if (isGenericReviewerAttributionChirho(recordChirho.reviewerChirho)) {
+    if (isBlockedCertificationReviewerAttributionChirho(recordChirho.reviewerChirho)) {
       genericReviewerRecordCountChirho += 1;
     }
     const liveAppliedChirho = liveAppliedByIdChirho.get(recordChirho.itemIdChirho);
@@ -2379,7 +2379,7 @@ function summarizeHumanValidationsChirho(
   const schema2RowsChirho = rowsChirho.filter((rowChirho) => rowChirho.schema_version_chirho >= 2);
   const rawRowsChirho = schema2RowsChirho.filter((rowChirho) => rawKeysChirho.has(rowKeyChirho(rowChirho)));
   const genericReviewerRowsChirho = schema2RowsChirho
-    .filter((rowChirho) => isGenericReviewerAttributionChirho(rowChirho.reviewer_chirho));
+    .filter((rowChirho) => isBlockedCertificationReviewerAttributionChirho(rowChirho.reviewer_chirho));
   const genericReviewerRowDetailsChirho = genericReviewerRowsChirho
     .map(genericReviewerRowDetailChirho)
     .sort((aChirho, bChirho) => aChirho.idChirho - bChirho.idChirho);
@@ -2407,7 +2407,7 @@ function rawPendingSpansChirho(
   const rawSpansByKeyChirho = new Map(rawSpansChirho.map((spanChirho) => [spanKeyChirho(spanChirho), spanChirho]));
   const rowCountsAsSavedChirho = (rowChirho: HumanValidationDbRowChirho): boolean => {
     if (rowChirho.schema_version_chirho < 2) return false;
-    if (isGenericReviewerAttributionChirho(rowChirho.reviewer_chirho)) return false;
+    if (isBlockedCertificationReviewerAttributionChirho(rowChirho.reviewer_chirho)) return false;
     const spanChirho = rawSpansByKeyChirho.get(rowKeyChirho(rowChirho));
     if (spanChirho === undefined) return false;
     if (rowChirho.original_text_chirho !== spanChirho.textChirho) return false;
@@ -2492,7 +2492,7 @@ function summarizeLatinSymbolReviewsChirho(
   let appliedRowsChirho = 0;
   let genericReviewerRowsChirho = 0;
   for (const rowChirho of schemaRowsChirho) {
-    const genericReviewerChirho = isGenericReviewerAttributionChirho(rowChirho.reviewerChirho);
+    const genericReviewerChirho = isBlockedCertificationReviewerAttributionChirho(rowChirho.reviewerChirho);
     if (genericReviewerChirho) {
       genericReviewerRowsChirho += 1;
     }
@@ -2530,7 +2530,7 @@ function validLatinSymbolReviewIdsChirho(
   );
   const idsChirho = new Set<string>();
   for (const rowChirho of rowsChirho) {
-    if (isGenericReviewerAttributionChirho(rowChirho.reviewerChirho)) continue;
+    if (isBlockedCertificationReviewerAttributionChirho(rowChirho.reviewerChirho)) continue;
     if (rowChirho.verdictChirho !== verdictChirho) continue;
     if (rowChirho.verdictChirho === "accepted-clean-chirho" && !rowChirho.acceptCleanChirho) continue;
     const currentHashChirho = hashByIdChirho.get(rowChirho.itemIdChirho);
@@ -3513,7 +3513,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   }
   if (latinSymbolReviewSummaryChirho.genericReviewerRowsChirho !== 0) {
     remainingWorkChirho.push(
-      `${latinSymbolReviewSummaryChirho.genericReviewerRowsChirho} Latin/symbol review row(s) use blank/generic reviewer attribution; re-review explicitly before certification`
+      `${latinSymbolReviewSummaryChirho.genericReviewerRowsChirho} Latin/symbol review row(s) use blank/generic/machine reviewer attribution; re-review explicitly before certification`
     );
   }
   if (latinSymbolLocalRowsMissingFromBackupChirho !== 0) {
@@ -3554,7 +3554,7 @@ function buildStatusChirho(dbPathChirho: string): CertificationStatusChirho {
   }
   if (humanSummaryChirho.genericReviewerRowsChirho !== 0) {
     remainingWorkChirho.push(
-      `${humanSummaryChirho.genericReviewerRowsChirho} current Pass-C human validation row(s) use blank/generic reviewer attribution; re-review or reattribute explicitly before certification`
+      `${humanSummaryChirho.genericReviewerRowsChirho} current Pass-C human validation row(s) use blank/generic/machine reviewer attribution; re-review or reattribute explicitly before certification`
     );
   }
   const reviewStartLinksChirho: Record<string, string | null> = {
@@ -3872,9 +3872,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
         });
   const genericReviewerDetailLinesChirho =
     statusChirho.humanValidationDbChirho.genericReviewerRowDetailsChirho.length === 0
-      ? ["- Generic reviewer row details: none"]
+      ? ["- Attribution-blocked reviewer row details: none"]
       : [
-          "- Generic reviewer row details:",
+          "- Attribution-blocked reviewer row details:",
           ...statusChirho.humanValidationDbChirho.genericReviewerRowDetailsChirho.flatMap((rowChirho) => {
             const flagsChirho = rowChirho.issueFlagsChirho.length === 0 ? "none" : rowChirho.issueFlagsChirho.join(", ");
             const correctionChirho = rowChirho.correctedTextChirho === null
@@ -3918,9 +3918,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     .filter((groupChirho) => groupChirho.rowCountChirho > 1);
   const genericReviewerBatchLinesChirho =
     genericReviewerBatchGroupsChirho.length === 0
-      ? ["- Generic reviewer exact-ID batch groups: none"]
+      ? ["- Attribution-blocked reviewer exact-ID batch groups: none"]
       : [
-          "- Generic reviewer exact-ID batch groups:",
+          "- Attribution-blocked reviewer exact-ID batch groups:",
           "- Use a batch command only when every row in that timestamp group is genuinely attributable to the same explicit reviewer.",
           ...genericReviewerBatchGroupsChirho.flatMap((groupChirho) => {
             const verdictCountsChirho = Object.entries(groupChirho.verdictCountsChirho)
@@ -4132,11 +4132,11 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw queue issue rows: ${statusChirho.humanValidationDbChirho.rawQueueIssueRowsChirho}`,
     `- Raw queue applied rows: ${statusChirho.humanValidationDbChirho.rawQueueAppliedRowsChirho}`,
     `- Legacy current rows ignored by apply/certification: ${statusChirho.humanValidationDbChirho.legacyCurrentRowsChirho}`,
-    `- Generic reviewer rows: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho}`,
-    "- Generic reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho=<id> --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>'`",
-    "- Generic reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho=<id> --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>' --apply-chirho`",
-    `- Generic reviewer bulk dry-run path (same explicit reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why every current generic row is attributable to that reviewer>'\``,
-    `- Generic reviewer bulk apply path (same explicit reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho=<explicit-reviewer-id-chirho> --rationale-chirho='<why every current generic row is attributable to that reviewer>' --apply-chirho\``,
+    `- Attribution-blocked reviewer rows: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho}`,
+    "- Attribution-blocked reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho=<id> --reviewer-chirho=<explicit-human-reviewer-id-chirho> --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>'`",
+    "- Attribution-blocked reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho=<id> --reviewer-chirho=<explicit-human-reviewer-id-chirho> --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>' --apply-chirho`",
+    `- Attribution-blocked reviewer bulk dry-run path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho=<explicit-human-reviewer-id-chirho> --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>'\``,
+    `- Attribution-blocked reviewer bulk apply path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho=<explicit-human-reviewer-id-chirho> --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>' --apply-chirho\``,
     "- Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit reviewer.",
     ...genericReviewerBatchLinesChirho,
     ...genericReviewerDetailLinesChirho,
@@ -4188,7 +4188,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Backup records missing live span: ${statusChirho.expertSuppliedVisionTextBackupChirho.backupRecordsMissingLiveSpanChirho}`,
     `- Live supplied-text spans missing backup: ${statusChirho.expertSuppliedVisionTextBackupChirho.liveAppliedSpansMissingBackupChirho}`,
     `- Stale backup records: ${statusChirho.expertSuppliedVisionTextBackupChirho.staleBackupRecordCountChirho}`,
-    `- Generic reviewer records: ${statusChirho.expertSuppliedVisionTextBackupChirho.genericReviewerRecordCountChirho}`,
+    `- Attribution-blocked reviewer records: ${statusChirho.expertSuppliedVisionTextBackupChirho.genericReviewerRecordCountChirho}`,
     `- Shape errors: ${statusChirho.expertSuppliedVisionTextBackupChirho.shapeErrorsChirho.length === 0 ? "none" : statusChirho.expertSuppliedVisionTextBackupChirho.shapeErrorsChirho.join("; ")}`,
     `- Drift samples: ${statusChirho.expertSuppliedVisionTextBackupChirho.driftSamplesChirho.length === 0 ? "none" : statusChirho.expertSuppliedVisionTextBackupChirho.driftSamplesChirho.join("; ")}`,
     "",
@@ -4262,7 +4262,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Valid reviewed-issues rows: ${statusChirho.latinSymbolReviewDbChirho.validReviewedIssueRowsChirho}`,
     `- Stale rows: ${statusChirho.latinSymbolReviewDbChirho.staleRowsChirho}`,
     `- Applied rows: ${statusChirho.latinSymbolReviewDbChirho.appliedRowsChirho}`,
-    `- Generic reviewer rows: ${statusChirho.latinSymbolReviewDbChirho.genericReviewerRowsChirho}`,
+    `- Attribution-blocked reviewer rows: ${statusChirho.latinSymbolReviewDbChirho.genericReviewerRowsChirho}`,
     "",
     "## Latin/Symbol Acceptance Policy",
     "",
