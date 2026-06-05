@@ -276,7 +276,9 @@ interface BlankVisionTierHandoffChirho {
   dryRunCommandTemplateChirho: string;
   applyCommandTemplateChirho: string;
   sourcePathChirho: string | null;
+  sourceSha256Chirho: string | null;
   packetPathChirho: string | null;
+  packetSha256Chirho: string | null;
   markdownPathChirho: string | null;
   manifestItemFreshChirho: boolean;
   handoffDocumentPathChirho: string | null;
@@ -1693,7 +1695,9 @@ function blankVisionTierHandoffRequiredDocumentSnippetsChirho(
   expectedReviewerRoleChirho: string | null,
   expertReviewUrlChirho: string,
   sourcePathChirho: string | null,
+  sourceSha256Chirho: string | null,
   packetPathChirho: string | null,
+  packetSha256Chirho: string | null,
   cropPathChirho: string | null,
   cropSha256Chirho: string | null,
   issueChirho: {
@@ -1711,8 +1715,14 @@ function blankVisionTierHandoffRequiredDocumentSnippetsChirho(
   if (sourcePathChirho !== null) {
     snippetsChirho.push(`- Source scanline: \`${relativeProjectPathChirho(sourcePathChirho)}\``);
   }
+  if (sourceSha256Chirho !== null) {
+    snippetsChirho.push(`- Source scanline SHA-256: \`${sourceSha256Chirho}\``);
+  }
   if (packetPathChirho !== null) {
     snippetsChirho.push(`- Expert packet image: \`${relativeProjectPathChirho(packetPathChirho)}\``);
+  }
+  if (packetSha256Chirho !== null) {
+    snippetsChirho.push(`- Expert packet image SHA-256: \`${packetSha256Chirho}\``);
   }
   if (cropPathChirho !== null) {
     snippetsChirho.push(`](${fileNameForPathChirho(cropPathChirho)})`);
@@ -1768,6 +1778,8 @@ function blankVisionTierHandoffsChirho(
         syriacBlankTranscriptionHandoffPathChirho,
         syriacBlankTranscriptionHandoffCropPathChirho
       );
+      const sourceSha256Chirho = fileSha256Chirho(manifestItemChirho?.sourcePathChirho ?? null);
+      const packetSha256Chirho = fileSha256Chirho(manifestItemChirho?.packetPathChirho ?? null);
       const handoffCropSha256Chirho = fileSha256Chirho(artifactPathsChirho.cropPathChirho);
       const expertReviewUrlResultChirho = expertReviewUrlChirho(scriptChirho ?? undefined, undefined, idChirho);
       const requiredDocumentSnippetsChirho = blankVisionTierHandoffRequiredDocumentSnippetsChirho(
@@ -1775,7 +1787,9 @@ function blankVisionTierHandoffsChirho(
         expectedReviewerRoleChirho,
         expertReviewUrlResultChirho,
         manifestItemChirho?.sourcePathChirho ?? null,
+        sourceSha256Chirho,
         manifestItemChirho?.packetPathChirho ?? null,
+        packetSha256Chirho,
         artifactPathsChirho.cropPathChirho,
         handoffCropSha256Chirho,
         issueChirho
@@ -1801,7 +1815,9 @@ function blankVisionTierHandoffsChirho(
           true
         ),
         sourcePathChirho: manifestItemChirho?.sourcePathChirho ?? null,
+        sourceSha256Chirho,
         packetPathChirho: manifestItemChirho?.packetPathChirho ?? null,
+        packetSha256Chirho,
         markdownPathChirho: manifestItemChirho?.markdownPathChirho ?? null,
         manifestItemFreshChirho,
         handoffDocumentPathChirho: artifactPathsChirho.documentPathChirho,
@@ -4092,7 +4108,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
           `- ${handoffChirho.idChirho} (${handoffChirho.locationChirho}; script ${handoffChirho.scriptChirho ?? "unknown-chirho"}; expected role ${handoffChirho.expectedReviewerRoleChirho ?? "unknown-chirho"})`,
           `  - Expert review URL: ${handoffChirho.expertReviewUrlChirho}`,
           `  - Source scanline: \`${handoffChirho.sourcePathChirho === null ? "missing-manifest-source-chirho" : relativeProjectPathChirho(handoffChirho.sourcePathChirho)}\``,
+          `  - Source scanline SHA-256: ${handoffChirho.sourceSha256Chirho ?? "missing-source-hash-chirho"}`,
           `  - Packet image: \`${handoffChirho.packetPathChirho === null ? "missing-manifest-packet-chirho" : relativeProjectPathChirho(handoffChirho.packetPathChirho)}\``,
+          `  - Packet image SHA-256: ${handoffChirho.packetSha256Chirho ?? "missing-packet-hash-chirho"}`,
           `  - Markdown image path: \`${handoffChirho.markdownPathChirho ?? "missing-manifest-markdown-path-chirho"}\``,
           `  - Dedicated handoff document: \`${handoffChirho.handoffDocumentPathChirho === null ? "missing-dedicated-handoff-document-chirho" : relativeProjectPathChirho(handoffChirho.handoffDocumentPathChirho)}\` (present: ${handoffChirho.handoffDocumentExistsChirho})`,
           `  - Dedicated handoff crop: \`${handoffChirho.handoffCropPathChirho === null ? "missing-dedicated-handoff-crop-chirho" : relativeProjectPathChirho(handoffChirho.handoffCropPathChirho)}\` (present: ${handoffChirho.handoffCropExistsChirho})`,

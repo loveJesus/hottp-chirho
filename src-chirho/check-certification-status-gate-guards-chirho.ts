@@ -42,6 +42,8 @@ interface CertificationStatusForGuardChirho {
     blankVisionTierHandoffsChirho?: Array<{
       handoffDocumentExistsChirho?: boolean;
       handoffCropExistsChirho?: boolean;
+      sourceSha256Chirho?: string | null;
+      packetSha256Chirho?: string | null;
       handoffCropSha256Chirho?: string | null;
       handoffDocumentMatchesCurrentChirho?: boolean;
       handoffDocumentMissingSnippetsChirho?: string[];
@@ -407,6 +409,26 @@ function mainChirho(): void {
           )
       ),
       "stale blank Syriac handoff document did not report the missing crop hash snippet"
+    );
+    assertCheckChirho(
+      (staleStatusChirho.structuralChirho?.blankVisionTierHandoffsChirho ?? []).some(
+        (handoffChirho) =>
+          typeof handoffChirho.sourceSha256Chirho === "string" &&
+          (handoffChirho.handoffDocumentMissingSnippetsChirho ?? []).some((snippetChirho) =>
+            snippetChirho.includes(handoffChirho.sourceSha256Chirho!)
+          )
+      ),
+      "stale blank Syriac handoff document did not report the missing source scanline hash snippet"
+    );
+    assertCheckChirho(
+      (staleStatusChirho.structuralChirho?.blankVisionTierHandoffsChirho ?? []).some(
+        (handoffChirho) =>
+          typeof handoffChirho.packetSha256Chirho === "string" &&
+          (handoffChirho.handoffDocumentMissingSnippetsChirho ?? []).some((snippetChirho) =>
+            snippetChirho.includes(handoffChirho.packetSha256Chirho!)
+          )
+      ),
+      "stale blank Syriac handoff document did not report the missing packet image hash snippet"
     );
     assertCheckChirho(
       (staleStatusChirho.remainingWorkChirho ?? []).some((itemChirho) =>
