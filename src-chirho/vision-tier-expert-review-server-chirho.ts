@@ -143,14 +143,14 @@ interface ExpertOpenIssueChirho {
 }
 
 const ISSUE_FLAG_OPTIONS_CHIRHO = [
-  { valueChirho: "letters-chirho", labelChirho: "Letters" },
-  { valueChirho: "marks-chirho", labelChirho: "Vowels/marks" },
-  { valueChirho: "punctuation-chirho", labelChirho: "Punctuation" },
-  { valueChirho: "segmentation-chirho", labelChirho: "Segmentation" },
-  { valueChirho: "wrong-script-chirho", labelChirho: "Wrong script" },
-  { valueChirho: "wrong-source-chirho", labelChirho: "Wrong source" },
-  { valueChirho: "uncertain-chirho", labelChirho: "Uncertain" },
-] as const satisfies Array<{ valueChirho: (typeof VISION_TIER_EXPERT_ISSUE_FLAGS_CHIRHO)[number]; labelChirho: string }>;
+  { valueChirho: "letters-chirho", labelChirho: "Letters", helpChirho: "Wrong or uncertain base letters for the displayed script." },
+  { valueChirho: "marks-chirho", labelChirho: "Vowels/marks", helpChirho: "Vowels, dots, accents, breathing, pointing, or other script marks are wrong or uncertain." },
+  { valueChirho: "punctuation-chirho", labelChirho: "Punctuation", helpChirho: "Printed punctuation, brackets, ellipses, maqaf/maqqef-like joins, or spacing marks are wrong or uncertain." },
+  { valueChirho: "segmentation-chirho", labelChirho: "Segmentation", helpChirho: "The box splits a word, lumps multiple items incorrectly, or attaches neighboring context." },
+  { valueChirho: "wrong-script-chirho", labelChirho: "Wrong script", helpChirho: "The item belongs in another script lane, such as Syriac, Arabic, Hebrew, or Greek." },
+  { valueChirho: "wrong-source-chirho", labelChirho: "Wrong source", helpChirho: "The crop, source line, packet image, or displayed item does not match what should be reviewed." },
+  { valueChirho: "uncertain-chirho", labelChirho: "Uncertain", helpChirho: "Use when you cannot certify the exact printed text from this view." },
+] as const satisfies Array<{ valueChirho: (typeof VISION_TIER_EXPERT_ISSUE_FLAGS_CHIRHO)[number]; labelChirho: string; helpChirho: string }>;
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
   const prefixChirho = `--${nameChirho}=`;
@@ -622,9 +622,11 @@ function htmlChirho(): string {
     .input-grid-chirho input, .input-grid-chirho textarea { width: 100%; box-sizing: border-box; border: 1px solid #b8bec7; padding: 8px; }
     .input-grid-chirho textarea { min-height: 76px; resize: vertical; }
     .issue-grid-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .issue-option-chirho { display: flex; gap: 7px; align-items: center; border: 1px solid #d6d9dd; padding: 8px; min-height: 38px; box-sizing: border-box; cursor: pointer; }
-    .issue-option-chirho input { width: auto; margin: 0; }
+    .issue-option-chirho { display: flex; gap: 7px; align-items: flex-start; border: 1px solid #d6d9dd; padding: 8px; min-height: 38px; box-sizing: border-box; cursor: pointer; }
+    .issue-option-chirho input { width: auto; margin: 2px 0 0; }
     .issue-option-chirho:has(input:checked) { border-color: #bd7a1b; background: #fff7e8; }
+    .issue-label-text-chirho { display: block; font-size: 13px; font-weight: 650; line-height: 1.2; }
+    .issue-help-chirho { display: block; color: #59636f; font-size: 11px; line-height: 1.25; margin-top: 3px; }
     .certify-option-chirho { display: flex; gap: 8px; align-items: flex-start; border: 1px solid #b8d5ca; background: #f2fbf7; padding: 10px; font-size: 13px; line-height: 1.35; cursor: pointer; }
     .certify-option-chirho input { width: auto; margin: 3px 0 0; }
     .actions-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -1441,10 +1443,22 @@ function htmlChirho(): string {
       ]);
       formChirho.appendChild(certifyLabelChirho);
       formChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Issue flags" }));
+      formChirho.appendChild(elChirho("div", {
+        classChirho: "issue-help-chirho",
+        textChirho: "Issue reports block confirmation; use them for uncertainty, crop/source problems, wrong script, or segmentation."
+      }));
       const issueGridChirho = elChirho("div", { classChirho: "issue-grid-chirho" });
       for (const optionChirho of issueFlagOptionsChirho) {
         const inputChirho = elChirho("input", { type: "checkbox", value: optionChirho.valueChirho });
-        const labelChirho = elChirho("label", { classChirho: "issue-option-chirho" }, [inputChirho, document.createTextNode(optionChirho.labelChirho)]);
+        const textWrapChirho = elChirho("span", {}, [
+          elChirho("span", { classChirho: "issue-label-text-chirho", textChirho: optionChirho.labelChirho }),
+          elChirho("span", { classChirho: "issue-help-chirho", textChirho: optionChirho.helpChirho })
+        ]);
+        const labelChirho = elChirho("label", {
+          classChirho: "issue-option-chirho",
+          title: optionChirho.helpChirho,
+          "aria-label": optionChirho.labelChirho + ": " + optionChirho.helpChirho
+        }, [inputChirho, textWrapChirho]);
         issueGridChirho.appendChild(labelChirho);
       }
       formChirho.appendChild(issueGridChirho);

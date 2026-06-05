@@ -57,6 +57,11 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "If this is outside your competence or uncertain, use Report issue for crop/source/segmentation problems or Skip.",
   "This item has no current text. Do not confirm an empty transcription",
   "blank text means supply only the script text inside the red box, not neighboring punctuation or context",
+  "Issue reports block confirmation; use them for uncertainty, crop/source problems, wrong script, or segmentation.",
+  "Wrong or uncertain base letters for the displayed script.",
+  "Vowels, dots, accents, breathing, pointing, or other script marks are wrong or uncertain.",
+  "The box splits a word, lumps multiple items incorrectly, or attaches neighboring context.",
+  "The item belongs in another script lane, such as Syriac, Arabic, Hebrew, or Greek.",
   "Confirm needs exact-certification checkbox",
   "Report issue needs an issue flag",
 ];
