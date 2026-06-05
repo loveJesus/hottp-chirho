@@ -97,6 +97,11 @@ interface ExpertReviewItemChirho extends ExpertPackItemChirho {
   textIsBlankChirho: boolean;
   sourceSha256Chirho: string;
   packetSha256Chirho: string;
+  spanXMinPxChirho: number;
+  spanWidthPxChirho: number;
+  lineWidthPxChirho: number;
+  markerLeftPctChirho: number;
+  markerWidthPctChirho: number;
 }
 
 interface ConfirmRequestChirho {
@@ -112,6 +117,9 @@ interface ConfirmRequestChirho {
   expectedSourcePathChirho?: string;
   expectedPacketPathChirho?: string;
   expectedMarkdownPathChirho?: string;
+  expectedSpanXMinPxChirho?: number;
+  expectedSpanWidthPxChirho?: number;
+  expectedLineWidthPxChirho?: number;
 }
 
 interface IssueRequestChirho extends ConfirmRequestChirho {
@@ -499,24 +507,37 @@ function loadCurrentStateChirho(policyPathChirho: string): {
 
 function reviewItemsForStateChirho(
   manifestChirho: ExpertPackManifestChirho,
+  liveByIdChirho: Map<string, VisionTierExpertLiveItemChirho>,
   confirmedIdsChirho: Set<string>,
   reviewedIssueIdsChirho: Set<string>,
   openIssueDetailsByIdChirho: Map<string, ExpertOpenIssueChirho>
 ): ExpertReviewItemChirho[] {
-  return (manifestChirho.completeVisionItemsChirho ?? []).map((itemChirho) => ({
-    ...itemChirho,
-    confirmedChirho: confirmedIdsChirho.has(itemChirho.idChirho),
-    issueReportedChirho: reviewedIssueIdsChirho.has(itemChirho.idChirho),
-    openIssueChirho: openIssueDetailsByIdChirho.get(itemChirho.idChirho) ?? null,
-    textIsBlankChirho: itemChirho.currentTextChirho.trim().length === 0,
-    sourceSha256Chirho: fileSha256Chirho(itemChirho.sourcePathChirho),
-    packetSha256Chirho: fileSha256Chirho(itemChirho.packetPathChirho),
-  }));
+  return (manifestChirho.completeVisionItemsChirho ?? []).map((itemChirho) => {
+    const liveItemChirho = liveByIdChirho.get(itemChirho.idChirho);
+    const lineWidthPxChirho = liveItemChirho?.lineWidthPxChirho ?? 1;
+    const spanXMinPxChirho = liveItemChirho?.spanXMinPxChirho ?? 0;
+    const spanWidthPxChirho = liveItemChirho?.spanWidthPxChirho ?? lineWidthPxChirho;
+    return {
+      ...itemChirho,
+      confirmedChirho: confirmedIdsChirho.has(itemChirho.idChirho),
+      issueReportedChirho: reviewedIssueIdsChirho.has(itemChirho.idChirho),
+      openIssueChirho: openIssueDetailsByIdChirho.get(itemChirho.idChirho) ?? null,
+      textIsBlankChirho: itemChirho.currentTextChirho.trim().length === 0,
+      sourceSha256Chirho: fileSha256Chirho(itemChirho.sourcePathChirho),
+      packetSha256Chirho: fileSha256Chirho(itemChirho.packetPathChirho),
+      spanXMinPxChirho,
+      spanWidthPxChirho,
+      lineWidthPxChirho,
+      markerLeftPctChirho: (spanXMinPxChirho / lineWidthPxChirho) * 100,
+      markerWidthPctChirho: (spanWidthPxChirho / lineWidthPxChirho) * 100,
+    };
+  });
 }
 
 function staleDisplayMismatchChirho(
   requestChirho: ConfirmRequestChirho,
-  packetItemChirho: ExpertPackItemChirho
+  packetItemChirho: ExpertPackItemChirho,
+  liveItemChirho: VisionTierExpertLiveItemChirho
 ): string | null {
   const comparisonsChirho = [
     ["expectedScriptChirho", packetItemChirho.scriptChirho],
@@ -531,6 +552,16 @@ function staleDisplayMismatchChirho(
     const submittedValueChirho = requestChirho[fieldChirho];
     if (typeof submittedValueChirho !== "string") return `${fieldChirho} is missing`;
     if (submittedValueChirho !== currentValueChirho) return `${fieldChirho} no longer matches current packet`;
+  }
+  const numericComparisonsChirho = [
+    ["expectedSpanXMinPxChirho", liveItemChirho.spanXMinPxChirho],
+    ["expectedSpanWidthPxChirho", liveItemChirho.spanWidthPxChirho],
+    ["expectedLineWidthPxChirho", liveItemChirho.lineWidthPxChirho],
+  ] as const;
+  for (const [fieldChirho, currentValueChirho] of numericComparisonsChirho) {
+    const submittedValueChirho = requestChirho[fieldChirho];
+    if (typeof submittedValueChirho !== "number") return `${fieldChirho} is missing`;
+    if (submittedValueChirho !== currentValueChirho) return `${fieldChirho} no longer matches current live span`;
   }
   return null;
 }
@@ -557,7 +588,9 @@ function htmlChirho(): string {
     .main-chirho { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 18px; padding-top: 18px; }
     .image-label-chirho { color: #59636f; font-size: 13px; font-weight: 650; margin: 0 0 6px; }
     .image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: auto; margin-bottom: 12px; }
+    .line-image-frame-chirho { position: relative; width: 100%; }
     .line-image-chirho { display: block; width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
+    .span-marker-chirho { position: absolute; top: 0; bottom: 0; border: 2px solid #d23f31; background: rgba(210, 63, 49, 0.16); box-sizing: border-box; pointer-events: none; }
     .text-box-chirho { background: white; border: 1px solid #d6d9dd; padding: 10px; line-height: 1.45; overflow-wrap: anywhere; }
     .current-text-chirho { font-size: 24px; direction: auto; }
     .side-chirho { display: flex; flex-direction: column; gap: 12px; }
@@ -1041,6 +1074,9 @@ function htmlChirho(): string {
         issueReportedChirho + " issue-reported, " + itemsChirho.length + " total, " +
         currentPositionTextChirho(activeChirho);
     }
+    function markerStyleChirho(itemChirho) {
+      return "left:" + itemChirho.markerLeftPctChirho.toFixed(4) + "%;width:" + itemChirho.markerWidthPctChirho.toFixed(4) + "%;";
+    }
     function renderChirho() {
       syncUrlChirho();
       const appChirho = document.getElementById("app-chirho");
@@ -1054,7 +1090,10 @@ function htmlChirho(): string {
       const leftChirho = elChirho("div");
       leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Printed line" }));
       const imageWrapChirho = elChirho("div", { classChirho: "image-wrap-chirho" });
-      imageWrapChirho.appendChild(elChirho("img", { classChirho: "line-image-chirho", src: imageSrcChirho(itemChirho.markdownPathChirho), alt: "" }));
+      const imageFrameChirho = elChirho("div", { classChirho: "line-image-frame-chirho" });
+      imageFrameChirho.appendChild(elChirho("img", { classChirho: "line-image-chirho", src: imageSrcChirho(itemChirho.markdownPathChirho), alt: "" }));
+      imageFrameChirho.appendChild(elChirho("div", { classChirho: "span-marker-chirho", style: markerStyleChirho(itemChirho) }));
+      imageWrapChirho.appendChild(imageFrameChirho);
       leftChirho.appendChild(imageWrapChirho);
       leftChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Current text" }));
       leftChirho.appendChild(elChirho("div", { classChirho: "text-box-chirho current-text-chirho", textChirho: itemChirho.currentTextChirho }));
@@ -1242,7 +1281,10 @@ function htmlChirho(): string {
           expectedCurrentTextChirho: itemChirho.currentTextChirho,
           expectedSourcePathChirho: itemChirho.sourcePathChirho,
           expectedPacketPathChirho: itemChirho.packetPathChirho,
-          expectedMarkdownPathChirho: itemChirho.markdownPathChirho
+          expectedMarkdownPathChirho: itemChirho.markdownPathChirho,
+          expectedSpanXMinPxChirho: itemChirho.spanXMinPxChirho,
+          expectedSpanWidthPxChirho: itemChirho.spanWidthPxChirho,
+          expectedLineWidthPxChirho: itemChirho.lineWidthPxChirho
         })
       });
       const dataChirho = await responseChirho.json();
@@ -1284,7 +1326,10 @@ function htmlChirho(): string {
           expectedCurrentTextChirho: itemChirho.currentTextChirho,
           expectedSourcePathChirho: itemChirho.sourcePathChirho,
           expectedPacketPathChirho: itemChirho.packetPathChirho,
-          expectedMarkdownPathChirho: itemChirho.markdownPathChirho
+          expectedMarkdownPathChirho: itemChirho.markdownPathChirho,
+          expectedSpanXMinPxChirho: itemChirho.spanXMinPxChirho,
+          expectedSpanWidthPxChirho: itemChirho.spanWidthPxChirho,
+          expectedLineWidthPxChirho: itemChirho.lineWidthPxChirho
         })
       });
       const dataChirho = await responseChirho.json();
@@ -1371,12 +1416,14 @@ const serverChirho = Bun.serve({
         return new Response(Bun.file(assetPathChirho));
       }
       if (urlChirho.pathname === "/api-chirho/state-chirho") {
-        const { manifestChirho, confirmedIdsChirho, reviewedIssueIdsChirho, openIssueDetailsByIdChirho } = loadCurrentStateChirho(policyPathChirho);
+        const { manifestChirho, liveByIdChirho, confirmedIdsChirho, reviewedIssueIdsChirho, openIssueDetailsByIdChirho } =
+          loadCurrentStateChirho(policyPathChirho);
         return jsonResponseChirho({
           okChirho: true,
           generatedAtChirho: manifestChirho.generatedAtChirho ?? null,
           itemsChirho: reviewItemsForStateChirho(
             manifestChirho,
+            liveByIdChirho,
             confirmedIdsChirho,
             reviewedIssueIdsChirho,
             openIssueDetailsByIdChirho
@@ -1409,7 +1456,7 @@ const serverChirho = Bun.serve({
         if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);
         const packetItemChirho = (manifestChirho.completeVisionItemsChirho ?? []).find((itemChirho) => itemChirho.idChirho === itemIdChirho);
         if (packetItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown packet item" }, 404);
-        const staleDisplayChirho = staleDisplayMismatchChirho(bodyChirho, packetItemChirho);
+        const staleDisplayChirho = staleDisplayMismatchChirho(bodyChirho, packetItemChirho, liveItemChirho);
         if (staleDisplayChirho !== null) {
           return jsonResponseChirho({
             okChirho: false,
@@ -1465,7 +1512,7 @@ const serverChirho = Bun.serve({
         if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);
         const packetItemChirho = (manifestChirho.completeVisionItemsChirho ?? []).find((itemChirho) => itemChirho.idChirho === itemIdChirho);
         if (packetItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown packet item" }, 404);
-        const staleDisplayChirho = staleDisplayMismatchChirho(bodyChirho, packetItemChirho);
+        const staleDisplayChirho = staleDisplayMismatchChirho(bodyChirho, packetItemChirho, liveItemChirho);
         if (staleDisplayChirho !== null) {
           return jsonResponseChirho({
             okChirho: false,

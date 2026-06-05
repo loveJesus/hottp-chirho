@@ -45,6 +45,8 @@ export const VISION_TIER_EXPERT_REVIEWER_LABELS_CHIRHO: Record<string, string> =
 
 interface SpanChirho {
   segmentIndexChirho: number;
+  xMinPxChirho: number;
+  widthPxChirho: number;
   scriptChirho: string;
   utf8TextChirho: string;
   provenanceChirho?: string;
@@ -54,6 +56,8 @@ interface SpanLineChirho {
   volumeChirho: number;
   pageChirho: number;
   lineIndexChirho: number;
+  lineWidthPxChirho: number;
+  lineHeightPxChirho: number;
   spansChirho: SpanChirho[];
 }
 
@@ -79,6 +83,10 @@ export interface VisionTierExpertLiveItemChirho {
   lineIndexChirho: number;
   segmentIndexChirho: number;
   currentTextChirho: string;
+  spanXMinPxChirho: number;
+  spanWidthPxChirho: number;
+  lineWidthPxChirho: number;
+  lineHeightPxChirho: number;
 }
 
 export interface VisionTierExpertLiveSnapshotChirho {
@@ -275,6 +283,10 @@ function discoverVisionTierItemsChirho(
         lineIndexChirho: lineChirho.lineIndexChirho,
         segmentIndexChirho: spanChirho.segmentIndexChirho,
         currentTextChirho: normalizeTextForStorageChirho(spanChirho.utf8TextChirho),
+        spanXMinPxChirho: spanChirho.xMinPxChirho,
+        spanWidthPxChirho: spanChirho.widthPxChirho,
+        lineWidthPxChirho: lineChirho.lineWidthPxChirho,
+        lineHeightPxChirho: lineChirho.lineHeightPxChirho,
       });
     }
   }

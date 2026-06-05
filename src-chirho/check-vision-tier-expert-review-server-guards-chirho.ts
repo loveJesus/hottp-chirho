@@ -57,6 +57,11 @@ interface ExpertReviewStateItemChirho {
   sourcePathChirho: string;
   packetPathChirho: string;
   markdownPathChirho: string;
+  spanXMinPxChirho: number;
+  spanWidthPxChirho: number;
+  lineWidthPxChirho: number;
+  markerLeftPctChirho: number;
+  markerWidthPctChirho: number;
   textIsBlankChirho?: boolean;
 }
 
@@ -125,6 +130,9 @@ function displayGuardForItemChirho(itemChirho: ExpertReviewStateItemChirho): Rec
     expectedSourcePathChirho: itemChirho.sourcePathChirho,
     expectedPacketPathChirho: itemChirho.packetPathChirho,
     expectedMarkdownPathChirho: itemChirho.markdownPathChirho,
+    expectedSpanXMinPxChirho: itemChirho.spanXMinPxChirho,
+    expectedSpanWidthPxChirho: itemChirho.spanWidthPxChirho,
+    expectedLineWidthPxChirho: itemChirho.lineWidthPxChirho,
   };
 }
 
@@ -154,6 +162,12 @@ async function stateItemChirho(portChirho: number): Promise<ExpertReviewStateIte
       candidateChirho.textIsBlankChirho !== true
   );
   if (itemChirho === undefined) throw new Error("expert review queue has no nonblank item for guard check");
+  assertCheckChirho(
+    Number.isFinite(itemChirho.markerLeftPctChirho) &&
+      Number.isFinite(itemChirho.markerWidthPctChirho) &&
+      itemChirho.markerWidthPctChirho > 0,
+    "expert review queue item lacks a usable span marker"
+  );
   return itemChirho;
 }
 

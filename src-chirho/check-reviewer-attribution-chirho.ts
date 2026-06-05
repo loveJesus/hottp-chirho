@@ -168,6 +168,10 @@ const EXPERT_POLICY_LIVE_ITEM_CHIRHO: VisionTierExpertLiveItemChirho = {
   lineIndexChirho: 1,
   segmentIndexChirho: 1,
   currentTextChirho: "א",
+  spanXMinPxChirho: 10,
+  spanWidthPxChirho: 20,
+  lineWidthPxChirho: 100,
+  lineHeightPxChirho: 30,
 };
 
 const LATIN_SYMBOL_POLICY_LIVE_ITEM_CHIRHO: LatinSymbolVisionLiveItemChirho = {
