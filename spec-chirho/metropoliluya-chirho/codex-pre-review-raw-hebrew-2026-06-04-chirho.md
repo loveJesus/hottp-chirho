@@ -218,6 +218,13 @@ span was surfaced.
   - Visual precheck: S1 is boxed after French `traduction de` and before Greek `(ἁγιάσατε)`, with adjacent Greek outside the Hebrew target. S4 is boxed after French `et de` at the right edge of the scanline; no intervening Greek/French text appears swallowed by the S4 Hebrew box.
   - Human check still needed: for S1, exact tav/qof/dalet-yod-shin-vav sequence, dagesh, vowels, and shin-dot; for S4, exact lamed-prefix, mem-hiriq, qof-sheva, dalet-dagesh/qamats, shin-dot, and whether the right-edge crop fully preserves the line-final Hebrew word with no missing terminal punctuation.
 
+- `vol 2 p151 L4 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A4%3A1`
+  - Live text: `קֶשֶׁר`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane; the direct OCR read `לשר` is weak and not a certification witness.
+  - Visual precheck: the target crop boxes the short Hebrew word after French `emplois de` and before `Sym`; the adjacent French and witness label sit outside the Hebrew target. The line then continues with Greek `ἄνταρσις`, which is a separate span later in the same line.
+  - Human check still needed: exact qof-shin-resh consonants, segol vowels, shin-dot, and whether this short word remains cleanly separated from both the preceding French phrase and following `Sym` witness label.
+
 - `vol 2 p151 L8 S1/S3`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A8%3A1`
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A8%3A3`
