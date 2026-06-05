@@ -4375,6 +4375,14 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
       `${humanSummaryChirho.genericReviewerRowsChirho} current Pass-C human validation row(s) use blank/generic/machine reviewer attribution; re-review or reattribute explicitly before certification`
     );
   }
+  const rawHebrewAttributionBlockedStartLocationChirho =
+    humanSummaryChirho.genericReviewerRowDetailsChirho.find((rowChirho) => rowChirho.liveSpanExistsChirho)?.locationChirho ?? null;
+  const rawHebrewAttributionBlockedStartUrlChirho = rawHebrewAttributionBlockedStartLocationChirho === null
+    ? null
+    : rawHebrewReviewUrlChirho(undefined, "attribution-blocked-chirho", undefined, rawHebrewAttributionBlockedStartLocationChirho);
+  const rawHebrewAttributionRereviewStartUrlChirho = rawHebrewAttributionBlockedStartLocationChirho === null
+    ? null
+    : rawHebrewReviewUrlChirho(undefined, "attribution-rereview-chirho", undefined, rawHebrewAttributionBlockedStartLocationChirho);
   const reviewStartLinksChirho: Record<string, string | null> = {
     rawHebrewAllChirho: rawHebrewReviewStartUrlChirho(livePendingRawSpansChirho),
     rawHebrewUnvalidatedChirho: rawHebrewReviewStartUrlChirho(livePendingRawSpansChirho, "unvalidated-chirho"),
@@ -4428,6 +4436,8 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
       rawHebrewPreReviewNotesChirho,
       "without-note-chirho"
     ),
+    rawHebrewAttributionBlockedChirho: rawHebrewAttributionBlockedStartUrlChirho,
+    rawHebrewAttributionRereviewChirho: rawHebrewAttributionRereviewStartUrlChirho,
     latinSymbolAllChirho: latinSymbolReviewStartUrlChirho(pendingLatinSymbolLiveItemsChirho),
     latinSymbolFrenchChirho: latinSymbolReviewStartUrlChirho(pendingLatinSymbolLiveItemsChirho, "french-chirho"),
     latinSymbolNonFrenchChirho: latinSymbolReviewStartUrlChirho(pendingLatinSymbolLiveItemsChirho, "latin-non-french-chirho"),

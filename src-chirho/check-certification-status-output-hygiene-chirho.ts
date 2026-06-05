@@ -483,6 +483,14 @@ function reviewStartLinkCountChecksChirho(statusChirho: CertificationStatusOutpu
   const rawChirho = statusChirho.rawHebrewChirho;
   const latinChirho = statusChirho.latinSymbolVisionChirho;
   const expertChirho = statusChirho.visionTierChirho;
+  const humanChirho = statusChirho.humanValidationDbChirho;
+  const liveAttributionBlockedRowCountChirho = arrayFieldChirho(
+    humanChirho,
+    "genericReviewerRowDetailsChirho",
+    "humanValidationDbChirho"
+  ).filter((rowChirho) =>
+    booleanFieldChirho(rowChirho, "liveSpanExistsChirho", "humanValidationDbChirho.genericReviewerRowDetailsChirho[]")
+  ).length;
   return [
     {
       keyChirho: "rawHebrewAllChirho",
@@ -579,6 +587,14 @@ function reviewStartLinkCountChecksChirho(statusChirho: CertificationStatusOutpu
         "withoutPreReviewNoteItemCountChirho",
         "rawHebrewChirho.triageChirho"
       ),
+    },
+    {
+      keyChirho: "rawHebrewAttributionBlockedChirho",
+      countChirho: liveAttributionBlockedRowCountChirho,
+    },
+    {
+      keyChirho: "rawHebrewAttributionRereviewChirho",
+      countChirho: liveAttributionBlockedRowCountChirho,
     },
     ...volumeLinkCountChecksChirho(
       "rawHebrewChirho",

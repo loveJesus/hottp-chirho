@@ -34,6 +34,7 @@ interface CommandChirho {
 interface CertificationStatusSummaryChirho {
   certificationCompleteChirho?: unknown;
   remainingWorkChirho?: unknown;
+  reviewStartLinksChirho?: Record<string, unknown>;
   structuralChirho?: {
     strictPassedChirho?: unknown;
     passCOcrHebrewSpanCountChirho?: unknown;
@@ -81,6 +82,28 @@ function remainingWorkLinesChirho(statusChirho: CertificationStatusSummaryChirho
   return statusChirho.remainingWorkChirho.map((itemChirho) => String(itemChirho));
 }
 
+function reviewStartLinkChirho(statusChirho: CertificationStatusSummaryChirho, keyChirho: string): string | null {
+  const linkChirho = statusChirho.reviewStartLinksChirho?.[keyChirho];
+  return typeof linkChirho === "string" && linkChirho.length > 0 ? linkChirho : null;
+}
+
+function printNextReviewLinksChirho(statusChirho: CertificationStatusSummaryChirho): void {
+  const linksChirho: Array<[string, string | null]> = [
+    ["Raw Hebrew primary", reviewStartLinkChirho(statusChirho, "rawHebrewVols35UnvalidatedChirho")],
+    ["Raw Hebrew attribution blocked", reviewStartLinkChirho(statusChirho, "rawHebrewAttributionBlockedChirho")],
+    ["Raw Hebrew attribution re-review", reviewStartLinkChirho(statusChirho, "rawHebrewAttributionRereviewChirho")],
+    ["Latin/symbol proofing", reviewStartLinkChirho(statusChirho, "latinSymbolAllChirho")],
+    ["Expert blank Syriac", reviewStartLinkChirho(statusChirho, "expertSyriacBlankChirho")],
+    ["Expert Hebrew/WLC", reviewStartLinkChirho(statusChirho, "expertHebrewChirho")],
+    ["Expert Greek", reviewStartLinkChirho(statusChirho, "expertGreekChirho")],
+  ].filter((entryChirho): entryChirho is [string, string] => entryChirho[1] !== null);
+  if (linksChirho.length === 0) return;
+  console.log(`[${MODULE_CHIRHO}] Next review links:`);
+  for (const [labelChirho, linkChirho] of linksChirho) {
+    console.log(`- ${labelChirho}: ${linkChirho}`);
+  }
+}
+
 function printReadinessSummaryChirho(statusChirho: CertificationStatusSummaryChirho): void {
   const contentReadyChirho = statusChirho.certificationCompleteChirho === true;
   console.log(`[${MODULE_CHIRHO}] Review app build readiness: yes`);
@@ -97,6 +120,7 @@ function printReadinessSummaryChirho(statusChirho: CertificationStatusSummaryChi
     for (const itemChirho of remainingWorkLinesChirho(statusChirho)) {
       console.log(`- ${itemChirho}`);
     }
+    printNextReviewLinksChirho(statusChirho);
   }
 }
 
