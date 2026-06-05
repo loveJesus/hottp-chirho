@@ -2210,7 +2210,7 @@ async function spanImageResponseChirho(itemChirho: QueueItemChirho): Promise<Res
   return new Response(outputChirho, { headers: { "Content-Type": "image/png" } });
 }
 
-Bun.serve({
+const serverChirho = Bun.serve({
   port: portChirho,
   async fetch(reqChirho: Request) {
     const urlChirho = new URL(reqChirho.url);
@@ -2410,4 +2410,4 @@ Bun.serve({
 });
 
 console.log(`[${MODULE_CHIRHO}] loaded ${queueChirho.length} review span(s)`);
-console.log(`[${MODULE_CHIRHO}] http://localhost:${portChirho}/`);
+console.log(`[${MODULE_CHIRHO}] http://localhost:${serverChirho.port}/`);

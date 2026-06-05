@@ -761,7 +761,7 @@ function loadCurrentStateChirho(): {
   return { manifestChirho, liveItemsChirho, liveByIdChirho };
 }
 
-Bun.serve({
+const serverChirho = Bun.serve({
   port: portChirho,
   async fetch(reqChirho) {
     const urlChirho = new URL(reqChirho.url);
@@ -873,4 +873,4 @@ Bun.serve({
   },
 });
 
-console.log(`[${MODULE_CHIRHO}] http://localhost:${portChirho}/`);
+console.log(`[${MODULE_CHIRHO}] http://localhost:${serverChirho.port}/`);
