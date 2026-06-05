@@ -202,6 +202,13 @@ span was surfaced.
   - Visual precheck: the line explicitly presents S3 `מַקְשִׁר` in parallel with S1 `מַעֲרִיץ`. S1 is boxed after French `en parallèle avec`; S3 is separately boxed after French `du vs 13)` and before `que NEB retiendra`. No obvious extra or missing Hebrew word is visible between the two boxes.
   - Human check still needed: for S1, exact final letters and pointing, especially the tight yod/tsade region; for S3, exact mem/qof-shin-resh sequence and all vowels/shin-dot marks, plus confirmation that `du vs 13)` and `que NEB` remain outside the Hebrew span.
 
+- `vol 2 p150 L42 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A42%3A1`
+  - Live text: `תַקְדִּישׁוּ`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane.
+  - Visual precheck: the target crop boxes the Hebrew word after French `les trois premières lettres de` and before French `qui, seules`; the Hebrew/French boundaries are clean, with no adjacent French swallowed by the Hebrew span.
+  - Human check still needed: exact tav/qof/dalet-yod-shin-vav sequence, dagesh, vowels, shin-dot, and confirmation that the surrounding French phrase remains outside this Hebrew span.
+
 - `vol 2 p151 L1 S1`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A1%3A1`
   - Live text: `תַקְדִּישׁוּ`
