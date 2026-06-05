@@ -1,9 +1,9 @@
 {
   "john316Chirho": "For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16",
   "schemaVersionChirho": 1,
-  "generatedAtChirho": "2026-06-05T11:13:46.809Z",
+  "generatedAtChirho": "2026-06-05T13:10:29.055Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 885,
+  "countChirho": 888,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8855,6 +8855,36 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "מתקנן לי",
       "notesChirho": "Repaired vol 5 p151 line 2 S0, the continuation of the `Quant au 𝔗` Job 17:4 quote: the scanline contains a Targum/Aramaic word before `לי`, visually read here as consonants `מתקנן לי`; the old raw span stored only `לִֽי`. Stored consonants-only as vision-chirho; exact Aramaic spelling (including any yod/nun distinction), vowels, marks, and punctuation relation to the following period remain expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 151,
+      "lineIndexChirho": 20,
+      "segmentIndexChirho": 0,
+      "garbleTextChirho": "Lowth interprétait justement 17 comme signifiant “’a",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "Lowth interprétait justement",
+      "notesChirho": "Re-segmented vol 2 p151 line 20 after packet-crop review: the old French span swallowed the printed Hebrew `קֶשֶׁר` as OCR `17` and also contained part of the English gloss. This span now ends before the Hebrew word. Stored as french-chirho vision-tier cleanup, not certified."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 151,
+      "lineIndexChirho": 20,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "17 hidden in French span; old Hebrew box covered `conspiracy`",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "קֶשֶׁר",
+      "notesChirho": "Recovered vol 2 p151 line 20 printed Hebrew `קֶשֶׁר` from the French span where it was OCR'd as `17`; the old Hebrew span was actually boxed over English `conspiracy`. Stored as hebrew-chirho vision-tier pending Hebrew/WLC expert confirmation of exact letters, vowels, and shin-dot."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 151,
+      "lineIndexChirho": 20,
+      "segmentIndexChirho": 2,
+      "garbleTextChirho": "Mais il lisait",
+      "scriptChirho": "french-chirho",
+      "utf8TextChirho": "comme signifiant “a conspiracy” . Mais il lisait",
+      "notesChirho": "Re-segmented vol 2 p151 line 20 English/French continuation after moving the misplaced Hebrew span: print reads `comme signifiant “a conspiracy” . Mais il lisait` after `קֶשֶׁר`. Stored as french-chirho vision-tier cleanup; quote/period spacing remains human proofing tier."
     }
   ]
 }
