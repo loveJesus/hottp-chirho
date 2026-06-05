@@ -215,6 +215,38 @@ async function mainChirho(): Promise<void> {
       responseChirho.text()
     );
     const itemChirho = firstQueueItemFromHtmlChirho(pageHtmlChirho);
+    const staleDisplayResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: [],
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: true,
+        ...displayGuardForItemChirho(itemChirho),
+        expectedLineTextChirho: `${itemChirho.lineTextChirho} stale-display-guard-chirho`,
+      }),
+    });
+    const staleDisplayDataChirho = (await staleDisplayResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      staleDisplayResponseChirho.status === 409,
+      `expected stale-display HTTP 409, got ${staleDisplayResponseChirho.status}`
+    );
+    assertCheckChirho(staleDisplayDataChirho.okChirho === false, "stale-display POST unexpectedly returned ok");
+    assertCheckChirho(
+      String(staleDisplayDataChirho.errorChirho ?? "").includes("Raw Hebrew review item is stale"),
+      `stale-display POST failed for the wrong reason: ${String(staleDisplayDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "stale-display POST persisted a row"
+    );
     const missingCleanAckResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
