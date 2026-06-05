@@ -285,6 +285,7 @@ function loadFreshExpertPackItemChirho(itemIdChirho: string, liveItemChirho: Vis
 
 function parseOptionsChirho(): ApplyOptionsChirho {
   const argsChirho = process.argv.slice(2);
+  const applyChirho = argsChirho.includes("--apply");
   const suppliedTextChirho = normalizeTextForStorageChirho(nonEmptyArgChirho(argsChirho, "supplied-text-chirho"));
   if (suppliedTextChirho.trim().length === 0) throw new Error("--supplied-text-chirho must not normalize to empty text");
   if (valueLooksTemplatePlaceholderChirho(suppliedTextChirho, SUPPLIED_TEXT_PLACEHOLDER_VALUES_CHIRHO)) {
@@ -296,16 +297,24 @@ function parseOptionsChirho(): ApplyOptionsChirho {
   if (valueLooksTemplatePlaceholderChirho(rationaleChirho, RATIONALE_PLACEHOLDER_VALUES_CHIRHO)) {
     throw new Error("--rationale-chirho must explain why this exact text is supplied, not a template placeholder");
   }
+  const expectedSourceSha256Chirho = optionalSha256ArgChirho(argsChirho, "expected-source-sha256-chirho");
+  const expectedPacketSha256Chirho = optionalSha256ArgChirho(argsChirho, "expected-packet-sha256-chirho");
+  if (applyChirho && expectedSourceSha256Chirho === null) {
+    throw new Error("--expected-source-sha256-chirho is required with --apply");
+  }
+  if (applyChirho && expectedPacketSha256Chirho === null) {
+    throw new Error("--expected-packet-sha256-chirho is required with --apply");
+  }
   return {
-    applyChirho: argsChirho.includes("--apply"),
+    applyChirho,
     itemIdChirho: nonEmptyArgChirho(argsChirho, "id-chirho"),
     suppliedTextChirho,
     reviewerChirho,
     reviewerRoleChirho: nonEmptyArgChirho(argsChirho, "reviewer-role-chirho"),
     rationaleChirho,
     backupPathChirho: parseArgValueChirho(argsChirho, "backup-chirho") ?? DEFAULT_BACKUP_PATH_CHIRHO,
-    expectedSourceSha256Chirho: optionalSha256ArgChirho(argsChirho, "expected-source-sha256-chirho"),
-    expectedPacketSha256Chirho: optionalSha256ArgChirho(argsChirho, "expected-packet-sha256-chirho"),
+    expectedSourceSha256Chirho,
+    expectedPacketSha256Chirho,
   };
 }
 

@@ -4,10 +4,11 @@
 /**
  * Non-mutating guard checks for the expert-supplied blank-span CLI.
  *
- * These checks exercise the actual command-line boundary without --apply. They
+ * These checks exercise the actual command-line boundary without mutation. They
  * prove generic/machine reviewer attribution is rejected before any target
- * mutation can happen, and, while a blank vision-tier item exists, prove the
- * live dry-run and wrong-role rejection paths still behave as expected.
+ * mutation can happen, prove --apply requires the image hashes before target
+ * lookup, and, while a blank vision-tier item exists, prove the live dry-run
+ * and wrong-role rejection paths still behave as expected.
  */
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
@@ -163,6 +164,27 @@ function checkPlaceholderRationaleRejectedBeforeTargetChirho(): void {
   );
 }
 
+function checkApplyRequiresImageHashesBeforeTargetChirho(): void {
+  const argsChirho = applyArgsChirho([
+    "--id-chirho=v0-p0000-l000-s0",
+    "--supplied-text-chirho=x",
+    "--reviewer-chirho=dr-expert-supplied-guard-check-chirho",
+    "--reviewer-role-chirho=Syriac reader",
+    "--rationale-chirho=certification guard image hash requirement check only",
+    "--apply",
+  ]);
+  const resultChirho = runCommandChirho(argsChirho);
+  const combinedOutputChirho = `${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`;
+  assertCommandChirho(
+    resultChirho.exitCodeChirho !== 0,
+    `hashless apply command unexpectedly succeeded: ${commandTextChirho(argsChirho)}`
+  );
+  assertCommandChirho(
+    combinedOutputChirho.includes("--expected-source-sha256-chirho is required with --apply"),
+    `hashless apply command failed for the wrong reason: ${combinedOutputChirho}`
+  );
+}
+
 function blankLiveItemChirho(): VisionTierExpertLiveItemChirho | null {
   return (
     visionTierExpertLiveItemsChirho().find((itemChirho) => {
@@ -279,6 +301,7 @@ function mainChirho(): void {
   checkPlaceholderTextRejectedBeforeTargetChirho();
   checkPlaceholderReviewerRejectedBeforeTargetChirho();
   checkPlaceholderRationaleRejectedBeforeTargetChirho();
+  checkApplyRequiresImageHashesBeforeTargetChirho();
   const nonblankItemChirho = nonblankLiveItemChirho();
   if (nonblankItemChirho === null) {
     console.log(`[${MODULE_CHIRHO}] no nonblank explicit-span vision-tier item is currently live; skipped no-clobber check`);
