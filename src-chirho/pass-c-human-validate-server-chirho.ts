@@ -1969,6 +1969,9 @@ function pageHtmlChirho(): string {
         messagesChirho.push("clean review needs the clean-certification checkbox");
       }
       if (hasIssueFlagChirho) {
+        if (cleanReviewAcknowledgedChirho()) {
+          messagesChirho.push("issue review cannot carry the clean-certification checkbox");
+        }
         const notesErrorChirho = reviewNotesErrorChirho(pendingReviewNotesChirho());
         if (notesErrorChirho !== null) messagesChirho.push(notesErrorChirho);
       }
@@ -2556,6 +2559,10 @@ function pageHtmlChirho(): string {
         return;
       }
       if (issueFlagsChirho.length > 0) {
+        if (cleanReviewAcknowledgedChirho()) {
+          setStatusChirho("Uncheck the clean certification box before saving an issue");
+          return;
+        }
         const notesErrorChirho = reviewNotesErrorChirho(notesChirho);
         if (notesErrorChirho !== null) {
           setStatusChirho(notesErrorChirho);
@@ -2802,6 +2809,12 @@ const serverChirho = Bun.serve({
         return jsonResponseChirho({
           okChirho: false,
           errorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+        }, 400);
+      }
+      if (issueFlagsChirho.length > 0 && bodyChirho.certifyCleanChirho === true) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: "certifyCleanChirho cannot be true when issueFlagsChirho are present; save the row as reviewed-issues",
         }, 400);
       }
       const scriptVerdictChirho = queueModeChirho === "unknown-script-chirho"

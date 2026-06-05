@@ -26,6 +26,7 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "wrong splits, lumped words, spaces, or maqqef are Segmentation",
   "I checked the crop and full line against the print; if no issue boxes are checked and the text is unchanged, this exact span is intentionally reviewed clean.",
   "A clean save requires the checkbox above.",
+  "issue review cannot carry the clean-certification checkbox",
   "Check an issue box and write a note if anything is wrong, split, lumped, missing, extra, or uncertain.",
   "clean review needs the clean-certification checkbox",
   "Live codepoints",
@@ -503,6 +504,40 @@ async function mainChirho(): Promise<void> {
     assertCheckChirho(
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
       "unknown issue flag POST persisted a row"
+    );
+    const issueWithCleanAckResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: ["letters-chirho"],
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "guard check should reject a contradictory issue plus clean acknowledgement",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: true,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const issueWithCleanAckDataChirho = (await issueWithCleanAckResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      issueWithCleanAckResponseChirho.status === 400,
+      `expected issue-with-clean-ack HTTP 400, got ${issueWithCleanAckResponseChirho.status}`
+    );
+    assertCheckChirho(
+      issueWithCleanAckDataChirho.okChirho === false,
+      "issue with clean acknowledgement unexpectedly returned ok"
+    );
+    assertCheckChirho(
+      String(issueWithCleanAckDataChirho.errorChirho ?? "").includes("certifyCleanChirho cannot be true when issueFlagsChirho are present"),
+      `issue with clean acknowledgement failed for the wrong reason: ${String(issueWithCleanAckDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "issue with clean acknowledgement persisted a row"
     );
     const machineCleanResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
