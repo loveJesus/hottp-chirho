@@ -69,6 +69,10 @@ import {
   type RawHebrewAttentionKindChirho,
 } from "./raw-hebrew-review-triage-chirho.ts";
 import {
+  parseRawHebrewPreReviewNotesChirho,
+  rawHebrewPreReviewNoteKeyChirho,
+} from "./raw-hebrew-pre-review-notes-chirho.ts";
+import {
   RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_1_2_CHIRHO,
   RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_3_5_CHIRHO,
   RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO,
@@ -1460,19 +1464,29 @@ function hebrewSkeletonChirho(textChirho: string): string {
     .replace(/[^\u05D0-\u05EA]/g, "");
 }
 
-function rawHebrewPreReviewMentionsItemChirho(itemChirho: RawHebrewPackItemChirho, notesTextChirho: string): boolean {
-  const keyChirho = `${itemChirho.volumeChirho}:${itemChirho.pageChirho}:${itemChirho.lineIndexChirho}:${itemChirho.segmentIndexChirho}`;
-  const locationChirho =
-    `vol ${itemChirho.volumeChirho} p${itemChirho.pageChirho} L${itemChirho.lineIndexChirho} S${itemChirho.segmentIndexChirho}`;
-  const paddedLocationChirho =
-    `vol ${itemChirho.volumeChirho} p${String(itemChirho.pageChirho).padStart(4, "0")} ` +
-    `L${String(itemChirho.lineIndexChirho).padStart(3, "0")} S${itemChirho.segmentIndexChirho}`;
-  return (
-    notesTextChirho.includes(itemChirho.idChirho) ||
-    notesTextChirho.includes(keyChirho) ||
-    notesTextChirho.includes(locationChirho) ||
-    notesTextChirho.includes(paddedLocationChirho)
+function rawHebrewPreReviewItemKeyChirho(itemChirho: RawHebrewPackItemChirho): string | null {
+  if (
+    typeof itemChirho.volumeChirho !== "number" ||
+    typeof itemChirho.pageChirho !== "number" ||
+    typeof itemChirho.lineIndexChirho !== "number" ||
+    typeof itemChirho.segmentIndexChirho !== "number"
+  ) {
+    return null;
+  }
+  return rawHebrewPreReviewNoteKeyChirho(
+    itemChirho.volumeChirho,
+    itemChirho.pageChirho,
+    itemChirho.lineIndexChirho,
+    itemChirho.segmentIndexChirho
   );
+}
+
+function rawHebrewPreReviewHasItemChirho(
+  itemChirho: RawHebrewPackItemChirho,
+  notesChirho: Map<string, string>
+): boolean {
+  const keyChirho = rawHebrewPreReviewItemKeyChirho(itemChirho);
+  return keyChirho !== null && notesChirho.has(keyChirho);
 }
 
 function rawHebrewTriageSampleChirho(
@@ -1493,7 +1507,7 @@ function rawHebrewTriageSampleChirho(
 
 function rawHebrewTriageSummaryChirho(
   itemsChirho: RawHebrewPackItemChirho[],
-  preReviewNotesTextChirho: string | null
+  preReviewNotesChirho: Map<string, string> | null
 ): RawHebrewTriageSummaryChirho {
   const lowConfidenceItemsChirho = itemsChirho.filter((itemChirho) => {
     const bestConfidenceChirho = bestRawHebrewDirectConfidenceChirho(itemChirho);
@@ -1517,17 +1531,17 @@ function rawHebrewTriageSummaryChirho(
       bChirho.scoreChirho - aChirho.scoreChirho ||
       aChirho.itemChirho.idChirho.localeCompare(bChirho.itemChirho.idChirho)
     );
-  const preReviewUncoveredEntriesChirho = preReviewNotesTextChirho === null
+  const preReviewUncoveredEntriesChirho = preReviewNotesChirho === null
     ? attentionEntriesChirho
     : attentionEntriesChirho.filter(
-        (entryChirho) => !rawHebrewPreReviewMentionsItemChirho(entryChirho.itemChirho, preReviewNotesTextChirho)
+        (entryChirho) => !rawHebrewPreReviewHasItemChirho(entryChirho.itemChirho, preReviewNotesChirho)
       );
-  const preReviewNoteItemsChirho = preReviewNotesTextChirho === null
+  const preReviewNoteItemsChirho = preReviewNotesChirho === null
     ? []
-    : itemsChirho.filter((itemChirho) => rawHebrewPreReviewMentionsItemChirho(itemChirho, preReviewNotesTextChirho));
-  const withoutPreReviewNoteItemsChirho = preReviewNotesTextChirho === null
+    : itemsChirho.filter((itemChirho) => rawHebrewPreReviewHasItemChirho(itemChirho, preReviewNotesChirho));
+  const withoutPreReviewNoteItemsChirho = preReviewNotesChirho === null
     ? itemsChirho
-    : itemsChirho.filter((itemChirho) => !rawHebrewPreReviewMentionsItemChirho(itemChirho, preReviewNotesTextChirho));
+    : itemsChirho.filter((itemChirho) => !rawHebrewPreReviewHasItemChirho(itemChirho, preReviewNotesChirho));
   const sampleItemsChirho = attentionEntriesChirho
     .slice(0, 8);
   return {
@@ -1538,7 +1552,7 @@ function rawHebrewTriageSummaryChirho(
     noDirectReadItemCountChirho: noDirectReadItemsChirho.length,
     preReviewNoteItemCountChirho: preReviewNoteItemsChirho.length,
     withoutPreReviewNoteItemCountChirho: withoutPreReviewNoteItemsChirho.length,
-    preReviewNotesAvailableChirho: preReviewNotesTextChirho !== null,
+    preReviewNotesAvailableChirho: preReviewNotesChirho !== null,
     preReviewCoveredAttentionItemCountChirho: attentionEntriesChirho.length - preReviewUncoveredEntriesChirho.length,
     preReviewUncoveredAttentionItemCountChirho: preReviewUncoveredEntriesChirho.length,
     preReviewUncoveredSamplesChirho: preReviewUncoveredEntriesChirho
@@ -1710,14 +1724,14 @@ function rawHebrewAttentionReviewStartUrlChirho(
 
 function firstRawHebrewPreReviewNoteItemChirho(
   itemsChirho: RawHebrewPackItemChirho[],
-  preReviewNotesTextChirho: string | null,
+  preReviewNotesChirho: Map<string, string> | null,
   preReviewNoteFilterChirho: "with-note-chirho" | "without-note-chirho"
 ): RawHebrewPackItemChirho | null {
-  if (preReviewNotesTextChirho === null && preReviewNoteFilterChirho === "with-note-chirho") return null;
+  if (preReviewNotesChirho === null && preReviewNoteFilterChirho === "with-note-chirho") return null;
   return [...itemsChirho]
     .filter((itemChirho) => {
-      const hasPreReviewNoteChirho = preReviewNotesTextChirho !== null &&
-        rawHebrewPreReviewMentionsItemChirho(itemChirho, preReviewNotesTextChirho);
+      const hasPreReviewNoteChirho = preReviewNotesChirho !== null &&
+        rawHebrewPreReviewHasItemChirho(itemChirho, preReviewNotesChirho);
       return preReviewNoteFilterChirho === "with-note-chirho" ? hasPreReviewNoteChirho : !hasPreReviewNoteChirho;
     })
     .sort(compareRawHebrewPackQueueOrderChirho)[0] ?? null;
@@ -1725,10 +1739,10 @@ function firstRawHebrewPreReviewNoteItemChirho(
 
 function rawHebrewPreReviewNoteReviewStartUrlChirho(
   itemsChirho: RawHebrewPackItemChirho[],
-  preReviewNotesTextChirho: string | null,
+  preReviewNotesChirho: Map<string, string> | null,
   preReviewNoteFilterChirho: "with-note-chirho" | "without-note-chirho"
 ): string | null {
-  const itemChirho = firstRawHebrewPreReviewNoteItemChirho(itemsChirho, preReviewNotesTextChirho, preReviewNoteFilterChirho);
+  const itemChirho = firstRawHebrewPreReviewNoteItemChirho(itemsChirho, preReviewNotesChirho, preReviewNoteFilterChirho);
   const itemKeyChirho = itemChirho === null ? null : rawHebrewPackItemKeyChirho(itemChirho);
   return itemChirho === null || itemKeyChirho === null
     ? null
@@ -3442,17 +3456,19 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     const itemKeyChirho = rawHebrewPackItemKeyChirho(itemChirho);
     return itemKeyChirho !== null && livePendingRawSpanKeysChirho.has(itemKeyChirho);
   });
-  let rawHebrewPreReviewNotesTextChirho: string | null = null;
+  let rawHebrewPreReviewNotesChirho: Map<string, string> | null = null;
   try {
     if (existsSync(RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO)) {
-      rawHebrewPreReviewNotesTextChirho = readFileSync(RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO, "utf8");
+      rawHebrewPreReviewNotesChirho = parseRawHebrewPreReviewNotesChirho(
+        readFileSync(RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO, "utf8")
+      );
     }
   } catch (_errorChirho) {
-    rawHebrewPreReviewNotesTextChirho = null;
+    rawHebrewPreReviewNotesChirho = null;
   }
   const rawHebrewTriageSummaryResultChirho = rawHebrewTriageSummaryChirho(
     livePendingRawHebrewPackItemsChirho,
-    rawHebrewPreReviewNotesTextChirho
+    rawHebrewPreReviewNotesChirho
   );
   const rawHebrewTierCountsChirho = countRawHebrewByTierChirho(rawSpansChirho);
   const livePendingRawHebrewTierCountsChirho = countRawHebrewByTierChirho(livePendingRawSpansChirho);
@@ -4404,12 +4420,12 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     ),
     rawHebrewPreReviewNoteChirho: rawHebrewPreReviewNoteReviewStartUrlChirho(
       livePendingRawHebrewPackItemsChirho,
-      rawHebrewPreReviewNotesTextChirho,
+      rawHebrewPreReviewNotesChirho,
       "with-note-chirho"
     ),
     rawHebrewWithoutPreReviewNoteChirho: rawHebrewPreReviewNoteReviewStartUrlChirho(
       livePendingRawHebrewPackItemsChirho,
-      rawHebrewPreReviewNotesTextChirho,
+      rawHebrewPreReviewNotesChirho,
       "without-note-chirho"
     ),
     latinSymbolAllChirho: latinSymbolReviewStartUrlChirho(pendingLatinSymbolLiveItemsChirho),

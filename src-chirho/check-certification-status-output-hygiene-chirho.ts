@@ -285,6 +285,37 @@ function countMapValueChirho(valueChirho: unknown, keyChirho: string, itemKeyChi
   return countMapFieldChirho(valueChirho, keyChirho, labelChirho)[itemKeyChirho] ?? 0;
 }
 
+interface RawHebrewTriageSampleForHygieneChirho {
+  idChirho: string;
+  reviewUrlChirho: string;
+  textChirho: string;
+  validationStatusChirho: string;
+  reasonsChirho: string[];
+  witnessCountChirho: number | null;
+  bestDirectConfidenceChirho: number | null;
+  lineTextChirho: string;
+}
+
+function rawHebrewTriageSampleArrayFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): RawHebrewTriageSampleForHygieneChirho[] {
+  return arrayFieldChirho(valueChirho, keyChirho, labelChirho).map((itemChirho, indexChirho) => {
+    const sampleLabelChirho = `${labelChirho}.${keyChirho}[${indexChirho}]`;
+    const sampleChirho = objectRecordChirho(itemChirho, sampleLabelChirho);
+    const reasonsChirho = stringArrayFieldChirho(sampleChirho, "reasonsChirho", sampleLabelChirho);
+    const witnessCountChirho = nullableNumberFieldChirho(sampleChirho, "witnessCountChirho", sampleLabelChirho);
+    const bestDirectConfidenceChirho = nullableNumberFieldChirho(sampleChirho, "bestDirectConfidenceChirho", sampleLabelChirho);
+    return {
+      idChirho: stringFieldChirho(sampleChirho, "idChirho", sampleLabelChirho),
+      reviewUrlChirho: stringFieldChirho(sampleChirho, "reviewUrlChirho", sampleLabelChirho),
+      textChirho: stringFieldChirho(sampleChirho, "textChirho", sampleLabelChirho),
+      validationStatusChirho: stringFieldChirho(sampleChirho, "validationStatusChirho", sampleLabelChirho),
+      reasonsChirho,
+      witnessCountChirho,
+      bestDirectConfidenceChirho,
+      lineTextChirho: stringFieldChirho(sampleChirho, "lineTextChirho", sampleLabelChirho),
+    };
+  });
+}
+
 function nestedCountMapValueChirho(
   valueChirho: unknown,
   keyChirho: string,
@@ -1725,16 +1756,36 @@ function assertRawHebrewQueueMarkdownCoverageChirho(markdownChirho: string, stat
     `- Current attention items not mentioned in the pre-review note: ${triageUncoveredCountChirho}`,
     "raw Hebrew triage uncovered count"
   );
-  const triageUncoveredSamplesChirho = stringArrayFieldChirho(
+  const triageUncoveredSamplesChirho = rawHebrewTriageSampleArrayFieldChirho(
     triageChirho,
     "preReviewUncoveredSamplesChirho",
     "rawHebrewChirho.triageChirho"
   );
-  assertMarkdownContainsChirho(
-    markdownChirho,
-    `- Pre-review uncovered attention samples: ${triageUncoveredSamplesChirho.length === 0 ? "none" : triageUncoveredSamplesChirho.join(", ")}`,
-    "raw Hebrew triage uncovered samples"
-  );
+  if (triageUncoveredSamplesChirho.length === 0) {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      "- Pre-review uncovered attention samples: none",
+      "raw Hebrew triage uncovered samples"
+    );
+  } else {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      "- Pre-review note uncovered current attention samples:",
+      "raw Hebrew triage uncovered samples heading"
+    );
+    for (const sampleChirho of triageUncoveredSamplesChirho) {
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        `- ${sampleChirho.idChirho}: ${sampleChirho.reviewUrlChirho}`,
+        `raw Hebrew triage uncovered sample ${sampleChirho.idChirho}`
+      );
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        `  - Text: \`${sampleChirho.textChirho}\`; status: ${sampleChirho.validationStatusChirho}; reasons: ${sampleChirho.reasonsChirho.join(", ")}`,
+        `raw Hebrew triage uncovered sample ${sampleChirho.idChirho} text`
+      );
+    }
+  }
 
   assertMarkdownContainsChirho(markdownChirho, "## Pass-C Human Validation Backup", "Pass-C backup heading");
   assertMarkdownContainsChirho(markdownChirho, `- Backup exists: ${backupExistsChirho}`, "Pass-C backup existence");
