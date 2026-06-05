@@ -1091,11 +1091,14 @@ function assertBlankExpertHandoffPathsChirho(markdownChirho: string, handoffChir
   const markdownPathChirho = nullableStringFieldChirho(handoffChirho, "markdownPathChirho", labelChirho);
   const handoffDocumentPathChirho = nullableStringFieldChirho(handoffChirho, "handoffDocumentPathChirho", labelChirho);
   const handoffCropPathChirho = nullableStringFieldChirho(handoffChirho, "handoffCropPathChirho", labelChirho);
+  const handoffTargetCropPathChirho = nullableStringFieldChirho(handoffChirho, "handoffTargetCropPathChirho", labelChirho);
   const sourceShaChirho = sha256OrNullFieldChirho(handoffChirho, "sourceSha256Chirho", labelChirho);
   const packetShaChirho = sha256OrNullFieldChirho(handoffChirho, "packetSha256Chirho", labelChirho);
   const cropShaChirho = sha256OrNullFieldChirho(handoffChirho, "handoffCropSha256Chirho", labelChirho);
+  const targetCropShaChirho = sha256OrNullFieldChirho(handoffChirho, "handoffTargetCropSha256Chirho", labelChirho);
   const documentExistsChirho = booleanFieldChirho(handoffChirho, "handoffDocumentExistsChirho", labelChirho);
   const cropExistsChirho = booleanFieldChirho(handoffChirho, "handoffCropExistsChirho", labelChirho);
+  const targetCropExistsChirho = booleanFieldChirho(handoffChirho, "handoffTargetCropExistsChirho", labelChirho);
 
   if (sourcePathChirho !== null) {
     assertGeneratedCheckChirho(existsSync(sourcePathChirho), `${labelChirho}.sourcePathChirho file is missing`);
@@ -1113,6 +1116,12 @@ function assertBlankExpertHandoffPathsChirho(markdownChirho: string, handoffChir
     assertGeneratedCheckChirho(
       existsSync(handoffCropPathChirho) === cropExistsChirho,
       `${labelChirho}.handoffCropExistsChirho does not match filesystem`
+    );
+  }
+  if (handoffTargetCropPathChirho !== null) {
+    assertGeneratedCheckChirho(
+      existsSync(handoffTargetCropPathChirho) === targetCropExistsChirho,
+      `${labelChirho}.handoffTargetCropExistsChirho does not match filesystem`
     );
   }
 
@@ -1155,6 +1164,16 @@ function assertBlankExpertHandoffPathsChirho(markdownChirho: string, handoffChir
     markdownChirho,
     `Dedicated handoff crop SHA-256: ${cropShaChirho ?? "missing-crop-hash-chirho"}`,
     "blank expert handoff crop hash"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `Dedicated handoff target crop: \`${handoffTargetCropPathChirho === null ? "missing-dedicated-handoff-target-crop-chirho" : relativeProjectPathForStatusChirho(handoffTargetCropPathChirho)}\` (present: ${targetCropExistsChirho})`,
+    "blank expert handoff target crop path"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `Dedicated handoff target crop SHA-256: ${targetCropShaChirho ?? "missing-target-crop-hash-chirho"}`,
+    "blank expert handoff target crop hash"
   );
 }
 
@@ -2691,7 +2710,9 @@ function assertCoreRemainingWorkCoverageChirho(
   ).length;
   const missingCropCountChirho = handoffsChirho.filter((handoffChirho) =>
     nullableStringFieldChirho(handoffChirho, "handoffCropPathChirho", "structuralChirho.blankVisionTierHandoffsChirho[]") === null ||
-    !booleanFieldChirho(handoffChirho, "handoffCropExistsChirho", "structuralChirho.blankVisionTierHandoffsChirho[]")
+    !booleanFieldChirho(handoffChirho, "handoffCropExistsChirho", "structuralChirho.blankVisionTierHandoffsChirho[]") ||
+    nullableStringFieldChirho(handoffChirho, "handoffTargetCropPathChirho", "structuralChirho.blankVisionTierHandoffsChirho[]") === null ||
+    !booleanFieldChirho(handoffChirho, "handoffTargetCropExistsChirho", "structuralChirho.blankVisionTierHandoffsChirho[]")
   ).length;
   const staleDocumentCountChirho = handoffsChirho.filter((handoffChirho) =>
     booleanFieldChirho(handoffChirho, "handoffDocumentExistsChirho", "structuralChirho.blankVisionTierHandoffsChirho[]") &&

@@ -19,11 +19,16 @@ This is a handoff for one intentionally blank expert-tier span. It is not a tran
 
 ## Crop
 
-The boxed region is the current Syriac span geometry: x `767..950` in the 1285px-wide scanline. The crop includes nearby context: the French open parenthesis before the Syriac and the comma after it.
+The boxed region is the current Syriac span geometry: x `767..950` in the 1285px-wide scanline. The context crop includes nearby context: the French open parenthesis before the Syriac and the comma after it. The target crop is tighter and uses the same boxed span geometry.
 
 ![Boxed Syriac crop for v3-p0151-l010-s3](syriac-v3-p0151-l010-s3-context-crop-2026-06-04-chirho.png)
 
 - Crop SHA-256: `bb43be97ee2efea410e39109fcabb3083e1ab3215d9941665adb427631062bde`
+- Target crop:
+
+![Tight boxed Syriac target crop for v3-p0151-l010-s3](syriac-v3-p0151-l010-s3-target-crop-2026-06-05-chirho.png)
+
+- Target crop SHA-256: `8c9e5fd25c30ce6a53370e9cf0d037c49e8711d07afa8cc8961d43cbe0a23931`
 - Supplied text boundary: transcribe only the Syriac text inside the red box. The French open parenthesis before the box and the comma after the box are already stored in neighboring French spans and should not be included in the supplied Syriac text.
 
 ## Current Live Line

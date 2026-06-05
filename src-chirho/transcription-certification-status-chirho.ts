@@ -191,6 +191,12 @@ const SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_CROP_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "syriac-v3-p0151-l010-s3-context-crop-2026-06-04-chirho.png"
 );
+const SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_TARGET_CROP_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "syriac-v3-p0151-l010-s3-target-crop-2026-06-05-chirho.png"
+);
 const EXPERT_SUPPLIED_VISION_TEXT_BACKUP_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -315,6 +321,9 @@ interface BlankVisionTierHandoffChirho {
   handoffCropPathChirho: string | null;
   handoffCropExistsChirho: boolean;
   handoffCropSha256Chirho: string | null;
+  handoffTargetCropPathChirho: string | null;
+  handoffTargetCropExistsChirho: boolean;
+  handoffTargetCropSha256Chirho: string | null;
   handoffDocumentMatchesCurrentChirho: boolean;
   handoffDocumentMissingSnippetsChirho: string[];
 }
@@ -1703,14 +1712,16 @@ function blankVisionTierSuppliedTextCommandTemplateChirho(
 function blankVisionTierHandoffArtifactPathsChirho(
   idChirho: string,
   syriacBlankTranscriptionHandoffPathChirho: string,
-  syriacBlankTranscriptionHandoffCropPathChirho: string
-): { documentPathChirho: string | null; cropPathChirho: string | null } {
+  syriacBlankTranscriptionHandoffCropPathChirho: string,
+  syriacBlankTranscriptionHandoffTargetCropPathChirho: string
+): { documentPathChirho: string | null; cropPathChirho: string | null; targetCropPathChirho: string | null } {
   if (idChirho !== "v3-p0151-l010-s3") {
-    return { documentPathChirho: null, cropPathChirho: null };
+    return { documentPathChirho: null, cropPathChirho: null, targetCropPathChirho: null };
   }
   return {
     documentPathChirho: syriacBlankTranscriptionHandoffPathChirho,
     cropPathChirho: syriacBlankTranscriptionHandoffCropPathChirho,
+    targetCropPathChirho: syriacBlankTranscriptionHandoffTargetCropPathChirho,
   };
 }
 
@@ -1877,6 +1888,8 @@ function blankVisionTierHandoffRequiredDocumentSnippetsChirho(
   packetSha256Chirho: string | null,
   cropPathChirho: string | null,
   cropSha256Chirho: string | null,
+  targetCropPathChirho: string | null,
+  targetCropSha256Chirho: string | null,
   issueChirho: {
     volumeChirho: number;
     pageChirho: number;
@@ -1907,6 +1920,12 @@ function blankVisionTierHandoffRequiredDocumentSnippetsChirho(
   if (cropSha256Chirho !== null) {
     snippetsChirho.push(`- Crop SHA-256: \`${cropSha256Chirho}\``);
   }
+  if (targetCropPathChirho !== null) {
+    snippetsChirho.push(`](${fileNameForPathChirho(targetCropPathChirho)})`);
+  }
+  if (targetCropSha256Chirho !== null) {
+    snippetsChirho.push(`- Target crop SHA-256: \`${targetCropSha256Chirho}\``);
+  }
   const geometrySnippetChirho = blankVisionTierHandoffGeometrySnippetChirho(issueChirho);
   snippetsChirho.push(geometrySnippetChirho ?? "live-blank-span-geometry-unavailable-chirho");
   return snippetsChirho;
@@ -1926,7 +1945,8 @@ function blankVisionTierHandoffsChirho(
   manifestItemsByIdChirho: Map<string, ExpertPackVisionItemChirho>,
   liveItemsByIdChirho: Map<string, { scriptChirho: string; visionSourceChirho: string; currentTextChirho: string }>,
   syriacBlankTranscriptionHandoffPathChirho: string,
-  syriacBlankTranscriptionHandoffCropPathChirho: string
+  syriacBlankTranscriptionHandoffCropPathChirho: string,
+  syriacBlankTranscriptionHandoffTargetCropPathChirho: string
 ): BlankVisionTierHandoffChirho[] {
   return issuesChirho
     .filter(
@@ -1953,11 +1973,13 @@ function blankVisionTierHandoffsChirho(
       const artifactPathsChirho = blankVisionTierHandoffArtifactPathsChirho(
         idChirho,
         syriacBlankTranscriptionHandoffPathChirho,
-        syriacBlankTranscriptionHandoffCropPathChirho
+        syriacBlankTranscriptionHandoffCropPathChirho,
+        syriacBlankTranscriptionHandoffTargetCropPathChirho
       );
       const sourceSha256Chirho = fileSha256Chirho(manifestItemChirho?.sourcePathChirho ?? null);
       const packetSha256Chirho = fileSha256Chirho(manifestItemChirho?.packetPathChirho ?? null);
       const handoffCropSha256Chirho = fileSha256Chirho(artifactPathsChirho.cropPathChirho);
+      const handoffTargetCropSha256Chirho = fileSha256Chirho(artifactPathsChirho.targetCropPathChirho);
       const expertReviewUrlResultChirho = expertReviewUrlChirho(scriptChirho ?? undefined, undefined, idChirho);
       const requiredDocumentSnippetsChirho = blankVisionTierHandoffRequiredDocumentSnippetsChirho(
         idChirho,
@@ -1969,6 +1991,8 @@ function blankVisionTierHandoffsChirho(
         packetSha256Chirho,
         artifactPathsChirho.cropPathChirho,
         handoffCropSha256Chirho,
+        artifactPathsChirho.targetCropPathChirho,
+        handoffTargetCropSha256Chirho,
         issueChirho
       );
       const missingDocumentSnippetsChirho = missingHandoffDocumentSnippetsChirho(
@@ -2008,6 +2032,10 @@ function blankVisionTierHandoffsChirho(
         handoffCropExistsChirho:
           artifactPathsChirho.cropPathChirho !== null && existsSync(artifactPathsChirho.cropPathChirho),
         handoffCropSha256Chirho,
+        handoffTargetCropPathChirho: artifactPathsChirho.targetCropPathChirho,
+        handoffTargetCropExistsChirho:
+          artifactPathsChirho.targetCropPathChirho !== null && existsSync(artifactPathsChirho.targetCropPathChirho),
+        handoffTargetCropSha256Chirho,
         handoffDocumentMatchesCurrentChirho: missingDocumentSnippetsChirho.length === 0,
         handoffDocumentMissingSnippetsChirho: missingDocumentSnippetsChirho,
       };
@@ -3084,6 +3112,7 @@ interface BuildStatusOptionsChirho {
   visionTierExpertConfirmationPolicyPathChirho?: string;
   syriacBlankTranscriptionHandoffPathChirho?: string;
   syriacBlankTranscriptionHandoffCropPathChirho?: string;
+  syriacBlankTranscriptionHandoffTargetCropPathChirho?: string;
 }
 
 function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptionsChirho = {}): CertificationStatusChirho {
@@ -3096,6 +3125,9 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
   const syriacBlankTranscriptionHandoffCropPathChirho =
     optionsChirho.syriacBlankTranscriptionHandoffCropPathChirho ??
     SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_CROP_PATH_CHIRHO;
+  const syriacBlankTranscriptionHandoffTargetCropPathChirho =
+    optionsChirho.syriacBlankTranscriptionHandoffTargetCropPathChirho ??
+    SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_TARGET_CROP_PATH_CHIRHO;
   const exportReportExistsChirho = existsSync(EXPORT_REPORT_PATH_CHIRHO);
   const rawHebrewReportExistsChirho = existsSync(RAW_HEBREW_REPORT_PATH_CHIRHO);
   const rawHebrewPackManifestExistsChirho = existsSync(RAW_HEBREW_PACK_MANIFEST_PATH_CHIRHO);
@@ -3473,7 +3505,8 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     expertManifestItemsByIdChirho,
     visionTierLiveItemsByIdChirho,
     syriacBlankTranscriptionHandoffPathChirho,
-    syriacBlankTranscriptionHandoffCropPathChirho
+    syriacBlankTranscriptionHandoffCropPathChirho,
+    syriacBlankTranscriptionHandoffTargetCropPathChirho
   );
   structuralChirho.blankVisionTierHandoffsChirho = blankVisionTierHandoffsResultChirho;
   const visionTierManifestCountMatchesCurrentChirho =
@@ -3779,7 +3812,11 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     (handoffChirho) => handoffChirho.handoffDocumentPathChirho === null || !handoffChirho.handoffDocumentExistsChirho
   ).length;
   const blankHandoffMissingCropCountChirho = structuralChirho.blankVisionTierHandoffsChirho.filter(
-    (handoffChirho) => handoffChirho.handoffCropPathChirho === null || !handoffChirho.handoffCropExistsChirho
+    (handoffChirho) =>
+      handoffChirho.handoffCropPathChirho === null ||
+      !handoffChirho.handoffCropExistsChirho ||
+      handoffChirho.handoffTargetCropPathChirho === null ||
+      !handoffChirho.handoffTargetCropExistsChirho
   ).length;
   const blankHandoffStaleDocumentCountChirho = structuralChirho.blankVisionTierHandoffsChirho.filter(
     (handoffChirho) => handoffChirho.handoffDocumentExistsChirho && !handoffChirho.handoffDocumentMatchesCurrentChirho
@@ -4466,6 +4503,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
           `  - Dedicated handoff document: \`${handoffChirho.handoffDocumentPathChirho === null ? "missing-dedicated-handoff-document-chirho" : relativeProjectPathChirho(handoffChirho.handoffDocumentPathChirho)}\` (present: ${handoffChirho.handoffDocumentExistsChirho})`,
           `  - Dedicated handoff crop: \`${handoffChirho.handoffCropPathChirho === null ? "missing-dedicated-handoff-crop-chirho" : relativeProjectPathChirho(handoffChirho.handoffCropPathChirho)}\` (present: ${handoffChirho.handoffCropExistsChirho})`,
           `  - Dedicated handoff crop SHA-256: ${handoffChirho.handoffCropSha256Chirho ?? "missing-crop-hash-chirho"}`,
+          `  - Dedicated handoff target crop: \`${handoffChirho.handoffTargetCropPathChirho === null ? "missing-dedicated-handoff-target-crop-chirho" : relativeProjectPathChirho(handoffChirho.handoffTargetCropPathChirho)}\` (present: ${handoffChirho.handoffTargetCropExistsChirho})`,
+          `  - Dedicated handoff target crop SHA-256: ${handoffChirho.handoffTargetCropSha256Chirho ?? "missing-target-crop-hash-chirho"}`,
           `  - Dedicated handoff document matches current blank span: ${handoffChirho.handoffDocumentMatchesCurrentChirho}`,
           `  - Dedicated handoff missing snippet(s): ${handoffChirho.handoffDocumentMissingSnippetsChirho.length === 0 ? "none" : handoffChirho.handoffDocumentMissingSnippetsChirho.map(markdownInlineCodeChirho).join("; ")}`,
           `  - Manifest item fresh against live queue: ${handoffChirho.manifestItemFreshChirho}`,
@@ -5137,6 +5176,10 @@ function mainChirho(): void {
     argsChirho,
     "syriac-blank-handoff-crop-chirho"
   );
+  const syriacBlankTranscriptionHandoffTargetCropPathChirho = parseArgValueChirho(
+    argsChirho,
+    "syriac-blank-handoff-target-crop-chirho"
+  );
   const visionTierExpertConfirmationPolicyPathChirho = parseArgValueChirho(
     argsChirho,
     "expert-confirmation-policy-chirho"
@@ -5147,6 +5190,7 @@ function mainChirho(): void {
     visionTierExpertConfirmationPolicyPathChirho,
     syriacBlankTranscriptionHandoffPathChirho,
     syriacBlankTranscriptionHandoffCropPathChirho,
+    syriacBlankTranscriptionHandoffTargetCropPathChirho,
   });
   writeJsonAtomicChirho(join(outDirChirho, "status-chirho.json"), statusChirho);
   writeTextAtomicChirho(join(outDirChirho, "status-chirho.md"), markdownChirho(statusChirho));

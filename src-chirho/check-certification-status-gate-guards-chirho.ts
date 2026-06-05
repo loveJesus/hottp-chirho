@@ -48,9 +48,11 @@ interface CertificationStatusForGuardChirho {
     blankVisionTierHandoffsChirho?: Array<{
       handoffDocumentExistsChirho?: boolean;
       handoffCropExistsChirho?: boolean;
+      handoffTargetCropExistsChirho?: boolean;
       sourceSha256Chirho?: string | null;
       packetSha256Chirho?: string | null;
       handoffCropSha256Chirho?: string | null;
+      handoffTargetCropSha256Chirho?: string | null;
       handoffDocumentMatchesCurrentChirho?: boolean;
       handoffDocumentMissingSnippetsChirho?: string[];
     }>;
@@ -294,7 +296,8 @@ function runStatusChirho(
   expertSuppliedBackupPathChirho: string,
   expertConfirmationPolicyPathChirho: string,
   syriacBlankHandoffDocumentPathChirho: string,
-  syriacBlankHandoffCropPathChirho: string
+  syriacBlankHandoffCropPathChirho: string,
+  syriacBlankHandoffTargetCropPathChirho: string
 ): void {
   const argsChirho = [
     process.execPath,
@@ -307,6 +310,7 @@ function runStatusChirho(
     `--expert-confirmation-policy-chirho=${expertConfirmationPolicyPathChirho}`,
     `--syriac-blank-handoff-document-chirho=${syriacBlankHandoffDocumentPathChirho}`,
     `--syriac-blank-handoff-crop-chirho=${syriacBlankHandoffCropPathChirho}`,
+    `--syriac-blank-handoff-target-crop-chirho=${syriacBlankHandoffTargetCropPathChirho}`,
   ];
   const resultChirho = Bun.spawnSync(argsChirho, {
     cwd: PROJECT_ROOT_CHIRHO,
@@ -342,6 +346,10 @@ function mainChirho(): void {
     tempDirChirho,
     "missing-syriac-blank-handoff-crop-chirho.png"
   );
+  const missingSyriacBlankHandoffTargetCropPathChirho = join(
+    tempDirChirho,
+    "missing-syriac-blank-handoff-target-crop-chirho.png"
+  );
   const staleSyriacBlankHandoffDocumentPathChirho = join(
     tempDirChirho,
     "stale-syriac-blank-handoff-document-chirho.md"
@@ -349,6 +357,10 @@ function mainChirho(): void {
   const presentSyriacBlankHandoffCropPathChirho = join(
     tempDirChirho,
     "present-syriac-blank-handoff-crop-chirho.png"
+  );
+  const presentSyriacBlankHandoffTargetCropPathChirho = join(
+    tempDirChirho,
+    "present-syriac-blank-handoff-target-crop-chirho.png"
   );
   mkdirSync(outDirChirho, { recursive: true });
   mkdirSync(staleOutDirChirho, { recursive: true });
@@ -370,6 +382,7 @@ function mainChirho(): void {
       "utf8"
     );
     writeFileSync(presentSyriacBlankHandoffCropPathChirho, "disposable crop fixture chirho\n", "utf8");
+    writeFileSync(presentSyriacBlankHandoffTargetCropPathChirho, "disposable target crop fixture chirho\n", "utf8");
     const rowIdChirho = forceSingleGenericPassCHumanReviewerChirho(dbPathChirho);
     const latinItemIdChirho = insertGenericLatinSymbolReviewChirho(dbPathChirho);
     const staleLatinItemIdChirho = insertStaleLatinSymbolReviewChirho(dbPathChirho);
@@ -384,7 +397,8 @@ function mainChirho(): void {
       expertSuppliedBackupPathChirho,
       blankConfirmedExpertPolicyPathChirho,
       missingSyriacBlankHandoffDocumentPathChirho,
-      missingSyriacBlankHandoffCropPathChirho
+      missingSyriacBlankHandoffCropPathChirho,
+      missingSyriacBlankHandoffTargetCropPathChirho
     );
     const statusChirho = readStatusChirho(outDirChirho);
     assertCheckChirho(statusChirho.certificationCompleteChirho === false, "generic reviewer status unexpectedly completed certification");
@@ -483,6 +497,12 @@ function mainChirho(): void {
       "missing blank Syriac handoff crop did not show as absent in status"
     );
     assertCheckChirho(
+      (statusChirho.structuralChirho?.blankVisionTierHandoffsChirho ?? []).some(
+        (handoffChirho) => handoffChirho.handoffTargetCropExistsChirho === false
+      ),
+      "missing blank Syriac handoff target crop did not show as absent in status"
+    );
+    assertCheckChirho(
       (statusChirho.remainingWorkChirho ?? []).some((itemChirho) =>
         itemChirho.includes("blank expert transcription handoff document(s) are missing")
       ),
@@ -500,7 +520,8 @@ function mainChirho(): void {
       expertSuppliedBackupPathChirho,
       blankConfirmedExpertPolicyPathChirho,
       staleSyriacBlankHandoffDocumentPathChirho,
-      presentSyriacBlankHandoffCropPathChirho
+      presentSyriacBlankHandoffCropPathChirho,
+      presentSyriacBlankHandoffTargetCropPathChirho
     );
     const staleStatusChirho = readStatusChirho(staleOutDirChirho);
     assertCheckChirho(
@@ -508,6 +529,7 @@ function mainChirho(): void {
         (handoffChirho) =>
           handoffChirho.handoffDocumentExistsChirho === true &&
           handoffChirho.handoffCropExistsChirho === true &&
+          handoffChirho.handoffTargetCropExistsChirho === true &&
           handoffChirho.handoffDocumentMatchesCurrentChirho === false
       ),
       "stale blank Syriac handoff document did not show as stale while artifacts existed"
@@ -529,6 +551,16 @@ function mainChirho(): void {
           )
       ),
       "stale blank Syriac handoff document did not report the missing crop hash snippet"
+    );
+    assertCheckChirho(
+      (staleStatusChirho.structuralChirho?.blankVisionTierHandoffsChirho ?? []).some(
+        (handoffChirho) =>
+          typeof handoffChirho.handoffTargetCropSha256Chirho === "string" &&
+          (handoffChirho.handoffDocumentMissingSnippetsChirho ?? []).some((snippetChirho) =>
+            snippetChirho.includes(handoffChirho.handoffTargetCropSha256Chirho!)
+          )
+      ),
+      "stale blank Syriac handoff document did not report the missing target crop hash snippet"
     );
     assertCheckChirho(
       (staleStatusChirho.structuralChirho?.blankVisionTierHandoffsChirho ?? []).some(
