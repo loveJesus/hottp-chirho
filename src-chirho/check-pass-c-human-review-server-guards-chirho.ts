@@ -36,6 +36,13 @@ interface RawReviewQueueItemChirho {
   lineImageHeightPxChirho: number;
 }
 
+interface LatestValidationGuardChirho {
+  expectedLatestValidationIdChirho: number;
+  expectedLatestValidationKeyChirho: string;
+  expectedLatestValidationReviewerChirho: string;
+  expectedLatestValidationUpdatedAtChirho: string;
+}
+
 function assertCheckChirho(conditionChirho: boolean, messageChirho: string): void {
   if (!conditionChirho) throw new Error(messageChirho);
 }
@@ -133,12 +140,58 @@ function validationRowCountChirho(dbPathChirho: string): number {
   }
 }
 
+function currentNonUndoValidationRowCountChirho(dbPathChirho: string): number {
+  const dbChirho = new Database(dbPathChirho, { readonly: true });
+  try {
+    const rowChirho = dbChirho
+      .query("SELECT COUNT(*) AS count_chirho FROM pass_c_human_validations_chirho WHERE is_current_chirho = 1 AND verdict_chirho <> 'undo-chirho' AND schema_version_chirho >= 2")
+      .get() as { count_chirho: number };
+    return rowChirho.count_chirho;
+  } finally {
+    dbChirho.close();
+  }
+}
+
+function latestValidationGuardFromDbChirho(dbPathChirho: string): LatestValidationGuardChirho {
+  const dbChirho = new Database(dbPathChirho, { readonly: true });
+  try {
+    const rowChirho = dbChirho
+      .query(`
+SELECT id_chirho, volume_chirho, page_chirho, line_index_chirho, segment_index_chirho, reviewer_chirho, updated_at_chirho
+  FROM pass_c_human_validations_chirho
+ WHERE is_current_chirho = 1 AND verdict_chirho <> 'undo-chirho' AND schema_version_chirho >= 2
+ ORDER BY updated_at_chirho DESC, id_chirho DESC
+ LIMIT 1`)
+      .get() as
+      | {
+          id_chirho: number;
+          volume_chirho: number;
+          page_chirho: number;
+          line_index_chirho: number;
+          segment_index_chirho: number;
+          reviewer_chirho: string;
+          updated_at_chirho: string;
+        }
+      | undefined;
+    if (rowChirho === undefined) throw new Error("no current non-undo validation row in disposable DB");
+    return {
+      expectedLatestValidationIdChirho: rowChirho.id_chirho,
+      expectedLatestValidationKeyChirho: `${rowChirho.volume_chirho}:${rowChirho.page_chirho}:${rowChirho.line_index_chirho}:${rowChirho.segment_index_chirho}`,
+      expectedLatestValidationReviewerChirho: rowChirho.reviewer_chirho,
+      expectedLatestValidationUpdatedAtChirho: rowChirho.updated_at_chirho,
+    };
+  } finally {
+    dbChirho.close();
+  }
+}
+
 async function mainChirho(): Promise<void> {
   const tempDirChirho = mkdtempSync(join(tmpdir(), "pass-c-human-review-guard-chirho-"));
   const dbPathChirho = join(tempDirChirho, "review-guard-chirho.sqlite");
   const backupPathChirho = join(tempDirChirho, "review-guard-backup-chirho.json");
   copyProgressDbSnapshotChirho(dbPathChirho);
   const validationRowsBeforeChirho = validationRowCountChirho(dbPathChirho);
+  const currentNonUndoRowsBeforeChirho = currentNonUndoValidationRowCountChirho(dbPathChirho);
   const portChirho = await freePortChirho();
   const processChirho = Bun.spawn(
     [
@@ -362,6 +415,57 @@ async function mainChirho(): Promise<void> {
     assertCheckChirho(
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho + 2,
       "valid issue POST did not append one row"
+    );
+    assertCheckChirho(
+      currentNonUndoValidationRowCountChirho(dbPathChirho) === currentNonUndoRowsBeforeChirho + 1,
+      "valid clean+issue POSTs left the wrong current non-undo row count"
+    );
+    const latestGuardChirho = latestValidationGuardFromDbChirho(dbPathChirho);
+    const staleUndoResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/undo-last-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ...latestGuardChirho,
+        expectedLatestValidationIdChirho: latestGuardChirho.expectedLatestValidationIdChirho + 1000,
+      }),
+    });
+    const staleUndoDataChirho = (await staleUndoResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      staleUndoResponseChirho.status === 409,
+      `expected stale undo HTTP 409, got ${staleUndoResponseChirho.status}`
+    );
+    assertCheckChirho(staleUndoDataChirho.okChirho === false, "stale undo unexpectedly returned ok");
+    assertCheckChirho(
+      String(staleUndoDataChirho.errorChirho ?? "").includes("Raw Hebrew undo target is stale"),
+      `stale undo failed for the wrong reason: ${String(staleUndoDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho + 2,
+      "stale undo POST appended a row"
+    );
+    const validUndoResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/undo-last-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(latestGuardChirho),
+    });
+    const validUndoDataChirho = (await validUndoResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      validUndoResponseChirho.ok,
+      `valid undo POST failed: ${validUndoResponseChirho.status} ${String(validUndoDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho + 3,
+      "valid undo POST did not append one undo row"
+    );
+    assertCheckChirho(
+      currentNonUndoValidationRowCountChirho(dbPathChirho) === currentNonUndoRowsBeforeChirho,
+      "valid undo did not restore the current non-undo row count"
     );
     assertCheckChirho(existsSync(backupPathChirho), "valid POSTs did not refresh disposable backup");
     JSON.parse(readFileSync(backupPathChirho, "utf8"));
