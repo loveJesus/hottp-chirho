@@ -100,6 +100,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
     labelChirho: "review server health",
     argsChirho: [process.execPath, "run", "review-servers-chirho", "--", "--check-chirho"],
   },
+  {
+    labelChirho: "live status review links",
+    argsChirho: [process.execPath, "run", "check-status-review-links-live-chirho"],
+  },
 ];
 
 function shellCommandTextChirho(argsChirho: string[]): string {
