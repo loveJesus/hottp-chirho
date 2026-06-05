@@ -31,6 +31,10 @@ The boxed region is the current Syriac span geometry: x `767..950` in the 1285px
 - Target crop SHA-256: `8c9e5fd25c30ce6a53370e9cf0d037c49e8711d07afa8cc8961d43cbe0a23931`
 - Supplied text boundary: transcribe only the Syriac text inside the red box. The French open parenthesis before the box and the comma after the box are already stored in neighboring French spans and should not be included in the supplied Syriac text.
 
+## Live Reviewer Display Check
+
+Before using the live reviewer URL, confirm the page title is `Expert Non-Latin Review`, the page shows a `Target crop` panel above `Printed line`, and the red target box covers x `767..950` of the 1285px line. If the page only starts at `Printed line` or the Syriac is not visibly boxed, hard-refresh the browser tab or restart the stale review server before transcribing.
+
 ## Current Live Line
 
 - Segment 0, French: `vise à traduire`
