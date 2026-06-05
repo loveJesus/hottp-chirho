@@ -718,15 +718,32 @@ function htmlChirho(): string {
     function applyRequestedItemIdChirho() {
       let requestedIndexChirho = activeIndexForItemIdChirho(requestedItemIdChirho);
       const requestedItemChirho = itemsChirho.find((itemChirho) => itemChirho.idChirho === requestedItemIdChirho);
-      const volumeChirho = volumeFilterNumberChirho();
-      if (requestedIndexChirho < 0 && requestedItemChirho && volumeChirho !== null && requestedItemChirho.volumeChirho !== volumeChirho) {
-        volumeFilterChirho = "all-chirho";
-        syncFilterControlsChirho();
-        requestedIndexChirho = activeIndexForItemIdChirho(requestedItemIdChirho);
-      }
-      if (requestedIndexChirho < 0 && requestedItemChirho && textStateFilterChirho !== "all-chirho") {
-        textStateFilterChirho = "all-chirho";
-        syncFilterControlsChirho();
+      if (requestedIndexChirho < 0 && requestedItemChirho) {
+        let changedFiltersChirho = false;
+        const volumeChirho = volumeFilterNumberChirho();
+        if (scriptFilterChirho !== "all-chirho" && requestedItemChirho.scriptChirho !== scriptFilterChirho) {
+          scriptFilterChirho = "all-chirho";
+          changedFiltersChirho = true;
+        }
+        if (
+          priorityFilterChirho !== "all-chirho" &&
+          (
+            (priorityFilterChirho === "priority-chirho" && !requestedItemChirho.priorityMatchChirho) ||
+            (priorityFilterChirho === "appendix-chirho" && requestedItemChirho.priorityMatchChirho)
+          )
+        ) {
+          priorityFilterChirho = "all-chirho";
+          changedFiltersChirho = true;
+        }
+        if (volumeChirho !== null && requestedItemChirho.volumeChirho !== volumeChirho) {
+          volumeFilterChirho = "all-chirho";
+          changedFiltersChirho = true;
+        }
+        if (textStateFilterChirho !== "all-chirho" && !itemMatchesTextStateChirho(requestedItemChirho)) {
+          textStateFilterChirho = "all-chirho";
+          changedFiltersChirho = true;
+        }
+        if (changedFiltersChirho) syncFilterControlsChirho();
         requestedIndexChirho = activeIndexForItemIdChirho(requestedItemIdChirho);
       }
       if (requestedIndexChirho >= 0) indexChirho = requestedIndexChirho;

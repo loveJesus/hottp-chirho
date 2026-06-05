@@ -1516,10 +1516,36 @@ function pageHtmlChirho(): string {
     function applyRequestedItemKeyChirho() {
       let requestedIndexChirho = activeIndexForItemKeyChirho(requestedItemKeyChirho);
       const requestedItemChirho = queueChirho.find((itemChirho) => itemChirho.keyChirho === requestedItemKeyChirho);
-      const volumeChirho = volumeFilterNumberChirho();
-      if (requestedIndexChirho < 0 && requestedItemChirho && volumeChirho !== null && requestedItemChirho.volumeChirho !== volumeChirho) {
-        volumeFilterChirho = "all-chirho";
-        syncFilterControlsChirho();
+      if (requestedIndexChirho < 0 && requestedItemChirho) {
+        let changedFiltersChirho = false;
+        const requestedValidationChirho = validationsChirho.get(requestedItemChirho.keyChirho);
+        const requestedIssueChirho = validationCountsAsIssueForItemChirho(requestedValidationChirho, requestedItemChirho);
+        const requestedSavedChirho = validationCountsAsSavedForItemChirho(requestedValidationChirho, requestedItemChirho);
+        const volumeChirho = volumeFilterNumberChirho();
+        if (reviewStateFilterChirho === "pending-chirho" && requestedIssueChirho) {
+          reviewStateFilterChirho = "saved-issues-chirho";
+          changedFiltersChirho = true;
+        } else if (reviewStateFilterChirho !== "pending-chirho" && !requestedSavedChirho) {
+          reviewStateFilterChirho = "pending-chirho";
+          changedFiltersChirho = true;
+        }
+        if (validationStatusFilterChirho !== "all-chirho" && requestedItemChirho.validationStatusChirho !== validationStatusFilterChirho) {
+          validationStatusFilterChirho = "all-chirho";
+          changedFiltersChirho = true;
+        }
+        if (tierFilterChirho !== "all-chirho" && requestedItemChirho.tierChirho !== tierFilterChirho) {
+          tierFilterChirho = "all-chirho";
+          changedFiltersChirho = true;
+        }
+        if (attentionFilterChirho !== "all-chirho" && !requestedItemChirho.attentionKindsChirho.includes(attentionFilterChirho)) {
+          attentionFilterChirho = "all-chirho";
+          changedFiltersChirho = true;
+        }
+        if (volumeChirho !== null && requestedItemChirho.volumeChirho !== volumeChirho) {
+          volumeFilterChirho = "all-chirho";
+          changedFiltersChirho = true;
+        }
+        if (changedFiltersChirho) syncFilterControlsChirho();
         requestedIndexChirho = activeIndexForItemKeyChirho(requestedItemKeyChirho);
       }
       if (requestedIndexChirho >= 0) indexChirho = requestedIndexChirho;
