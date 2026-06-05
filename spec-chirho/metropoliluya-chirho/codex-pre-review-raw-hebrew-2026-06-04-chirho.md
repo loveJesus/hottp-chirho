@@ -93,6 +93,13 @@ span was surfaced.
   - Visual precheck: the line reads `que cela suppose :`, then S1, then French `et`, then S3. Both red boxes bracket their own Hebrew form and leave the separator/context outside the target boxes. The direct OCR reads confuse the two forms, so the paired human comparison is more important than the machine read.
   - Human check still needed: exact letter order in both forms, especially lamed/tav openings and qof-shin-resh sequence, plus all vowels/dagesh/shin-dot marks.
 
+- `vol 2 p150 L27 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A27%3A1`
+  - Live text: `תָּקְשִׁרוּ`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the Hebrew word is cleanly boxed between French `corruption de` and `qu'il comprend`; no neighboring French appears swallowed by the Hebrew target box. The direct OCR read `מקשלרה` is weak and should not be used for certification.
+  - Human check still needed: exact tav/dagesh, qof-shin-resh sequence, final vav, and all vowels/shin-dot marks.
+
 - `vol 2 p150 L37 S1`:
   `http://localhost:8766/?attention-chirho=delimiter-notation-chirho&item-chirho=2%3A150%3A37%3A1`
   - Live text: `(לְמִקְדָּשׁ`
