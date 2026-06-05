@@ -1289,6 +1289,7 @@ function pageHtmlChirho(): string {
     .command-row-chirho { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
     .copy-command-chirho { border: 1px solid #aab1b9; background: white; padding: 7px 9px; cursor: pointer; font-size: 12px; }
     .copy-command-chirho:hover { background: #edf1f4; }
+    .command-helper-note-chirho { font-size: 12px; color: #59636f; }
     .codepoints-chirho { font-size: 12px; color: #3d4650; direction: ltr; overflow-wrap: anywhere; white-space: pre-wrap; }
     .candidate-words-chirho { overflow-wrap: anywhere; }
     .witness-list-chirho { display: flex; flex-direction: column; gap: 6px; font-size: 13px; margin-top: 8px; }
@@ -1303,6 +1304,7 @@ function pageHtmlChirho(): string {
     .clean-certify-option-chirho { display: flex; gap: 8px; align-items: flex-start; border: 1px solid #b8d5ca; background: #f2fbf7; padding: 10px; font-size: 13px; line-height: 1.35; cursor: pointer; }
     .clean-certify-option-chirho input { width: auto; margin: 3px 0 0; }
     .reviewer-input-chirho { width: 100%; box-sizing: border-box; border: 1px solid #b8bec7; padding: 8px; margin-top: 6px; }
+    textarea.reviewer-input-chirho { min-height: 72px; resize: vertical; }
     .actions-chirho { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
     .actions-chirho button { border: 1px solid #aab1b9; background: #fff; padding: 10px; cursor: pointer; min-height: 42px; }
     .actions-chirho button:disabled { cursor: not-allowed; opacity: 0.55; }
@@ -1470,6 +1472,13 @@ function pageHtmlChirho(): string {
     }
     function shellSingleQuoteChirho(valueChirho) {
       return "'" + String(valueChirho).normalize("NFC").replace(/'/g, "'\\"'\\"'") + "'";
+    }
+    function fieldValueChirho(idChirho) {
+      return document.getElementById(idChirho)?.value ?? "";
+    }
+    function shellArgOrPlaceholderChirho(valueChirho, placeholderChirho) {
+      const trimmedChirho = String(valueChirho ?? "").trim();
+      return shellSingleQuoteChirho(trimmedChirho.length > 0 ? trimmedChirho : placeholderChirho);
     }
     let reviewStateFilterChirho = selectValueOrDefaultChirho(
       "review-state-filter-chirho",
@@ -1847,15 +1856,35 @@ function pageHtmlChirho(): string {
     async function copyCurrentLinkChirho() {
       await copyTextChirho(window.location.href, "Copied current item link", "Copy failed; URL bar already has current item link");
     }
-    function commandRowChirho(commandTextChirho) {
+    function commandTextValueChirho(commandTextOrProviderChirho) {
+      return typeof commandTextOrProviderChirho === "function"
+        ? commandTextOrProviderChirho()
+        : String(commandTextOrProviderChirho);
+    }
+    function commandRowChirho(commandTextOrProviderChirho) {
+      const commandTextNodeChirho = elChirho("div", {
+        classChirho: "mono-chirho command-chirho",
+        textChirho: commandTextValueChirho(commandTextOrProviderChirho)
+      });
+      const refreshCommandChirho = () => {
+        commandTextNodeChirho.textContent = commandTextValueChirho(commandTextOrProviderChirho);
+      };
       const copyButtonChirho = elChirho("button", { classChirho: "copy-command-chirho", type: "button", textChirho: "Copy command" });
-      copyButtonChirho.addEventListener("click", () =>
-        copyTextChirho(commandTextChirho, "Copied command", "Copy failed; select the command text manually")
-      );
-      return elChirho("div", { classChirho: "command-row-chirho" }, [
-        elChirho("div", { classChirho: "mono-chirho command-chirho", textChirho: commandTextChirho }),
+      copyButtonChirho.addEventListener("click", () => {
+        refreshCommandChirho();
+        copyTextChirho(commandTextNodeChirho.textContent ?? "", "Copied command", "Copy failed; select the command text manually");
+      });
+      const rowChirho = elChirho("div", { classChirho: "command-row-chirho" }, [
+        commandTextNodeChirho,
         copyButtonChirho
       ]);
+      rowChirho.refreshCommandChirho = refreshCommandChirho;
+      return rowChirho;
+    }
+    function refreshCommandRowsChirho(rootChirho) {
+      for (const rowChirho of rootChirho.querySelectorAll(".command-row-chirho")) {
+        if (typeof rowChirho.refreshCommandChirho === "function") rowChirho.refreshCommandChirho();
+      }
     }
     function renderSummaryChirho() {
       const activeCountChirho = activeQueueChirho().length;
@@ -2002,11 +2031,16 @@ function pageHtmlChirho(): string {
           textChirho: "Saved issue row shown read-only. Inspect the crop and use the guarded status-report correction command only after explicit confirmation."
         }));
         if (typeof itemChirho.wlcSuggestedTextChirho === "string" && itemChirho.wlcSuggestedTextChirho.length > 0) {
-          const guardedCommandChirho =
+          const guardedCommandChirho = () =>
             "bun run apply-human-suggested-corrections-chirho -- --apply --certify-human " +
-            "--reviewer-chirho='<explicit-human-reviewer-id-chirho>' " +
+            "--reviewer-chirho=" + shellArgOrPlaceholderChirho(fieldValueChirho("wlc-command-reviewer-chirho"), "<explicit-human-reviewer-id-chirho>") + " " +
             "--validation-id-chirho=" + savedValidationChirho.id_chirho + " " +
             "--suggested-text-chirho=" + shellSingleQuoteChirho(itemChirho.wlcSuggestedTextChirho);
+          const wlcReviewerInputChirho = elChirho("input", {
+            id: "wlc-command-reviewer-chirho",
+            classChirho: "reviewer-input-chirho",
+            placeholder: "explicit-human-reviewer-id-chirho"
+          });
           const suggestionBoxChirho = elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
             elChirho("div", { textChirho: "WLC suggestion" }),
             elChirho("div", { classChirho: spanTextClassChirho(itemChirho), textChirho: itemChirho.wlcSuggestedTextChirho }),
@@ -2014,31 +2048,56 @@ function pageHtmlChirho(): string {
             elChirho("div", { classChirho: "mono-chirho", textChirho: suggestedMarkDeltaTextChirho(itemChirho.liveSpanTextChirho, itemChirho.wlcSuggestedTextChirho) }),
             elChirho("div", { textChirho: "Source" }),
             elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.wlcSuggestionSourceChirho ?? "unknown-chirho" }),
+            elChirho("div", { textChirho: "Reviewer for command" }),
+            wlcReviewerInputChirho,
+            elChirho("div", { textChirho: "Command helper note" }),
+            elChirho("div", { classChirho: "command-helper-note-chirho", textChirho: "This helper field only updates the copied command; it does not save, apply, or certify." }),
             elChirho("div", { textChirho: "After confirmation" }),
             commandRowChirho(guardedCommandChirho)
           ]);
+          wlcReviewerInputChirho.addEventListener("input", () => refreshCommandRowsChirho(suggestionBoxChirho));
           sideChirho.appendChild(suggestionBoxChirho);
         }
       }
       if (reviewStateFilterChirho === "attribution-blocked-chirho" && savedValidationChirho) {
-        const baseReattributeCommandChirho =
+        const baseReattributeCommandChirho = () =>
           "bun run reattribute-pass-c-human-validations-chirho -- " +
           "--validation-id-chirho=" + savedValidationChirho.id_chirho + " " +
-          "--reviewer-chirho='<explicit-human-reviewer-id-chirho>' " +
-          "--rationale-chirho='<why this existing row is attributable to that reviewer>' " +
+          "--reviewer-chirho=" + shellArgOrPlaceholderChirho(fieldValueChirho("attribution-command-reviewer-chirho"), "<explicit-human-reviewer-id-chirho>") + " " +
+          "--rationale-chirho=" + shellArgOrPlaceholderChirho(fieldValueChirho("attribution-command-rationale-chirho"), "<why this existing row is attributable to that reviewer>") + " " +
           "--expected-live-text-chirho=" + shellSingleQuoteChirho(itemChirho.liveSpanTextChirho);
+        const attributionReviewerInputChirho = elChirho("input", {
+          id: "attribution-command-reviewer-chirho",
+          classChirho: "reviewer-input-chirho",
+          placeholder: "explicit-human-reviewer-id-chirho"
+        });
+        const attributionRationaleInputChirho = elChirho("textarea", {
+          id: "attribution-command-rationale-chirho",
+          classChirho: "reviewer-input-chirho",
+          placeholder: "why this existing row is attributable to that reviewer"
+        });
         sideChirho.appendChild(elChirho("div", {
           classChirho: "warning-chirho",
           textChirho: "Attribution-blocked row shown read-only. Inspect the crop; reattribute only if this existing row is genuinely attributable to the named human reviewer."
         }));
-        sideChirho.appendChild(elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
+        const attributionBoxChirho = elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
           elChirho("div", { textChirho: "Current reviewer" }),
           elChirho("div", { classChirho: "mono-chirho", textChirho: savedValidationChirho.reviewer_chirho }),
+          elChirho("div", { textChirho: "Reviewer for command" }),
+          attributionReviewerInputChirho,
+          elChirho("div", { textChirho: "Rationale for command" }),
+          attributionRationaleInputChirho,
+          elChirho("div", { textChirho: "Command helper note" }),
+          elChirho("div", { classChirho: "command-helper-note-chirho", textChirho: "These helper fields only update the copied commands; they do not save, apply, or certify." }),
           elChirho("div", { textChirho: "Dry run" }),
           commandRowChirho(baseReattributeCommandChirho),
           elChirho("div", { textChirho: "Apply after dry run" }),
-          commandRowChirho(baseReattributeCommandChirho + " --apply-chirho")
-        ]));
+          commandRowChirho(() => baseReattributeCommandChirho() + " --apply-chirho")
+        ]);
+        for (const inputChirho of [attributionReviewerInputChirho, attributionRationaleInputChirho]) {
+          inputChirho.addEventListener("input", () => refreshCommandRowsChirho(attributionBoxChirho));
+        }
+        sideChirho.appendChild(attributionBoxChirho);
       }
       const metaChirho = elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
         elChirho("div", { textChirho: "Location" }),

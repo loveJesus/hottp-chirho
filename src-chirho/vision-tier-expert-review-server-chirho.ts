@@ -578,6 +578,7 @@ function htmlChirho(): string {
     .command-row-chirho { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
     .copy-command-chirho { border: 1px solid #aab1b9; background: white; padding: 7px 9px; cursor: pointer; font-size: 12px; }
     .copy-command-chirho:hover { background: #edf1f4; }
+    .command-helper-note-chirho { font-size: 12px; color: #59636f; }
     .done-chirho { padding: 42px 0; color: #59636f; font-size: 18px; }
     @media (max-width: 900px) {
       .main-chirho { grid-template-columns: 1fr; }
@@ -683,15 +684,35 @@ function htmlChirho(): string {
     async function copyCurrentLinkChirho() {
       await copyTextChirho(window.location.href, "Copied current item link", "Copy failed; URL bar already has current item link");
     }
-    function commandRowChirho(commandTextChirho) {
+    function commandTextValueChirho(commandTextOrProviderChirho) {
+      return typeof commandTextOrProviderChirho === "function"
+        ? commandTextOrProviderChirho()
+        : String(commandTextOrProviderChirho);
+    }
+    function commandRowChirho(commandTextOrProviderChirho) {
+      const commandTextNodeChirho = elChirho("div", {
+        classChirho: "mono-chirho command-chirho",
+        textChirho: commandTextValueChirho(commandTextOrProviderChirho)
+      });
+      const refreshCommandChirho = () => {
+        commandTextNodeChirho.textContent = commandTextValueChirho(commandTextOrProviderChirho);
+      };
       const copyButtonChirho = elChirho("button", { classChirho: "copy-command-chirho", type: "button", textChirho: "Copy command" });
-      copyButtonChirho.addEventListener("click", () =>
-        copyTextChirho(commandTextChirho, "Copied command", "Copy failed; select the command text manually")
-      );
-      return elChirho("div", { classChirho: "command-row-chirho" }, [
-        elChirho("div", { classChirho: "mono-chirho command-chirho", textChirho: commandTextChirho }),
+      copyButtonChirho.addEventListener("click", () => {
+        refreshCommandChirho();
+        copyTextChirho(commandTextNodeChirho.textContent ?? "", "Copied command", "Copy failed; select the command text manually");
+      });
+      const rowChirho = elChirho("div", { classChirho: "command-row-chirho" }, [
+        commandTextNodeChirho,
         copyButtonChirho
       ]);
+      rowChirho.refreshCommandChirho = refreshCommandChirho;
+      return rowChirho;
+    }
+    function refreshCommandRowsChirho(rootChirho) {
+      for (const rowChirho of rootChirho.querySelectorAll(".command-row-chirho")) {
+        if (typeof rowChirho.refreshCommandChirho === "function") rowChirho.refreshCommandChirho();
+      }
     }
     function selectHasValueChirho(idChirho, valueChirho) {
       return [...document.getElementById(idChirho).options].some((optionChirho) => optionChirho.value === valueChirho);
@@ -901,15 +922,19 @@ function htmlChirho(): string {
     function shellSingleQuoteChirho(valueChirho) {
       return "'" + String(valueChirho).normalize("NFC").replace(/'/g, "'\\"'\\"'") + "'";
     }
+    function shellArgOrPlaceholderChirho(valueChirho, placeholderChirho) {
+      const trimmedChirho = String(valueChirho ?? "").trim();
+      return shellSingleQuoteChirho(trimmedChirho.length > 0 ? trimmedChirho : placeholderChirho);
+    }
     function expertSuppliedTextCommandChirho(itemChirho, applyChirho) {
       const commandPartsChirho = [
         "bun run apply-expert-supplied-vision-text-chirho",
         "--",
         "--id-chirho=" + shellSingleQuoteChirho(itemChirho.idChirho),
-        "--supplied-text-chirho='<exact printed text>'",
-        "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
+        "--supplied-text-chirho=" + shellArgOrPlaceholderChirho(fieldValueChirho("supplied-text-command-chirho"), "<exact printed text>"),
+        "--reviewer-chirho=" + shellArgOrPlaceholderChirho(fieldValueChirho("reviewer-chirho"), "<explicit-human-reviewer-id-chirho>"),
         "--reviewer-role-chirho=" + shellSingleQuoteChirho(itemChirho.reviewerChirho),
-        "--rationale-chirho='<why this exact text is supplied>'",
+        "--rationale-chirho=" + shellArgOrPlaceholderChirho(fieldValueChirho("rationale-chirho"), "<why this exact text is supplied>"),
         "--expected-source-sha256-chirho=" + itemChirho.sourceSha256Chirho,
         "--expected-packet-sha256-chirho=" + itemChirho.packetSha256Chirho
       ];
@@ -1072,10 +1097,21 @@ function htmlChirho(): string {
           textChirho: "This item has no current text. Do not confirm an empty transcription; use Report issue or the expert-supplied text dry-run/apply path after a script reader supplies the exact printed text."
         }));
         const blankCommandBoxChirho = elChirho("div", { classChirho: "box-chirho" });
+        blankCommandBoxChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "supplied-text-command-chirho", textChirho: "Exact supplied text for command" }));
+        const suppliedTextCommandInputChirho = elChirho("textarea", {
+          id: "supplied-text-command-chirho",
+          placeholder: "exact printed text"
+        });
+        blankCommandBoxChirho.appendChild(suppliedTextCommandInputChirho);
+        blankCommandBoxChirho.appendChild(elChirho("div", {
+          classChirho: "command-helper-note-chirho",
+          textChirho: "This helper field only updates the copied command; it does not save, apply, confirm, or certify."
+        }));
         blankCommandBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Dry-run after exact script-reader transcription" }));
-        blankCommandBoxChirho.appendChild(commandRowChirho(expertSuppliedTextCommandChirho(itemChirho, false)));
+        blankCommandBoxChirho.appendChild(commandRowChirho(() => expertSuppliedTextCommandChirho(itemChirho, false)));
         blankCommandBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Apply after dry-run verification" }));
-        blankCommandBoxChirho.appendChild(commandRowChirho(expertSuppliedTextCommandChirho(itemChirho, true)));
+        blankCommandBoxChirho.appendChild(commandRowChirho(() => expertSuppliedTextCommandChirho(itemChirho, true)));
+        suppliedTextCommandInputChirho.addEventListener("input", () => refreshCommandRowsChirho(blankCommandBoxChirho));
         sideChirho.appendChild(blankCommandBoxChirho);
       }
 
@@ -1139,7 +1175,10 @@ function htmlChirho(): string {
       };
       certifyInputChirho.addEventListener("change", updateActionButtonsChirho);
       for (const inputChirho of formChirho.querySelectorAll("#reviewer-chirho, #reviewer-role-chirho, #rationale-chirho")) {
-        inputChirho.addEventListener("input", updateActionButtonsChirho);
+        inputChirho.addEventListener("input", () => {
+          updateActionButtonsChirho();
+          refreshCommandRowsChirho(sideChirho);
+        });
       }
       for (const inputChirho of issueGridChirho.querySelectorAll("input")) {
         inputChirho.addEventListener("change", updateActionButtonsChirho);

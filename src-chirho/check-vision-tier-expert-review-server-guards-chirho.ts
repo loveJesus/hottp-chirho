@@ -30,6 +30,8 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Dagesh/mappiq/shuruk",
   "Dry-run after exact script-reader transcription",
   "Apply after dry-run verification",
+  "Exact supplied text for command",
+  "This helper field only updates the copied command; it does not save, apply, confirm, or certify.",
   "bun run apply-expert-supplied-vision-text-chirho",
   "--expected-source-sha256-chirho",
   "--expected-packet-sha256-chirho",
