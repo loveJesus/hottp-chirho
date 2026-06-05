@@ -115,6 +115,51 @@ export function rawHebrewAttentionReasonsChirho(itemChirho: RawHebrewReviewTriag
   });
 }
 
+export function rawHebrewAttentionKindLabelChirho(kindChirho: RawHebrewAttentionKindChirho): string {
+  if (kindChirho === RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO) return "low-confidence direct read";
+  if (kindChirho === RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO) return "confident direct-read disagreement";
+  if (kindChirho === RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO) return "multi-token Hebrew span";
+  if (kindChirho === RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO) return "delimiter/damaged-text notation";
+  return "no direct CRNN crop read";
+}
+
+export function rawHebrewPreReviewNoteCoversAttentionKindChirho(
+  noteChirho: string | null | undefined,
+  kindChirho: RawHebrewAttentionKindChirho
+): boolean {
+  const normalizedNoteChirho = (noteChirho ?? "").toLowerCase();
+  if (normalizedNoteChirho.length === 0) return false;
+  if (kindChirho === RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO) {
+    return normalizedNoteChirho.includes("low direct-read confidence") ||
+      normalizedNoteChirho.includes("low-confidence") ||
+      normalizedNoteChirho.includes("low confidence");
+  }
+  if (kindChirho === RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO) {
+    return normalizedNoteChirho.includes("confident direct-read disagreement") ||
+      normalizedNoteChirho.includes("direct-read disagreement");
+  }
+  if (kindChirho === RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO) {
+    return normalizedNoteChirho.includes("multi-token");
+  }
+  if (kindChirho === RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO) {
+    return normalizedNoteChirho.includes("delimiter") ||
+      normalizedNoteChirho.includes("damaged-text") ||
+      normalizedNoteChirho.includes("damaged text");
+  }
+  return normalizedNoteChirho.includes("no direct") ||
+    normalizedNoteChirho.includes("no-direct") ||
+    normalizedNoteChirho.includes("no crnn");
+}
+
+export function rawHebrewPreReviewMissingAttentionKindsChirho(
+  itemChirho: RawHebrewReviewTriageItemChirho,
+  noteChirho: string | null | undefined
+): RawHebrewAttentionKindChirho[] {
+  return rawHebrewAttentionKindsChirho(itemChirho).filter(
+    (kindChirho) => !rawHebrewPreReviewNoteCoversAttentionKindChirho(noteChirho, kindChirho)
+  );
+}
+
 export function rawHebrewTriageScoreChirho(itemChirho: RawHebrewReviewTriageItemChirho): number {
   let scoreChirho = 0;
   for (const kindChirho of rawHebrewAttentionKindsChirho(itemChirho)) {

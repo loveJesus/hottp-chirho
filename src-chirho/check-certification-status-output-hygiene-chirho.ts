@@ -296,6 +296,10 @@ interface RawHebrewTriageSampleForHygieneChirho {
   lineTextChirho: string;
 }
 
+interface RawHebrewTriageReasonGapSampleForHygieneChirho extends RawHebrewTriageSampleForHygieneChirho {
+  missingAttentionLabelsChirho: string[];
+}
+
 function rawHebrewTriageSampleArrayFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): RawHebrewTriageSampleForHygieneChirho[] {
   return arrayFieldChirho(valueChirho, keyChirho, labelChirho).map((itemChirho, indexChirho) => {
     const sampleLabelChirho = `${labelChirho}.${keyChirho}[${indexChirho}]`;
@@ -312,6 +316,36 @@ function rawHebrewTriageSampleArrayFieldChirho(valueChirho: unknown, keyChirho: 
       witnessCountChirho,
       bestDirectConfidenceChirho,
       lineTextChirho: stringFieldChirho(sampleChirho, "lineTextChirho", sampleLabelChirho),
+    };
+  });
+}
+
+function rawHebrewTriageReasonGapSampleArrayFieldChirho(
+  valueChirho: unknown,
+  keyChirho: string,
+  labelChirho: string
+): RawHebrewTriageReasonGapSampleForHygieneChirho[] {
+  return arrayFieldChirho(valueChirho, keyChirho, labelChirho).map((itemChirho, indexChirho) => {
+    const sampleLabelChirho = `${labelChirho}.${keyChirho}[${indexChirho}]`;
+    const sampleChirho = objectRecordChirho(itemChirho, sampleLabelChirho);
+    const missingAttentionLabelsChirho = stringArrayFieldChirho(
+      sampleChirho,
+      "missingAttentionLabelsChirho",
+      sampleLabelChirho
+    );
+    const reasonsChirho = stringArrayFieldChirho(sampleChirho, "reasonsChirho", sampleLabelChirho);
+    const witnessCountChirho = nullableNumberFieldChirho(sampleChirho, "witnessCountChirho", sampleLabelChirho);
+    const bestDirectConfidenceChirho = nullableNumberFieldChirho(sampleChirho, "bestDirectConfidenceChirho", sampleLabelChirho);
+    return {
+      idChirho: stringFieldChirho(sampleChirho, "idChirho", sampleLabelChirho),
+      reviewUrlChirho: stringFieldChirho(sampleChirho, "reviewUrlChirho", sampleLabelChirho),
+      textChirho: stringFieldChirho(sampleChirho, "textChirho", sampleLabelChirho),
+      validationStatusChirho: stringFieldChirho(sampleChirho, "validationStatusChirho", sampleLabelChirho),
+      reasonsChirho,
+      witnessCountChirho,
+      bestDirectConfidenceChirho,
+      lineTextChirho: stringFieldChirho(sampleChirho, "lineTextChirho", sampleLabelChirho),
+      missingAttentionLabelsChirho,
     };
   });
 }
@@ -1795,8 +1829,18 @@ function assertRawHebrewQueueMarkdownCoverageChirho(markdownChirho: string, stat
   const triageAttentionCountChirho = numberFieldChirho(triageChirho, "attentionItemCountChirho", "rawHebrewChirho.triageChirho");
   assertMarkdownContainsChirho(
     markdownChirho,
-    `- Non-certifying pre-review item-location coverage: ${triageNotesAvailableChirho ? `${triageCoveredCountChirho}/${triageAttentionCountChirho} current attention item(s)` : "notes unavailable"} (not reason-specific)`,
+    `- Non-certifying pre-review item-location coverage: ${triageNotesAvailableChirho ? `${triageCoveredCountChirho}/${triageAttentionCountChirho} current attention item(s)` : "notes unavailable"}`,
     "raw Hebrew triage pre-review coverage"
+  );
+  const triageReasonCoveredCountChirho = numberFieldChirho(
+    triageChirho,
+    "preReviewReasonCoveredAttentionItemCountChirho",
+    "rawHebrewChirho.triageChirho"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Non-certifying pre-review reason-specific coverage: ${triageNotesAvailableChirho ? `${triageReasonCoveredCountChirho}/${triageAttentionCountChirho} current attention item(s)` : "notes unavailable"}`,
+    "raw Hebrew triage pre-review reason coverage"
   );
   const triageUncoveredCountChirho = numberFieldChirho(
     triageChirho,
@@ -1807,6 +1851,16 @@ function assertRawHebrewQueueMarkdownCoverageChirho(markdownChirho: string, stat
     markdownChirho,
     `- Current attention items not mentioned in the pre-review note: ${triageUncoveredCountChirho}`,
     "raw Hebrew triage uncovered count"
+  );
+  const triageReasonGapCountChirho = numberFieldChirho(
+    triageChirho,
+    "preReviewReasonGapAttentionItemCountChirho",
+    "rawHebrewChirho.triageChirho"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Current attention items with missing pre-review reason coverage: ${triageReasonGapCountChirho}`,
+    "raw Hebrew triage reason gap count"
   );
   const triageUncoveredSamplesChirho = rawHebrewTriageSampleArrayFieldChirho(
     triageChirho,
@@ -1835,6 +1889,41 @@ function assertRawHebrewQueueMarkdownCoverageChirho(markdownChirho: string, stat
         markdownChirho,
         `  - Text: \`${sampleChirho.textChirho}\`; status: ${sampleChirho.validationStatusChirho}; reasons: ${sampleChirho.reasonsChirho.join(", ")}`,
         `raw Hebrew triage uncovered sample ${sampleChirho.idChirho} text`
+      );
+    }
+  }
+  const triageReasonGapSamplesChirho = rawHebrewTriageReasonGapSampleArrayFieldChirho(
+    triageChirho,
+    "preReviewReasonGapSamplesChirho",
+    "rawHebrewChirho.triageChirho"
+  );
+  if (triageReasonGapSamplesChirho.length === 0) {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      "- Pre-review reason-specific gap samples: none",
+      "raw Hebrew triage reason gap samples"
+    );
+  } else {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      "- Pre-review note missing current attention reason samples:",
+      "raw Hebrew triage reason gap samples heading"
+    );
+    for (const sampleChirho of triageReasonGapSamplesChirho) {
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        `- ${sampleChirho.idChirho}: ${sampleChirho.reviewUrlChirho}`,
+        `raw Hebrew triage reason gap sample ${sampleChirho.idChirho}`
+      );
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        `  - Missing pre-review reason coverage: ${sampleChirho.missingAttentionLabelsChirho.join(", ")}`,
+        `raw Hebrew triage reason gap sample ${sampleChirho.idChirho} missing labels`
+      );
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        `  - Text: \`${sampleChirho.textChirho}\`; status: ${sampleChirho.validationStatusChirho}; reasons: ${sampleChirho.reasonsChirho.join(", ")}`,
+        `raw Hebrew triage reason gap sample ${sampleChirho.idChirho} text`
       );
     }
   }

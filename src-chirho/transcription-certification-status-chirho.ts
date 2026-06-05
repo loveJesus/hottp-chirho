@@ -64,8 +64,10 @@ import {
   RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO,
   RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO,
   bestRawHebrewDirectConfidenceChirho,
+  rawHebrewAttentionKindLabelChirho,
   rawHebrewAttentionKindsChirho,
   rawHebrewAttentionReasonsChirho,
+  rawHebrewPreReviewMissingAttentionKindsChirho,
   rawHebrewTriageScoreChirho,
   type RawHebrewAttentionKindChirho,
 } from "./raw-hebrew-review-triage-chirho.ts";
@@ -427,6 +429,11 @@ interface RawHebrewTriageSampleChirho {
   lineTextChirho: string;
 }
 
+interface RawHebrewTriageReasonGapSampleChirho extends RawHebrewTriageSampleChirho {
+  missingAttentionKindsChirho: RawHebrewAttentionKindChirho[];
+  missingAttentionLabelsChirho: string[];
+}
+
 interface RawHebrewTriageSummaryChirho {
   attentionItemCountChirho: number;
   lowConfidenceItemCountChirho: number;
@@ -439,8 +446,11 @@ interface RawHebrewTriageSummaryChirho {
   preReviewNotesAvailableChirho: boolean;
   preReviewCoveredAttentionItemCountChirho: number;
   preReviewUncoveredAttentionItemCountChirho: number;
+  preReviewReasonCoveredAttentionItemCountChirho: number;
+  preReviewReasonGapAttentionItemCountChirho: number;
   attentionItemsChirho: RawHebrewTriageSampleChirho[];
   preReviewUncoveredSamplesChirho: RawHebrewTriageSampleChirho[];
+  preReviewReasonGapSamplesChirho: RawHebrewTriageReasonGapSampleChirho[];
   samplesChirho: RawHebrewTriageSampleChirho[];
 }
 
@@ -1753,6 +1763,27 @@ function rawHebrewTriageSampleChirho(
   };
 }
 
+function rawHebrewPreReviewNoteForItemChirho(
+  itemChirho: RawHebrewPackItemChirho,
+  notesChirho: Map<string, string> | null
+): string | null {
+  if (notesChirho === null) return null;
+  const keyChirho = rawHebrewPreReviewItemKeyChirho(itemChirho);
+  return keyChirho === null ? null : notesChirho.get(keyChirho) ?? null;
+}
+
+function rawHebrewTriageReasonGapSampleChirho(paramsChirho: {
+  itemChirho: RawHebrewPackItemChirho;
+  reasonsChirho: string[];
+  missingAttentionKindsChirho: RawHebrewAttentionKindChirho[];
+}): RawHebrewTriageReasonGapSampleChirho {
+  return {
+    ...rawHebrewTriageSampleChirho(paramsChirho.itemChirho, paramsChirho.reasonsChirho),
+    missingAttentionKindsChirho: paramsChirho.missingAttentionKindsChirho,
+    missingAttentionLabelsChirho: paramsChirho.missingAttentionKindsChirho.map(rawHebrewAttentionKindLabelChirho),
+  };
+}
+
 function rawHebrewTriageSummaryChirho(
   itemsChirho: RawHebrewPackItemChirho[],
   preReviewNotesChirho: Map<string, string> | null
@@ -1775,9 +1806,10 @@ function rawHebrewTriageSummaryChirho(
     .map((itemChirho) => ({
       itemChirho,
       reasonsChirho: rawHebrewAttentionReasonsChirho(itemChirho),
+      attentionKindsChirho: rawHebrewAttentionKindsChirho(itemChirho),
       scoreChirho: rawHebrewTriageScoreChirho(itemChirho),
     }))
-    .filter((entryChirho) => entryChirho.reasonsChirho.length !== 0)
+    .filter((entryChirho) => entryChirho.attentionKindsChirho.length !== 0)
     .sort((aChirho, bChirho) =>
       bChirho.scoreChirho - aChirho.scoreChirho ||
       aChirho.itemChirho.idChirho.localeCompare(bChirho.itemChirho.idChirho)
@@ -1793,6 +1825,15 @@ function rawHebrewTriageSummaryChirho(
   const withoutPreReviewNoteItemsChirho = preReviewNotesChirho === null
     ? itemsChirho
     : itemsChirho.filter((itemChirho) => !rawHebrewPreReviewHasItemChirho(itemChirho, preReviewNotesChirho));
+  const preReviewReasonGapEntriesChirho = attentionEntriesChirho
+    .map((entryChirho) => ({
+      ...entryChirho,
+      missingAttentionKindsChirho: rawHebrewPreReviewMissingAttentionKindsChirho(
+        entryChirho.itemChirho,
+        rawHebrewPreReviewNoteForItemChirho(entryChirho.itemChirho, preReviewNotesChirho)
+      ),
+    }))
+    .filter((entryChirho) => entryChirho.missingAttentionKindsChirho.length !== 0);
   const sampleItemsChirho = attentionEntriesChirho
     .slice(0, 8);
   return {
@@ -1807,12 +1848,23 @@ function rawHebrewTriageSummaryChirho(
     preReviewNotesAvailableChirho: preReviewNotesChirho !== null,
     preReviewCoveredAttentionItemCountChirho: attentionEntriesChirho.length - preReviewUncoveredEntriesChirho.length,
     preReviewUncoveredAttentionItemCountChirho: preReviewUncoveredEntriesChirho.length,
+    preReviewReasonCoveredAttentionItemCountChirho: attentionEntriesChirho.length - preReviewReasonGapEntriesChirho.length,
+    preReviewReasonGapAttentionItemCountChirho: preReviewReasonGapEntriesChirho.length,
     attentionItemsChirho: attentionEntriesChirho.map((entryChirho) =>
       rawHebrewTriageSampleChirho(entryChirho.itemChirho, entryChirho.reasonsChirho)
     ),
     preReviewUncoveredSamplesChirho: preReviewUncoveredEntriesChirho
       .slice(0, 8)
       .map((entryChirho) => rawHebrewTriageSampleChirho(entryChirho.itemChirho, entryChirho.reasonsChirho)),
+    preReviewReasonGapSamplesChirho: preReviewReasonGapEntriesChirho
+      .slice(0, 8)
+      .map((entryChirho) =>
+        rawHebrewTriageReasonGapSampleChirho({
+          itemChirho: entryChirho.itemChirho,
+          reasonsChirho: entryChirho.reasonsChirho,
+          missingAttentionKindsChirho: entryChirho.missingAttentionKindsChirho,
+        })
+      ),
     samplesChirho: sampleItemsChirho.map((entryChirho) =>
       rawHebrewTriageSampleChirho(entryChirho.itemChirho, entryChirho.reasonsChirho)
     ),
@@ -4976,7 +5028,9 @@ function rawHebrewAttentionHandoffMarkdownChirho(statusChirho: CertificationStat
     `- Multi-token Hebrew spans: ${triageChirho.multiTokenItemCountChirho}`,
     `- Delimiter/damaged-text notation spans: ${triageChirho.delimiterNotationItemCountChirho}`,
     `- No direct CRNN crop reads: ${triageChirho.noDirectReadItemCountChirho}`,
-    `- Non-certifying pre-review item-location coverage: ${triageChirho.preReviewNotesAvailableChirho ? `${triageChirho.preReviewCoveredAttentionItemCountChirho}/${triageChirho.attentionItemCountChirho}` : "notes unavailable"} (not reason-specific)`,
+    `- Non-certifying pre-review item-location coverage: ${triageChirho.preReviewNotesAvailableChirho ? `${triageChirho.preReviewCoveredAttentionItemCountChirho}/${triageChirho.attentionItemCountChirho}` : "notes unavailable"}`,
+    `- Non-certifying pre-review reason-specific coverage: ${triageChirho.preReviewNotesAvailableChirho ? `${triageChirho.preReviewReasonCoveredAttentionItemCountChirho}/${triageChirho.attentionItemCountChirho}` : "notes unavailable"}`,
+    `- Current attention items with missing pre-review reason coverage: ${triageChirho.preReviewReasonGapAttentionItemCountChirho}`,
     "",
     "## Attention Lanes",
     "",
@@ -5247,12 +5301,34 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     statusChirho.rawHebrewChirho.triageChirho.preReviewUncoveredSamplesChirho,
     "Pre-review uncovered attention samples: none"
   );
+  const rawHebrewPreReviewReasonGapSampleLinesChirho =
+    statusChirho.rawHebrewChirho.triageChirho.preReviewReasonGapSamplesChirho.length === 0
+      ? ["- Pre-review reason-specific gap samples: none"]
+      : statusChirho.rawHebrewChirho.triageChirho.preReviewReasonGapSamplesChirho.flatMap((sampleChirho) => {
+          const confidenceTextChirho = sampleChirho.bestDirectConfidenceChirho === null
+            ? "none"
+            : sampleChirho.bestDirectConfidenceChirho.toFixed(4);
+          return [
+            `- ${sampleChirho.idChirho}: ${sampleChirho.reviewUrlChirho}`,
+            `  - Missing pre-review reason coverage: ${sampleChirho.missingAttentionLabelsChirho.join(", ")}`,
+            `  - Text: ${markdownInlineCodeChirho(sampleChirho.textChirho)}; status: ${sampleChirho.validationStatusChirho}; reasons: ${sampleChirho.reasonsChirho.join(", ")}`,
+            `  - Witness count: ${sampleChirho.witnessCountChirho ?? "unknown"}; best direct confidence: ${confidenceTextChirho}`,
+            `  - Line: ${markdownInlineCodeChirho(oneLineSnippetChirho(sampleChirho.lineTextChirho, 130))}`,
+          ];
+        });
   const rawHebrewPreReviewUncoveredSectionLinesChirho =
     statusChirho.rawHebrewChirho.triageChirho.preReviewUncoveredSamplesChirho.length === 0
       ? rawHebrewPreReviewUncoveredSampleLinesChirho
       : [
           "- Pre-review note uncovered current attention samples:",
           ...rawHebrewPreReviewUncoveredSampleLinesChirho,
+        ];
+  const rawHebrewPreReviewReasonGapSectionLinesChirho =
+    statusChirho.rawHebrewChirho.triageChirho.preReviewReasonGapSamplesChirho.length === 0
+      ? rawHebrewPreReviewReasonGapSampleLinesChirho
+      : [
+          "- Pre-review note missing current attention reason samples:",
+          ...rawHebrewPreReviewReasonGapSampleLinesChirho,
         ];
   const genericReviewerDetailLinesChirho =
     statusChirho.humanValidationDbChirho.genericReviewerRowDetailsChirho.length === 0
@@ -5653,10 +5729,13 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- No direct CRNN crop reads: ${statusChirho.rawHebrewChirho.triageChirho.noDirectReadItemCountChirho}`,
     `- Attention items with at least one flag: ${statusChirho.rawHebrewChirho.triageChirho.attentionItemCountChirho}`,
     `- Complete attention handoff: \`${RAW_HEBREW_ATTENTION_HANDOFF_RELATIVE_PATH_CHIRHO}\``,
-    `- Non-certifying pre-review item-location coverage: ${statusChirho.rawHebrewChirho.triageChirho.preReviewNotesAvailableChirho ? `${statusChirho.rawHebrewChirho.triageChirho.preReviewCoveredAttentionItemCountChirho}/${statusChirho.rawHebrewChirho.triageChirho.attentionItemCountChirho} current attention item(s)` : "notes unavailable"} (not reason-specific)`,
+    `- Non-certifying pre-review item-location coverage: ${statusChirho.rawHebrewChirho.triageChirho.preReviewNotesAvailableChirho ? `${statusChirho.rawHebrewChirho.triageChirho.preReviewCoveredAttentionItemCountChirho}/${statusChirho.rawHebrewChirho.triageChirho.attentionItemCountChirho} current attention item(s)` : "notes unavailable"}`,
+    `- Non-certifying pre-review reason-specific coverage: ${statusChirho.rawHebrewChirho.triageChirho.preReviewNotesAvailableChirho ? `${statusChirho.rawHebrewChirho.triageChirho.preReviewReasonCoveredAttentionItemCountChirho}/${statusChirho.rawHebrewChirho.triageChirho.attentionItemCountChirho} current attention item(s)` : "notes unavailable"}`,
     `- Current attention items not mentioned in the pre-review note: ${statusChirho.rawHebrewChirho.triageChirho.preReviewUncoveredAttentionItemCountChirho}`,
+    `- Current attention items with missing pre-review reason coverage: ${statusChirho.rawHebrewChirho.triageChirho.preReviewReasonGapAttentionItemCountChirho}`,
     ...rawHebrewTriageSampleLinesChirho,
     ...rawHebrewPreReviewUncoveredSectionLinesChirho,
+    ...rawHebrewPreReviewReasonGapSectionLinesChirho,
     "",
     "## Human Validation DB",
     "",
