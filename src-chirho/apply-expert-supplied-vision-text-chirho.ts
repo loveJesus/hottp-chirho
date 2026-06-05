@@ -373,13 +373,13 @@ function writeBackupRecordChirho(
         schemaVersionChirho: EXPERT_SUPPLIED_TRANSCRIPTIONS_BACKUP_SCHEMA_VERSION_CHIRHO,
         recordsChirho: [],
       };
-  if (
-    backupChirho.schemaVersionChirho !== undefined &&
-    backupChirho.schemaVersionChirho !== EXPERT_SUPPLIED_TRANSCRIPTIONS_BACKUP_SCHEMA_VERSION_CHIRHO
-  ) {
+  if (backupChirho.schemaVersionChirho !== EXPERT_SUPPLIED_TRANSCRIPTIONS_BACKUP_SCHEMA_VERSION_CHIRHO) {
     throw new Error(`unsupported backup schemaVersionChirho ${backupChirho.schemaVersionChirho}`);
   }
-  const recordsChirho = (backupChirho.recordsChirho ?? []).filter(
+  if (!Array.isArray(backupChirho.recordsChirho)) {
+    throw new Error("backup recordsChirho must be an array");
+  }
+  const recordsChirho = backupChirho.recordsChirho.filter(
     (candidateChirho) => candidateChirho.itemIdChirho !== recordChirho.itemIdChirho
   );
   recordsChirho.push(recordChirho);
