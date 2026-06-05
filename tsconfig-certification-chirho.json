@@ -4,6 +4,7 @@
   "extends": "./tsconfig.json",
   "include": [
     "src-chirho/transcription-certification-status-chirho.ts",
+    "src-chirho/export-markdown-chirho.ts",
     "src-chirho/validate-pass-c-hebrew-chirho.ts",
     "src-chirho/pass-c-human-validation-backup-chirho.ts",
     "src-chirho/apply-expert-supplied-vision-text-chirho.ts",
