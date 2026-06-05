@@ -193,12 +193,14 @@ span was surfaced.
   - Visual precheck: S1 includes the opening parenthesis and the Hebrew word, while the following French `au vs 14)` is outside that Hebrew box. S3 is separately boxed after French `de lire` and before the French opening quote; no neighboring French appears swallowed by the S3 target box. The direct OCR read `מקשלר` is close to S3's consonants but still not a certification witness for exact marks.
   - Human check still needed: for S1, exact vowels/marks and whether the opening parenthesis belongs inside the Hebrew span or should be treated as adjacent punctuation; for S3, exact mem/qof-shin-resh sequence and all vowel/shin-dot marks.
 
-- `vol 2 p150 L39 S1`:
+- `vol 2 p150 L39 S1/S3`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=2%3A150%3A39%3A1`
-  - Live text: `מַעֲרִיץ`
-  - Attention reason: low direct-read confidence.
-  - Visual precheck: the crop visibly contains the target Hebrew word between French context; no obvious extra or missing word is visible.
-  - Human check still needed: exact final letters and pointing, especially the tight yod/tsade region.
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A39%3A3`
+  - Item IDs: `v2-p0150-l039-s1`, `v2-p0150-l039-s3`
+  - Live texts: `מַעֲרִיץ` and `מַקְשִׁר`
+  - Attention reason: S1 has low direct-read confidence; S3 is all-token-validated but still in the current raw no-pre-review-note lane.
+  - Visual precheck: the line explicitly presents S3 `מַקְשִׁר` in parallel with S1 `מַעֲרִיץ`. S1 is boxed after French `en parallèle avec`; S3 is separately boxed after French `du vs 13)` and before `que NEB retiendra`. No obvious extra or missing Hebrew word is visible between the two boxes.
+  - Human check still needed: for S1, exact final letters and pointing, especially the tight yod/tsade region; for S3, exact mem/qof-shin-resh sequence and all vowels/shin-dot marks, plus confirmation that `du vs 13)` and `que NEB` remain outside the Hebrew span.
 
 - `vol 2 p151 L1 S1`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A1%3A1`
