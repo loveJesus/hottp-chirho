@@ -510,6 +510,14 @@ function reviewStartLinkCountChecksChirho(statusChirho: CertificationStatusOutpu
         "rawHebrewChirho.triageChirho"
       ),
     },
+    {
+      keyChirho: "rawHebrewWithoutPreReviewNoteChirho",
+      countChirho: numberFieldChirho(
+        objectRecordChirho(rawChirho, "rawHebrewChirho").triageChirho,
+        "withoutPreReviewNoteItemCountChirho",
+        "rawHebrewChirho.triageChirho"
+      ),
+    },
     ...volumeLinkCountChecksChirho(
       "rawHebrewChirho",
       countMapFieldChirho(rawChirho, "livePendingVolumeCountsChirho", "rawHebrewChirho")
@@ -779,6 +787,11 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     markdownChirho,
     `- Raw Hebrew pre-review-note lane: http://localhost:8766/?pre-review-note-chirho=with-note-chirho (${numberFieldChirho(rawTriageChirho, "preReviewNoteItemCountChirho", "rawHebrewChirho.triageChirho")} pending span(s) with non-certifying pre-review notes${reviewStartSuffixChirho(linksChirho, "rawHebrewPreReviewNoteChirho")})`,
     "raw Hebrew pre-review-note lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Raw Hebrew without-pre-review-note lane: http://localhost:8766/?pre-review-note-chirho=without-note-chirho (${numberFieldChirho(rawTriageChirho, "withoutPreReviewNoteItemCountChirho", "rawHebrewChirho.triageChirho")} pending span(s) without non-certifying pre-review notes${reviewStartSuffixChirho(linksChirho, "rawHebrewWithoutPreReviewNoteChirho")})`,
+    "raw Hebrew without-pre-review-note lane"
   );
   assertVolumeLaneMarkdownCoverageChirho(
     markdownChirho,
