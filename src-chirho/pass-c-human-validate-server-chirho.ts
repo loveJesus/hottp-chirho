@@ -73,6 +73,12 @@ const RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "raw-hebrew-human-certification-quickstart-2026-06-05-chirho.md"
 );
+const HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "hallelujah-review-session-guide-2026-06-05-chirho.md"
+);
 const RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -1477,6 +1483,7 @@ function pageHtmlChirho(): string {
       <button type="button" id="next-chirho">Skip</button>
       <button type="button" id="copy-link-chirho">Copy link</button>
       <a class="toolbar-link-chirho" href="/quickstart-chirho" target="_blank" rel="noreferrer">Quickstart</a>
+      <a class="toolbar-link-chirho" href="/session-guide-chirho" target="_blank" rel="noreferrer">Session guide</a>
     </div>
     <div class="lane-shortcuts-chirho" aria-label="Recommended raw review order">
       <span>Recommended raw review order</span>
@@ -2707,6 +2714,14 @@ const serverChirho = Bun.serve({
         return new Response("quickstart not found", { status: 404 });
       }
       return new Response(readFileSync(RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO, "utf8"), {
+        headers: { "Content-Type": "text/markdown; charset=utf-8" },
+      });
+    }
+    if (urlChirho.pathname === "/session-guide-chirho") {
+      if (!existsSync(HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO)) {
+        return new Response("session guide not found", { status: 404 });
+      }
+      return new Response(readFileSync(HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO, "utf8"), {
         headers: { "Content-Type": "text/markdown; charset=utf-8" },
       });
     }

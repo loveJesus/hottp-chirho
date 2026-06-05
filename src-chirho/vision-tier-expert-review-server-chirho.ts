@@ -67,6 +67,12 @@ const VISION_TIER_EXPERT_CONFIRMATION_QUICKSTART_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "vision-tier-expert-confirmation-quickstart-2026-06-05-chirho.md"
 );
+const HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "hallelujah-review-session-guide-2026-06-05-chirho.md"
+);
 
 interface ExpertPackItemChirho {
   idChirho: string;
@@ -678,6 +684,7 @@ function htmlChirho(): string {
       <button type="button" id="next-chirho">Skip</button>
       <button type="button" id="copy-link-chirho">Copy link</button>
       <a class="toolbar-link-chirho" href="/quickstart-chirho" target="_blank" rel="noreferrer">Quickstart</a>
+      <a class="toolbar-link-chirho" href="/session-guide-chirho" target="_blank" rel="noreferrer">Session guide</a>
     </div>
     <div class="lane-shortcuts-chirho" aria-label="Recommended expert review lanes">
       <span>Recommended expert lanes</span>
@@ -1604,6 +1611,14 @@ const serverChirho = Bun.serve({
           return new Response("quickstart not found", { status: 404 });
         }
         return new Response(readFileSync(VISION_TIER_EXPERT_CONFIRMATION_QUICKSTART_PATH_CHIRHO, "utf8"), {
+          headers: { "Content-Type": "text/markdown; charset=utf-8" },
+        });
+      }
+      if (urlChirho.pathname === "/session-guide-chirho") {
+        if (!existsSync(HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO)) {
+          return new Response("session guide not found", { status: 404 });
+        }
+        return new Response(readFileSync(HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO, "utf8"), {
           headers: { "Content-Type": "text/markdown; charset=utf-8" },
         });
       }
