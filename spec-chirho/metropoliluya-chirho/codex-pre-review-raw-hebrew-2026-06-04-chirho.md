@@ -155,6 +155,13 @@ span was surfaced.
   - Visual precheck: this short line ends with the Hebrew target after French `loin en ce même vs, par`; the red box covers the target word to the line edge without a following neighboring span. The direct OCR read `להקלא` is weak at the tav/hey position and does not certify the printed vowels.
   - Human check still needed: exact lamed-sheva opening, tav vs he at the second letter, qof-lamed-alef sequence, qamats/patah/sheva marks, and whether any terminal dot-like ink is a Hebrew mark rather than punctuation.
 
+- `vol 2 p151 L36 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A36%3A1`
+  - Live text: `תַקְדִּישׁוּ`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the Hebrew word is boxed between French `authenticité de` and `en 13`; no neighboring French appears swallowed by the target box. This repeats the same stored form as `vol 2 p151 L1 S1`, but the direct OCR read here `תקדלשת` is weaker around the yod/shin/final-vav region.
+  - Human check still needed: exact tav/qof/dalet-yod-shin-vav sequence, dagesh, vowels, and shin-dot against this occurrence of the print; do not transfer a clean verdict automatically from the earlier `תַקְדִּישׁוּ`.
+
 - `vol 5 p149 L28 S1`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A149%3A28%3A1`
   - Live text: `ליץ`
