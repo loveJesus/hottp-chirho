@@ -35,6 +35,7 @@ import { join } from "path";
 import { writeJsonAtomicChirho, writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO, VOLUMES_CHIRHO } from "./config-chirho.ts";
 import { d1AuditFingerprintForDbPathChirho } from "./d1-audit-fingerprint-chirho.ts";
+import { exportMarkdownSourceFingerprintChirho } from "./export-markdown-source-fingerprint-chirho.ts";
 import { spanSourceFingerprintForTargetsChirho } from "./source-fingerprint-chirho.ts";
 import {
   isRtlDominantSpanLineChirho,
@@ -277,6 +278,8 @@ interface ExportReportChirho {
   generatedAtChirho: string;
   sourceDirChirho: string;
   outDirChirho: string;
+  exportMarkdownSourceFileCountChirho: number;
+  exportMarkdownSourceFingerprintChirho: string;
   d1DbPathChirho: string | null;
   spanSourceFileCountChirho: number;
   spanSourceFingerprintChirho: string;
@@ -1282,6 +1285,7 @@ async function runExportChirho(optionsChirho: CliOptionsChirho): Promise<ExportR
   }
 
   const pageReportsChirho = pageExportsChirho.map((pageChirho) => pageReportChirho(optionsChirho.outDirChirho, pageChirho));
+  const exportMarkdownSourceFingerprintResultChirho = exportMarkdownSourceFingerprintChirho();
   const spanSourceFingerprintChirho = spanSourceFingerprintForTargetsChirho(targetsChirho);
   const d1AuditFingerprintChirho = d1AuditFingerprintForDbPathChirho(d1AuditChirho?.dbPathChirho);
   const issuesChirho = pageExportsChirho.flatMap((pageChirho) =>
@@ -1300,6 +1304,8 @@ async function runExportChirho(optionsChirho: CliOptionsChirho): Promise<ExportR
     generatedAtChirho: new Date().toISOString(),
     sourceDirChirho: SPANS_DIR_CHIRHO,
     outDirChirho: optionsChirho.outDirChirho,
+    exportMarkdownSourceFileCountChirho: exportMarkdownSourceFingerprintResultChirho.fileCountChirho,
+    exportMarkdownSourceFingerprintChirho: exportMarkdownSourceFingerprintResultChirho.sha256Chirho,
     d1DbPathChirho: d1AuditChirho?.dbPathChirho ?? null,
     spanSourceFileCountChirho: spanSourceFingerprintChirho.fileCountChirho,
     spanSourceFingerprintChirho: spanSourceFingerprintChirho.sha256Chirho,

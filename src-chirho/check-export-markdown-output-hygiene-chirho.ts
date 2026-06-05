@@ -14,6 +14,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from "fs";
 import { join, relative, resolve, sep } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { exportMarkdownSourceFingerprintChirho } from "./export-markdown-source-fingerprint-chirho.ts";
 import {
   JOHN_316_BLOCK_MARKDOWN_HEADER_CHIRHO,
   assertGeneratedCheckChirho,
@@ -60,6 +61,8 @@ interface ExportReportChirho {
   pageCountChirho?: number;
   volumeCountChirho?: number;
   issueCountChirho?: number;
+  exportMarkdownSourceFileCountChirho?: number;
+  exportMarkdownSourceFingerprintChirho?: string;
   pagesChirho?: ExportPageReportChirho[];
   volumesChirho?: ExportVolumeReportChirho[];
   issuesChirho?: ExportIssueChirho[];
@@ -337,6 +340,15 @@ function mainChirho(): void {
   assertGeneratedCheckChirho(
     reportChirho.issueCountChirho === reportChirho.issuesChirho.length,
     "export report issueCountChirho does not match issuesChirho.length"
+  );
+  const exportMarkdownSourceFingerprintResultChirho = exportMarkdownSourceFingerprintChirho();
+  assertGeneratedCheckChirho(
+    reportChirho.exportMarkdownSourceFileCountChirho === exportMarkdownSourceFingerprintResultChirho.fileCountChirho,
+    "export report exportMarkdownSourceFileCountChirho does not match current exporter source file count"
+  );
+  assertGeneratedCheckChirho(
+    reportChirho.exportMarkdownSourceFingerprintChirho === exportMarkdownSourceFingerprintResultChirho.sha256Chirho,
+    "export report exportMarkdownSourceFingerprintChirho does not match current exporter source files"
   );
 
   const expectedMarkdownPathsChirho = new Set<string>();

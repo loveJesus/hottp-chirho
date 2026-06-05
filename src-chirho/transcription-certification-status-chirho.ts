@@ -22,6 +22,7 @@ import {
   readLatinSymbolAcceptancePolicyFileChirho,
   summarizeLatinSymbolAcceptancePolicyChirho,
 } from "./latin-symbol-vision-acceptance-policy-chirho.ts";
+import { exportMarkdownSourceFingerprintChirho } from "./export-markdown-source-fingerprint-chirho.ts";
 import {
   countByScriptChirho,
   hashTextChirho,
@@ -225,6 +226,8 @@ const REVIEW_VOLUMES_CHIRHO = [1, 2, 3, 4, 5] as const;
 interface ExportReportChirho {
   generatedAtChirho?: string;
   d1DbPathChirho?: string | null;
+  exportMarkdownSourceFileCountChirho?: number;
+  exportMarkdownSourceFingerprintChirho?: string;
   spanSourceFileCountChirho?: number;
   spanSourceFingerprintChirho?: string;
   d1AuditFingerprintChirho?: string | null;
@@ -751,6 +754,9 @@ interface CertificationStatusChirho {
     markdownPathMismatchCountChirho: number;
     markdownHashDriftCountChirho: number;
     markdownFingerprintsMatchCurrentChirho: boolean;
+    exportMarkdownSourceFileCountChirho: number | null;
+    liveExportMarkdownSourceFileCountChirho: number;
+    exportMarkdownSourceFingerprintMatchesCurrentChirho: boolean;
     d1AuditDbPathChirho: string | null;
     liveD1AuditDbPathChirho: string | null;
     d1AuditPageRowCountChirho: number | null;
@@ -3091,6 +3097,14 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     exportReportHasSpanSourceFingerprintChirho &&
     exportReportChirho.spanSourceFileCountChirho === liveSpanSourceFingerprintChirho.fileCountChirho &&
     exportReportChirho.spanSourceFingerprintChirho === liveSpanSourceFingerprintChirho.sha256Chirho;
+  const liveExportMarkdownSourceFingerprintChirho = exportMarkdownSourceFingerprintChirho();
+  const exportReportHasExportMarkdownSourceFingerprintChirho =
+    typeof exportReportChirho.exportMarkdownSourceFileCountChirho === "number" &&
+    typeof exportReportChirho.exportMarkdownSourceFingerprintChirho === "string";
+  const exportReportExportMarkdownSourceFingerprintMatchesCurrentChirho =
+    exportReportHasExportMarkdownSourceFingerprintChirho &&
+    exportReportChirho.exportMarkdownSourceFileCountChirho === liveExportMarkdownSourceFingerprintChirho.fileCountChirho &&
+    exportReportChirho.exportMarkdownSourceFingerprintChirho === liveExportMarkdownSourceFingerprintChirho.sha256Chirho;
   const exportMarkdownFingerprintSummaryChirho = summarizeExportMarkdownFingerprintsChirho(
     exportReportChirho,
     exportReportExistsChirho,
@@ -3300,6 +3314,10 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     markdownPathMismatchCountChirho: exportMarkdownFingerprintSummaryChirho.pathMismatchCountChirho,
     markdownHashDriftCountChirho: exportMarkdownFingerprintSummaryChirho.hashDriftCountChirho,
     markdownFingerprintsMatchCurrentChirho: exportMarkdownFingerprintSummaryChirho.matchesCurrentChirho,
+    exportMarkdownSourceFileCountChirho: exportReportChirho.exportMarkdownSourceFileCountChirho ?? null,
+    liveExportMarkdownSourceFileCountChirho: liveExportMarkdownSourceFingerprintChirho.fileCountChirho,
+    exportMarkdownSourceFingerprintMatchesCurrentChirho:
+      exportReportExportMarkdownSourceFingerprintMatchesCurrentChirho,
     d1AuditDbPathChirho: exportReportChirho.d1DbPathChirho ?? null,
     liveD1AuditDbPathChirho,
     d1AuditPageRowCountChirho: exportReportChirho.d1AuditPageRowCountChirho ?? null,
@@ -3784,6 +3802,21 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     !exportReportSpanSourceFingerprintMatchesCurrentChirho
   ) {
     remainingWorkChirho.push("strict export report span-source fingerprint does not match live span files; regenerate export-markdown-chirho --all --strict");
+  }
+  if (
+    exportReportExistsChirho &&
+    exportReportShapeOkChirho &&
+    !exportReportHasExportMarkdownSourceFingerprintChirho
+  ) {
+    remainingWorkChirho.push("strict export report lacks an export Markdown source fingerprint; regenerate export-markdown-chirho --all --strict");
+  }
+  if (
+    exportReportExistsChirho &&
+    exportReportShapeOkChirho &&
+    exportReportHasExportMarkdownSourceFingerprintChirho &&
+    !exportReportExportMarkdownSourceFingerprintMatchesCurrentChirho
+  ) {
+    remainingWorkChirho.push("strict export report Markdown exporter source fingerprint does not match current source files; regenerate export-markdown-chirho --all --strict");
   }
   if (
     exportReportExistsChirho &&
@@ -4679,6 +4712,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     `- Export report exists: ${statusChirho.artifactsChirho.exportReportExistsChirho}`,
     `- Export report shape OK: ${statusChirho.artifactsChirho.exportReportShapeOkChirho}`,
+    `- Export Markdown source files in report: ${statusChirho.structuralChirho.exportMarkdownSourceFileCountChirho ?? "unknown"}`,
+    `- Live Export Markdown source files: ${statusChirho.structuralChirho.liveExportMarkdownSourceFileCountChirho}`,
+    `- Export Markdown source fingerprint matches current source: ${statusChirho.structuralChirho.exportMarkdownSourceFingerprintMatchesCurrentChirho}`,
     `- Export span-source files in report: ${statusChirho.structuralChirho.spanSourceFileCountChirho ?? "unknown"}`,
     `- Live span-source files for report pages: ${statusChirho.structuralChirho.liveSpanSourceFileCountChirho}`,
     `- Live span count for report pages: ${statusChirho.structuralChirho.liveSpanCountChirho}`,
