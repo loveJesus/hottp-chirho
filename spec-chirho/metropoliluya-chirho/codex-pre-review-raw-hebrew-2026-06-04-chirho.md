@@ -241,6 +241,13 @@ span was surfaced.
   - Visual precheck: the short line reads French `que de` followed by the boxed Hebrew word at the line end. The packet crop visibly includes closing parenthesis/period-shaped punctuation after `קדש`, while the stored live text is bare `קדש`.
   - Human check still needed: exact qof-dalet-shin letters and whether the visible `).` should be included with this Hebrew span, split into an adjacent punctuation span, or otherwise represented before any clean verdict is recorded.
 
+- `vol 2 p151 L13 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A13%3A1`
+  - Live text: `מרדא`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane.
+  - Visual precheck: the Hebrew word is boxed after French `traduit en 12(bis) par` and before French `(comme en 2 R 11,14bis),`. The following opening parenthesis is outside the red Hebrew target and belongs to the next span.
+  - Human check still needed: exact mem-resh-dalet-alef letters, whether the word is intentionally consonantal here, and confirmation that the following parenthesis remains adjacent French punctuation rather than part of the Hebrew span.
+
 - `vol 2 p151 L16 S1/S3`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A16%3A1`
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A16%3A3`
