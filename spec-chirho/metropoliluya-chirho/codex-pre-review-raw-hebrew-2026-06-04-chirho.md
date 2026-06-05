@@ -244,6 +244,13 @@ another.
   - Revision note: the full-page crop shows this is a `Quant au 𝔗` Targum/Aramaic-style quote, not an ordinary Hebrew/WLC line. S3/S5/S7 and the line-2 continuation are now vision-tier consonantal Targum readings pending expert confirmation.
   - Certification remains pending in the expert lane; do not use this historical raw pre-review note as a clean verdict.
 
+- `vol 5 p151 L16 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A151%3A16%3A1`
+  - Live text: `תְרֹמֵם`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the red box cleanly brackets the Hebrew word between `Jb 17,4` and `{B}`. The printed consonants look like tav-resh-mem-final mem at review resolution; the direct read `הרהמ` appears to be OCR weakness rather than a neighboring-span or clipping problem.
+  - Human check still needed: exact first letter, vowels/marks, and whether the printed form is `תְרֹמֵם` as stored rather than a visually similar Job 17:4 form.
+
 - `vol 5 p151 L18 S3/S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A18%3A3`
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A18%3A5`
