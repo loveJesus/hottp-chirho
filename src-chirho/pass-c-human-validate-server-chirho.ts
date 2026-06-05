@@ -2089,6 +2089,29 @@ function pageHtmlChirho(): string {
       const marksChirho = namedMarkDeltasChirho(fromTextChirho, toTextChirho);
       return marksChirho.length > 0 ? marksChirho.join("; ") : "No named typewriter mark additions/removals detected";
     }
+    function preReviewCoveredAttentionKindChirho(noteChirho, kindChirho) {
+      const normalizedNoteChirho = String(noteChirho || "").toLowerCase();
+      if (kindChirho === "${RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO}") return normalizedNoteChirho.includes("low direct-read confidence") || normalizedNoteChirho.includes("low-confidence");
+      if (kindChirho === "${RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO}") return normalizedNoteChirho.includes("confident direct-read disagreement") || normalizedNoteChirho.includes("direct-read disagreement");
+      if (kindChirho === "${RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO}") return normalizedNoteChirho.includes("multi-token");
+      if (kindChirho === "${RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO}") return normalizedNoteChirho.includes("delimiter") || normalizedNoteChirho.includes("damaged-text");
+      if (kindChirho === "${RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO}") return normalizedNoteChirho.includes("no direct") || normalizedNoteChirho.includes("no-direct");
+      return false;
+    }
+    function attentionKindLabelChirho(kindChirho) {
+      if (kindChirho === "${RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO}") return "low direct-read confidence";
+      if (kindChirho === "${RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO}") return "confident direct-read disagreement";
+      if (kindChirho === "${RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO}") return "multi-token Hebrew span";
+      if (kindChirho === "${RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO}") return "delimiter/damaged-text notation";
+      if (kindChirho === "${RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO}") return "no direct CRNN crop read";
+      return String(kindChirho || "unknown attention kind");
+    }
+    function preReviewMissingAttentionKindsChirho(itemChirho) {
+      if (typeof itemChirho.preReviewNoteChirho !== "string" || itemChirho.preReviewNoteChirho.length === 0) return [];
+      return itemChirho.attentionKindsChirho.filter((kindChirho) =>
+        !preReviewCoveredAttentionKindChirho(itemChirho.preReviewNoteChirho, kindChirho)
+      );
+    }
     function pendingReviewIssueFlagsChirho() {
       return Array.from(document.querySelectorAll(".issue-checkbox-chirho:checked"))
         .map((inputChirho) => inputChirho.value);
@@ -2358,6 +2381,7 @@ function pageHtmlChirho(): string {
         }));
       }
       if (typeof itemChirho.preReviewNoteChirho === "string" && itemChirho.preReviewNoteChirho.length > 0) {
+        const missingAttentionKindsChirho = preReviewMissingAttentionKindsChirho(itemChirho);
         sideChirho.appendChild(elChirho("div", { classChirho: "box-chirho" }, [
           elChirho("div", { classChirho: "label-chirho", textChirho: "Non-certifying pre-review note" }),
           elChirho("div", {
@@ -2365,6 +2389,12 @@ function pageHtmlChirho(): string {
             style: "white-space:pre-wrap;font-size:12px;line-height:1.45;",
             textChirho: itemChirho.preReviewNoteChirho
           }),
+          ...(missingAttentionKindsChirho.length === 0 ? [] : [
+            elChirho("div", {
+              classChirho: "warning-chirho",
+              textChirho: "This older pre-review note does not mention current attention kind(s): " + missingAttentionKindsChirho.map(attentionKindLabelChirho).join(", ") + ". Treat it as location context only and review the current flags against the print."
+            })
+          ]),
           elChirho("div", {
             classChirho: "status-chirho",
             textChirho: "This note is a machine-assisted visual aid only. It is not a verdict; certify only from the crop and printed line."
