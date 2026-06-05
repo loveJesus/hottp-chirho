@@ -285,6 +285,13 @@ another.
   - Visual precheck: the compact line reads French `écrivent`, then one Hebrew word, then a period. The red box cleanly brackets the Hebrew word and does not include the period. The stored consonantal pattern with repeated tav/resh-like strokes is plausible at review resolution, but the direct OCR read is not reliable enough to certify it.
   - Human check still needed: exact first two letters, the middle resh/vav sequence, final mem, and all vowel/dagesh marks.
 
+- `vol 5 p152 L17 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A152%3A17%3A1`
+  - Live text: `רוֹם`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the line reads `Le qal de`, then the Hebrew word, then French `a comme...`; the target box is centered on the Hebrew and the following French starts outside the box. The direct OCR read saw only `רו`, so the final mem should not be assumed from OCR even though it is visible at the left side of the red box.
+  - Human check still needed: final mem, holam-vav placement, and whether the box fully encloses the final letter without clipping.
+
 - `vol 5 p152 L13 S3/S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A3`
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A5`
