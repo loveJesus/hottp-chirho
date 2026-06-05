@@ -89,6 +89,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
     argsChirho: [process.execPath, "run", "check-active-certification-json-artifacts-hygiene-chirho"],
   },
   {
+    labelChirho: "vision verdict backup hygiene",
+    argsChirho: [process.execPath, "run", "check-vision-verdict-backup-hygiene-chirho"],
+  },
+  {
     labelChirho: "export Markdown output hygiene",
     argsChirho: [process.execPath, "run", "check-export-markdown-output-hygiene-chirho"],
   },

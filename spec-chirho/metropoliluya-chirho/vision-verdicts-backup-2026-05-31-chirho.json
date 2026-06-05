@@ -1,4 +1,6 @@
 {
+  "john316Chirho": "For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16",
+  "schemaVersionChirho": 1,
   "generatedAtChirho": "2026-06-04T16:54:10.439Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
   "countChirho": 878,
@@ -1181,7 +1183,7 @@
       "segmentIndexChirho": 1,
       "garbleTextChirho": "Í6 $2 +˜0. :. 0Úˆ008E4 ,1ù-5",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "וְאֶל־מְצֻנִּים יִקָּחֻהוּ",
+      "utf8TextChirho": "וְאֶל־מְצֻנִּים יִקָּחֻהוּ",
       "notesChirho": "MT lemma Nah 2:5 read RTL: we'el-metsunnim yiqqachuhu; segol under aleph confirmed by zoom"
     },
     {
@@ -1301,7 +1303,7 @@
       "segmentIndexChirho": 5,
       "garbleTextChirho": "1 +C +. -J . $C +8 -ÊN.=O58 -4O59Í",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "וּפֻלְמוֹסִין בְּמָנֵי זֵינָא",
+      "utf8TextChirho": "וּפֻלְמוֹסִין בְּמָנֵי זֵינָא",
       "notesChirho": "Aramaic (Targum): uphulmosin bemane zena ('and armies with weapons of armor'); zoom-confirmed"
     },
     {
@@ -1311,7 +1313,7 @@
       "segmentIndexChirho": 0,
       "garbleTextChirho": "È. $ÚÍ# -Ê-H 3",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "יְדַבְּרוּנֵיהּ",
+      "utf8TextChirho": "יְדַבְּרוּנֵיהּ",
       "notesChirho": "Aramaic (Targum), left block: yedabberunehh PLENE (vav-shuruq); zoom-confirmed has vav"
     },
     {
@@ -1321,7 +1323,7 @@
       "segmentIndexChirho": 4,
       "garbleTextChirho": "È. $Ú0# -Ê3H -",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "יְדַבְּרֻנֵיהּ",
+      "utf8TextChirho": "יְדַבְּרֻנֵיהּ",
       "notesChirho": "Aramaic (Targum), right block (ms Urbinates 1): yedabberunehh DEFECTIVE (qubuts, no vav); zoom-confirmed"
     },
     {
@@ -1421,7 +1423,7 @@
       "segmentIndexChirho": 1,
       "garbleTextChirho": ":. 0Úˆ008",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "מְצֻנִּים",
+      "utf8TextChirho": "מְצֻנִּים",
       "notesChirho": "metsunnim (same word as L1); qubuts under tsade; confirmed L15 image"
     },
     {
@@ -1451,7 +1453,7 @@
       "segmentIndexChirho": 3,
       "garbleTextChirho": "NO51 +7 0I",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "צִמָּאוֹן",
+      "utf8TextChirho": "צִמָּאוֹן",
       "notesChirho": "tsimma'on ('thirst', Deut 8:15); confirmed L16 image"
     },
     {
@@ -1481,7 +1483,7 @@
       "segmentIndexChirho": 5,
       "garbleTextChirho": "1 +C +. -J . $C +8 -ÊN.=O58 -4O59",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "פֻלְמוֹסִין בְּמָנֵי זֵינָא",
+      "utf8TextChirho": "פֻלְמוֹסִין בְּמָנֵי זֵינָא",
       "notesChirho": "Aramaic (Targum): phulmosin bemane zena (same as L8 seg5 but without leading vav); confirmed L17 image"
     },
     {
@@ -1521,7 +1523,7 @@
       "segmentIndexChirho": 5,
       "garbleTextChirho": "6 +Ú0I",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "צִנָּה",
+      "utf8TextChirho": "צִנָּה",
       "notesChirho": "tsinnah ('large shield'); ḥireq-tsade, dagesh+qamats nun; zoom-confirmed"
     },
     {
@@ -1611,7 +1613,7 @@
       "segmentIndexChirho": 1,
       "garbleTextChirho": ": +4. $2 :. 07 3I M 31 +›ù-5",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "וְשָׁאַף צַמִּים חֵילָם",
+      "utf8TextChirho": "וְשָׁאַף צַמִּים חֵילָם",
       "notesChirho": "MT Nah 2:5: wesha'aph tsammim chelam ('and the thirsty pant after their wealth'); zoom-confirmed"
     },
     {
@@ -1631,7 +1633,7 @@
       "segmentIndexChirho": 3,
       "garbleTextChirho": "2 +ı% $B +@ùÊ-J $2Ä",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "יֹאחֵז בְּעָקֵב פָּח",
+      "utf8TextChirho": "יֹאחֵז בְּעָקֵב פָּח",
       "notesChirho": "Right-of-slash variant, Job 18:9: yo'chez be'aqev pach ('a trap seizes by the heel'); zoom-confirmed ordering"
     },
     {
@@ -1641,7 +1643,7 @@
       "segmentIndexChirho": 0,
       "garbleTextChirho": ":. 07 3I",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "צַמִּים",
+      "utf8TextChirho": "צַמִּים",
       "notesChirho": "Wrapped continuation: tsammim ('the thirsty'); matches L22; confirmed L24 image"
     },
     {
@@ -4191,8 +4193,8 @@
       "segmentIndexChirho": 6,
       "garbleTextChirho": "6 +4. 02 -% 6 +H -; 3= \"1ù35",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "וָאֶסְלְדָה בְּחִילָה",
-      "notesChirho": "Hebrew Job 6:10 stich left half (visually leftmost in RTL line): וָאֶסְלְדָה בְּחִילָה"
+      "utf8TextChirho": "וָאֶסְלְדָה בְּחִילָה",
+      "notesChirho": "Hebrew Job 6:10 stich left half (visually leftmost in RTL line): וָאֶסְלְדָה בְּחִילָה"
     },
     {
       "volumeChirho": 5,
@@ -4201,8 +4203,8 @@
       "segmentIndexChirho": 8,
       "garbleTextChirho": ". 0> +8 +2 ,C H˚@E. 06 ->Í",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "וַתְּהִי־עוֹד נַחְמָתִי",
-      "notesChirho": "Hebrew Job 6:10 stich right half (visually rightmost in RTL line): וַתְּהִי־עוֹד נַחְמָתִי"
+      "utf8TextChirho": "וַתְּהִי־עוֹד נַחְמָתִי",
+      "notesChirho": "Hebrew Job 6:10 stich right half (visually rightmost in RTL line): וַתְּהִי־עוֹד נַחְמָתִי"
     },
     {
       "volumeChirho": 5,
@@ -4211,8 +4213,8 @@
       "segmentIndexChirho": 0,
       "garbleTextChirho": "›˚H +B. $# -8 01. 0˙-H 32 0! Ä4E. 0Ô",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "כִּי־לֹא כְּחַדתִּי אִמְרֵי קָדוֹשׁ",
-      "notesChirho": "Hebrew Job 6:10 stich leftmost (seg0): כִּי־לֹא כְּחַדתִּי אִמְרֵי קָדוֹשׁ"
+      "utf8TextChirho": "כִּי־לֹא כְּחַדתִּי אִמְרֵי קָדוֹשׁ",
+      "notesChirho": "Hebrew Job 6:10 stich leftmost (seg0): כִּי־לֹא כְּחַדתִּי אִמְרֵי קָדוֹשׁ"
     },
     {
       "volumeChirho": 5,
@@ -7872,7 +7874,7 @@
       "garbleTextChirho": "known-script-garble-chirho",
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "מָעוּזִּי חָיִל",
-      "notesChirho": "Recovered from printed Hebrew mis-OCR rendered as D. \"DD after \"voit en\"; II Samuel 22:33 WLC corroborates מָעוּזִּי חָיִל, but exact printed pointing remains expert-confirmation tier."
+      "notesChirho": "Recovered from printed Hebrew mis-OCR rendered as D. \"DD after \"voit en\"; II Samuel 22:33 WLC corroborates מָעוּזִּי חָיִל, but exact printed pointing remains expert-confirmation tier."
     },
     {
       "volumeChirho": 4,
@@ -7922,7 +7924,7 @@
       "garbleTextChirho": "known-script-garble-chirho",
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "מַרְכְּבֹתֶיךָ",
-      "notesChirho": "Recovered from printed Hebrew mis-OCR rendered as + 772279; Habakkuk 3:8 WLC corroborates מַרְכְּבֹתֶיךָ יְשׁוּעָה, with exact printed pointing routed to expert confirmation."
+      "notesChirho": "Recovered from printed Hebrew mis-OCR rendered as + 772279; Habakkuk 3:8 WLC corroborates מַרְכְּבֹתֶיךָ יְשׁוּעָה, with exact printed pointing routed to expert confirmation."
     },
     {
       "volumeChirho": 2,
@@ -8702,7 +8704,7 @@
       "garbleTextChirho": "הָעָם + y\" hidden continuation",
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "וירע העם",
-      "notesChirho": "Recovered vol 1 p151 line 15 Joshua 6:20 Hebrew phrase from old partial pass-c `הָעָם` plus OCR fragment `y\"`. Scanline shows the two-word phrase before [B]; WLC Joshua 6:20 corroborates וַיָּרַע הָעָם, but stored consonantal `וירע העם` remains vision-chirho pending Hebrew/WLC expert confirmation of exact vowels/marks."
+      "notesChirho": "Recovered vol 1 p151 line 15 Joshua 6:20 Hebrew phrase from old partial pass-c `הָעָם` plus OCR fragment `y\"`. Scanline shows the two-word phrase before [B]; WLC Joshua 6:20 corroborates וַיָּרַע הָעָם, but stored consonantal `וירע העם` remains vision-chirho pending Hebrew/WLC expert confirmation of exact vowels/marks."
     },
     {
       "volumeChirho": 1,
