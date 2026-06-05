@@ -114,23 +114,24 @@ function assertPacketRelativeMarkdownPathChirho(
     typeof markdownPathChirho === "string" && markdownPathChirho.length > 0,
     `${specChirho.labelChirho} ${contextChirho} markdown path must be a non-empty string`
   );
+  const markdownPathTextChirho = markdownPathChirho as string;
   assertGeneratedCheckChirho(
-    !markdownPathChirho.includes("\\") && !markdownPathChirho.startsWith("/") && !/^[a-z][a-z0-9+.-]*:/i.test(markdownPathChirho),
-    `${specChirho.labelChirho} ${contextChirho} markdown path must be a relative packet path: ${markdownPathChirho}`
+    !markdownPathTextChirho.includes("\\") && !markdownPathTextChirho.startsWith("/") && !/^[a-z][a-z0-9+.-]*:/i.test(markdownPathTextChirho),
+    `${specChirho.labelChirho} ${contextChirho} markdown path must be a relative packet path: ${markdownPathTextChirho}`
   );
-  const resolvedChirho = normalizedPathChirho(join(specChirho.packetDirChirho, markdownPathChirho));
+  const resolvedChirho = normalizedPathChirho(join(specChirho.packetDirChirho, markdownPathTextChirho));
   const rootChirho = normalizedPathChirho(specChirho.packetDirChirho);
   assertGeneratedCheckChirho(
     resolvedChirho === rootChirho || resolvedChirho.startsWith(`${rootChirho}${sep}`),
-    `${specChirho.labelChirho} ${contextChirho} markdown path escapes packet directory: ${markdownPathChirho}`
+    `${specChirho.labelChirho} ${contextChirho} markdown path escapes packet directory: ${markdownPathTextChirho}`
   );
   assertGeneratedCheckChirho(
-    packetRelativePathChirho(specChirho.packetDirChirho, resolvedChirho) === markdownPathChirho,
-    `${specChirho.labelChirho} ${contextChirho} markdown path is not normalized: ${markdownPathChirho}`
+    packetRelativePathChirho(specChirho.packetDirChirho, resolvedChirho) === markdownPathTextChirho,
+    `${specChirho.labelChirho} ${contextChirho} markdown path is not normalized: ${markdownPathTextChirho}`
   );
   assertGeneratedCheckChirho(
     existsSync(resolvedChirho),
-    `${specChirho.labelChirho} ${contextChirho} referenced image is missing: ${markdownPathChirho}`
+    `${specChirho.labelChirho} ${contextChirho} referenced image is missing: ${markdownPathTextChirho}`
   );
   return resolvedChirho;
 }
@@ -143,7 +144,7 @@ function addExpectedImageReferenceChirho(
   contextChirho: string
 ): void {
   const resolvedChirho = assertPacketRelativeMarkdownPathChirho(specChirho, markdownPathChirho, contextChirho);
-  incrementCountChirho(expectedReferenceCountsChirho, markdownPathChirho);
+  incrementCountChirho(expectedReferenceCountsChirho, markdownPathChirho as string);
   expectedFilesChirho.add(resolvedChirho);
 }
 

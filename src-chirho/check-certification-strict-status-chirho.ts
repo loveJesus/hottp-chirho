@@ -49,7 +49,7 @@ interface StatusSummaryLineChirho {
   reportChirho: string;
 }
 
-function assertCheckChirho(conditionChirho: boolean, messageChirho: string): void {
+function assertCheckChirho(conditionChirho: boolean, messageChirho: string): asserts conditionChirho {
   if (!conditionChirho) throw new Error(messageChirho);
 }
 

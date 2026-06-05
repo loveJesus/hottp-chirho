@@ -137,7 +137,9 @@ function mainChirho(): void {
   const backupChirho = parseJsonObjectChirho(VISION_VERDICTS_BACKUP_PATH_CHIRHO, textChirho) as VisionVerdictBackupFileChirho;
   assertBackupMetadataChirho(VISION_VERDICTS_BACKUP_PATH_CHIRHO, backupChirho);
   const seenKeysChirho = new Set<string>();
-  backupChirho.verdictsChirho!.forEach((rowChirho, indexChirho) =>
+  const verdictRowsChirho = backupChirho.verdictsChirho;
+  assertGeneratedCheckChirho(Array.isArray(verdictRowsChirho), `${VISION_VERDICTS_BACKUP_PATH_CHIRHO} verdictsChirho must be an array`);
+  verdictRowsChirho.forEach((rowChirho: unknown, indexChirho: number) =>
     assertVisionVerdictRowChirho(rowChirho, indexChirho, seenKeysChirho)
   );
   console.log(`[${MODULE_CHIRHO}] vision verdict backup hygiene passed for ${seenKeysChirho.size} row(s)`);

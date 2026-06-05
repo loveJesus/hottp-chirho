@@ -90,7 +90,7 @@ function forceSingleGenericPassCHumanReviewerChirho(dbPathChirho: string): numbe
          ORDER BY id_chirho
          LIMIT 1`)
       .get();
-    if (rowChirho === undefined) return null;
+    if (rowChirho === null || rowChirho === undefined) return null;
     dbChirho
       .prepare(`
         UPDATE pass_c_human_validations_chirho
