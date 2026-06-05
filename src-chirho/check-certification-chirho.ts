@@ -85,6 +85,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
     argsChirho: [process.execPath, "run", "check-certification-status-output-hygiene-chirho"],
   },
   {
+    labelChirho: "publication readiness summary guard",
+    argsChirho: [process.execPath, "run", "check-publication-readiness-summary-guards-chirho"],
+  },
+  {
     labelChirho: "active certification JSON artifact hygiene",
     argsChirho: [process.execPath, "run", "check-active-certification-json-artifacts-hygiene-chirho"],
   },

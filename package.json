@@ -35,6 +35,7 @@
     "check-app-publication-readiness-chirho": "bun run src-chirho/check-app-publication-readiness-chirho.ts",
     "publication-readiness-summary-chirho": "bun run src-chirho/check-app-publication-readiness-chirho.ts --summary-only-chirho",
     "check-certified-markdown-publication-chirho": "bun run src-chirho/check-app-publication-readiness-chirho.ts --require-certified-markdown-chirho",
+    "check-publication-readiness-summary-guards-chirho": "bun run src-chirho/check-publication-readiness-summary-guards-chirho.ts",
     "check-certification-status-gate-guards-chirho": "bun run src-chirho/check-certification-status-gate-guards-chirho.ts",
     "check-certification-status-output-hygiene-chirho": "bun run src-chirho/check-certification-status-output-hygiene-chirho.ts",
     "check-active-certification-json-artifacts-hygiene-chirho": "bun run src-chirho/check-active-certification-json-artifacts-hygiene-chirho.ts",
