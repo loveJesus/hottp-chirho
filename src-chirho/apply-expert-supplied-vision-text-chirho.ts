@@ -52,6 +52,7 @@ const DEFAULT_BACKUP_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "expert-supplied-vision-transcriptions-2026-06-04-chirho.json"
 );
+const EXPERT_SUPPLIED_TRANSCRIPTIONS_BACKUP_SCHEMA_VERSION_CHIRHO = 2;
 const ITEM_ID_RE_CHIRHO = /^v(\d+)-p(\d{4})-l(\d{3})-s(\d+)$/;
 const SUPPLIED_TEXT_PLACEHOLDER_VALUES_CHIRHO = new Set([
   "exact printed text",
@@ -369,17 +370,20 @@ function writeBackupRecordChirho(
     : {
         john316Chirho:
           "For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16",
-        schemaVersionChirho: 1,
+        schemaVersionChirho: EXPERT_SUPPLIED_TRANSCRIPTIONS_BACKUP_SCHEMA_VERSION_CHIRHO,
         recordsChirho: [],
       };
-  if (backupChirho.schemaVersionChirho !== undefined && backupChirho.schemaVersionChirho !== 1) {
+  if (
+    backupChirho.schemaVersionChirho !== undefined &&
+    backupChirho.schemaVersionChirho !== EXPERT_SUPPLIED_TRANSCRIPTIONS_BACKUP_SCHEMA_VERSION_CHIRHO
+  ) {
     throw new Error(`unsupported backup schemaVersionChirho ${backupChirho.schemaVersionChirho}`);
   }
   const recordsChirho = (backupChirho.recordsChirho ?? []).filter(
     (candidateChirho) => candidateChirho.itemIdChirho !== recordChirho.itemIdChirho
   );
   recordsChirho.push(recordChirho);
-  backupChirho.schemaVersionChirho = 1;
+  backupChirho.schemaVersionChirho = EXPERT_SUPPLIED_TRANSCRIPTIONS_BACKUP_SCHEMA_VERSION_CHIRHO;
   backupChirho.generatedAtChirho = generatedAtChirho;
   backupChirho.reapplyChirho = "bun run apply-expert-supplied-vision-text-chirho -- --apply ...";
   backupChirho.recordsChirho = recordsChirho;

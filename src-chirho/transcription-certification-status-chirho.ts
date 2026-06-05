@@ -176,6 +176,7 @@ const EXPERT_SUPPLIED_VISION_TEXT_BACKUP_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "expert-supplied-vision-transcriptions-2026-06-04-chirho.json"
 );
+const EXPERT_SUPPLIED_VISION_TEXT_BACKUP_SCHEMA_VERSION_CHIRHO = 2;
 const HIDDEN_HEBREW_CANDIDATE_SCAN_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -2149,7 +2150,9 @@ function expertSuppliedVisionTextBackupShapeErrorsChirho(
 ): string[] {
   if (!existsChirho) return [];
   const errorsChirho: string[] = [];
-  if (backupChirho.schemaVersionChirho !== 1) errorsChirho.push("schemaVersionChirho must be 1");
+  if (backupChirho.schemaVersionChirho !== EXPERT_SUPPLIED_VISION_TEXT_BACKUP_SCHEMA_VERSION_CHIRHO) {
+    errorsChirho.push(`schemaVersionChirho must be ${EXPERT_SUPPLIED_VISION_TEXT_BACKUP_SCHEMA_VERSION_CHIRHO}`);
+  }
   if (!Array.isArray(backupChirho.recordsChirho)) {
     errorsChirho.push("recordsChirho must be an array");
     return errorsChirho;

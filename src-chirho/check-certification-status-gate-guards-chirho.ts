@@ -210,7 +210,7 @@ function writeGenericExpertSuppliedBackupFixtureChirho(pathChirho: string): void
       {
         john316Chirho:
           "For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16",
-        schemaVersionChirho: 1,
+        schemaVersionChirho: 2,
         generatedAtChirho: "2026-06-04T00:00:00.000Z",
         recordsChirho: [
           {
