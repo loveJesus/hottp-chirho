@@ -42,6 +42,8 @@ interface CertificationStatusForGuardChirho {
     blankVisionTierHandoffsChirho?: Array<{
       handoffDocumentExistsChirho?: boolean;
       handoffCropExistsChirho?: boolean;
+      handoffDocumentMatchesCurrentChirho?: boolean;
+      handoffDocumentMissingSnippetsChirho?: string[];
     }>;
   };
   expertSuppliedVisionTextBackupChirho?: {
@@ -243,6 +245,7 @@ function mainChirho(): void {
   const tempDirChirho = mkdtempSync(join(tmpdir(), "certification-status-gate-guard-chirho-"));
   const dbPathChirho = join(tempDirChirho, "progress-chirho.sqlite");
   const outDirChirho = join(tempDirChirho, "status-output-chirho");
+  const staleOutDirChirho = join(tempDirChirho, "stale-status-output-chirho");
   const expertSuppliedBackupPathChirho = join(tempDirChirho, "expert-supplied-backup-chirho.json");
   const missingSyriacBlankHandoffDocumentPathChirho = join(
     tempDirChirho,
@@ -252,10 +255,33 @@ function mainChirho(): void {
     tempDirChirho,
     "missing-syriac-blank-handoff-crop-chirho.png"
   );
+  const staleSyriacBlankHandoffDocumentPathChirho = join(
+    tempDirChirho,
+    "stale-syriac-blank-handoff-document-chirho.md"
+  );
+  const presentSyriacBlankHandoffCropPathChirho = join(
+    tempDirChirho,
+    "present-syriac-blank-handoff-crop-chirho.png"
+  );
   mkdirSync(outDirChirho, { recursive: true });
+  mkdirSync(staleOutDirChirho, { recursive: true });
   try {
     copyProgressDbSnapshotChirho(dbPathChirho);
     writeGenericExpertSuppliedBackupFixtureChirho(expertSuppliedBackupPathChirho);
+    writeFileSync(
+      staleSyriacBlankHandoffDocumentPathChirho,
+      [
+        "<!-- For God so loved the world that he gave his only begotten Son,",
+        "that whoever believes in him should not perish but have eternal life. John 3:16 -->",
+        "",
+        "# Stale Syriac Blank Handoff Chirho",
+        "",
+        "This disposable fixture intentionally omits the live blank-span id, role, paths, and geometry.",
+        "",
+      ].join("\n"),
+      "utf8"
+    );
+    writeFileSync(presentSyriacBlankHandoffCropPathChirho, "disposable crop fixture chirho\n", "utf8");
     const rowIdChirho = forceSingleGenericPassCHumanReviewerChirho(dbPathChirho);
     const latinItemIdChirho = insertGenericLatinSymbolReviewChirho(dbPathChirho);
     const staleLatinItemIdChirho = insertStaleLatinSymbolReviewChirho(dbPathChirho);
@@ -345,6 +371,37 @@ function mainChirho(): void {
         itemChirho.includes("blank expert transcription handoff crop image(s) are missing")
       ),
       "missing blank Syriac handoff crop did not add the remaining-work blocker"
+    );
+    runStatusChirho(
+      dbPathChirho,
+      staleOutDirChirho,
+      expertSuppliedBackupPathChirho,
+      staleSyriacBlankHandoffDocumentPathChirho,
+      presentSyriacBlankHandoffCropPathChirho
+    );
+    const staleStatusChirho = readStatusChirho(staleOutDirChirho);
+    assertCheckChirho(
+      (staleStatusChirho.structuralChirho?.blankVisionTierHandoffsChirho ?? []).some(
+        (handoffChirho) =>
+          handoffChirho.handoffDocumentExistsChirho === true &&
+          handoffChirho.handoffCropExistsChirho === true &&
+          handoffChirho.handoffDocumentMatchesCurrentChirho === false
+      ),
+      "stale blank Syriac handoff document did not show as stale while artifacts existed"
+    );
+    assertCheckChirho(
+      (staleStatusChirho.structuralChirho?.blankVisionTierHandoffsChirho ?? []).some((handoffChirho) =>
+        (handoffChirho.handoffDocumentMissingSnippetsChirho ?? []).some((snippetChirho) =>
+          snippetChirho.includes("v3-p0151-l010-s3")
+        )
+      ),
+      "stale blank Syriac handoff document did not report the missing live item snippet"
+    );
+    assertCheckChirho(
+      (staleStatusChirho.remainingWorkChirho ?? []).some((itemChirho) =>
+        itemChirho.includes("blank expert transcription handoff document(s) do not match current blank span state")
+      ),
+      "stale blank Syriac handoff document did not add the remaining-work blocker"
     );
     console.log(
       `[${MODULE_CHIRHO}] generic reviewer status gate guard passed for disposable row ${rowIdChirho}` +
