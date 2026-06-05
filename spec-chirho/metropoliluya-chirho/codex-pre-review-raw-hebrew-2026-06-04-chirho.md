@@ -135,6 +135,13 @@ span was surfaced.
   - Visual precheck: the target crop boxes the first Hebrew root after French `de remplacer les deux` and before `du vs 12`. The same line later has the recovered vision-tier `קדש` after French `par`; keep the two roots distinct and do not let the later repair substitute for reviewing this raw `קֶשֶׁר`.
   - Human check still needed: exact qof-shin-resh letters and segol/shin-dot marks for this first Hebrew word, plus confirmation that the following `du vs 12` remains outside the Hebrew span.
 
+- `vol 2 p150 L19 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A19%3A1`
+  - Live text: `קשׁר`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane.
+  - Visual precheck: the target crop boxes the Hebrew root after French `*M de la racine` and before `Lowth`; the printed crop visibly shows a terminal period immediately after the Hebrew root.
+  - Human check still needed: exact qof-shin-resh letters, shin-dot, intentionally bare/unpointed root status, and whether the visible terminal period should be included with this Hebrew span or treated as adjacent punctuation before `Lowth`.
+
 - `vol 2 p150 L27 S1`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A27%3A1`
   - Live text: `תָּקְשִׁרוּ`
