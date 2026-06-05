@@ -1795,7 +1795,7 @@ function assertRawHebrewQueueMarkdownCoverageChirho(markdownChirho: string, stat
   const triageAttentionCountChirho = numberFieldChirho(triageChirho, "attentionItemCountChirho", "rawHebrewChirho.triageChirho");
   assertMarkdownContainsChirho(
     markdownChirho,
-    `- Non-certifying pre-review note coverage: ${triageNotesAvailableChirho ? `${triageCoveredCountChirho}/${triageAttentionCountChirho} current attention item(s)` : "notes unavailable"}`,
+    `- Non-certifying pre-review item-location coverage: ${triageNotesAvailableChirho ? `${triageCoveredCountChirho}/${triageAttentionCountChirho} current attention item(s)` : "notes unavailable"} (not reason-specific)`,
     "raw Hebrew triage pre-review coverage"
   );
   const triageUncoveredCountChirho = numberFieldChirho(
