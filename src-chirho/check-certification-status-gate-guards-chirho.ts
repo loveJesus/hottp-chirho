@@ -268,7 +268,29 @@ function writeBlankConfirmedExpertPolicyFixtureChirho(pathChirho: string): void 
             reviewerRoleChirho: "Syriac reader",
             confirmedAtChirho: "2026-06-04T00:00:00.000Z",
             certifyExactChirho: true,
+            issueFlagsChirho: ["uncertain-chirho"],
             rationaleChirho: "disposable status gate guard should reject confirming blank expert text",
+            scopeChirho: "id=v3-p0151-l010-s3; script=syriac-chirho; visionSource=explicit-span-chirho",
+            itemCountChirho: 1,
+            itemsChirho: [
+              {
+                itemIdChirho: "v3-p0151-l010-s3",
+                scriptChirho: "syriac-chirho",
+                visionSourceChirho: "explicit-span-chirho",
+                currentTextChirho: "",
+                currentTextHashChirho: hashTextChirho(""),
+              },
+            ],
+          },
+          {
+            policyIdChirho: "expert-issue-with-exact-disposable-chirho",
+            decisionChirho: "reviewed-issues-expert-chirho",
+            reviewerChirho: "dr-syriac-reader-human-reviewer-chirho",
+            reviewerRoleChirho: "Syriac reader",
+            reviewedAtChirho: "2026-06-04T00:00:00.000Z",
+            certifyExactChirho: true,
+            rationaleChirho: "disposable status gate guard should reject issue policies carrying exact-certification acknowledgement",
+            issueFlagsChirho: ["uncertain-chirho"],
             scopeChirho: "id=v3-p0151-l010-s3; script=syriac-chirho; visionSource=explicit-span-chirho",
             itemCountChirho: 1,
             itemsChirho: [
@@ -477,6 +499,18 @@ function mainChirho(): void {
         errorChirho.includes("confirmed policy cannot certify blank currentTextChirho")
       ),
       "blank confirmed expert policy status did not report the blank-text shape error"
+    );
+    assertCheckChirho(
+      (statusChirho.visionTierExpertConfirmationPolicyChirho?.shapeErrorsChirho ?? []).some((errorChirho) =>
+        errorChirho.includes("confirmed policy cannot carry issueFlagsChirho")
+      ),
+      "confirmed expert policy with issue flags did not report the contradiction shape error"
+    );
+    assertCheckChirho(
+      (statusChirho.visionTierExpertConfirmationPolicyChirho?.shapeErrorsChirho ?? []).some((errorChirho) =>
+        errorChirho.includes("reviewed-issues policy cannot carry certifyExactChirho=true")
+      ),
+      "reviewed-issues expert policy with certifyExact did not report the contradiction shape error"
     );
     assertCheckChirho(
       (statusChirho.remainingWorkChirho ?? []).some((itemChirho) =>

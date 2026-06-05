@@ -272,6 +272,9 @@ export function passCHumanValidationBackupShapeOkChirho(
           typeof reviewChirho.certifyCleanChirho === "boolean" &&
           (reviewChirho.verdictChirho !== "reviewed-clean-chirho" || reviewChirho.certifyCleanChirho === true) &&
           Array.isArray(reviewChirho.issueFlagsChirho) &&
+          (reviewChirho.verdictChirho !== "reviewed-clean-chirho" || reviewChirho.issueFlagsChirho.length === 0) &&
+          (reviewChirho.verdictChirho !== "reviewed-issues-chirho" ||
+            (reviewChirho.certifyCleanChirho === false && reviewChirho.issueFlagsChirho.length > 0)) &&
           typeof reviewChirho.reviewerChirho === "string" &&
           typeof reviewChirho.createdAtChirho === "string" &&
           typeof reviewChirho.updatedAtChirho === "string" &&

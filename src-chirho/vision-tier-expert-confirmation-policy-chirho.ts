@@ -203,6 +203,9 @@ function validateConfirmationShapeChirho(fileChirho: VisionTierExpertConfirmatio
       if (policyChirho.certifyExactChirho !== true) {
         errorsChirho.push(`${policyIdChirho}: confirmed policy requires certifyExactChirho=true`);
       }
+      if (policyChirho.issueFlagsChirho !== undefined) {
+        errorsChirho.push(`${policyIdChirho}: confirmed policy cannot carry issueFlagsChirho`);
+      }
       if (!nonEmptyStringChirho(policyChirho.rationaleChirho)) {
         errorsChirho.push(`${policyIdChirho}: confirmed policy requires rationaleChirho`);
       } else if (visionTierExpertRationaleLooksPlaceholderChirho(policyChirho.rationaleChirho)) {
@@ -233,6 +236,9 @@ function validateConfirmationShapeChirho(fileChirho: VisionTierExpertConfirmatio
         !policyChirho.issueFlagsChirho.every((flagChirho) => VISION_TIER_EXPERT_ISSUE_FLAG_VALUES_CHIRHO.has(flagChirho))
       ) {
         errorsChirho.push(`${policyIdChirho}: reviewed-issues policy requires valid issueFlagsChirho`);
+      }
+      if (policyChirho.certifyExactChirho === true) {
+        errorsChirho.push(`${policyIdChirho}: reviewed-issues policy cannot carry certifyExactChirho=true`);
       }
     }
     for (const itemChirho of policyChirho.itemsChirho) {
