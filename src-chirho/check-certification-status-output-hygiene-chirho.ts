@@ -325,6 +325,37 @@ function assertRemainingWorkMarkdownCoverageChirho(markdownChirho: string, remai
   }
 }
 
+function assertPublicationReadinessMarkdownCoverageChirho(
+  markdownChirho: string,
+  statusChirho: CertificationStatusOutputChirho
+): void {
+  const structuralChirho = statusChirho.structuralChirho;
+  const expertChirho = statusChirho.visionTierChirho;
+  const latinChirho = statusChirho.latinSymbolVisionChirho;
+  const humanDbChirho = statusChirho.humanValidationDbChirho;
+  assertMarkdownContainsChirho(markdownChirho, "## Publication Readiness", "publication readiness heading");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Certified UTF-8 Markdown publication: ${statusChirho.certificationCompleteChirho ? "ready" : "not ready"}`,
+    "publication readiness verdict"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "- This is the transcription-content certification gate, not a deployment authorization for the review web app.",
+    "publication readiness scope warning"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Current blockers: strict export clean=${booleanFieldChirho(structuralChirho, "strictPassedChirho", "structuralChirho")}; raw Hebrew certifications=${numberFieldChirho(structuralChirho, "passCOcrHebrewSpanCountChirho", "structuralChirho")}; non-Latin expert confirmations=${numberFieldChirho(expertChirho, "remainingConfirmationCountChirho", "visionTierChirho")}; Latin/symbol decisions=${numberFieldChirho(latinChirho, "remainingDecisionCountChirho", "latinSymbolVisionChirho")}; attribution-blocked human rows=${numberFieldChirho(humanDbChirho, "genericReviewerRowsChirho", "humanValidationDbChirho")}.`,
+    "publication readiness blocker counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "- Review stations may still be used while this is red; rerun `bun run check-certification-chirho` before any publication claim.",
+    "publication readiness verification instruction"
+  );
+}
+
 function assertRemainingWorkToggleChirho(
   remainingWorkChirho: string[],
   shouldExistChirho: boolean,
@@ -918,6 +949,11 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     markdownChirho,
     `- Hallelujah starting lanes: pending raw Hebrew + Hebrew/WLC vision + Greek vision (${hallelujahReviewCountChirho} review target(s)).`,
     "Hallelujah routing total"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Attribution cleanup: ${numberFieldChirho(humanDbChirho, "genericReviewerRowsChirho", "humanValidationDbChirho")} prior Pass-C human validation row(s) still need explicit reviewer attribution in http://localhost:8766/?review-state-chirho=attribution-blocked-chirho. Reattribute only rows genuinely attributable to the named human reviewer; otherwise re-review them.`,
+    "Pass-C attribution cleanup routing"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
@@ -3229,6 +3265,7 @@ function mainChirho(): void {
   if (!statusChirho.certificationCompleteChirho) {
     assertGeneratedCheckChirho(remainingWorkChirho.length > 0, "incomplete status JSON has no remainingWorkChirho blockers");
   }
+  assertPublicationReadinessMarkdownCoverageChirho(markdownChirho, statusChirho);
   assertRemainingWorkMarkdownCoverageChirho(markdownChirho, remainingWorkStringsChirho);
   assertStructuralExportMarkdownCoverageChirho(markdownChirho, statusChirho);
   assertStructuralExportRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
