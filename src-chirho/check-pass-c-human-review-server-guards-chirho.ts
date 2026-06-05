@@ -33,6 +33,7 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "bun run reattribute-pass-c-human-validations-chirho",
   "--expected-live-text-chirho",
   "Apply after dry run",
+  "Copy command",
 ];
 
 interface RawReviewQueueItemChirho {

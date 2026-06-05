@@ -575,6 +575,9 @@ function htmlChirho(): string {
     .issue-chirho { color: #704000; border-color: #bd7a1b !important; font-weight: 750; }
     .warning-chirho { border-left: 4px solid #bd7a1b; background: #fff7e8; padding: 10px; font-size: 13px; color: #704000; }
     .command-chirho { white-space: pre-wrap; overflow-wrap: anywhere; background: #f5f6f7; border: 1px solid #d6d9dd; padding: 10px; font-size: 12px; line-height: 1.35; }
+    .command-row-chirho { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+    .copy-command-chirho { border: 1px solid #aab1b9; background: white; padding: 7px 9px; cursor: pointer; font-size: 12px; }
+    .copy-command-chirho:hover { background: #edf1f4; }
     .done-chirho { padding: 42px 0; color: #59636f; font-size: 18px; }
     @media (max-width: 900px) {
       .main-chirho { grid-template-columns: 1fr; }
@@ -660,23 +663,35 @@ function htmlChirho(): string {
     function currentPositionTextChirho(activeCountChirho) {
       return activeCountChirho === 0 ? "item 0 of 0" : "item " + (indexChirho + 1) + " of " + activeCountChirho;
     }
-    async function copyCurrentLinkChirho() {
-      const linkChirho = window.location.href;
+    async function copyTextChirho(valueChirho, successMessageChirho, failureMessageChirho) {
       try {
         if (!navigator.clipboard?.writeText) throw new Error("clipboard unavailable");
-        await navigator.clipboard.writeText(linkChirho);
-        setStatusChirho("Copied current item link");
+        await navigator.clipboard.writeText(valueChirho);
+        setStatusChirho(successMessageChirho);
       } catch (_errorChirho) {
         const textareaChirho = document.createElement("textarea");
-        textareaChirho.value = linkChirho;
+        textareaChirho.value = valueChirho;
         textareaChirho.style.position = "fixed";
         textareaChirho.style.left = "-9999px";
         document.body.appendChild(textareaChirho);
         textareaChirho.select();
         const copiedChirho = document.execCommand("copy");
         textareaChirho.remove();
-        setStatusChirho(copiedChirho ? "Copied current item link" : "Copy failed; URL bar already has current item link");
+        setStatusChirho(copiedChirho ? successMessageChirho : failureMessageChirho);
       }
+    }
+    async function copyCurrentLinkChirho() {
+      await copyTextChirho(window.location.href, "Copied current item link", "Copy failed; URL bar already has current item link");
+    }
+    function commandRowChirho(commandTextChirho) {
+      const copyButtonChirho = elChirho("button", { classChirho: "copy-command-chirho", type: "button", textChirho: "Copy command" });
+      copyButtonChirho.addEventListener("click", () =>
+        copyTextChirho(commandTextChirho, "Copied command", "Copy failed; select the command text manually")
+      );
+      return elChirho("div", { classChirho: "command-row-chirho" }, [
+        elChirho("div", { classChirho: "mono-chirho command-chirho", textChirho: commandTextChirho }),
+        copyButtonChirho
+      ]);
     }
     function selectHasValueChirho(idChirho, valueChirho) {
       return [...document.getElementById(idChirho).options].some((optionChirho) => optionChirho.value === valueChirho);
@@ -1058,15 +1073,9 @@ function htmlChirho(): string {
         }));
         const blankCommandBoxChirho = elChirho("div", { classChirho: "box-chirho" });
         blankCommandBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Dry-run after exact script-reader transcription" }));
-        blankCommandBoxChirho.appendChild(elChirho("div", {
-          classChirho: "mono-chirho command-chirho",
-          textChirho: expertSuppliedTextCommandChirho(itemChirho, false)
-        }));
+        blankCommandBoxChirho.appendChild(commandRowChirho(expertSuppliedTextCommandChirho(itemChirho, false)));
         blankCommandBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Apply after dry-run verification" }));
-        blankCommandBoxChirho.appendChild(elChirho("div", {
-          classChirho: "mono-chirho command-chirho",
-          textChirho: expertSuppliedTextCommandChirho(itemChirho, true)
-        }));
+        blankCommandBoxChirho.appendChild(commandRowChirho(expertSuppliedTextCommandChirho(itemChirho, true)));
         sideChirho.appendChild(blankCommandBoxChirho);
       }
 

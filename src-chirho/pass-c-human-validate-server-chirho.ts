@@ -1286,6 +1286,9 @@ function pageHtmlChirho(): string {
     .meta-grid-chirho { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 13px; }
     .mono-chirho { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     .command-chirho { overflow-wrap: anywhere; white-space: pre-wrap; }
+    .command-row-chirho { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: start; }
+    .copy-command-chirho { border: 1px solid #aab1b9; background: white; padding: 7px 9px; cursor: pointer; font-size: 12px; }
+    .copy-command-chirho:hover { background: #edf1f4; }
     .codepoints-chirho { font-size: 12px; color: #3d4650; direction: ltr; overflow-wrap: anywhere; white-space: pre-wrap; }
     .candidate-words-chirho { overflow-wrap: anywhere; }
     .witness-list-chirho { display: flex; flex-direction: column; gap: 6px; font-size: 13px; margin-top: 8px; }
@@ -1824,23 +1827,35 @@ function pageHtmlChirho(): string {
     function currentPositionTextChirho(activeCountChirho) {
       return activeCountChirho === 0 ? "item 0 of 0" : "item " + (indexChirho + 1) + " of " + activeCountChirho;
     }
-    async function copyCurrentLinkChirho() {
-      const linkChirho = window.location.href;
+    async function copyTextChirho(valueChirho, successMessageChirho, failureMessageChirho) {
       try {
         if (!navigator.clipboard?.writeText) throw new Error("clipboard unavailable");
-        await navigator.clipboard.writeText(linkChirho);
-        setStatusChirho("Copied current item link");
+        await navigator.clipboard.writeText(valueChirho);
+        setStatusChirho(successMessageChirho);
       } catch (_errorChirho) {
         const textareaChirho = document.createElement("textarea");
-        textareaChirho.value = linkChirho;
+        textareaChirho.value = valueChirho;
         textareaChirho.style.position = "fixed";
         textareaChirho.style.left = "-9999px";
         document.body.appendChild(textareaChirho);
         textareaChirho.select();
         const copiedChirho = document.execCommand("copy");
         textareaChirho.remove();
-        setStatusChirho(copiedChirho ? "Copied current item link" : "Copy failed; URL bar already has current item link");
+        setStatusChirho(copiedChirho ? successMessageChirho : failureMessageChirho);
       }
+    }
+    async function copyCurrentLinkChirho() {
+      await copyTextChirho(window.location.href, "Copied current item link", "Copy failed; URL bar already has current item link");
+    }
+    function commandRowChirho(commandTextChirho) {
+      const copyButtonChirho = elChirho("button", { classChirho: "copy-command-chirho", type: "button", textChirho: "Copy command" });
+      copyButtonChirho.addEventListener("click", () =>
+        copyTextChirho(commandTextChirho, "Copied command", "Copy failed; select the command text manually")
+      );
+      return elChirho("div", { classChirho: "command-row-chirho" }, [
+        elChirho("div", { classChirho: "mono-chirho command-chirho", textChirho: commandTextChirho }),
+        copyButtonChirho
+      ]);
     }
     function renderSummaryChirho() {
       const activeCountChirho = activeQueueChirho().length;
@@ -2000,7 +2015,7 @@ function pageHtmlChirho(): string {
             elChirho("div", { textChirho: "Source" }),
             elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.wlcSuggestionSourceChirho ?? "unknown-chirho" }),
             elChirho("div", { textChirho: "After confirmation" }),
-            elChirho("div", { classChirho: "mono-chirho command-chirho", textChirho: guardedCommandChirho })
+            commandRowChirho(guardedCommandChirho)
           ]);
           sideChirho.appendChild(suggestionBoxChirho);
         }
@@ -2020,9 +2035,9 @@ function pageHtmlChirho(): string {
           elChirho("div", { textChirho: "Current reviewer" }),
           elChirho("div", { classChirho: "mono-chirho", textChirho: savedValidationChirho.reviewer_chirho }),
           elChirho("div", { textChirho: "Dry run" }),
-          elChirho("div", { classChirho: "mono-chirho command-chirho", textChirho: baseReattributeCommandChirho }),
+          commandRowChirho(baseReattributeCommandChirho),
           elChirho("div", { textChirho: "Apply after dry run" }),
-          elChirho("div", { classChirho: "mono-chirho command-chirho", textChirho: baseReattributeCommandChirho + " --apply-chirho" })
+          commandRowChirho(baseReattributeCommandChirho + " --apply-chirho")
         ]));
       }
       const metaChirho = elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [

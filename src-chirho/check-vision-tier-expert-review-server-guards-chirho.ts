@@ -33,6 +33,7 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "bun run apply-expert-supplied-vision-text-chirho",
   "--expected-source-sha256-chirho",
   "--expected-packet-sha256-chirho",
+  "Copy command",
 ];
 
 interface ExpertReviewStateItemChirho {
