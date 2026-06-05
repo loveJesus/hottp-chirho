@@ -170,6 +170,13 @@ span was surfaced.
   - Visual precheck: the target crop boxes the Hebrew word after French `Quant à` and before French `(au vs 14)`; the opening parenthesis stays outside the Hebrew target box. No neighboring Latin/French text appears swallowed by the Hebrew span.
   - Human check still needed: exact lamed-prefix, mem-hiriq, qof-sheva, dalet-dagesh/qamats, shin-dot, and whether the following parenthesis remains adjacent French punctuation rather than part of the Hebrew span.
 
+- `vol 2 p150 L30 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A30%3A1`
+  - Live text: `וּלְמוֹקֵשׁ`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane; the direct OCR read omits the leading vav/shuruk, so it should not be used alone for certification.
+  - Visual precheck: the target crop boxes the Hebrew word after French `c'est une fausse variante pour` and before French `Dans les premières`; the leading vav/shuruk is visible at the right edge of the boxed Hebrew. No French text appears swallowed by the Hebrew span.
+  - Human check still needed: exact leading vav/shuruk, lamed-sheva, mem-holam, qof-tsere, shin-dot, and whether a sentence boundary or punctuation mark is intended between the Hebrew word and following `Dans`.
+
 - `vol 2 p150 L37 S1/S3`:
   `http://localhost:8766/?attention-chirho=delimiter-notation-chirho&item-chirho=2%3A150%3A37%3A1`
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A37%3A3`
