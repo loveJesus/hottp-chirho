@@ -20,6 +20,7 @@ import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { writePassCHumanValidationBackupChirho } from "./pass-c-human-validation-backup-chirho.ts";
 import { parseRawHebrewPreReviewNotesChirho } from "./raw-hebrew-pre-review-notes-chirho.ts";
 import {
+  RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO,
   RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO,
   RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO,
   RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO,
@@ -1429,6 +1430,7 @@ function pageHtmlChirho(): string {
       <select id="attention-filter-chirho">
         <option value="all-chirho">All</option>
         <option value="${RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO}">Low confidence</option>
+        <option value="${RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO}">Confident disagreement</option>
         <option value="${RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO}">Multi-token</option>
         <option value="${RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO}">Delimiter notation</option>
         <option value="${RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO}">No direct read</option>
@@ -1467,6 +1469,7 @@ function pageHtmlChirho(): string {
       <a data-lane-shortcut-chirho="partial-chirho" href="/?validation-status-chirho=partial-token-validated-chirho">Partial <span class="lane-shortcut-count-chirho"></span></a>
       <a data-lane-shortcut-chirho="spot-check-chirho" href="/?validation-status-chirho=all-token-validated-chirho&tier-chirho=${RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO}">Spot check <span class="lane-shortcut-count-chirho"></span></a>
       <a data-lane-shortcut-chirho="low-confidence-chirho" href="/?attention-chirho=${RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO}">Low confidence <span class="lane-shortcut-count-chirho"></span></a>
+      <a data-lane-shortcut-chirho="confident-disagreement-chirho" href="/?attention-chirho=${RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO}">Confident disagreement <span class="lane-shortcut-count-chirho"></span></a>
       <a data-lane-shortcut-chirho="multi-token-chirho" href="/?attention-chirho=${RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO}">Multi-token <span class="lane-shortcut-count-chirho"></span></a>
       <a data-lane-shortcut-chirho="delimiter-notation-chirho" href="/?attention-chirho=${RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO}">Delimiter notation <span class="lane-shortcut-count-chirho"></span></a>
       <a data-lane-shortcut-chirho="no-direct-read-chirho" href="/?attention-chirho=${RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO}">No direct read <span class="lane-shortcut-count-chirho"></span></a>
@@ -1658,6 +1661,14 @@ function pageHtmlChirho(): string {
         validationStatusChirho: "all-chirho",
         tierChirho: "all-chirho",
         attentionChirho: "${RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO}",
+        preReviewNoteChirho: "all-chirho",
+        volumeChirho: "all-chirho"
+      }],
+      ["confident-disagreement-chirho", {
+        reviewStateChirho: "pending-chirho",
+        validationStatusChirho: "all-chirho",
+        tierChirho: "all-chirho",
+        attentionChirho: "${RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO}",
         preReviewNoteChirho: "all-chirho",
         volumeChirho: "all-chirho"
       }],

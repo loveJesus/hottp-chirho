@@ -549,6 +549,14 @@ function reviewStartLinkCountChecksChirho(statusChirho: CertificationStatusOutpu
       ),
     },
     {
+      keyChirho: "rawHebrewConfidentDirectReadDisagreementChirho",
+      countChirho: numberFieldChirho(
+        objectRecordChirho(rawChirho, "rawHebrewChirho").triageChirho,
+        "confidentDirectReadDisagreementItemCountChirho",
+        "rawHebrewChirho.triageChirho"
+      ),
+    },
+    {
       keyChirho: "rawHebrewMultiTokenChirho",
       countChirho: numberFieldChirho(
         objectRecordChirho(rawChirho, "rawHebrewChirho").triageChirho,
@@ -965,6 +973,11 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     markdownChirho,
     `- Raw Hebrew low-confidence lane: http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho (${numberFieldChirho(rawTriageChirho, "lowConfidenceItemCountChirho", "rawHebrewChirho.triageChirho")} pending attention span(s)${reviewStartSuffixChirho(linksChirho, "rawHebrewLowConfidenceChirho")})`,
     "raw Hebrew low-confidence lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Raw Hebrew confident direct-read disagreement lane: http://localhost:8766/?attention-chirho=confident-direct-read-disagreement-chirho (${numberFieldChirho(rawTriageChirho, "confidentDirectReadDisagreementItemCountChirho", "rawHebrewChirho.triageChirho")} pending attention span(s)${reviewStartSuffixChirho(linksChirho, "rawHebrewConfidentDirectReadDisagreementChirho")})`,
+    "raw Hebrew confident direct-read disagreement lane"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
@@ -1743,6 +1756,11 @@ function assertRawHebrewQueueMarkdownCoverageChirho(markdownChirho: string, stat
     markdownChirho,
     `- Low-confidence direct CRNN reads (<0.75): ${numberFieldChirho(triageChirho, "lowConfidenceItemCountChirho", "rawHebrewChirho.triageChirho")}`,
     "raw Hebrew triage low-confidence count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Confident direct CRNN read disagreements (>=0.85): ${numberFieldChirho(triageChirho, "confidentDirectReadDisagreementItemCountChirho", "rawHebrewChirho.triageChirho")}`,
+    "raw Hebrew triage confident-disagreement count"
   );
   assertMarkdownContainsChirho(
     markdownChirho,

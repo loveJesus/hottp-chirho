@@ -74,6 +74,7 @@ const RAW_REVIEW_TIERS_CHIRHO = new Set([
 ]);
 const RAW_ATTENTION_KINDS_CHIRHO = new Set([
   "low-confidence-direct-read-chirho",
+  "confident-direct-read-disagreement-chirho",
   "multi-token-chirho",
   "delimiter-notation-chirho",
   "no-direct-read-chirho",

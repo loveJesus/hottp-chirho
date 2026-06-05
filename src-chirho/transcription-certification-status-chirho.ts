@@ -58,6 +58,7 @@ import {
   latestLocalD1PathChirho,
 } from "./d1-audit-fingerprint-chirho.ts";
 import {
+  RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO,
   RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO,
   RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO,
   RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO,
@@ -390,6 +391,7 @@ interface RawHebrewPackItemChirho extends PacketImageHashFieldsChirho {
   tokenSkeletonsChirho?: string[];
   witnessCountChirho?: number;
   directWordReadsChirho?: Array<{
+    textChirho?: string;
     confidenceChirho?: number;
     wlcVerdictChirho?: string;
   }>;
@@ -428,6 +430,7 @@ interface RawHebrewTriageSampleChirho {
 interface RawHebrewTriageSummaryChirho {
   attentionItemCountChirho: number;
   lowConfidenceItemCountChirho: number;
+  confidentDirectReadDisagreementItemCountChirho: number;
   multiTokenItemCountChirho: number;
   delimiterNotationItemCountChirho: number;
   noDirectReadItemCountChirho: number;
@@ -1758,6 +1761,9 @@ function rawHebrewTriageSummaryChirho(
     const bestConfidenceChirho = bestRawHebrewDirectConfidenceChirho(itemChirho);
     return bestConfidenceChirho !== null && bestConfidenceChirho < 0.75;
   });
+  const confidentDirectReadDisagreementItemsChirho = itemsChirho.filter((itemChirho) =>
+    rawHebrewAttentionKindsChirho(itemChirho).includes(RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO)
+  );
   const multiTokenItemsChirho = itemsChirho.filter((itemChirho) =>
     rawHebrewAttentionKindsChirho(itemChirho).includes(RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO)
   );
@@ -1792,6 +1798,7 @@ function rawHebrewTriageSummaryChirho(
   return {
     attentionItemCountChirho: attentionEntriesChirho.length,
     lowConfidenceItemCountChirho: lowConfidenceItemsChirho.length,
+    confidentDirectReadDisagreementItemCountChirho: confidentDirectReadDisagreementItemsChirho.length,
     multiTokenItemCountChirho: multiTokenItemsChirho.length,
     delimiterNotationItemCountChirho: delimiterNotationItemsChirho.length,
     noDirectReadItemCountChirho: noDirectReadItemsChirho.length,
@@ -4698,6 +4705,10 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
       livePendingRawHebrewPackItemsChirho,
       RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO
     ),
+    rawHebrewConfidentDirectReadDisagreementChirho: rawHebrewAttentionReviewStartUrlChirho(
+      livePendingRawHebrewPackItemsChirho,
+      RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO
+    ),
     rawHebrewMultiTokenChirho: rawHebrewAttentionReviewStartUrlChirho(
       livePendingRawHebrewPackItemsChirho,
       RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO
@@ -4961,6 +4972,7 @@ function rawHebrewAttentionHandoffMarkdownChirho(statusChirho: CertificationStat
     `- Raw Hebrew items still gate-blocking certification: ${statusChirho.structuralChirho.passCOcrHebrewSpanCountChirho}`,
     `- Attention items with at least one flag: ${triageChirho.attentionItemCountChirho}`,
     `- Low-confidence direct CRNN reads (<0.75): ${triageChirho.lowConfidenceItemCountChirho}`,
+    `- Confident direct CRNN read disagreements (>=0.85): ${triageChirho.confidentDirectReadDisagreementItemCountChirho}`,
     `- Multi-token Hebrew spans: ${triageChirho.multiTokenItemCountChirho}`,
     `- Delimiter/damaged-text notation spans: ${triageChirho.delimiterNotationItemCountChirho}`,
     `- No direct CRNN crop reads: ${triageChirho.noDirectReadItemCountChirho}`,
@@ -4969,6 +4981,7 @@ function rawHebrewAttentionHandoffMarkdownChirho(statusChirho: CertificationStat
     "## Attention Lanes",
     "",
     `- Low-confidence lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO)}`,
+    `- Confident-disagreement lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO)}`,
     `- Multi-token lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO)}`,
     `- Delimiter/damaged-text notation lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO)}`,
     `- No-direct-read lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO)}`,
@@ -5185,6 +5198,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   );
   const rawHebrewAttentionLaneLinesChirho = [
     `- Raw Hebrew low-confidence lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO)} (${statusChirho.rawHebrewChirho.triageChirho.lowConfidenceItemCountChirho} pending attention span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewLowConfidenceChirho)})`,
+    `- Raw Hebrew confident direct-read disagreement lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO)} (${statusChirho.rawHebrewChirho.triageChirho.confidentDirectReadDisagreementItemCountChirho} pending attention span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewConfidentDirectReadDisagreementChirho)})`,
     `- Raw Hebrew multi-token lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO)} (${statusChirho.rawHebrewChirho.triageChirho.multiTokenItemCountChirho} pending attention span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewMultiTokenChirho)})`,
     `- Raw Hebrew delimiter/damaged-notation lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO)} (${statusChirho.rawHebrewChirho.triageChirho.delimiterNotationItemCountChirho} pending attention span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewDelimiterNotationChirho)})`,
     `- Raw Hebrew no-direct-read lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO)} (${statusChirho.rawHebrewChirho.triageChirho.noDirectReadItemCountChirho} pending attention span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewNoDirectReadChirho)})`,
@@ -5633,6 +5647,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "This is a display-only prioritization aid from the current raw Hebrew packet. It does not certify, apply, or decrement the gate.",
     "",
     `- Low-confidence direct CRNN reads (<0.75): ${statusChirho.rawHebrewChirho.triageChirho.lowConfidenceItemCountChirho}`,
+    `- Confident direct CRNN read disagreements (>=0.85): ${statusChirho.rawHebrewChirho.triageChirho.confidentDirectReadDisagreementItemCountChirho}`,
     `- Multi-token Hebrew spans: ${statusChirho.rawHebrewChirho.triageChirho.multiTokenItemCountChirho}`,
     `- Delimiter/damaged-text notation spans: ${statusChirho.rawHebrewChirho.triageChirho.delimiterNotationItemCountChirho}`,
     `- No direct CRNN crop reads: ${statusChirho.rawHebrewChirho.triageChirho.noDirectReadItemCountChirho}`,
