@@ -3125,6 +3125,26 @@ function assertPassCHumanReattributionHandoffChirho(
     `- Attribution-blocked reviewer rows: ${genericRowCountChirho}`,
     "Pass-C reattribution row count"
   );
+  for (const [fieldChirho, labelChirho] of [
+    [
+      "genericReviewerLiveTextMatchRowsChirho",
+      "Attribution-blocked rows whose live text still matches the original reviewed text",
+    ],
+    [
+      "genericReviewerLiveTextMismatchRowsChirho",
+      "Attribution-blocked rows whose live text has changed since the original review",
+    ],
+    [
+      "genericReviewerLiveTextUnknownRowsChirho",
+      "Attribution-blocked rows whose live text could not be checked",
+    ],
+  ] as const) {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `- ${labelChirho}: ${numberFieldChirho(humanDbChirho, fieldChirho, "humanValidationDbChirho")}`,
+      `Pass-C reattribution ${labelChirho}`
+    );
+  }
   assertMarkdownContainsChirho(
     markdownChirho,
     "- Attribution-blocked reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>'`",
@@ -3144,6 +3164,11 @@ function assertPassCHumanReattributionHandoffChirho(
     markdownChirho,
     "Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit human reviewer.",
     "Pass-C reattribution bulk warning"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "If an attribution-blocked row's live text has changed since the original review, prefer the Attribution re-review lane unless the reviewer has rechecked the current live text against the print.",
+    "Pass-C changed-live-text re-review warning"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
@@ -3220,6 +3245,14 @@ function assertPassCHumanReattributionHandoffChirho(
     const rowCountChirho = numberFieldChirho(groupChirho, "rowCountChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
     if (rowCountChirho <= 1) continue;
     const idsChirho = numberArrayFieldChirho(groupChirho, "idsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    const matchRowsChirho = numberFieldChirho(groupChirho, "liveTextMatchRowsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    const mismatchRowsChirho = numberFieldChirho(groupChirho, "liveTextMismatchRowsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    const unknownRowsChirho = numberFieldChirho(groupChirho, "liveTextUnknownRowsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `Live text vs original review: match=${matchRowsChirho}, changed=${mismatchRowsChirho}, unchecked=${unknownRowsChirho}`,
+      `Pass-C batch ${idsChirho.join(",")} live-text comparison summary`
+    );
     assertMarkdownContainsChirho(
       markdownChirho,
       `Batch dry-run command: \`${reattributeBatchCommandChirho(groupChirho, false)}\``,

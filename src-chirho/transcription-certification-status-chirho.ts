@@ -616,6 +616,9 @@ interface HumanValidationSummaryChirho {
   rawQueueAppliedRowsChirho: number;
   legacyCurrentRowsChirho: number;
   genericReviewerRowsChirho: number;
+  genericReviewerLiveTextMatchRowsChirho: number;
+  genericReviewerLiveTextMismatchRowsChirho: number;
+  genericReviewerLiveTextUnknownRowsChirho: number;
   genericReviewerRowDetailsChirho: GenericHumanValidationReviewerRowChirho[];
   genericReviewerRowGroupsChirho: GenericHumanValidationReviewerGroupChirho[];
 }
@@ -657,6 +660,9 @@ interface GenericHumanValidationReviewerGroupChirho {
   idsChirho: number[];
   locationsChirho: string[];
   verdictCountsChirho: Record<string, number>;
+  liveTextMatchRowsChirho: number;
+  liveTextMismatchRowsChirho: number;
+  liveTextUnknownRowsChirho: number;
   allLiveTextHashesAvailableChirho: boolean;
   expectedLiveTextHashArgsChirho: string[];
 }
@@ -2642,6 +2648,15 @@ function genericReviewerRowGroupsChirho(
         idsChirho: sortedRowsChirho.map((rowChirho) => rowChirho.idChirho),
         locationsChirho: sortedRowsChirho.map((rowChirho) => rowChirho.locationChirho),
         verdictCountsChirho,
+        liveTextMatchRowsChirho: sortedRowsChirho.filter(
+          (rowChirho) => rowChirho.liveTextMatchesOriginalChirho === true
+        ).length,
+        liveTextMismatchRowsChirho: sortedRowsChirho.filter(
+          (rowChirho) => rowChirho.liveTextMatchesOriginalChirho === false
+        ).length,
+        liveTextUnknownRowsChirho: sortedRowsChirho.filter(
+          (rowChirho) => rowChirho.liveTextMatchesOriginalChirho === null
+        ).length,
         allLiveTextHashesAvailableChirho: sortedRowsChirho.every((rowChirho) => rowChirho.liveTextHashChirho !== null),
         expectedLiveTextHashArgsChirho: sortedRowsChirho.flatMap((rowChirho) =>
           rowChirho.liveTextHashChirho === null
@@ -2868,6 +2883,15 @@ function summarizeHumanValidationsChirho(
     rawQueueAppliedRowsChirho: rawRowsChirho.filter((rowChirho) => rowChirho.applied_at_chirho !== null).length,
     legacyCurrentRowsChirho: rowsChirho.filter((rowChirho) => rowChirho.schema_version_chirho < 2).length,
     genericReviewerRowsChirho: genericReviewerRowsChirho.length,
+    genericReviewerLiveTextMatchRowsChirho: genericReviewerRowDetailsChirho.filter(
+      (rowChirho) => rowChirho.liveTextMatchesOriginalChirho === true
+    ).length,
+    genericReviewerLiveTextMismatchRowsChirho: genericReviewerRowDetailsChirho.filter(
+      (rowChirho) => rowChirho.liveTextMatchesOriginalChirho === false
+    ).length,
+    genericReviewerLiveTextUnknownRowsChirho: genericReviewerRowDetailsChirho.filter(
+      (rowChirho) => rowChirho.liveTextMatchesOriginalChirho === null
+    ).length,
     genericReviewerRowDetailsChirho,
     genericReviewerRowGroupsChirho: genericReviewerRowGroupsSummaryChirho,
   };
@@ -4642,6 +4666,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
             return [
               `  - applied ${groupChirho.appliedAtChirho ?? "not-applied-chirho"}; current reviewer ${groupChirho.reviewerChirho}; ids ${groupChirho.idsChirho.join(", ")}; locations ${groupChirho.locationsChirho.join(", ")}`,
               `    - Verdict counts: ${verdictCountsChirho || "none"}; live hash guards: ${groupChirho.allLiveTextHashesAvailableChirho ? "all-present-chirho" : "missing-live-hash-chirho"}`,
+              `    - Live text vs original review: match=${groupChirho.liveTextMatchRowsChirho}, changed=${groupChirho.liveTextMismatchRowsChirho}, unchecked=${groupChirho.liveTextUnknownRowsChirho}`,
               `    - Batch dry-run command: \`${dryRunCommandChirho}\``,
               `    - Batch apply command: \`${applyCommandChirho}\``,
             ];
@@ -4882,12 +4907,16 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw queue applied rows: ${statusChirho.humanValidationDbChirho.rawQueueAppliedRowsChirho}`,
     `- Legacy current rows ignored by apply/certification: ${statusChirho.humanValidationDbChirho.legacyCurrentRowsChirho}`,
     `- Attribution-blocked reviewer rows: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho}`,
+    `- Attribution-blocked rows whose live text still matches the original reviewed text: ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextMatchRowsChirho}`,
+    `- Attribution-blocked rows whose live text has changed since the original review: ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextMismatchRowsChirho}`,
+    `- Attribution-blocked rows whose live text could not be checked: ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextUnknownRowsChirho}`,
     "- Attribution-blocked reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>'`",
     "- Attribution-blocked reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>' --apply-chirho`",
     `- Attribution-blocked reviewer bulk dry-run path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>'\``,
     `- Attribution-blocked reviewer bulk apply path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>' --apply-chirho\``,
     "- Reattribution commands reject copied template placeholders; replace reviewer and rationale placeholders before running.",
     "- Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit human reviewer.",
+    "- If an attribution-blocked row's live text has changed since the original review, prefer the Attribution re-review lane unless the reviewer has rechecked the current live text against the print.",
     ...genericReviewerBatchLinesChirho,
     ...genericReviewerDetailLinesChirho,
     "",
