@@ -36,6 +36,8 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Current live text",
   "Open Attribution re-review for this item",
   "Reattribute command helper omitted because the live text changed.",
+  "Non-certifying pre-review note",
+  "This note is a machine-assisted visual aid only. It is not a verdict; certify only from the crop and printed line.",
   "Reviewer for command",
   "Rationale for command",
   "These helper fields only update the copied commands; they do not save, apply, or certify.",
@@ -66,6 +68,7 @@ interface RawReviewQueueItemChirho {
   lineImageHashChirho: string;
   lineImageWidthPxChirho: number;
   lineImageHeightPxChirho: number;
+  preReviewNoteChirho: string | null;
 }
 
 interface LatestValidationGuardChirho {
@@ -165,6 +168,17 @@ function firstAttributionBlockedQueueItemFromHtmlChirho(htmlChirho: string): Raw
   );
   if (itemChirho === undefined) throw new Error("raw review queue has no attribution-blocked item; cannot run guard check");
   return itemChirho;
+}
+
+function assertPreReviewNotesLoadedChirho(htmlChirho: string): void {
+  const notedItemsChirho = queueItemsFromHtmlChirho(htmlChirho).filter(
+    (itemChirho) => typeof itemChirho.preReviewNoteChirho === "string" && itemChirho.preReviewNoteChirho.length > 0
+  );
+  assertCheckChirho(notedItemsChirho.length > 0, "raw review queue did not load any non-certifying pre-review notes");
+  assertCheckChirho(
+    notedItemsChirho.some((itemChirho) => itemChirho.preReviewNoteChirho?.includes("Human check still needed")),
+    "raw review pre-review notes are missing the human-check-needed warning"
+  );
 }
 
 function displayGuardForItemChirho(itemChirho: RawReviewQueueItemChirho): Record<string, unknown> {
@@ -285,6 +299,7 @@ async function mainChirho(): Promise<void> {
       responseChirho.text()
     );
     assertRawReviewGuidanceHtmlChirho(pageHtmlChirho);
+    assertPreReviewNotesLoadedChirho(pageHtmlChirho);
     await assertQuickstartEndpointChirho(portChirho);
     const itemChirho = firstQueueItemFromHtmlChirho(pageHtmlChirho);
     const attributionBlockedItemChirho = firstAttributionBlockedQueueItemFromHtmlChirho(pageHtmlChirho);

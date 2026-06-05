@@ -73,6 +73,12 @@ const RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "raw-hebrew-human-certification-quickstart-2026-06-05-chirho.md"
 );
+const RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "codex-pre-review-raw-hebrew-2026-06-04-chirho.md"
+);
 
 interface TokenWitnessChirho {
   sourceChirho: string;
@@ -207,6 +213,7 @@ interface QueueItemChirho extends ReportSpanChirho {
   tierChirho: string;
   attentionKindsChirho: string[];
   attentionReasonsChirho: string[];
+  preReviewNoteChirho: string | null;
   priorityChirho: number;
 }
 
@@ -604,6 +611,63 @@ function tierForSpanChirho(spanChirho: ReportSpanChirho): string {
   return rawHebrewReviewTierForSpanChirho(spanChirho);
 }
 
+function preReviewNoteKeyChirho(volumeChirho: number, pageChirho: number, lineIndexChirho: number, segmentIndexChirho: number): string {
+  return `${volumeChirho}:${pageChirho}:${lineIndexChirho}:${segmentIndexChirho}`;
+}
+
+function preReviewNoteHeadingKeyChirho(lineChirho: string): string | null {
+  const matchChirho = lineChirho.match(/^- `vol (\d+) p(\d+) L(\d+) S(\d+)`:/);
+  if (matchChirho === null) return null;
+  return preReviewNoteKeyChirho(
+    Number.parseInt(matchChirho[1]!, 10),
+    Number.parseInt(matchChirho[2]!, 10),
+    Number.parseInt(matchChirho[3]!, 10),
+    Number.parseInt(matchChirho[4]!, 10)
+  );
+}
+
+function preReviewNoteTextLineChirho(lineChirho: string): string | null {
+  const trimmedChirho = lineChirho.trim();
+  if (trimmedChirho.length === 0) return null;
+  if (/^`?https?:\/\//.test(trimmedChirho)) return null;
+  if (trimmedChirho.startsWith("- ")) return trimmedChirho.slice(2).trim();
+  return trimmedChirho;
+}
+
+function loadPreReviewNotesChirho(): Map<string, string> {
+  const notesChirho = new Map<string, string>();
+  if (!existsSync(RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO)) return notesChirho;
+  const linesChirho = readFileSync(RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO, "utf8").split(/\r?\n/);
+  let currentKeyChirho: string | null = null;
+  let currentLinesChirho: string[] = [];
+  const flushChirho = () => {
+    if (currentKeyChirho === null) return;
+    const noteChirho = currentLinesChirho
+      .map((lineChirho) => preReviewNoteTextLineChirho(lineChirho))
+      .filter((lineChirho): lineChirho is string => lineChirho !== null && lineChirho.length > 0)
+      .join("\n");
+    if (noteChirho.length > 0) notesChirho.set(currentKeyChirho, noteChirho);
+    currentLinesChirho = [];
+  };
+  for (const lineChirho of linesChirho) {
+    const headingKeyChirho = preReviewNoteHeadingKeyChirho(lineChirho);
+    if (headingKeyChirho !== null) {
+      flushChirho();
+      currentKeyChirho = headingKeyChirho;
+      continue;
+    }
+    if (currentKeyChirho === null) continue;
+    if (lineChirho.startsWith("## ")) {
+      flushChirho();
+      currentKeyChirho = null;
+      continue;
+    }
+    currentLinesChirho.push(lineChirho);
+  }
+  flushChirho();
+  return notesChirho;
+}
+
 function queuePriorityChirho(spanChirho: ReportSpanChirho): number {
   const tierChirho = tierForSpanChirho(spanChirho);
   if (tierChirho === "unknown-script-chirho") return 0;
@@ -632,8 +696,10 @@ function lineTextFromSpanLineChirho(lineChirho: SpanLineFileChirho): string {
 }
 
 function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): QueueItemChirho[] {
+  const preReviewNotesChirho = loadPreReviewNotesChirho();
   return spansChirho
     .map((spanChirho) => {
+      const keyChirho = spanKeyChirho(spanChirho);
       const linePathChirho = lineFilePathChirho(spanChirho);
       const lineChirho = JSON.parse(readFileSync(linePathChirho, "utf8")) as SpanLineFileChirho;
       const spanGeometryChirho = lineChirho.spansChirho.find(
@@ -670,7 +736,7 @@ function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): Queue
       );
       return {
         ...spanChirho,
-        keyChirho: spanKeyChirho(spanChirho),
+        keyChirho,
         currentScriptChirho,
         liveSpanTextChirho,
         hasLiveSpanTextDriftChirho: liveSpanTextChirho !== reportTextChirho,
@@ -703,6 +769,7 @@ function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): Queue
         tierChirho: tierForSpanChirho(spanChirho),
         attentionKindsChirho: rawHebrewAttentionKindsChirho(spanChirho),
         attentionReasonsChirho: rawHebrewAttentionReasonsChirho(spanChirho),
+        preReviewNoteChirho: preReviewNotesChirho.get(keyChirho) ?? null,
         priorityChirho: queuePriorityChirho(spanChirho),
       };
     })
@@ -2092,6 +2159,20 @@ function pageHtmlChirho(): string {
           classChirho: "warning-chirho",
           textChirho: "Attention flags: " + itemChirho.attentionReasonsChirho.join("; ") + ". These are review-priority signals, not verdicts; inspect the crop and full line before any clean certification."
         }));
+      }
+      if (typeof itemChirho.preReviewNoteChirho === "string" && itemChirho.preReviewNoteChirho.length > 0) {
+        sideChirho.appendChild(elChirho("div", { classChirho: "box-chirho" }, [
+          elChirho("div", { classChirho: "label-chirho", textChirho: "Non-certifying pre-review note" }),
+          elChirho("div", {
+            classChirho: "mono-chirho",
+            style: "white-space:pre-wrap;font-size:12px;line-height:1.45;",
+            textChirho: itemChirho.preReviewNoteChirho
+          }),
+          elChirho("div", {
+            classChirho: "status-chirho",
+            textChirho: "This note is a machine-assisted visual aid only. It is not a verdict; certify only from the crop and printed line."
+          })
+        ]));
       }
       if (itemChirho.hasLiveSpanTextDriftChirho) {
         sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "Live span text differs from this report. Check the relevant issue box; clean review is blocked." }));
