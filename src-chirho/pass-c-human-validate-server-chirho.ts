@@ -1839,7 +1839,11 @@ function pageHtmlChirho(): string {
           "aria-label": markChirho.titleChirho,
           textChirho: markChirho.labelChirho
         });
-        buttonChirho.addEventListener("click", () => insertCorrectionTextChirho(markChirho.valueChirho));
+        if (reviewStateFilterChirho !== "pending-chirho") {
+          buttonChirho.disabled = true;
+        } else {
+          buttonChirho.addEventListener("click", () => insertCorrectionTextChirho(markChirho.valueChirho));
+        }
         wrapChirho.appendChild(buttonChirho);
       }
       return wrapChirho;
