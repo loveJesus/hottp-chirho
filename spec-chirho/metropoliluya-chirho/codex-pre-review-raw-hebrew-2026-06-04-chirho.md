@@ -103,6 +103,13 @@ span was surfaced.
   - Visual precheck: the crop visibly contains a short Hebrew root matching the stored consonants at review resolution.
   - Human check still needed: exact letters and whether the bare consonantal form is the intended transcription.
 
+- `vol 5 p148 L29 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A148%3A29%3A1`
+  - Live text: `מִלִּין`
+  - Attention reason: none; this is the first current raw item in the no-pre-review-note lane.
+  - Visual precheck: the packet target crop cleanly boxes the single Hebrew word between French `de` and `quand`; no adjacent French text, punctuation, or hidden neighboring Hebrew appears swallowed into the red box at packet resolution.
+  - Human check still needed: exact letters, niqqud, dagesh, and whether this short Job-related form is exactly what the print says here. The direct OCR read is only a weak aid and should not be used as certification.
+
 - `vol 5 p148 L25 S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A148%3A25%3A5`
   - Live text: `מְלִיצַי רֵעָי`
