@@ -190,6 +190,7 @@ function htmlChirho(): string {
     .top-chirho { display: flex; align-items: center; justify-content: space-between; gap: 14px; border-bottom: 1px solid #d8d4c8; padding-bottom: 12px; }
     .title-chirho { font-size: 20px; font-weight: 750; }
     .summary-chirho, .status-chirho { color: #59636f; font-size: 13px; }
+    .server-health-chirho { color: #59636f; font-size: 12px; text-align: right; margin-bottom: 4px; }
     .toolbar-chirho { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
     .toolbar-chirho select, .toolbar-chirho button, .toolbar-link-chirho { border: 1px solid #aab1b9; background: white; min-height: 34px; padding: 5px 8px; box-sizing: border-box; }
     .toolbar-link-chirho { display: inline-flex; align-items: center; color: #1f2933; text-decoration: none; font-size: 13px; }
@@ -242,7 +243,10 @@ function htmlChirho(): string {
         <div class="title-chirho">Latin/Symbol Vision Review</div>
         <div class="summary-chirho" id="summary-chirho"></div>
       </div>
-      <div class="status-chirho" id="status-chirho"></div>
+      <div>
+        <div class="server-health-chirho">Review server source: ${SERVER_HEALTH_CHIRHO.sourceFingerprintChirho.slice(0, 12)}; started: ${SERVER_HEALTH_CHIRHO.startedAtChirho}</div>
+        <div class="status-chirho" id="status-chirho"></div>
+      </div>
     </div>
     <div class="toolbar-chirho">
       <label class="label-chirho" for="script-filter-chirho">Script</label>

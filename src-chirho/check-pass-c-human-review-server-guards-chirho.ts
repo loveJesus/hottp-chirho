@@ -31,6 +31,7 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "clean review needs the clean-certification checkbox",
   "Live codepoints",
   "Suggested codepoints",
+  "Review server source:",
   "Hebrew letter alef",
   "Hebrew letter qof",
   "Attribution-blocked row shown read-only. Inspect the crop; reattribute only if this existing row is genuinely attributable to the named human reviewer.",

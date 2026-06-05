@@ -24,6 +24,7 @@ const LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "not equal sign",
   "Greek final sigma",
   "Dagesh/mappiq/shuruk",
+  "Review server source:",
   "Quickstart",
   "/quickstart-chirho",
   "Recommended Latin/symbol lanes",

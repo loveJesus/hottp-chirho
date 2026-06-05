@@ -23,6 +23,7 @@ import {
 const MODULE_CHIRHO = "check-vision-tier-expert-review-server-guards-chirho";
 const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Current codepoints",
+  "Review server source:",
   "Greek omicron",
   "rough breathing",
   "Greek final sigma",

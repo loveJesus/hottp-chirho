@@ -1308,6 +1308,7 @@ function pageHtmlChirho(): string {
     .top-chirho { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid #d8d4c8; padding-bottom: 12px; }
     .title-chirho { font-size: 20px; font-weight: 700; }
     .summary-chirho { color: #59636f; font-size: 14px; }
+    .server-health-chirho { color: #59636f; font-size: 12px; text-align: right; margin-bottom: 4px; }
     .main-chirho { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 18px; padding-top: 18px; }
     .line-panel-chirho { min-width: 0; }
     .image-label-chirho { color: #59636f; font-size: 13px; font-weight: 650; margin: 0 0 6px; }
@@ -1385,7 +1386,10 @@ function pageHtmlChirho(): string {
         <div class="title-chirho">${queueTitleChirho}</div>
         <div class="summary-chirho" id="summary-chirho"></div>
       </div>
-      <div class="status-chirho" id="status-chirho"></div>
+      <div>
+        <div class="server-health-chirho">Review server source: ${SERVER_HEALTH_CHIRHO.sourceFingerprintChirho.slice(0, 12)}; started: ${SERVER_HEALTH_CHIRHO.startedAtChirho}</div>
+        <div class="status-chirho" id="status-chirho"></div>
+      </div>
     </div>
     <div class="toolbar-chirho">
       <label class="label-chirho" for="review-state-filter-chirho">Review</label>
