@@ -41,6 +41,10 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Recommended expert lanes",
   "Blank Syriac handoff",
   "script-chirho=hebrew-chirho",
+  "script-chirho=hebrew-chirho&source-chirho=explicit-span-chirho",
+  "script-chirho=hebrew-chirho&source-chirho=d1-derived-chirho",
+  "script-chirho=greek-chirho&source-chirho=pass-c-ocr-span-chirho",
+  "script-chirho=greek-chirho&source-chirho=explicit-span-chirho",
   "text-state-chirho=nonblank-chirho",
   "Target span",
 ];

@@ -697,7 +697,11 @@ function htmlChirho(): string {
       <span>Recommended expert lanes</span>
       <a href="/?text-state-chirho=blank-chirho&script-chirho=syriac-chirho">Blank Syriac handoff</a>
       <a href="/?script-chirho=hebrew-chirho">Hebrew/WLC</a>
+      <a href="/?script-chirho=hebrew-chirho&source-chirho=explicit-span-chirho">Hebrew explicit</a>
+      <a href="/?script-chirho=hebrew-chirho&source-chirho=d1-derived-chirho">Hebrew D1</a>
       <a href="/?script-chirho=greek-chirho">Greek</a>
+      <a href="/?script-chirho=greek-chirho&source-chirho=pass-c-ocr-span-chirho">Greek Pass-C</a>
+      <a href="/?script-chirho=greek-chirho&source-chirho=explicit-span-chirho">Greek explicit</a>
       <a href="/?script-chirho=syriac-chirho&text-state-chirho=nonblank-chirho">Syriac has text</a>
       <a href="/?script-chirho=arabic-chirho">Arabic</a>
       <a href="/?source-chirho=pass-c-ocr-span-chirho">Pass-C OCR</a>
