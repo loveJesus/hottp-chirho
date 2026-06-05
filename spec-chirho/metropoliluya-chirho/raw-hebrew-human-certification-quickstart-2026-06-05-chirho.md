@@ -7,6 +7,14 @@ This is a reviewer aid for the Pass-C Hebrew lane. It is not a certification rec
 
 Use the live validator at http://localhost:8766/. Put an explicit human reviewer id in the Reviewer field, for example `hallelujah-chirho`; do not use `human-chirho`, role labels, template text, or a machine id.
 
+## Fast Answers
+
+- Yes, use the validator for Hebrew and Greek you can actually read against the print. It is the certification UI. Skip or flag items outside your competence instead of clean-certifying them.
+- If no issue boxes are selected, a save is clean only when the clean-certification acknowledgement is checked. Without that checkbox, the UI and server reject the clean save. With it, you are certifying that exact span against the crop and full line.
+- Several words in one red box can be correct. Certify it only if the box covers exactly those printed words and the stored text has the same logical reading order, spaces, maqqef, punctuation, and word boundaries as the print.
+- If words are wrongly lumped, split, spaced, maqqefed, clipped, or attached to neighboring punctuation, flag Segmentation. Add Missing Heb., Extra Latin, Hebrew punct., or Latin punct. when those describe the concrete problem too.
+- A dot inside a Hebrew letter is dagesh, mappiq, or shuruk, so classify it under Vowels/niqqud. Shin/sin dots also go under Vowels/niqqud. Accents/meteg is only for cantillation marks and meteg.
+
 ## Clean Review
 
 Save as clean only when all of these match the printed crop and full line:
