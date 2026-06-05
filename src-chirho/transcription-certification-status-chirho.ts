@@ -5047,6 +5047,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     `- Certified UTF-8 Markdown publication: ${statusChirho.certificationCompleteChirho ? "ready" : "not ready"}`,
     "- This is the transcription-content certification gate, not a deployment authorization for the review web app.",
+    "- Review app publication preflight: `bun run check-app-publication-readiness-chirho` (runs app check/build plus the transcription certification bundle; add `-- --require-certified-markdown-chirho` for a strict content-publication release gate).",
     `- Current blockers: strict export clean=${statusChirho.structuralChirho.strictPassedChirho}; raw Hebrew certifications=${statusChirho.structuralChirho.passCOcrHebrewSpanCountChirho}; non-Latin expert confirmations=${statusChirho.visionTierChirho.remainingConfirmationCountChirho}; Latin/symbol decisions=${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho}; attribution-blocked human rows=${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho}.`,
     "- Review stations may still be used while this is red; rerun `bun run check-certification-chirho` before any publication claim.",
     "",
