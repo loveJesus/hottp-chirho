@@ -15,6 +15,12 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { PROGRESS_DB_PATH_CHIRHO, PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { latinSymbolVisionLiveItemsChirho } from "./latin-symbol-vision-live-items-chirho.ts";
+import {
+  ensureLatinSymbolReviewSchemaChirho,
+  loadLatinSymbolPacketManifestChirho,
+  saveLatinSymbolReviewChirho,
+} from "./latin-symbol-vision-review-store-chirho.ts";
 
 const MODULE_CHIRHO = "check-certification-status-gate-guards-chirho";
 
@@ -22,6 +28,9 @@ interface CertificationStatusForGuardChirho {
   certificationCompleteChirho?: boolean;
   remainingWorkChirho?: string[];
   humanValidationDbChirho?: {
+    genericReviewerRowsChirho?: number;
+  };
+  latinSymbolReviewDbChirho?: {
     genericReviewerRowsChirho?: number;
   };
 }
@@ -74,6 +83,39 @@ function forceSingleGenericPassCHumanReviewerChirho(dbPathChirho: string): numbe
   }
 }
 
+function insertGenericLatinSymbolReviewChirho(dbPathChirho: string): string | null {
+  const manifestChirho = loadLatinSymbolPacketManifestChirho();
+  const liveItemsChirho = latinSymbolVisionLiveItemsChirho();
+  const manifestItemChirho = manifestChirho.itemsChirho?.[0];
+  if (manifestItemChirho === undefined) return null;
+  const liveItemChirho = liveItemsChirho.find((itemChirho) => itemChirho.idChirho === manifestItemChirho.idChirho);
+  if (liveItemChirho === undefined) return null;
+  const dbChirho = new Database(dbPathChirho);
+  try {
+    ensureLatinSymbolReviewSchemaChirho(dbChirho);
+    dbChirho
+      .prepare(`
+        UPDATE latin_symbol_vision_reviews_chirho
+           SET reviewer_chirho = 'hallelujah-chirho'
+         WHERE is_current_chirho = 1
+           AND verdict_chirho <> 'undo-chirho'`)
+      .run();
+    saveLatinSymbolReviewChirho({
+      dbChirho,
+      manifestChirho,
+      liveItemChirho,
+      verdictChirho: "reviewed-issues-chirho",
+      acceptCleanChirho: false,
+      issueFlagsChirho: ["punctuation-chirho"],
+      notesChirho: "disposable status gate guard should reject generic reviewer attribution",
+      reviewerChirho: "human-chirho",
+    });
+    return liveItemChirho.idChirho;
+  } finally {
+    dbChirho.close();
+  }
+}
+
 function runStatusChirho(dbPathChirho: string, outDirChirho: string): void {
   const argsChirho = [
     process.execPath,
@@ -110,6 +152,7 @@ function mainChirho(): void {
   try {
     copyProgressDbSnapshotChirho(dbPathChirho);
     const rowIdChirho = forceSingleGenericPassCHumanReviewerChirho(dbPathChirho);
+    const latinItemIdChirho = insertGenericLatinSymbolReviewChirho(dbPathChirho);
     if (rowIdChirho === null) {
       console.log(`[${MODULE_CHIRHO}] no current schema-v2 Pass-C human validation row available; skipped generic reviewer status guard`);
       return;
@@ -127,7 +170,22 @@ function mainChirho(): void {
       ),
       "generic reviewer status did not add the Pass-C human validation remaining-work blocker"
     );
-    console.log(`[${MODULE_CHIRHO}] generic reviewer status gate guard passed for disposable row ${rowIdChirho}`);
+    if (latinItemIdChirho !== null) {
+      assertCheckChirho(
+        (statusChirho.latinSymbolReviewDbChirho?.genericReviewerRowsChirho ?? 0) >= 1,
+        "generic Latin/symbol reviewer status did not report a blocked row"
+      );
+      assertCheckChirho(
+        (statusChirho.remainingWorkChirho ?? []).some((itemChirho) =>
+          itemChirho.includes("Latin/symbol review row(s) use blank/generic/machine reviewer attribution")
+        ),
+        "generic Latin/symbol reviewer status did not add the remaining-work blocker"
+      );
+    }
+    console.log(
+      `[${MODULE_CHIRHO}] generic reviewer status gate guard passed for disposable row ${rowIdChirho}` +
+        (latinItemIdChirho === null ? "" : ` and Latin/symbol item ${latinItemIdChirho}`)
+    );
   } finally {
     rmSync(tempDirChirho, { recursive: true, force: true });
   }
