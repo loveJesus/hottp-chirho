@@ -116,6 +116,7 @@ interface ConfirmRequestChirho {
   reviewerRoleChirho?: string;
   rationaleChirho?: string;
   certifyExactChirho?: boolean;
+  issueFlagsChirho?: unknown;
   expectedScriptChirho?: string;
   expectedReviewerChirho?: string;
   expectedVisionSourceChirho?: string;
@@ -1221,6 +1222,7 @@ function htmlChirho(): string {
     }
     function confirmationCanSubmitChirho(itemChirho) {
       return !itemTextIsBlankChirho(itemChirho) &&
+        currentIssueFlagsChirho().length === 0 &&
         certifyExactCheckedChirho() &&
         certifyingReviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho")) === null &&
         reviewerFieldsCompleteChirho() &&
@@ -1445,6 +1447,7 @@ function htmlChirho(): string {
         if (certifyingReviewerErrorChirho !== null) actionMessagesChirho.push("Confirm needs explicit human reviewer");
         if (itemTextIsBlankChirho(itemChirho)) actionMessagesChirho.push("Confirm needs expert-supplied text first");
         else if (!certifyExactCheckedChirho()) actionMessagesChirho.push("Confirm needs exact-certification checkbox");
+        if (currentIssueFlagsChirho().length > 0) actionMessagesChirho.push("Confirm requires no issue flags; use Report issue for flagged items");
         if (currentIssueFlagsChirho().length === 0) actionMessagesChirho.push("Report issue needs an issue flag");
         actionStatusChirho.textContent = actionMessagesChirho.length === 0
           ? "Confirm and Report issue requirements are currently satisfied."
@@ -1687,6 +1690,23 @@ const serverChirho = Bun.serve({
         if (reviewerChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
         const reviewerErrorChirho = certifyingReviewerAttributionErrorChirho(reviewerChirho);
         if (reviewerErrorChirho !== null) return jsonResponseChirho({ okChirho: false, errorChirho: reviewerErrorChirho }, 400);
+        if (bodyChirho.issueFlagsChirho !== undefined) {
+          let confirmIssueFlagsChirho: string[];
+          try {
+            confirmIssueFlagsChirho = parseIssueFlagsChirho(bodyChirho.issueFlagsChirho);
+          } catch (errorChirho) {
+            return jsonResponseChirho({
+              okChirho: false,
+              errorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+            }, 400);
+          }
+          if (confirmIssueFlagsChirho.length > 0) {
+            return jsonResponseChirho({
+              okChirho: false,
+              errorChirho: "confirm-chirho cannot include issue flags; use Report issue for flagged items",
+            }, 400);
+          }
+        }
         if (reviewerRoleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerRoleChirho is required" }, 400);
         if (rationaleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "rationaleChirho is required" }, 400);
         if (visionTierExpertRationaleLooksPlaceholderChirho(rationaleChirho)) {

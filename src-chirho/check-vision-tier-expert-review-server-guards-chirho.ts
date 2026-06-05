@@ -369,6 +369,19 @@ async function mainChirho(): Promise<void> {
       policyPathChirho,
       expectedErrorChirho: "must identify the explicit reviewer, not generic human-chirho",
     });
+    const confirmWithIssueFlagsResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
+      ...commonBodyChirho,
+      rationaleChirho: "server guard check should reject confirming while issue flags are present",
+      certifyExactChirho: true,
+      issueFlagsChirho: ["uncertain-chirho"],
+    });
+    assertRejectedWithoutPolicyChirho({
+      labelChirho: "confirm with issue flags",
+      responseChirho: confirmWithIssueFlagsResultChirho.responseChirho,
+      dataChirho: confirmWithIssueFlagsResultChirho.dataChirho,
+      policyPathChirho,
+      expectedErrorChirho: "confirm-chirho cannot include issue flags",
+    });
     const genericIssueResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
       ...commonBodyChirho,
       reviewerChirho: "human-chirho",
