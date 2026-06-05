@@ -121,6 +121,13 @@ span was surfaced.
   - Visual precheck: the line reads `que cela suppose :`, then S1, then French `et`, then S3. Both red boxes bracket their own Hebrew form and leave the separator/context outside the target boxes. The direct OCR reads confuse the two forms, so the paired human comparison is more important than the machine read.
   - Human check still needed: exact letter order in both forms, especially lamed/tav openings and qof-shin-resh sequence, plus all vowels/dagesh/shin-dot marks.
 
+- `vol 2 p150 L9 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A9%3A1`
+  - Live text: `קֶשֶׁר`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane.
+  - Visual precheck: the Hebrew root is boxed after French `la racine` and before French `Considérant`; the printed crop visibly shows a terminal period immediately after the Hebrew word. No neighboring French appears swallowed by the Hebrew box.
+  - Human check still needed: exact qof-shin-resh letters, segol/shin-dot marks, and whether the visible terminal period should be included with this Hebrew span or recorded as adjacent punctuation before `Considérant`.
+
 - `vol 2 p150 L27 S1`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A27%3A1`
   - Live text: `תָּקְשִׁרוּ`
