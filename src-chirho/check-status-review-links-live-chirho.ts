@@ -139,6 +139,7 @@ interface CertificationStatusChirho {
 
 interface RawHebrewQueueItemChirho {
   keyChirho: string;
+  liveSpanTextChirho: string;
   validationStatusChirho: string;
   tierChirho: string;
   attentionKindsChirho: string[];
@@ -243,6 +244,7 @@ function assertRawQueryValuesChirho(urlChirho: URL, keyChirho: string): void {
       "attribution-text-chirho",
       "volume-chirho",
       "review-state-chirho",
+      "exact-text-chirho",
     ])
   );
   assertParamInSetChirho(urlChirho, keyChirho, "review-state-chirho", RAW_REVIEW_STATES_CHIRHO);
@@ -355,6 +357,10 @@ function assertRawFiltersChirho(urlChirho: URL, itemChirho: RawHebrewQueueItemCh
   const volumeChirho = parseVolumeFilterChirho(urlChirho);
   if (volumeChirho !== null) {
     assertGeneratedCheckChirho(itemChirho.volumeChirho === volumeChirho, `${keyChirho} item ${itemChirho.keyChirho} does not match volume ${volumeChirho}`);
+  }
+  const exactTextChirho = urlChirho.searchParams.get("exact-text-chirho");
+  if (exactTextChirho !== null) {
+    assertGeneratedCheckChirho(itemChirho.liveSpanTextChirho === exactTextChirho, `${keyChirho} item ${itemChirho.keyChirho} does not match exact-text-chirho`);
   }
   const reviewStateChirho = urlChirho.searchParams.get("review-state-chirho");
   if (reviewStateChirho === "attribution-blocked-chirho" || reviewStateChirho === "attribution-rereview-chirho") {

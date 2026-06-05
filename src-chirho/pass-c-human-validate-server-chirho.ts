@@ -1474,6 +1474,8 @@ function pageHtmlChirho(): string {
         <option value="vol-4-chirho">Vol 4</option>
         <option value="vol-5-chirho">Vol 5</option>
       </select>
+      <label class="label-chirho" for="exact-text-filter-chirho">Exact text</label>
+      <input id="exact-text-filter-chirho" type="text" placeholder="optional exact live text" />
       <button type="button" id="prev-chirho">Previous</button>
       <button type="button" id="next-chirho">Skip</button>
       <button type="button" id="copy-link-chirho">Copy link</button>
@@ -1647,6 +1649,7 @@ function pageHtmlChirho(): string {
       initialSearchParamsChirho.get("volume-chirho"),
       "all-chirho"
     );
+    let exactTextFilterChirho = initialSearchParamsChirho.get("exact-text-chirho") || "";
     const laneShortcutFiltersByIdChirho = new Map([
       ["vols-3-5-unvalidated-chirho", {
         reviewStateChirho: "pending-chirho",
@@ -1781,6 +1784,7 @@ function pageHtmlChirho(): string {
       document.getElementById("pre-review-reason-filter-chirho").value = preReviewReasonFilterChirho;
       document.getElementById("attribution-text-filter-chirho").value = attributionTextFilterChirho;
       document.getElementById("volume-filter-chirho").value = volumeFilterChirho;
+      document.getElementById("exact-text-filter-chirho").value = exactTextFilterChirho;
     }
     function volumeFilterNumberForValueChirho(volumeValueChirho) {
       if (volumeValueChirho === "all-chirho") return null;
@@ -1800,6 +1804,7 @@ function pageHtmlChirho(): string {
       if (preReviewReasonFilterChirho !== "all-chirho") paramsChirho.set("pre-review-reason-chirho", preReviewReasonFilterChirho);
       if (attributionTextFilterChirho !== "all-chirho") paramsChirho.set("attribution-text-chirho", attributionTextFilterChirho);
       if (volumeFilterChirho !== "all-chirho") paramsChirho.set("volume-chirho", volumeFilterChirho);
+      if (exactTextFilterChirho !== "") paramsChirho.set("exact-text-chirho", exactTextFilterChirho);
       const itemChirho = currentItemChirho();
       if (itemChirho) paramsChirho.set("item-chirho", itemChirho.keyChirho);
       const queryChirho = paramsChirho.toString();
@@ -1907,6 +1912,7 @@ function pageHtmlChirho(): string {
         itemChirho.preReviewMissingAttentionKindsChirho.length > 0;
       const attributionTextChirho = filtersChirho.attributionTextChirho ?? "all-chirho";
       const attributionTextFilterAppliesChirho = reviewStateValueIsAttributionModeChirho(filtersChirho.reviewStateChirho);
+      const exactTextChirho = filtersChirho.exactTextChirho ?? "";
       return validationVisibleForReviewStateValueChirho(itemChirho, filtersChirho.reviewStateChirho) &&
         (filtersChirho.validationStatusChirho === "all-chirho" || itemChirho.validationStatusChirho === filtersChirho.validationStatusChirho) &&
         (filtersChirho.tierChirho === "all-chirho" || itemChirho.tierChirho === filtersChirho.tierChirho) &&
@@ -1919,7 +1925,8 @@ function pageHtmlChirho(): string {
         (!attributionTextFilterAppliesChirho ||
           attributionTextChirho === "all-chirho" ||
           itemChirho.attributionTextStateChirho === attributionTextChirho) &&
-        (volumeChirho === null || itemChirho.volumeChirho === volumeChirho);
+        (volumeChirho === null || itemChirho.volumeChirho === volumeChirho) &&
+        (exactTextChirho === "" || itemChirho.liveSpanTextChirho === exactTextChirho);
     }
     function activeQueueChirho() {
       return queueChirho.filter((itemChirho) =>
@@ -1931,9 +1938,32 @@ function pageHtmlChirho(): string {
           preReviewNoteChirho: preReviewNoteFilterChirho,
           preReviewReasonChirho: preReviewReasonFilterChirho,
           attributionTextChirho: attributionTextFilterChirho,
-          volumeChirho: volumeFilterChirho
+          volumeChirho: volumeFilterChirho,
+          exactTextChirho: exactTextFilterChirho
         })
       );
+    }
+    function repeatClusterItemsChirho(itemChirho) {
+      return queueChirho.filter((candidateChirho) =>
+        validationVisibleForReviewStateChirho(candidateChirho) &&
+        candidateChirho.liveSpanTextChirho === itemChirho.liveSpanTextChirho &&
+        candidateChirho.currentScriptChirho === itemChirho.currentScriptChirho
+      );
+    }
+    function exactTextClusterUrlChirho(itemChirho) {
+      const paramsChirho = new URLSearchParams();
+      if (reviewStateFilterChirho !== "pending-chirho") paramsChirho.set("review-state-chirho", reviewStateFilterChirho);
+      paramsChirho.set("exact-text-chirho", itemChirho.liveSpanTextChirho);
+      paramsChirho.set("item-chirho", itemChirho.keyChirho);
+      return window.location.pathname + "?" + paramsChirho.toString();
+    }
+    function repeatClusterTextChirho(itemChirho) {
+      const clusterCountChirho = repeatClusterItemsChirho(itemChirho).length;
+      if (clusterCountChirho <= 1) {
+        return "Singleton exact live text for this script/review state. Planning aid only; every item still needs exact print certification or an explicit issue.";
+      }
+      return clusterCountChirho +
+        " current item(s) share this exact live text/script/review state. Planning aid only; every item still needs exact print certification or an explicit issue.";
     }
     function updateLaneShortcutCountsChirho() {
       for (const linkChirho of document.querySelectorAll("[data-lane-shortcut-chirho]")) {
@@ -2016,6 +2046,10 @@ function pageHtmlChirho(): string {
         }
         if (volumeChirho !== null && requestedItemChirho.volumeChirho !== volumeChirho) {
           volumeFilterChirho = "all-chirho";
+          changedFiltersChirho = true;
+        }
+        if (exactTextFilterChirho !== "" && requestedItemChirho.liveSpanTextChirho !== exactTextFilterChirho) {
+          exactTextFilterChirho = "";
           changedFiltersChirho = true;
         }
         if (changedFiltersChirho) syncFilterControlsChirho();
@@ -2594,6 +2628,15 @@ function pageHtmlChirho(): string {
         elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.tokenSkeletonsChirho.join(" ") })
       ]);
       sideChirho.appendChild(metaChirho);
+      const repeatClusterChirho = elChirho("div", { classChirho: "box-chirho" });
+      repeatClusterChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Repeat cluster" }));
+      repeatClusterChirho.appendChild(elChirho("div", { textChirho: repeatClusterTextChirho(itemChirho) }));
+      repeatClusterChirho.appendChild(elChirho("a", {
+        classChirho: "toolbar-link-chirho",
+        href: exactTextClusterUrlChirho(itemChirho),
+        textChirho: "Open exact-text cluster"
+      }));
+      sideChirho.appendChild(repeatClusterChirho);
 
       if (itemChirho.issueMessageChirho) {
         sideChirho.appendChild(elChirho("div", {
@@ -2921,6 +2964,12 @@ function pageHtmlChirho(): string {
     });
     document.getElementById("volume-filter-chirho").addEventListener("change", (eventChirho) => {
       volumeFilterChirho = eventChirho.target.value;
+      requestedItemKeyChirho = null;
+      indexChirho = 0;
+      renderChirho();
+    });
+    document.getElementById("exact-text-filter-chirho").addEventListener("input", (eventChirho) => {
+      exactTextFilterChirho = eventChirho.target.value;
       requestedItemKeyChirho = null;
       indexChirho = 0;
       renderChirho();
