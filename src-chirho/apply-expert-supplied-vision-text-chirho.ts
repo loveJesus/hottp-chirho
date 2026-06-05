@@ -255,7 +255,11 @@ function validateLineChirho(lineChirho: SpanLineChirho, parsedChirho: ParsedItem
   }
 }
 
-function loadFreshExpertPackItemChirho(itemIdChirho: string, liveItemChirho: VisionTierExpertLiveItemChirho): ExpertPackItemChirho {
+function loadExpertPackItemMatchingTextChirho(
+  itemIdChirho: string,
+  liveItemChirho: VisionTierExpertLiveItemChirho,
+  expectedPackTextsChirho: string[]
+): ExpertPackItemChirho {
   const manifestChirho = loadJsonChirho<ExpertPackManifestChirho>(EXPERT_PACK_MANIFEST_PATH_CHIRHO);
   if (!Array.isArray(manifestChirho.completeVisionItemsChirho)) {
     throw new Error("expert pack manifest malformed: completeVisionItemsChirho missing");
@@ -264,7 +268,7 @@ function loadFreshExpertPackItemChirho(itemIdChirho: string, liveItemChirho: Vis
   if (packItemChirho === undefined) throw new Error(`expert pack item missing: ${itemIdChirho}; regenerate make-expert-confirm-pack-chirho`);
   if (packItemChirho.scriptChirho !== liveItemChirho.scriptChirho) throw new Error(`${itemIdChirho} script drifted; regenerate expert pack`);
   if (packItemChirho.visionSourceChirho !== liveItemChirho.visionSourceChirho) throw new Error(`${itemIdChirho} source drifted; regenerate expert pack`);
-  if (packItemChirho.currentTextChirho !== liveItemChirho.currentTextChirho) throw new Error(`${itemIdChirho} text drifted; regenerate expert pack`);
+  if (!expectedPackTextsChirho.includes(packItemChirho.currentTextChirho)) throw new Error(`${itemIdChirho} text drifted; regenerate expert pack`);
   if (!existsSync(packItemChirho.sourcePathChirho)) throw new Error(`${itemIdChirho} source image missing; regenerate expert pack`);
   if (!existsSync(packItemChirho.packetPathChirho)) throw new Error(`${itemIdChirho} packet image missing; regenerate expert pack`);
   if (!readFileSync(packItemChirho.sourcePathChirho).equals(readFileSync(packItemChirho.packetPathChirho))) {
@@ -281,6 +285,22 @@ function loadFreshExpertPackItemChirho(itemIdChirho: string, liveItemChirho: Vis
     );
   }
   return packItemChirho;
+}
+
+function loadFreshExpertPackItemChirho(itemIdChirho: string, liveItemChirho: VisionTierExpertLiveItemChirho): ExpertPackItemChirho {
+  return loadExpertPackItemMatchingTextChirho(itemIdChirho, liveItemChirho, [liveItemChirho.currentTextChirho]);
+}
+
+function loadReconciliationExpertPackItemChirho(
+  itemIdChirho: string,
+  liveItemChirho: VisionTierExpertLiveItemChirho,
+  metadataChirho: { previousTextChirho: string },
+  optionsChirho: ApplyOptionsChirho
+): ExpertPackItemChirho {
+  return loadExpertPackItemMatchingTextChirho(itemIdChirho, liveItemChirho, [
+    metadataChirho.previousTextChirho,
+    optionsChirho.suppliedTextChirho,
+  ]);
 }
 
 function parseOptionsChirho(): ApplyOptionsChirho {
@@ -539,10 +559,15 @@ function mainChirho(): void {
       `--reviewer-role-chirho must be "${expectedVisionTierReviewerRoleChirho(liveItemPresentChirho.scriptChirho)}" for ${liveItemPresentChirho.scriptChirho}`
     );
   }
-  const packItemChirho = loadFreshExpertPackItemChirho(optionsChirho.itemIdChirho, liveItemPresentChirho);
-  assertExpectedImageHashesChirho(optionsChirho.itemIdChirho, packItemChirho, optionsChirho);
   if (currentStateChirho === "already-applied-chirho") {
     const metadataChirho = appliedMetadataChirho(spanChirho, optionsChirho);
+    const packItemChirho = loadReconciliationExpertPackItemChirho(
+      optionsChirho.itemIdChirho,
+      liveItemPresentChirho,
+      metadataChirho,
+      optionsChirho
+    );
+    assertExpectedImageHashesChirho(optionsChirho.itemIdChirho, packItemChirho, optionsChirho);
     if (optionsChirho.applyChirho) {
       writeBackupRecordChirho(
         optionsChirho.backupPathChirho,
@@ -581,6 +606,8 @@ function mainChirho(): void {
     );
     return;
   }
+  const packItemChirho = loadFreshExpertPackItemChirho(optionsChirho.itemIdChirho, liveItemPresentChirho);
+  assertExpectedImageHashesChirho(optionsChirho.itemIdChirho, packItemChirho, optionsChirho);
   if (liveItemPresentChirho.currentTextChirho.length !== 0) {
     throw new Error(`${optionsChirho.itemIdChirho} is not empty; this tool only resolves blank expert transcription items`);
   }
