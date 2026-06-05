@@ -258,6 +258,8 @@ const EXPERT_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO = "expert-repeat-clusters-chi
 const EXPERT_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO = `workspace-chirho/certification-status-chirho/${EXPERT_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO}`;
 const LATIN_SYMBOL_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO = "latin-symbol-repeat-clusters-chirho.md";
 const LATIN_SYMBOL_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO = `workspace-chirho/certification-status-chirho/${LATIN_SYMBOL_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO}`;
+const RAW_HEBREW_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO = "raw-hebrew-repeat-clusters-chirho.md";
+const RAW_HEBREW_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO = `workspace-chirho/certification-status-chirho/${RAW_HEBREW_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO}`;
 const ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO = "attribution-cleanup-handoff-chirho.md";
 const ATTRIBUTION_CLEANUP_HANDOFF_RELATIVE_PATH_CHIRHO = `workspace-chirho/certification-status-chirho/${ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO}`;
 const RAW_HEBREW_ATTENTION_HANDOFF_FILENAME_CHIRHO = "raw-hebrew-attention-handoff-chirho.md";
@@ -453,6 +455,36 @@ interface RawHebrewTriageSummaryChirho {
   preReviewUncoveredSamplesChirho: RawHebrewTriageSampleChirho[];
   preReviewReasonGapSamplesChirho: RawHebrewTriageReasonGapSampleChirho[];
   samplesChirho: RawHebrewTriageSampleChirho[];
+}
+
+interface RawHebrewTextRepeatSampleChirho {
+  textChirho: string;
+  countChirho: number;
+  firstItemKeyChirho: string;
+  reviewUrlChirho: string;
+}
+
+interface RawHebrewTextRepeatItemChirho {
+  itemKeyChirho: string;
+  volumeChirho: number | null;
+  validationStatusChirho: string;
+  reviewUrlChirho: string;
+}
+
+interface RawHebrewTextRepeatGroupChirho extends RawHebrewTextRepeatSampleChirho {
+  validationStatusCountsChirho: Record<string, number>;
+  itemsChirho: RawHebrewTextRepeatItemChirho[];
+}
+
+interface RawHebrewTextRepeatSummaryChirho {
+  textGroupCountChirho: number;
+  duplicateTextGroupCountChirho: number;
+  duplicateTextItemCountChirho: number;
+  singletonTextGroupCountChirho: number;
+  duplicateTextGroupCountsByValidationStatusChirho: Record<string, number>;
+  duplicateTextItemCountsByValidationStatusChirho: Record<string, number>;
+  groupsChirho: RawHebrewTextRepeatGroupChirho[];
+  samplesChirho: RawHebrewTextRepeatSampleChirho[];
 }
 
 interface ExpertPackManifestChirho {
@@ -965,6 +997,7 @@ interface CertificationStatusChirho {
     liveReportDriftCountChirho: number;
     liveReportDriftSamplesChirho: string[];
     triageChirho: RawHebrewTriageSummaryChirho;
+    repeatSummaryChirho: RawHebrewTextRepeatSummaryChirho;
   };
   visionTierChirho: {
     d1ReadErrorChirho: string | null;
@@ -1443,7 +1476,8 @@ function rawHebrewReviewUrlChirho(
   attentionChirho?: string,
   preReviewNoteChirho?: string,
   attributionTextChirho?: string,
-  preReviewReasonChirho?: string
+  preReviewReasonChirho?: string,
+  exactTextChirho?: string
 ): string {
   const entriesChirho: Array<[string, string]> = [];
   if (validationStatusChirho !== undefined) entriesChirho.push(["validation-status-chirho", validationStatusChirho]);
@@ -1454,6 +1488,7 @@ function rawHebrewReviewUrlChirho(
   if (preReviewNoteChirho !== undefined) entriesChirho.push(["pre-review-note-chirho", preReviewNoteChirho]);
   if (preReviewReasonChirho !== undefined) entriesChirho.push(["pre-review-reason-chirho", preReviewReasonChirho]);
   if (attributionTextChirho !== undefined) entriesChirho.push(["attribution-text-chirho", attributionTextChirho]);
+  if (exactTextChirho !== undefined) entriesChirho.push(["exact-text-chirho", exactTextChirho]);
   if (itemKeyChirho !== undefined) entriesChirho.push(["item-chirho", itemKeyChirho]);
   const queryChirho = urlQueryChirho(entriesChirho);
   return queryChirho.length === 0 ? "http://localhost:8766/" : `http://localhost:8766/?${queryChirho}`;
@@ -1505,6 +1540,104 @@ function rawHebrewPackItemReviewUrlChirho(itemChirho: RawHebrewPackItemChirho): 
     itemKeyChirho ?? undefined,
     volumeChirho
   );
+}
+
+function rawHebrewTextRepeatSummaryChirho(
+  itemsChirho: RawHebrewPackItemChirho[],
+  sampleLimitChirho = 12
+): RawHebrewTextRepeatSummaryChirho {
+  const groupsChirho = new Map<string, RawHebrewPackItemChirho[]>();
+  for (const itemChirho of itemsChirho) {
+    const keyChirho = itemChirho.textChirho;
+    const groupChirho = groupsChirho.get(keyChirho) ?? [];
+    groupChirho.push(itemChirho);
+    groupsChirho.set(keyChirho, groupChirho);
+  }
+  const duplicateGroupsChirho = [...groupsChirho.values()]
+    .filter((groupChirho) => groupChirho.length > 1)
+    .sort((aChirho, bChirho) => {
+      const firstAChirho = aChirho[0]!;
+      const firstBChirho = bChirho[0]!;
+      return bChirho.length - aChirho.length ||
+        firstAChirho.textChirho.localeCompare(firstBChirho.textChirho) ||
+        (rawHebrewPackItemKeyChirho(firstAChirho) ?? "").localeCompare(rawHebrewPackItemKeyChirho(firstBChirho) ?? "");
+    });
+  const duplicateTextGroupCountsByValidationStatusChirho: Record<string, number> = {};
+  const duplicateTextItemCountsByValidationStatusChirho: Record<string, number> = {};
+  const groupSummariesChirho = duplicateGroupsChirho.map((groupChirho): RawHebrewTextRepeatGroupChirho => {
+    const sortedGroupChirho = [...groupChirho].sort(compareRawHebrewPackQueueOrderChirho);
+    const firstItemChirho = sortedGroupChirho[0]!;
+    const exactTextChirho = firstItemChirho.textChirho;
+    const firstItemKeyChirho = rawHebrewPackItemKeyChirho(firstItemChirho) ?? firstItemChirho.idChirho;
+    const validationStatusCountsChirho: Record<string, number> = {};
+    for (const itemChirho of sortedGroupChirho) {
+      validationStatusCountsChirho[itemChirho.validationStatusChirho] =
+        (validationStatusCountsChirho[itemChirho.validationStatusChirho] ?? 0) + 1;
+    }
+    for (const validationStatusChirho of Object.keys(validationStatusCountsChirho)) {
+      duplicateTextGroupCountsByValidationStatusChirho[validationStatusChirho] =
+        (duplicateTextGroupCountsByValidationStatusChirho[validationStatusChirho] ?? 0) + 1;
+      duplicateTextItemCountsByValidationStatusChirho[validationStatusChirho] =
+        (duplicateTextItemCountsByValidationStatusChirho[validationStatusChirho] ?? 0) +
+        validationStatusCountsChirho[validationStatusChirho]!;
+    }
+    return {
+      textChirho: exactTextChirho,
+      countChirho: sortedGroupChirho.length,
+      firstItemKeyChirho,
+      reviewUrlChirho: rawHebrewReviewUrlChirho(
+        undefined,
+        undefined,
+        undefined,
+        firstItemKeyChirho,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        exactTextChirho
+      ),
+      validationStatusCountsChirho,
+      itemsChirho: sortedGroupChirho.map((itemChirho) => {
+        const itemKeyChirho = rawHebrewPackItemKeyChirho(itemChirho) ?? itemChirho.idChirho;
+        return {
+          itemKeyChirho,
+          volumeChirho: itemVolumeChirho(itemChirho),
+          validationStatusChirho: itemChirho.validationStatusChirho,
+          reviewUrlChirho: rawHebrewReviewUrlChirho(
+            undefined,
+            undefined,
+            undefined,
+            itemKeyChirho,
+            itemVolumeChirho(itemChirho) ?? undefined,
+            undefined,
+            undefined,
+            undefined,
+            undefined,
+            exactTextChirho
+          ),
+        };
+      }),
+    };
+  });
+  return {
+    textGroupCountChirho: groupsChirho.size,
+    duplicateTextGroupCountChirho: duplicateGroupsChirho.length,
+    duplicateTextItemCountChirho: duplicateGroupsChirho.reduce(
+      (countChirho, groupChirho) => countChirho + groupChirho.length,
+      0
+    ),
+    singletonTextGroupCountChirho: [...groupsChirho.values()].filter((groupChirho) => groupChirho.length === 1).length,
+    duplicateTextGroupCountsByValidationStatusChirho,
+    duplicateTextItemCountsByValidationStatusChirho,
+    groupsChirho: groupSummariesChirho,
+    samplesChirho: groupSummariesChirho.slice(0, sampleLimitChirho).map((groupChirho) => ({
+      textChirho: groupChirho.textChirho,
+      countChirho: groupChirho.countChirho,
+      firstItemKeyChirho: groupChirho.firstItemKeyChirho,
+      reviewUrlChirho: groupChirho.reviewUrlChirho,
+    })),
+  };
 }
 
 function rawHebrewPackItemQueuePriorityChirho(itemChirho: RawHebrewPackItemChirho): number {
@@ -3815,6 +3948,7 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     livePendingRawHebrewPackItemsChirho,
     rawHebrewPreReviewNotesChirho
   );
+  const rawHebrewRepeatSummaryChirho = rawHebrewTextRepeatSummaryChirho(livePendingRawHebrewPackItemsChirho);
   const rawHebrewTierCountsChirho = countRawHebrewByTierChirho(rawSpansChirho);
   const livePendingRawHebrewTierCountsChirho = countRawHebrewByTierChirho(livePendingRawSpansChirho);
   const rawHebrewValidationTierCountsChirho = countRawHebrewByValidationTierChirho(rawSpansChirho);
@@ -3926,6 +4060,7 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
       .slice(0, 8)
       .map(summarizeRawHebrewReportLiveDriftChirho),
     triageChirho: rawHebrewTriageSummaryResultChirho,
+    repeatSummaryChirho: rawHebrewRepeatSummaryChirho,
   };
   const visionTierLiveSnapshotChirho = visionTierExpertLiveSnapshotChirho();
   const visionTierLiveItemsChirho = visionTierLiveSnapshotChirho.itemsChirho;
@@ -5103,6 +5238,10 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     sampleChirho.currentTextChirho.trim().length === 0
       ? "(blank text)"
       : markdownCodeSpanChirho(sampleChirho.currentTextChirho);
+  const rawHebrewRepeatSampleTextChirho = (sampleChirho: RawHebrewTextRepeatSampleChirho): string =>
+    sampleChirho.textChirho.trim().length === 0
+      ? "(blank text)"
+      : markdownCodeSpanChirho(sampleChirho.textChirho);
   const latinSymbolRepeatSampleTextChirho = (sampleChirho: LatinSymbolTextRepeatSampleChirho): string =>
     sampleChirho.textChirho.trim().length === 0
       ? "(blank text)"
@@ -5603,6 +5742,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw Hebrew human certification quickstart: \`${relativeProjectPathChirho(RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO)}\``,
     `- Hallelujah review session guide: \`${relativeProjectPathChirho(HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO)}\``,
     `- Raw Hebrew pre-review notes: \`${relativeProjectPathChirho(RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO)}\` (non-certifying; current/superseded notes only)`,
+    `- Raw Hebrew repeat-cluster handoff: \`${RAW_HEBREW_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO}\``,
     `- Latin/symbol live reviewer: http://localhost:8770/ (${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} remaining decision(s); command: \`bun run latin-symbol-vision-review-chirho\`${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolAllChirho)})`,
     `- Latin/symbol French lane: ${latinSymbolReviewUrlChirho("french-chirho")} (${pendingLatinSymbolScriptCountChirho("french-chirho")} pending of ${latinSymbolFrenchCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolFrenchChirho)})`,
     `- Latin/symbol non-French lane: ${latinSymbolReviewUrlChirho("latin-non-french-chirho")} (${pendingLatinSymbolScriptCountChirho("latin-non-french-chirho")} pending of ${latinSymbolNonFrenchCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolNonFrenchChirho)})`,
@@ -5761,6 +5901,17 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Live pending validation+tier counts: ${Object.entries(statusChirho.rawHebrewChirho.livePendingValidationTierCountsChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
     `- Source counts before filter: ${sourceCountsChirho || "none"}`,
     `- Export/report count match: ${statusChirho.rawHebrewChirho.exportPassCOcrMatchesReportChirho}`,
+    `- Repeat text groups among pending raw Hebrew items: ${statusChirho.rawHebrewChirho.repeatSummaryChirho.textGroupCountChirho}`,
+    `- Repeat duplicate groups/items: ${statusChirho.rawHebrewChirho.repeatSummaryChirho.duplicateTextGroupCountChirho} group(s), ${statusChirho.rawHebrewChirho.repeatSummaryChirho.duplicateTextItemCountChirho} item(s)`,
+    `- Repeat singleton groups: ${statusChirho.rawHebrewChirho.repeatSummaryChirho.singletonTextGroupCountChirho}`,
+    `- Repeat duplicate groups by validation status: ${countEntriesChirho(statusChirho.rawHebrewChirho.repeatSummaryChirho.duplicateTextGroupCountsByValidationStatusChirho)}`,
+    `- Repeat duplicate items by validation status: ${countEntriesChirho(statusChirho.rawHebrewChirho.repeatSummaryChirho.duplicateTextItemCountsByValidationStatusChirho)}`,
+    "- Raw Hebrew repeat clusters are planning aids only; every item still needs its own exact print certification or explicit issue.",
+    `- Raw Hebrew repeat-cluster handoff: \`${RAW_HEBREW_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO}\``,
+    ...statusChirho.rawHebrewChirho.repeatSummaryChirho.samplesChirho.map(
+      (sampleChirho) =>
+        `  - x${sampleChirho.countChirho} ${rawHebrewRepeatSampleTextChirho(sampleChirho)}; first pending: ${sampleChirho.reviewUrlChirho}`
+    ),
     "",
     "### Raw Hebrew Review Triage",
     "",
@@ -6122,6 +6273,51 @@ function attributionCleanupHandoffMarkdownChirho(statusChirho: CertificationStat
   ].join("\n");
 }
 
+function rawHebrewRepeatClusterMarkdownChirho(statusChirho: CertificationStatusChirho): string {
+  const summaryChirho = statusChirho.rawHebrewChirho.repeatSummaryChirho;
+  const groupLinesChirho = summaryChirho.groupsChirho.length === 0
+    ? ["- No duplicate raw Hebrew text groups are currently pending."]
+    : summaryChirho.groupsChirho.flatMap((groupChirho, indexChirho) => {
+        const textDisplayChirho = groupChirho.textChirho.trim().length === 0
+          ? "(blank text)"
+          : markdownCodeSpanChirho(groupChirho.textChirho);
+        const statusCountsChirho = Object.entries(groupChirho.validationStatusCountsChirho)
+          .map(([statusChirho, countChirho]) => `${statusChirho}=${countChirho}`)
+          .join(", ") || "none";
+        return [
+          `## ${indexChirho + 1}. hebrew-chirho x${groupChirho.countChirho} ${textDisplayChirho}`,
+          "",
+          `- First pending exact-text view: ${groupChirho.reviewUrlChirho}`,
+          `- Validation statuses: ${statusCountsChirho}`,
+          `- Item keys: ${groupChirho.itemsChirho.map((itemChirho) => itemChirho.itemKeyChirho).join(", ")}`,
+          "- Items:",
+          ...groupChirho.itemsChirho.map((itemChirho) => {
+            const volumeTextChirho = itemChirho.volumeChirho === null ? "vol ?" : `vol ${itemChirho.volumeChirho}`;
+            return `  - ${itemChirho.itemKeyChirho} (${volumeTextChirho}; ${itemChirho.validationStatusChirho}): ${itemChirho.reviewUrlChirho}`;
+          }),
+          "",
+        ];
+      });
+  return [
+    "<!-- For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16 -->",
+    "# Raw Hebrew Repeat Cluster Handoff Chirho",
+    "",
+    `Generated: ${statusChirho.generatedAtChirho}`,
+    "",
+    "This is a non-certifying planning aid. Repeated text can make review faster, but every listed item still needs its own exact print certification or explicit issue. Do not use this file to decrement the certification gate.",
+    "",
+    `- Pending raw Hebrew items: ${statusChirho.rawHebrewChirho.livePendingSpanCountChirho}`,
+    `- Text groups: ${summaryChirho.textGroupCountChirho}`,
+    `- Duplicate groups: ${summaryChirho.duplicateTextGroupCountChirho}`,
+    `- Duplicate items: ${summaryChirho.duplicateTextItemCountChirho}`,
+    `- Singleton groups: ${summaryChirho.singletonTextGroupCountChirho}`,
+    `- Duplicate groups by validation status: ${Object.entries(summaryChirho.duplicateTextGroupCountsByValidationStatusChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
+    `- Duplicate items by validation status: ${Object.entries(summaryChirho.duplicateTextItemCountsByValidationStatusChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
+    "",
+    ...groupLinesChirho,
+  ].join("\n");
+}
+
 function latinSymbolRepeatClusterMarkdownChirho(statusChirho: CertificationStatusChirho): string {
   const summaryChirho = statusChirho.latinSymbolVisionChirho.repeatSummaryChirho;
   const groupLinesChirho = summaryChirho.groupsChirho.length === 0
@@ -6250,6 +6446,10 @@ function mainChirho(): void {
   writeTextAtomicChirho(
     join(outDirChirho, LATIN_SYMBOL_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO),
     latinSymbolRepeatClusterMarkdownChirho(statusChirho)
+  );
+  writeTextAtomicChirho(
+    join(outDirChirho, RAW_HEBREW_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO),
+    rawHebrewRepeatClusterMarkdownChirho(statusChirho)
   );
   writeTextAtomicChirho(
     join(outDirChirho, ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO),
