@@ -4,7 +4,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 # Codex Raw Hebrew Pre-Review Chirho
 
 Generated: 2026-06-04
-Updated: 2026-06-04
+Updated: 2026-06-05
 
 This is a machine-assisted visual precheck, not a human certification. Do not use
 this file to decrement the certification gate or apply a clean verdict. It is only
@@ -153,6 +153,13 @@ span was surfaced.
   - Attention reason: low direct-read confidence on both short words.
   - Visual precheck: the two crops sit in the expected French phrase "d'abord ... au lieu de ..."; no word swap or segmentation defect is obvious from the packet crops.
   - Human check still needed: exact letters/marks for both short words.
+
+- `vol 5 p150 L11 S0`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A150%3A11%3A0`
+  - Live text: `נִזְעָקוּ`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the target is the first Hebrew word in the Job 17 conjecture comparison line before `au lieu de`. The packet crop begins at the line edge, so it is useful for locating the target but the human should use the full printed line/page context when checking the rightmost edge of the word.
+  - Human check still needed: exact consonants and pointing, especially the `ק/כ` distinction against the nearby `נִזְעָכוּ` contrast. Do not transfer a clean verdict from the similar forms later in the same line.
 
 - `vol 5 p150 L11 S2`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A150%3A11%3A2`
