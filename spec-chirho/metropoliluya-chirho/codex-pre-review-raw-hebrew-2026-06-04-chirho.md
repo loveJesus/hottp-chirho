@@ -308,6 +308,13 @@ another.
   - Visual precheck: the Hebrew word is cleanly boxed after French `du polel`; the following period and French `Il semble...` are outside the target box. This line appears to contrast with nearby `תְּרוֹמֵם` forms, so the missing/present vav and the holam placement are the review point, not a segmentation issue.
   - Human check still needed: tav/dagesh, sheva, holam placement, whether there is no vav in this printed form, and final mem.
 
+- `vol 5 p152 L22 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A152%3A22%3A1`
+  - Live text: `תְּרֹמְמֵם`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the line itself discusses a haplography of one of the `mem` letters, and the red box cleanly brackets the Hebrew form after French `d'une forme`. The printed cluster shows the repeated mem sequence at review resolution; the following period is outside the Hebrew box.
+  - Human check still needed: exact count/order of the mem letters, sheva/holam/tsere placement, and final mem.
+
 - `vol 5 p152 L13 S3/S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A3`
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A5`
