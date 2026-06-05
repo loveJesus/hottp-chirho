@@ -3257,16 +3257,35 @@ function assertPassCHumanReattributionHandoffChirho(
       "humanValidationDbChirho.genericReviewerRowDetailsChirho[]"
     );
     assertMarkdownContainsChirho(markdownChirho, `  - id ${idChirho} (${locationChirho};`, `Pass-C row ${idChirho} detail`);
-    assertMarkdownContainsChirho(
-      markdownChirho,
-      `Reattribute dry-run command: \`${reattributeSingleCommandChirho(rowChirho, false)}\``,
-      `Pass-C row ${idChirho} dry-run command`
+    const liveTextMatchesOriginalChirho = nullableBooleanFieldChirho(
+      rowChirho,
+      "liveTextMatchesOriginalChirho",
+      "humanValidationDbChirho.genericReviewerRowDetailsChirho[]"
     );
-    assertMarkdownContainsChirho(
-      markdownChirho,
-      `Reattribute apply command: \`${reattributeSingleCommandChirho(rowChirho, true)}\``,
-      `Pass-C row ${idChirho} apply command`
-    );
+    if (liveTextMatchesOriginalChirho === true) {
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        `Reattribute dry-run command: \`${reattributeSingleCommandChirho(rowChirho, false)}\``,
+        `Pass-C row ${idChirho} dry-run command`
+      );
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        `Reattribute apply command: \`${reattributeSingleCommandChirho(rowChirho, true)}\``,
+        `Pass-C row ${idChirho} apply command`
+      );
+    } else if (liveTextMatchesOriginalChirho === false) {
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        `Reattribute command omitted: live text changed; use Attribution re-review after checking the current live text against the print:`,
+        `Pass-C row ${idChirho} changed-text command omission`
+      );
+    } else {
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        "Reattribute command omitted: live text could not be checked; resolve the live span/read state before reattributing.",
+        `Pass-C row ${idChirho} unchecked command omission`
+      );
+    }
   }
 
   const groupedIdsChirho = genericGroupsChirho.flatMap((groupChirho) =>
@@ -3286,15 +3305,29 @@ function assertPassCHumanReattributionHandoffChirho(
     );
     return hashChirho === null ? [] : [`--expected-live-text-hash-chirho=${idChirho}:${hashChirho}`];
   });
-  const bulkBaseCommandChirho = [
-    "bun run reattribute-pass-c-human-validations-chirho --",
-    `--all-generic-chirho --expected-generic-row-count-chirho=${genericRowCountChirho}`,
-    ...bulkExpectedHashArgsChirho,
-    "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
-    "--rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>'",
-  ].join(" ");
-  assertMarkdownContainsChirho(markdownChirho, `${bulkBaseCommandChirho}\``, "Pass-C bulk dry-run command");
-  assertMarkdownContainsChirho(markdownChirho, `${bulkBaseCommandChirho} --apply-chirho\``, "Pass-C bulk apply command");
+  const bulkCanUseAllRowsChirho =
+    genericRowCountChirho > 0 &&
+    numberFieldChirho(humanDbChirho, "genericReviewerLiveTextMismatchRowsChirho", "humanValidationDbChirho") === 0 &&
+    numberFieldChirho(humanDbChirho, "genericReviewerLiveTextUnknownRowsChirho", "humanValidationDbChirho") === 0;
+  if (bulkCanUseAllRowsChirho) {
+    const bulkBaseCommandChirho = [
+      "bun run reattribute-pass-c-human-validations-chirho --",
+      `--all-generic-chirho --expected-generic-row-count-chirho=${genericRowCountChirho}`,
+      ...bulkExpectedHashArgsChirho,
+      "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
+      "--rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>'",
+    ].join(" ");
+    assertMarkdownContainsChirho(markdownChirho, `${bulkBaseCommandChirho}\``, "Pass-C bulk dry-run command");
+    assertMarkdownContainsChirho(markdownChirho, `${bulkBaseCommandChirho} --apply-chirho\``, "Pass-C bulk apply command");
+  } else if (genericRowCountChirho === 0) {
+    assertMarkdownContainsChirho(markdownChirho, "- Attribution-blocked reviewer bulk all-row path: none", "Pass-C no bulk path");
+  } else {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      "Attribution-blocked reviewer bulk all-row command omitted:",
+      "Pass-C bulk command omission for changed/unchecked rows"
+    );
+  }
 
   for (const groupChirho of genericGroupsChirho) {
     const rowCountChirho = numberFieldChirho(groupChirho, "rowCountChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
@@ -3332,16 +3365,24 @@ function assertPassCHumanReattributionHandoffChirho(
       `Live text vs original review: match=${matchRowsChirho}, changed=${mismatchRowsChirho}, unchecked=${unknownRowsChirho}`,
       `Pass-C batch ${idsChirho.join(",")} live-text comparison summary`
     );
-    assertMarkdownContainsChirho(
-      markdownChirho,
-      `Batch dry-run command: \`${reattributeBatchCommandChirho(groupChirho, false)}\``,
-      `Pass-C batch ${idsChirho.join(",")} dry-run command`
-    );
-    assertMarkdownContainsChirho(
-      markdownChirho,
-      `Batch apply command: \`${reattributeBatchCommandChirho(groupChirho, true)}\``,
-      `Pass-C batch ${idsChirho.join(",")} apply command`
-    );
+    if (mismatchRowsChirho === 0 && unknownRowsChirho === 0) {
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        `Batch dry-run command: \`${reattributeBatchCommandChirho(groupChirho, false)}\``,
+        `Pass-C batch ${idsChirho.join(",")} dry-run command`
+      );
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        `Batch apply command: \`${reattributeBatchCommandChirho(groupChirho, true)}\``,
+        `Pass-C batch ${idsChirho.join(",")} apply command`
+      );
+    } else {
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        "Batch command omitted: this timestamp group contains changed or unchecked rows;",
+        `Pass-C batch ${idsChirho.join(",")} changed/unchecked command omission`
+      );
+    }
   }
 }
 

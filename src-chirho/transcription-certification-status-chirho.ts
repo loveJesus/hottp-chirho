@@ -4681,6 +4681,18 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
             ];
             const dryRunCommandChirho = baseCommandPartsChirho.join(" ");
             const applyCommandChirho = [...baseCommandPartsChirho, "--apply-chirho"].join(" ");
+            const reattributeLinesChirho = rowChirho.liveTextMatchesOriginalChirho === true
+              ? [
+                  `    - Reattribute dry-run command: \`${dryRunCommandChirho}\``,
+                  `    - Reattribute apply command: \`${applyCommandChirho}\``,
+                ]
+              : rowChirho.liveTextMatchesOriginalChirho === false
+                ? [
+                    `    - Reattribute command omitted: live text changed; use Attribution re-review after checking the current live text against the print: ${rawHebrewReviewUrlChirho(undefined, "attribution-rereview-chirho", undefined, rowChirho.locationChirho)}`,
+                  ]
+                : [
+                    "    - Reattribute command omitted: live text could not be checked; resolve the live span/read state before reattributing.",
+                  ];
             return [
               `  - id ${rowChirho.idChirho} (${rowChirho.locationChirho}; current reviewer ${rowChirho.reviewerChirho})`,
               `    - Verdict: ${rowChirho.verdictChirho}; applied: ${appliedChirho}; script verdict: ${scriptVerdictChirho}; issue flags: ${flagsChirho}`,
@@ -4689,8 +4701,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
               `    - Live span: ${liveSpanStatusChirho}; text: ${liveTextChirho}; script: ${rowChirho.liveScriptChirho ?? "none-chirho"}; provenance: ${rowChirho.liveProvenanceChirho ?? "none-chirho"}; human validation id/verdict: ${rowChirho.liveHumanValidationIdChirho ?? "none-chirho"}/${rowChirho.liveHumanValidationVerdictChirho ?? "none-chirho"}; text matches original: ${liveTextMatchesOriginalChirho}`,
               `    - Live span JSON: \`${relativeProjectPathChirho(rowChirho.liveSpanLinePathChirho)}\``,
               `    - Source scanline: \`${relativeProjectPathChirho(rowChirho.liveScanlinePathChirho)}\` (${scanlineStatusChirho})`,
-              `    - Reattribute dry-run command: \`${dryRunCommandChirho}\``,
-              `    - Reattribute apply command: \`${applyCommandChirho}\``,
+              ...reattributeLinesChirho,
             ];
           }),
         ];
@@ -4745,17 +4756,28 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
             const verdictCountsChirho = Object.entries(groupChirho.verdictCountsChirho)
               .map(([verdictChirho, countChirho]) => `${verdictChirho}=${countChirho}`)
               .join(", ");
-            const { dryRunCommandChirho, applyCommandChirho } = genericReviewerBatchCommandChirho(
-              groupChirho.idsChirho,
-              groupChirho.expectedLiveTextHashArgsChirho,
-              "<why every selected row is attributable to that reviewer>"
-            );
+            const groupCanUseBatchCommandChirho =
+              groupChirho.liveTextMismatchRowsChirho === 0 && groupChirho.liveTextUnknownRowsChirho === 0;
+            const commandLinesChirho = groupCanUseBatchCommandChirho
+              ? (() => {
+                  const { dryRunCommandChirho, applyCommandChirho } = genericReviewerBatchCommandChirho(
+                    groupChirho.idsChirho,
+                    groupChirho.expectedLiveTextHashArgsChirho,
+                    "<why every selected row is attributable to that reviewer>"
+                  );
+                  return [
+                    `    - Batch dry-run command: \`${dryRunCommandChirho}\``,
+                    `    - Batch apply command: \`${applyCommandChirho}\``,
+                  ];
+                })()
+              : [
+                  "    - Batch command omitted: this timestamp group contains changed or unchecked rows; use the unchanged-live-text batch above, or Attribution re-review for changed/unchecked rows.",
+                ];
             return [
               `  - applied ${groupChirho.appliedAtChirho ?? "not-applied-chirho"}; current reviewer ${groupChirho.reviewerChirho}; ids ${groupChirho.idsChirho.join(", ")}; locations ${groupChirho.locationsChirho.join(", ")}`,
               `    - Verdict counts: ${verdictCountsChirho || "none"}; live hash guards: ${groupChirho.allLiveTextHashesAvailableChirho ? "all-present-chirho" : "missing-live-hash-chirho"}`,
               `    - Live text vs original review: match=${groupChirho.liveTextMatchRowsChirho}, changed=${groupChirho.liveTextMismatchRowsChirho}, unchecked=${groupChirho.liveTextUnknownRowsChirho}`,
-              `    - Batch dry-run command: \`${dryRunCommandChirho}\``,
-              `    - Batch apply command: \`${applyCommandChirho}\``,
+              ...commandLinesChirho,
             ];
           }),
         ];
@@ -4773,6 +4795,21 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     genericReviewerAllLiveTextHashArgsChirho.length === statusChirho.humanValidationDbChirho.genericReviewerRowsChirho
       ? "count+hash-guarded"
       : "count-guarded; missing some live hash guards";
+  const genericReviewerBulkCanUseAllRowsChirho =
+    statusChirho.humanValidationDbChirho.genericReviewerRowsChirho > 0 &&
+    statusChirho.humanValidationDbChirho.genericReviewerLiveTextMismatchRowsChirho === 0 &&
+    statusChirho.humanValidationDbChirho.genericReviewerLiveTextUnknownRowsChirho === 0;
+  const genericReviewerBulkLinesChirho =
+    statusChirho.humanValidationDbChirho.genericReviewerRowsChirho === 0
+      ? ["- Attribution-blocked reviewer bulk all-row path: none"]
+      : genericReviewerBulkCanUseAllRowsChirho
+        ? [
+            `- Attribution-blocked reviewer bulk dry-run path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>'\``,
+            `- Attribution-blocked reviewer bulk apply path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>' --apply-chirho\``,
+          ]
+        : [
+            `- Attribution-blocked reviewer bulk all-row command omitted: ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextMismatchRowsChirho} changed and ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextUnknownRowsChirho} unchecked row(s) are present; use unchanged-live-text exact-ID batches, or Attribution re-review for changed/unchecked rows.`,
+          ];
   const rawHebrewAttributionBlockedFirstKeyChirho =
     statusChirho.humanValidationDbChirho.genericReviewerRowDetailsChirho.find((rowChirho) => rowChirho.liveSpanExistsChirho)?.locationChirho ?? null;
   const rawHebrewAttributionBlockedFirstUrlChirho = rawHebrewAttributionBlockedFirstKeyChirho === null
@@ -4999,8 +5036,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Attribution-blocked rows whose live text could not be checked: ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextUnknownRowsChirho}`,
     "- Attribution-blocked reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>'`",
     "- Attribution-blocked reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>' --apply-chirho`",
-    `- Attribution-blocked reviewer bulk dry-run path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>'\``,
-    `- Attribution-blocked reviewer bulk apply path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>' --apply-chirho\``,
+    ...genericReviewerBulkLinesChirho,
     "- Reattribution commands reject copied template placeholders; replace reviewer and rationale placeholders before running.",
     "- Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit human reviewer.",
     "- If an attribution-blocked row's live text has changed since the original review, prefer the Attribution re-review lane unless the reviewer has rechecked the current live text against the print.",
