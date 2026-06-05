@@ -83,6 +83,26 @@ function checkMachineReviewerRejectedBeforeTargetChirho(): void {
   );
 }
 
+function checkPlaceholderTextRejectedBeforeTargetChirho(): void {
+  const argsChirho = applyArgsChirho([
+    "--id-chirho=v0-p0000-l000-s0",
+    "--supplied-text-chirho=<exact printed text>",
+    "--reviewer-chirho=dr-expert-supplied-guard-check-chirho",
+    "--reviewer-role-chirho=Syriac reader",
+    "--rationale-chirho=certification guard placeholder check only",
+  ]);
+  const resultChirho = runCommandChirho(argsChirho);
+  const combinedOutputChirho = `${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`;
+  assertCommandChirho(
+    resultChirho.exitCodeChirho !== 0,
+    `placeholder command unexpectedly succeeded: ${commandTextChirho(argsChirho)}`
+  );
+  assertCommandChirho(
+    combinedOutputChirho.includes("--supplied-text-chirho must be the exact printed transcription, not a template placeholder"),
+    `placeholder command failed for the wrong reason: ${combinedOutputChirho}`
+  );
+}
+
 function blankLiveItemChirho(): VisionTierExpertLiveItemChirho | null {
   return (
     visionTierExpertLiveItemsChirho().find((itemChirho) => {
@@ -140,6 +160,7 @@ function checkBlankLiveItemWrongRoleChirho(itemChirho: VisionTierExpertLiveItemC
 
 function mainChirho(): void {
   checkMachineReviewerRejectedBeforeTargetChirho();
+  checkPlaceholderTextRejectedBeforeTargetChirho();
   const blankItemChirho = blankLiveItemChirho();
   if (blankItemChirho === null) {
     console.log(`[${MODULE_CHIRHO}] no blank explicit-span vision-tier item is currently live; skipped live blank dry-run checks`);

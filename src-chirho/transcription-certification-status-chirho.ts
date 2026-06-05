@@ -3885,6 +3885,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
           `  - Manifest item fresh against live queue: ${handoffChirho.manifestItemFreshChirho}`,
           `  - Expert-supplied text dry-run after exact script-reader transcription: \`${handoffChirho.dryRunCommandTemplateChirho}\``,
           `  - Expert-supplied text apply after dry-run verification: \`${handoffChirho.applyCommandTemplateChirho}\``,
+          "  - Replace every placeholder before running; copied template values such as `<exact printed text>` are rejected by the CLI.",
           "  - Applying supplied text removes only the EMPTY-SPAN structural marker; the item remains vision-tier until explicit expert confirmation.",
         ]);
   const guardedWlcCorrectionCommandLinesChirho = statusChirho.structuralChirho.guardedWlcCorrectionCommandsChirho.length === 0
@@ -4158,6 +4159,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Expert Syriac reader blank-text handoff lane: ${expertReviewUrlChirho("syriac-chirho", undefined, undefined, undefined, "blank-chirho")} (${pendingExpertScriptBlankCountChirho("syriac-chirho")} pending blank item(s) requiring supplied text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacBlankChirho)})`,
     "- Expert-supplied blank-span dry-run path: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho=<item-id-chirho> --supplied-text-chirho='<exact printed text>' --reviewer-chirho=<explicit-human-reviewer-id-chirho> --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>'`",
     "- Expert-supplied blank-span apply path, only after dry-run verification: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho=<item-id-chirho> --supplied-text-chirho='<exact printed text>' --reviewer-chirho=<explicit-human-reviewer-id-chirho> --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>' --apply` (the item remains vision-tier until explicitly confirmed)",
+    "- Expert-supplied text commands reject copied template placeholders; replace placeholders with the actual item id, exact printed UTF-8, reviewer id, and rationale.",
     `- Expert Arabist lane: ${expertReviewUrlChirho("arabic-chirho")} (${pendingExpertScriptCountChirho("arabic-chirho")} pending of ${expertScriptCountChirho("arabic-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertArabicChirho)})`,
     ...expertVolumeLaneLinesChirho,
     `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,

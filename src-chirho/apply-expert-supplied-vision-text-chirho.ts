@@ -51,6 +51,13 @@ const DEFAULT_BACKUP_PATH_CHIRHO = join(
   "expert-supplied-vision-transcriptions-2026-06-04-chirho.json"
 );
 const ITEM_ID_RE_CHIRHO = /^v(\d+)-p(\d{4})-l(\d{3})-s(\d+)$/;
+const SUPPLIED_TEXT_PLACEHOLDER_VALUES_CHIRHO = new Set([
+  "exact printed text",
+  "exact printed syriac text",
+  "placeholder",
+  "todo",
+  "tbd",
+]);
 
 interface SpanChirho {
   segmentIndexChirho: number;
@@ -255,10 +262,25 @@ function loadFreshExpertPackItemChirho(itemIdChirho: string, liveItemChirho: Vis
   return packItemChirho;
 }
 
+function suppliedTextLooksPlaceholderChirho(suppliedTextChirho: string): boolean {
+  const normalizedChirho = suppliedTextChirho
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+  const unwrappedChirho = normalizedChirho.replace(/^<(.+)>$/u, "$1").trim();
+  return (
+    SUPPLIED_TEXT_PLACEHOLDER_VALUES_CHIRHO.has(normalizedChirho) ||
+    SUPPLIED_TEXT_PLACEHOLDER_VALUES_CHIRHO.has(unwrappedChirho)
+  );
+}
+
 function parseOptionsChirho(): ApplyOptionsChirho {
   const argsChirho = process.argv.slice(2);
   const suppliedTextChirho = normalizeTextForStorageChirho(nonEmptyArgChirho(argsChirho, "supplied-text-chirho"));
   if (suppliedTextChirho.trim().length === 0) throw new Error("--supplied-text-chirho must not normalize to empty text");
+  if (suppliedTextLooksPlaceholderChirho(suppliedTextChirho)) {
+    throw new Error("--supplied-text-chirho must be the exact printed transcription, not a template placeholder");
+  }
   const reviewerChirho = nonEmptyArgChirho(argsChirho, "reviewer-chirho");
   assertCertifyingReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
   return {

@@ -47,6 +47,9 @@ bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='v3-p0151-l010-s
 bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='v3-p0151-l010-s3' --supplied-text-chirho='<exact printed Syriac text>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>' --apply
 ```
 
+Replace every placeholder before running either command. Copied template values
+such as `<exact printed Syriac text>` are rejected by the CLI.
+
 The command is role-gated to `Syriac reader`, freshness-gated against the live expert packet, and refuses to overwrite non-empty text. Applying supplied text only fills the blank structural hole. It does not certify the item. After the exact text is supplied and the expert pack/status are regenerated, the same Syriac reader still needs to confirm the item explicitly in the expert reviewer.
 
 ## Boundary
