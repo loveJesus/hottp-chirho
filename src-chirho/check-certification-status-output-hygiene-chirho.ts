@@ -38,6 +38,9 @@ interface CertificationStatusOutputChirho {
   reviewStartLinksChirho?: unknown;
   rawHebrewChirho?: unknown;
   latinSymbolVisionChirho?: unknown;
+  latinSymbolReviewBackupChirho?: unknown;
+  latinSymbolReviewDbChirho?: unknown;
+  latinSymbolAcceptancePolicyChirho?: unknown;
   visionTierChirho?: unknown;
   expertSuppliedVisionTextBackupChirho?: unknown;
   visionTierExpertConfirmationPolicyChirho?: unknown;
@@ -1489,6 +1492,346 @@ function assertVisionTierExpertQueueRemainingWorkCoverageChirho(
   );
 }
 
+function assertLatinSymbolQueueMarkdownCoverageChirho(
+  markdownChirho: string,
+  statusChirho: CertificationStatusOutputChirho
+): void {
+  const latinChirho = statusChirho.latinSymbolVisionChirho;
+  const artifactsChirho = statusChirho.artifactsChirho;
+  const reviewDbChirho = statusChirho.latinSymbolReviewDbChirho;
+  const reviewBackupChirho = statusChirho.latinSymbolReviewBackupChirho;
+  const policyChirho = statusChirho.latinSymbolAcceptancePolicyChirho;
+  const symbolRiskChirho = objectRecordChirho(
+    objectRecordChirho(latinChirho, "latinSymbolVisionChirho").symbolRiskSummaryChirho,
+    "latinSymbolVisionChirho.symbolRiskSummaryChirho"
+  );
+  const packetExistsChirho = booleanFieldChirho(artifactsChirho, "latinSymbolPackManifestExistsChirho", "artifactsChirho");
+  const packetShapeOkChirho = booleanFieldChirho(artifactsChirho, "latinSymbolPackManifestShapeOkChirho", "artifactsChirho");
+  const reviewBackupExistsChirho = booleanFieldChirho(artifactsChirho, "latinSymbolReviewBackupExistsChirho", "artifactsChirho");
+  const reviewBackupShapeOkChirho = booleanFieldChirho(artifactsChirho, "latinSymbolReviewBackupShapeOkChirho", "artifactsChirho");
+
+  assertMarkdownContainsChirho(markdownChirho, "## Latin/Symbol Vision Scope", "Latin/symbol scope heading");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "These spans are not in the non-Latin expert pack, but they still matter for a project-wide flawless-transcription claim.",
+    "Latin/symbol scope warning"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Included in completion gate: ${booleanFieldChirho(latinChirho, "includedInCompletionGateChirho", "latinSymbolVisionChirho")}`,
+    "Latin/symbol completion-gate inclusion"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- D1 scan error: ${nullableStringFieldChirho(latinChirho, "d1ReadErrorChirho", "latinSymbolVisionChirho") ?? "none"}`,
+    "Latin/symbol D1 scan error"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Explicit vision-tier Latin/symbol items: ${numberFieldChirho(latinChirho, "explicitVisionItemCountChirho", "latinSymbolVisionChirho")}`,
+    "Latin/symbol explicit item count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Counts: ${countMapDisplayChirho(countMapFieldChirho(latinChirho, "explicitVisionCountsChirho", "latinSymbolVisionChirho"))}`,
+    "Latin/symbol explicit counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- D1-derived Latin/symbol vision words: ${numberFieldChirho(latinChirho, "d1DerivedVisionWordCountChirho", "latinSymbolVisionChirho")}`,
+    "Latin/symbol D1-derived count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- D1-derived counts: ${countMapDisplayChirho(countMapFieldChirho(latinChirho, "d1DerivedVisionCountsChirho", "latinSymbolVisionChirho"))}`,
+    "Latin/symbol D1-derived counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Symbol items total: ${numberFieldChirho(symbolRiskChirho, "totalSymbolItemsChirho", "latinSymbolVisionChirho.symbolRiskSummaryChirho")}`,
+    "Latin/symbol symbol total"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Symbol items safe-symbols-only: ${numberFieldChirho(symbolRiskChirho, "trivialPunctuationSymbolItemsChirho", "latinSymbolVisionChirho.symbolRiskSummaryChirho")}`,
+    "Latin/symbol trivial symbol count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Symbol items requiring review/override: ${numberFieldChirho(symbolRiskChirho, "nontrivialSymbolItemsChirho", "latinSymbolVisionChirho.symbolRiskSummaryChirho")}`,
+    "Latin/symbol nontrivial symbol count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Symbol items containing script letters/sigla: ${numberFieldChirho(symbolRiskChirho, "mixedScriptSymbolItemsChirho", "latinSymbolVisionChirho.symbolRiskSummaryChirho")}`,
+    "Latin/symbol mixed script symbol count"
+  );
+  assertMarkdownContainsChirho(markdownChirho, `- Review packet exists: ${packetExistsChirho}`, "Latin/symbol packet existence");
+  assertMarkdownContainsChirho(markdownChirho, `- Review packet shape OK: ${packetShapeOkChirho}`, "Latin/symbol packet shape");
+  for (const [fieldChirho, labelChirho] of [
+    ["reviewPacketItemCountChirho", "Review packet items"],
+    ["reviewedCleanCountChirho", "Accepted-clean reviews"],
+    ["reviewedIssueCountChirho", "Reviewed-issues rows"],
+    ["acceptedByPolicyCountChirho", "Accepted by explicit policy"],
+    ["totalAcceptedDecisionCountChirho", "Total accepted decisions"],
+    ["issueOverriddenAcceptedDecisionCountChirho", "Accepted decisions overridden by open issues"],
+    ["staleReviewCountChirho", "Stale review rows"],
+    ["pendingDecisionCountChirho", "Live pending decisions"],
+    ["remainingDecisionCountChirho", "Remaining decisions"],
+  ] as const) {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `- ${labelChirho}: ${numberFieldChirho(latinChirho, fieldChirho, "latinSymbolVisionChirho")}`,
+      `Latin/symbol ${fieldChirho}`
+    );
+  }
+  for (const [fieldChirho, labelChirho] of [
+    ["reviewPacketCountMatchesCurrentChirho", "Review packet count matches current state"],
+    ["reviewPacketIdsMatchCurrentChirho", "Review packet IDs match current state"],
+    ["reviewPacketTextMatchesCurrentChirho", "Review packet text matches current state"],
+    ["reviewPacketLineTextMatchesCurrentChirho", "Review packet line text matches current state"],
+    ["reviewPacketImagesMatchCurrentChirho", "Review packet image hashes match current files"],
+  ] as const) {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `- ${labelChirho}: ${booleanFieldChirho(latinChirho, fieldChirho, "latinSymbolVisionChirho")}`,
+      `Latin/symbol ${fieldChirho}`
+    );
+  }
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Review packet image hash drift items: ${numberFieldChirho(latinChirho, "reviewPacketImageDriftCountChirho", "latinSymbolVisionChirho")}`,
+    "Latin/symbol packet image drift count"
+  );
+  for (const sampleChirho of stringArrayFieldChirho(latinChirho, "reviewPacketImageDriftSamplesChirho", "latinSymbolVisionChirho")) {
+    assertMarkdownContainsChirho(markdownChirho, `  - ${sampleChirho}`, `Latin/symbol packet image drift sample ${sampleChirho}`);
+  }
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Review packet markdown image paths match hashed files: ${booleanFieldChirho(latinChirho, "reviewPacketMarkdownPathsMatchCurrentChirho", "latinSymbolVisionChirho")}`,
+    "Latin/symbol packet markdown path freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Review packet markdown image path drift items: ${numberFieldChirho(latinChirho, "reviewPacketMarkdownPathDriftCountChirho", "latinSymbolVisionChirho")}`,
+    "Latin/symbol packet markdown path drift count"
+  );
+  for (const sampleChirho of stringArrayFieldChirho(latinChirho, "reviewPacketMarkdownPathDriftSamplesChirho", "latinSymbolVisionChirho")) {
+    assertMarkdownContainsChirho(markdownChirho, `  - ${sampleChirho}`, `Latin/symbol packet markdown path drift sample ${sampleChirho}`);
+  }
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live pending counts: ${countMapDisplayChirho(countMapFieldChirho(latinChirho, "pendingDecisionCountsChirho", "latinSymbolVisionChirho"))}`,
+    "Latin/symbol pending counts"
+  );
+
+  assertMarkdownContainsChirho(markdownChirho, "## Latin/Symbol Review Store", "Latin/symbol review store heading");
+  assertMarkdownContainsChirho(markdownChirho, `- Backup exists: ${reviewBackupExistsChirho}`, "Latin/symbol review backup existence");
+  assertMarkdownContainsChirho(markdownChirho, `- Backup shape OK: ${reviewBackupShapeOkChirho}`, "Latin/symbol review backup shape");
+  for (const [objectChirho, objectLabelChirho, fieldChirho, labelChirho] of [
+    [reviewDbChirho, "latinSymbolReviewDbChirho", "currentRowsChirho", "Current merged rows"],
+    [reviewBackupChirho, "latinSymbolReviewBackupChirho", "dbRowsChirho", "Local DB rows"],
+    [reviewBackupChirho, "latinSymbolReviewBackupChirho", "backupRowsChirho", "Backup rows"],
+    [reviewBackupChirho, "latinSymbolReviewBackupChirho", "localRowsMissingFromBackupChirho", "Local rows missing from backup"],
+    [reviewDbChirho, "latinSymbolReviewDbChirho", "validReviewedCleanRowsChirho", "Valid accepted-clean rows"],
+    [reviewDbChirho, "latinSymbolReviewDbChirho", "validReviewedIssueRowsChirho", "Valid reviewed-issues rows"],
+    [reviewDbChirho, "latinSymbolReviewDbChirho", "invalidReviewRowsChirho", "Invalid review rows"],
+    [reviewDbChirho, "latinSymbolReviewDbChirho", "staleRowsChirho", "Stale rows"],
+    [reviewDbChirho, "latinSymbolReviewDbChirho", "appliedRowsChirho", "Applied rows"],
+    [reviewDbChirho, "latinSymbolReviewDbChirho", "genericReviewerRowsChirho", "Attribution-blocked reviewer rows"],
+  ] as const) {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `- ${labelChirho}: ${numberFieldChirho(objectChirho, fieldChirho, objectLabelChirho)}`,
+      `Latin/symbol review store ${fieldChirho}`
+    );
+  }
+
+  assertMarkdownContainsChirho(markdownChirho, "## Latin/Symbol Acceptance Policy", "Latin/symbol acceptance policy heading");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Policy exists: ${booleanFieldChirho(policyChirho, "policyFileExistsChirho", "latinSymbolAcceptancePolicyChirho")}`,
+    "Latin/symbol acceptance policy existence"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Policy shape OK: ${booleanFieldChirho(policyChirho, "policyFileShapeOkChirho", "latinSymbolAcceptancePolicyChirho")}`,
+    "Latin/symbol acceptance policy shape"
+  );
+  for (const [fieldChirho, labelChirho] of [
+    ["acceptedPolicyCountChirho", "Accepted policies"],
+    ["acceptedPolicyItemCountChirho", "Accepted policy items"],
+    ["validAcceptedPolicyItemCountChirho", "Valid accepted policy items"],
+    ["staleAcceptedPolicyItemCountChirho", "Stale accepted policy items"],
+    ["duplicateAcceptedPolicyItemCountChirho", "Duplicate accepted policy items"],
+  ] as const) {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `- ${labelChirho}: ${numberFieldChirho(policyChirho, fieldChirho, "latinSymbolAcceptancePolicyChirho")}`,
+      `Latin/symbol acceptance policy ${fieldChirho}`
+    );
+  }
+  const policyShapeErrorsChirho = stringArrayFieldChirho(policyChirho, "shapeErrorsChirho", "latinSymbolAcceptancePolicyChirho");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Shape errors: ${policyShapeErrorsChirho.length === 0 ? "none" : policyShapeErrorsChirho.join("; ")}`,
+    "Latin/symbol acceptance policy shape errors"
+  );
+}
+
+function assertLatinSymbolQueueRemainingWorkCoverageChirho(
+  statusChirho: CertificationStatusOutputChirho,
+  remainingWorkChirho: string[]
+): void {
+  const latinChirho = statusChirho.latinSymbolVisionChirho;
+  const artifactsChirho = statusChirho.artifactsChirho;
+  const reviewDbChirho = statusChirho.latinSymbolReviewDbChirho;
+  const reviewBackupChirho = statusChirho.latinSymbolReviewBackupChirho;
+  const policyChirho = statusChirho.latinSymbolAcceptancePolicyChirho;
+  const d1ReadErrorChirho = nullableStringFieldChirho(latinChirho, "d1ReadErrorChirho", "latinSymbolVisionChirho");
+  const currentDecisionCountChirho =
+    numberFieldChirho(latinChirho, "explicitVisionItemCountChirho", "latinSymbolVisionChirho") +
+    numberFieldChirho(latinChirho, "d1DerivedVisionWordCountChirho", "latinSymbolVisionChirho");
+  const packetExistsChirho = booleanFieldChirho(artifactsChirho, "latinSymbolPackManifestExistsChirho", "artifactsChirho");
+  const packetShapeOkChirho = booleanFieldChirho(artifactsChirho, "latinSymbolPackManifestShapeOkChirho", "artifactsChirho");
+  const packetCountMatchesChirho = booleanFieldChirho(latinChirho, "reviewPacketCountMatchesCurrentChirho", "latinSymbolVisionChirho");
+  const packetIdsMatchChirho = booleanFieldChirho(latinChirho, "reviewPacketIdsMatchCurrentChirho", "latinSymbolVisionChirho");
+  const reviewBackupExistsChirho = booleanFieldChirho(artifactsChirho, "latinSymbolReviewBackupExistsChirho", "artifactsChirho");
+  const reviewBackupShapeOkChirho = booleanFieldChirho(artifactsChirho, "latinSymbolReviewBackupShapeOkChirho", "artifactsChirho");
+  const policyExistsChirho = booleanFieldChirho(policyChirho, "policyFileExistsChirho", "latinSymbolAcceptancePolicyChirho");
+  const policyShapeOkChirho = booleanFieldChirho(policyChirho, "policyFileShapeOkChirho", "latinSymbolAcceptancePolicyChirho");
+
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    currentDecisionCountChirho !== 0 && !packetExistsChirho,
+    "Latin/symbol vision review packet is missing; run make-latin-symbol-vision-pack-chirho",
+    "Latin/symbol vision review packet is missing"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    d1ReadErrorChirho !== null,
+    `D1-derived Latin/symbol vision word scan failed: ${d1ReadErrorChirho}`,
+    "D1-derived Latin/symbol vision word scan failed"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    packetExistsChirho && !packetShapeOkChirho,
+    "Latin/symbol vision review packet is malformed; regenerate make-latin-symbol-vision-pack-chirho",
+    "Latin/symbol vision review packet is malformed"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    reviewBackupExistsChirho && !reviewBackupShapeOkChirho,
+    "Latin/symbol review backup is malformed; regenerate record-latin-symbol-vision-review-chirho -- --export-backup",
+    "Latin/symbol review backup is malformed"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    policyExistsChirho && !policyShapeOkChirho,
+    "Latin/symbol acceptance policy is malformed; fix or regenerate prepare-latin-symbol-vision-acceptance-policy-chirho",
+    "Latin/symbol acceptance policy is malformed"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    d1ReadErrorChirho === null && currentDecisionCountChirho !== 0 && packetExistsChirho && packetShapeOkChirho && !packetCountMatchesChirho,
+    "Latin/symbol vision review packet count does not match current span/D1 state; regenerate make-latin-symbol-vision-pack-chirho",
+    "Latin/symbol vision review packet count does not match current span/D1 state"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    d1ReadErrorChirho === null &&
+      currentDecisionCountChirho !== 0 &&
+      packetExistsChirho &&
+      packetShapeOkChirho &&
+      packetCountMatchesChirho &&
+      !packetIdsMatchChirho,
+    "Latin/symbol vision review packet item IDs do not match current span/D1 state; regenerate make-latin-symbol-vision-pack-chirho",
+    "Latin/symbol vision review packet item IDs do not match current span/D1 state"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    d1ReadErrorChirho === null &&
+      currentDecisionCountChirho !== 0 &&
+      packetExistsChirho &&
+      packetShapeOkChirho &&
+      packetIdsMatchChirho &&
+      !booleanFieldChirho(latinChirho, "reviewPacketTextMatchesCurrentChirho", "latinSymbolVisionChirho"),
+    "Latin/symbol vision review packet text does not match current live span/D1 text; regenerate make-latin-symbol-vision-pack-chirho",
+    "Latin/symbol vision review packet text does not match current live span/D1 text"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    d1ReadErrorChirho === null &&
+      currentDecisionCountChirho !== 0 &&
+      packetExistsChirho &&
+      packetShapeOkChirho &&
+      packetIdsMatchChirho &&
+      !booleanFieldChirho(latinChirho, "reviewPacketLineTextMatchesCurrentChirho", "latinSymbolVisionChirho"),
+    "Latin/symbol vision review packet line text does not match current live span/D1 context; regenerate make-latin-symbol-vision-pack-chirho",
+    "Latin/symbol vision review packet line text does not match current live span/D1 context"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    currentDecisionCountChirho !== 0 &&
+      packetExistsChirho &&
+      packetShapeOkChirho &&
+      numberFieldChirho(latinChirho, "reviewPacketImageDriftCountChirho", "latinSymbolVisionChirho") !== 0,
+    `${numberFieldChirho(latinChirho, "reviewPacketImageDriftCountChirho", "latinSymbolVisionChirho")} Latin/symbol vision review packet image hash drift(s); regenerate make-latin-symbol-vision-pack-chirho`,
+    "Latin/symbol vision review packet image hash drift(s)"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    currentDecisionCountChirho !== 0 &&
+      packetExistsChirho &&
+      packetShapeOkChirho &&
+      numberFieldChirho(latinChirho, "reviewPacketMarkdownPathDriftCountChirho", "latinSymbolVisionChirho") !== 0,
+    `${numberFieldChirho(latinChirho, "reviewPacketMarkdownPathDriftCountChirho", "latinSymbolVisionChirho")} Latin/symbol vision review packet markdown image path drift(s); regenerate make-latin-symbol-vision-pack-chirho`,
+    "Latin/symbol vision review packet markdown image path drift(s)"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(reviewDbChirho, "staleRowsChirho", "latinSymbolReviewDbChirho") !== 0,
+    `${numberFieldChirho(reviewDbChirho, "staleRowsChirho", "latinSymbolReviewDbChirho")} Latin/symbol review row(s) are stale against current live span/D1 text`,
+    "Latin/symbol review row(s) are stale against current live span/D1 text"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(reviewDbChirho, "invalidReviewRowsChirho", "latinSymbolReviewDbChirho") !== 0,
+    `${numberFieldChirho(reviewDbChirho, "invalidReviewRowsChirho", "latinSymbolReviewDbChirho")} Latin/symbol review row(s) have malformed or verdict-inconsistent issue metadata`,
+    "Latin/symbol review row(s) have malformed or verdict-inconsistent issue metadata"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(reviewDbChirho, "genericReviewerRowsChirho", "latinSymbolReviewDbChirho") !== 0,
+    `${numberFieldChirho(reviewDbChirho, "genericReviewerRowsChirho", "latinSymbolReviewDbChirho")} Latin/symbol review row(s) use blank/generic/machine reviewer attribution; re-review explicitly before certification`,
+    "Latin/symbol review row(s) use blank/generic/machine reviewer attribution"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(reviewBackupChirho, "localRowsMissingFromBackupChirho", "latinSymbolReviewBackupChirho") !== 0,
+    `${numberFieldChirho(reviewBackupChirho, "localRowsMissingFromBackupChirho", "latinSymbolReviewBackupChirho")} local Latin/symbol review row(s) need export-backup before certification can complete on a fresh checkout`,
+    "local Latin/symbol review row(s) need export-backup before certification can complete on a fresh checkout"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(policyChirho, "staleAcceptedPolicyItemCountChirho", "latinSymbolAcceptancePolicyChirho") !== 0,
+    `${numberFieldChirho(policyChirho, "staleAcceptedPolicyItemCountChirho", "latinSymbolAcceptancePolicyChirho")} Latin/symbol policy item(s) are stale against current live span/D1 text`,
+    "Latin/symbol policy item(s) are stale against current live span/D1 text"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(policyChirho, "duplicateAcceptedPolicyItemCountChirho", "latinSymbolAcceptancePolicyChirho") !== 0,
+    `${numberFieldChirho(policyChirho, "duplicateAcceptedPolicyItemCountChirho", "latinSymbolAcceptancePolicyChirho")} duplicate Latin/symbol policy item(s) need cleanup`,
+    "duplicate Latin/symbol policy item(s) need cleanup"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(latinChirho, "issueOverriddenAcceptedDecisionCountChirho", "latinSymbolVisionChirho") !== 0,
+    `${numberFieldChirho(latinChirho, "issueOverriddenAcceptedDecisionCountChirho", "latinSymbolVisionChirho")} Latin/symbol accepted decision(s) are overridden by open issue review(s)`,
+    "Latin/symbol accepted decision(s) are overridden by open issue review(s)"
+  );
+}
+
 function assertCoreRemainingWorkCoverageChirho(
   statusChirho: CertificationStatusOutputChirho,
   remainingWorkChirho: string[]
@@ -2135,6 +2478,8 @@ function mainChirho(): void {
   assertRawHebrewQueueRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
   assertVisionTierExpertQueueMarkdownCoverageChirho(markdownChirho, statusChirho);
   assertVisionTierExpertQueueRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
+  assertLatinSymbolQueueMarkdownCoverageChirho(markdownChirho, statusChirho);
+  assertLatinSymbolQueueRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
   assertStrictBlindScanCoverageChirho(markdownChirho, statusChirho, remainingWorkStringsChirho);
   assertBlankExpertHandoffCoverageChirho(markdownChirho, statusChirho);
   assertPassCHumanReattributionHandoffChirho(markdownChirho, statusChirho, remainingWorkStringsChirho);
