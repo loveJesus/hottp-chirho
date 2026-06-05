@@ -253,6 +253,18 @@ async function mainChirho(): Promise<void> {
       dataChirho: confirmResultChirho.dataChirho,
       policyPathChirho,
     });
+    const missingIssueFlagsResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
+      ...commonBodyChirho,
+      rationaleChirho: "server guard check should reject issue reports with no issue flag",
+      issueFlagsChirho: [],
+    });
+    assertRejectedWithoutPolicyChirho({
+      labelChirho: "missing issue flags",
+      responseChirho: missingIssueFlagsResultChirho.responseChirho,
+      dataChirho: missingIssueFlagsResultChirho.dataChirho,
+      policyPathChirho,
+      expectedErrorChirho: "at least one issue flag is required",
+    });
     const issueResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
       ...commonBodyChirho,
       rationaleChirho: "<why this issue is recorded>",
@@ -264,6 +276,22 @@ async function mainChirho(): Promise<void> {
       dataChirho: issueResultChirho.dataChirho,
       policyPathChirho,
     });
+    const staleIssueDisplayResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
+      ...commonBodyChirho,
+      expectedCurrentTextChirho: `${itemChirho.currentTextChirho} stale-issue-display-guard-chirho`,
+      rationaleChirho: "server guard check should reject stale displayed expert issue context",
+      issueFlagsChirho: ["uncertain-chirho"],
+    });
+    assertCheckChirho(
+      staleIssueDisplayResultChirho.responseChirho.status === 409,
+      `stale issue display expected HTTP 409, got ${staleIssueDisplayResultChirho.responseChirho.status}`
+    );
+    assertCheckChirho(staleIssueDisplayResultChirho.dataChirho.okChirho === false, "stale issue display unexpectedly returned ok");
+    assertCheckChirho(
+      String(staleIssueDisplayResultChirho.dataChirho.errorChirho ?? "").includes("Expert review item is stale"),
+      `stale issue display failed for wrong reason: ${String(staleIssueDisplayResultChirho.dataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(!existsSync(policyPathChirho), "stale issue display wrote a policy file");
     const validConfirmResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
       ...commonBodyChirho,
       rationaleChirho: "server guard check confirms one exact non-Latin item in a disposable policy file",
