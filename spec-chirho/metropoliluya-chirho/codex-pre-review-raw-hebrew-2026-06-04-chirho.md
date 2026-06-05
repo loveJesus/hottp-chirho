@@ -84,6 +84,15 @@ span was surfaced.
   - Visual precheck: S1 is boxed after the preceding `Ta` context and before French `mais`; S3 is boxed before French `qui pré-`. The red boxes do not visibly swallow neighboring French/Latin text. Treat S1 as a real human review target because the direct OCR read `חהקת` is too weak for the exact letters/marks.
   - Human check still needed: S1 exact consonants and pointing, especially the opening kaf/dagesh and middle consonants; S3 exact vowels/marks and letter confirmation.
 
+- `vol 2 p150 L7 S1/S3`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A7%3A1`
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A7%3A3`
+  - Item IDs: `v2-p0150-l007-s1`, `v2-p0150-l007-s3`
+  - Live texts: `לְמָקְשֵׁר` and `תָּקְשִׁרוּ`
+  - Attention reason: none; these are current raw items in the no-pre-review-note lane.
+  - Visual precheck: the line reads `que cela suppose :`, then S1, then French `et`, then S3. Both red boxes bracket their own Hebrew form and leave the separator/context outside the target boxes. The direct OCR reads confuse the two forms, so the paired human comparison is more important than the machine read.
+  - Human check still needed: exact letter order in both forms, especially lamed/tav openings and qof-shin-resh sequence, plus all vowels/dagesh/shin-dot marks.
+
 - `vol 2 p150 L37 S1`:
   `http://localhost:8766/?attention-chirho=delimiter-notation-chirho&item-chirho=2%3A150%3A37%3A1`
   - Live text: `(לְמִקְדָּשׁ`
