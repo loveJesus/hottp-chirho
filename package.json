@@ -33,6 +33,7 @@
     "review-servers-chirho": "bun run src-chirho/review-servers-chirho.ts",
     "check-certification-chirho": "bun run src-chirho/check-certification-chirho.ts",
     "check-app-publication-readiness-chirho": "bun run src-chirho/check-app-publication-readiness-chirho.ts",
+    "publication-readiness-summary-chirho": "bun run src-chirho/check-app-publication-readiness-chirho.ts --summary-only-chirho",
     "check-certified-markdown-publication-chirho": "bun run src-chirho/check-app-publication-readiness-chirho.ts --require-certified-markdown-chirho",
     "check-certification-status-gate-guards-chirho": "bun run src-chirho/check-certification-status-gate-guards-chirho.ts",
     "check-certification-status-output-hygiene-chirho": "bun run src-chirho/check-certification-status-output-hygiene-chirho.ts",

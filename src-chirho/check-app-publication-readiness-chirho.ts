@@ -9,6 +9,10 @@
  * bundle pass, even if the transcription-content gate remains red. Use
  * --require-certified-markdown-chirho for the stricter release gate that exits
  * nonzero until the certified Markdown corpus is complete.
+ *
+ * Use --summary-only-chirho to print the current status artifact without
+ * running the app build or certification bundle. That mode is a quick triage
+ * view, not a publication verification.
  */
 
 import { readFileSync } from "fs";
@@ -126,6 +130,18 @@ function printReadinessSummaryChirho(statusChirho: CertificationStatusSummaryChi
 
 function mainChirho(): void {
   const requireCertifiedMarkdownChirho = process.argv.includes("--require-certified-markdown-chirho");
+  const summaryOnlyChirho = process.argv.includes("--summary-only-chirho");
+  if (summaryOnlyChirho) {
+    console.log(
+      `[${MODULE_CHIRHO}] Summary-only mode: using existing status artifact; run without --summary-only-chirho before any publication claim.`
+    );
+    const statusChirho = readCertificationStatusChirho();
+    printReadinessSummaryChirho(statusChirho);
+    if (requireCertifiedMarkdownChirho && statusChirho.certificationCompleteChirho !== true) {
+      throw new Error("certified UTF-8 Markdown publication is not ready");
+    }
+    return;
+  }
   const commandsChirho: CommandChirho[] = [
     {
       labelChirho: "Svelte app check",
