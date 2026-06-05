@@ -149,6 +149,13 @@ span was surfaced.
   - Visual precheck: the target crop boxes the bare Hebrew root after French `deux emplois de la racine`; the following opening parenthesis for `(en 13 et 14)` remains outside the Hebrew box. The same printed line later has a separate Hebrew span `תַקְדִּישׁוּ` near the right edge, so keep these two targets distinct.
   - Human check still needed: exact qof-dalet-shin letters, shin-dot, intentionally bare/unpointed root status, and confirmation that the following parenthesis belongs to the French context rather than this Hebrew span.
 
+- `vol 2 p150 L26 S3`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A26%3A3`
+  - Live text: `תַקְדִּישׁוּ`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane; the direct OCR read is weak and not usable as a certification witness.
+  - Visual precheck: the target crop boxes the Hebrew verb after French `qui sont inauthentiques :` and before French `(au vs`; the nearby colon and following parenthesis remain outside the target box. The earlier `קדשׁ` root on the same line is a separate target and should not be conflated with this verb form.
+  - Human check still needed: exact tav/dagesh, qof-dalet-shin sequence, final vav, all vowels and shin-dot marks, plus confirmation that the French colon and following parenthesis stay outside this Hebrew span.
+
 - `vol 2 p150 L27 S1`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A27%3A1`
   - Live text: `תָּקְשִׁרוּ`
