@@ -1577,6 +1577,14 @@ function pageHtmlChirho(): string {
         rowChirho.original_text_hash_chirho === itemChirho.originalTextHashChirho &&
         rowChirho.original_text_chirho === itemChirho.liveSpanTextChirho;
     }
+    function validationLiveTextChangedForItemChirho(rowChirho, itemChirho) {
+      return !!rowChirho &&
+        (rowChirho.original_text_hash_chirho !== itemChirho.originalTextHashChirho ||
+          rowChirho.original_text_chirho !== itemChirho.liveSpanTextChirho);
+    }
+    function attributionRereviewUrlChirho(itemChirho) {
+      return "/?review-state-chirho=attribution-rereview-chirho&item-chirho=" + encodeURIComponent(itemChirho.keyChirho);
+    }
     function validationRowHasSavedVerdictChirho(rowChirho) {
       if (!rowChirho) return false;
       if (rowChirho.verdict_chirho === "reviewed-clean-chirho") return rowChirho.certify_clean_chirho === 1;
@@ -2123,13 +2131,26 @@ function pageHtmlChirho(): string {
         }
       }
       if (reviewStateIsAttributionModeChirho() && savedValidationChirho) {
+        const attributionLiveTextChangedChirho = validationLiveTextChangedForItemChirho(savedValidationChirho, itemChirho);
         sideChirho.appendChild(elChirho("div", {
           classChirho: "warning-chirho",
-          textChirho: reviewStateFilterChirho === "attribution-rereview-chirho"
+          textChirho: attributionLiveTextChangedChirho
+            ? "Live text changed since this generic row was recorded. Use Attribution re-review by default; reattribute only after rechecking the current live text against the print."
+            : reviewStateFilterChirho === "attribution-rereview-chirho"
             ? "Attribution re-review mode appends a fresh explicit human review that supersedes the generic row. Use this only when the old row is not genuinely attributable to one named reviewer."
             : "Attribution-blocked row shown read-only. Inspect the crop; reattribute only if this existing row is genuinely attributable to the named human reviewer."
         }));
-        if (reviewStateFilterChirho === "attribution-blocked-chirho") {
+        if (attributionLiveTextChangedChirho) {
+          sideChirho.appendChild(elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
+            elChirho("div", { textChirho: "Originally reviewed text" }),
+            elChirho("div", { classChirho: spanTextClassChirho(itemChirho), textChirho: savedValidationChirho.original_text_chirho }),
+            elChirho("div", { textChirho: "Current live text" }),
+            elChirho("div", { classChirho: spanTextClassChirho(itemChirho), textChirho: itemChirho.liveSpanTextChirho }),
+            elChirho("div", { textChirho: "Default action" }),
+            elChirho("a", { href: attributionRereviewUrlChirho(itemChirho), textChirho: "Open Attribution re-review for this item" })
+          ]));
+        }
+        if (reviewStateFilterChirho === "attribution-blocked-chirho" && !attributionLiveTextChangedChirho) {
           const baseReattributeCommandChirho = () =>
             "bun run reattribute-pass-c-human-validations-chirho -- " +
             "--validation-id-chirho=" + savedValidationChirho.id_chirho + " " +
@@ -2164,6 +2185,11 @@ function pageHtmlChirho(): string {
             inputChirho.addEventListener("input", () => refreshCommandRowsChirho(attributionBoxChirho));
           }
           sideChirho.appendChild(attributionBoxChirho);
+        } else if (reviewStateFilterChirho === "attribution-blocked-chirho") {
+          sideChirho.appendChild(elChirho("div", {
+            classChirho: "warning-chirho",
+            textChirho: "Reattribute command helper omitted because the live text changed. A manual changed-text override belongs outside this quick path after explicit print recheck."
+          }));
         } else {
           sideChirho.appendChild(elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
             elChirho("div", { textChirho: "Superseded reviewer" }),
