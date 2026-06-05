@@ -153,6 +153,38 @@ function blankLiveItemChirho(): VisionTierExpertLiveItemChirho | null {
   );
 }
 
+function nonblankLiveItemChirho(): VisionTierExpertLiveItemChirho | null {
+  return (
+    visionTierExpertLiveItemsChirho().find((itemChirho) => {
+      if (itemChirho.visionSourceChirho !== "explicit-span-chirho") return false;
+      if (itemChirho.currentTextChirho.length === 0) return false;
+      return expectedVisionTierReviewerRoleChirho(itemChirho.scriptChirho) !== null;
+    }) ?? null
+  );
+}
+
+function checkNonblankLiveItemRejectedChirho(itemChirho: VisionTierExpertLiveItemChirho): void {
+  const expectedRoleChirho = expectedVisionTierReviewerRoleChirho(itemChirho.scriptChirho);
+  if (expectedRoleChirho === null) throw new Error(`${itemChirho.idChirho} has no expected reviewer role`);
+  const argsChirho = applyArgsChirho([
+    `--id-chirho=${itemChirho.idChirho}`,
+    `--supplied-text-chirho=${textForScriptChirho(itemChirho.scriptChirho)}`,
+    "--reviewer-chirho=dr-expert-supplied-guard-check-chirho",
+    `--reviewer-role-chirho=${expectedRoleChirho}`,
+    "--rationale-chirho=certification guard should reject nonblank target",
+  ]);
+  const resultChirho = runCommandChirho(argsChirho);
+  const combinedOutputChirho = `${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`;
+  assertCommandChirho(
+    resultChirho.exitCodeChirho !== 0,
+    `nonblank target command unexpectedly succeeded: ${commandTextChirho(argsChirho)}`
+  );
+  assertCommandChirho(
+    combinedOutputChirho.includes("target span is neither an empty vision-tier item nor the already-applied expert-supplied text"),
+    `nonblank target command failed for the wrong reason: ${combinedOutputChirho}`
+  );
+}
+
 function checkBlankLiveItemDryRunChirho(itemChirho: VisionTierExpertLiveItemChirho): void {
   const expectedRoleChirho = expectedVisionTierReviewerRoleChirho(itemChirho.scriptChirho);
   if (expectedRoleChirho === null) throw new Error(`${itemChirho.idChirho} has no expected reviewer role`);
@@ -203,6 +235,13 @@ function mainChirho(): void {
   checkPlaceholderTextRejectedBeforeTargetChirho();
   checkPlaceholderReviewerRejectedBeforeTargetChirho();
   checkPlaceholderRationaleRejectedBeforeTargetChirho();
+  const nonblankItemChirho = nonblankLiveItemChirho();
+  if (nonblankItemChirho === null) {
+    console.log(`[${MODULE_CHIRHO}] no nonblank explicit-span vision-tier item is currently live; skipped no-clobber check`);
+  } else {
+    checkNonblankLiveItemRejectedChirho(nonblankItemChirho);
+    console.log(`[${MODULE_CHIRHO}] checked nonblank no-clobber item ${nonblankItemChirho.idChirho}`);
+  }
   const blankItemChirho = blankLiveItemChirho();
   if (blankItemChirho === null) {
     console.log(`[${MODULE_CHIRHO}] no blank explicit-span vision-tier item is currently live; skipped live blank dry-run checks`);
