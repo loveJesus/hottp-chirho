@@ -9,7 +9,7 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import { join } from "path";
+import { join, resolve, sep } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
@@ -21,6 +21,13 @@ import {
 
 const MODULE_CHIRHO = "check-certification-status-output-hygiene-chirho";
 const DEFAULT_STATUS_OUT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "certification-status-chirho");
+const STATUS_LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
+  "workspace-chirho/",
+  "spec-chirho/",
+  "src-chirho/",
+  "app-chirho/",
+];
+const STATUS_BACKTICK_RE_CHIRHO = /`([^`\n]+)`/g;
 
 interface CertificationStatusOutputChirho {
   generatedAtChirho?: string;
@@ -31,6 +38,24 @@ interface CertificationStatusOutputChirho {
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
   const prefixChirho = `--${nameChirho}=`;
   return argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho))?.slice(prefixChirho.length);
+}
+
+function isStatusLocalArtifactPathChirho(valueChirho: string): boolean {
+  return STATUS_LOCAL_ARTIFACT_PREFIXES_CHIRHO.some((prefixChirho) => valueChirho.startsWith(prefixChirho));
+}
+
+function assertStatusLocalArtifactLinksChirho(markdownChirho: string): void {
+  const projectRootChirho = resolve(PROJECT_ROOT_CHIRHO);
+  for (const matchChirho of markdownChirho.matchAll(STATUS_BACKTICK_RE_CHIRHO)) {
+    const valueChirho = matchChirho[1]!;
+    if (!isStatusLocalArtifactPathChirho(valueChirho)) continue;
+    const resolvedChirho = resolve(PROJECT_ROOT_CHIRHO, valueChirho);
+    assertGeneratedCheckChirho(
+      resolvedChirho === projectRootChirho || resolvedChirho.startsWith(`${projectRootChirho}${sep}`),
+      `status Markdown local artifact path escapes project root: ${valueChirho}`
+    );
+    assertGeneratedCheckChirho(existsSync(resolvedChirho), `status Markdown local artifact path is missing: ${valueChirho}`);
+  }
 }
 
 function mainChirho(): void {
@@ -46,6 +71,7 @@ function mainChirho(): void {
   assertGeneratedTextHygieneChirho(markdownPathChirho, markdownChirho);
   assertGeneratedTextHygieneChirho(jsonPathChirho, jsonTextChirho);
   assertMarkdownHeaderChirho(markdownPathChirho, markdownChirho, JOHN_316_INLINE_MARKDOWN_HEADER_CHIRHO);
+  assertStatusLocalArtifactLinksChirho(markdownChirho);
 
   const statusChirho = JSON.parse(jsonTextChirho) as CertificationStatusOutputChirho;
   assertGeneratedCheckChirho(typeof statusChirho.generatedAtChirho === "string", "status JSON missing generatedAtChirho");
