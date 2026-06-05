@@ -302,6 +302,37 @@ async function mainChirho(): Promise<void> {
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
       "machine reviewer issue POST persisted a row"
     );
+    const editedNoIssueResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: [],
+        correctedTextChirho: `${itemChirho.liveSpanTextChirho} guard-edit-chirho`,
+        notesChirho: "",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: false,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const editedNoIssueDataChirho = (await editedNoIssueResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      editedNoIssueResponseChirho.status === 400,
+      `expected edited-no-issue HTTP 400, got ${editedNoIssueResponseChirho.status}`
+    );
+    assertCheckChirho(editedNoIssueDataChirho.okChirho === false, "edited-no-issue POST unexpectedly returned ok");
+    assertCheckChirho(
+      String(editedNoIssueDataChirho.errorChirho ?? "").includes("Text changed; check at least one issue box"),
+      `edited-no-issue POST failed for the wrong reason: ${String(editedNoIssueDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "edited-no-issue POST persisted a row"
+    );
     const missingNotesResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
