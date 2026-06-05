@@ -25,6 +25,10 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "cantillation/meteg are Accents/meteg",
   "wrong splits, lumped words, spaces, or maqqef are Segmentation",
   "I checked the crop and full line against the print; if no issue boxes are checked and the text is unchanged, this exact span is intentionally reviewed clean.",
+  "Live codepoints",
+  "Suggested codepoints",
+  "Hebrew letter alef",
+  "Hebrew letter qof",
 ];
 
 interface RawReviewQueueItemChirho {

@@ -1286,6 +1286,7 @@ function pageHtmlChirho(): string {
     .meta-grid-chirho { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 13px; }
     .mono-chirho { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
     .command-chirho { overflow-wrap: anywhere; white-space: pre-wrap; }
+    .codepoints-chirho { font-size: 12px; color: #3d4650; direction: ltr; overflow-wrap: anywhere; white-space: pre-wrap; }
     .candidate-words-chirho { overflow-wrap: anywhere; }
     .witness-list-chirho { display: flex; flex-direction: column; gap: 6px; font-size: 13px; margin-top: 8px; }
     .witness-chirho { border-left: 3px solid #8aa399; padding-left: 8px; }
@@ -1678,6 +1679,35 @@ function pageHtmlChirho(): string {
     const hebrewTypewriterTitleByValueChirho = new Map(
       hebrewTypewriterMarksChirho.map((markChirho) => [markChirho.valueChirho, markChirho.titleChirho])
     );
+    const hebrewBaseLetterNameByValueChirho = new Map([
+      ["א", "Hebrew letter alef"],
+      ["ב", "Hebrew letter bet"],
+      ["ג", "Hebrew letter gimel"],
+      ["ד", "Hebrew letter dalet"],
+      ["ה", "Hebrew letter he"],
+      ["ו", "Hebrew letter vav"],
+      ["ז", "Hebrew letter zayin"],
+      ["ח", "Hebrew letter het"],
+      ["ט", "Hebrew letter tet"],
+      ["י", "Hebrew letter yod"],
+      ["ך", "Hebrew letter final kaf"],
+      ["כ", "Hebrew letter kaf"],
+      ["ל", "Hebrew letter lamed"],
+      ["ם", "Hebrew letter final mem"],
+      ["מ", "Hebrew letter mem"],
+      ["ן", "Hebrew letter final nun"],
+      ["נ", "Hebrew letter nun"],
+      ["ס", "Hebrew letter samekh"],
+      ["ע", "Hebrew letter ayin"],
+      ["ף", "Hebrew letter final pe"],
+      ["פ", "Hebrew letter pe"],
+      ["ץ", "Hebrew letter final tsadi"],
+      ["צ", "Hebrew letter tsadi"],
+      ["ק", "Hebrew letter qof"],
+      ["ר", "Hebrew letter resh"],
+      ["ש", "Hebrew letter shin"],
+      ["ת", "Hebrew letter tav"]
+    ]);
     function charCountsChirho(valueChirho) {
       const countsChirho = new Map();
       for (const charChirho of Array.from(String(valueChirho ?? "").normalize("NFC"))) {
@@ -1687,6 +1717,20 @@ function pageHtmlChirho(): string {
     }
     function displayMarkChirho(charChirho) {
       return (combiningHebrewMarkReChirho.test(charChirho) ? "◌" : "") + charChirho;
+    }
+    function unicodeNamePartChirho(charChirho) {
+      const baseLetterNameChirho = hebrewBaseLetterNameByValueChirho.get(charChirho);
+      if (baseLetterNameChirho) return " " + baseLetterNameChirho;
+      const markTitleChirho = hebrewTypewriterTitleByValueChirho.get(charChirho);
+      return markTitleChirho ? " " + markTitleChirho.replace(/\\s+U\\+[0-9A-F]+$/u, "") : "";
+    }
+    function codepointTextChirho(valueChirho) {
+      const charsChirho = Array.from(String(valueChirho ?? "").normalize("NFC"));
+      if (charsChirho.length === 0) return "(empty)";
+      return charsChirho.map((charChirho) => {
+        const codepointChirho = charChirho.codePointAt(0).toString(16).toUpperCase().padStart(4, "0");
+        return "U+" + codepointChirho + " " + displayMarkChirho(charChirho) + unicodeNamePartChirho(charChirho);
+      }).join(" | ");
     }
     function namedMarkDeltasChirho(fromTextChirho, toTextChirho) {
       const fromCountsChirho = charCountsChirho(fromTextChirho);
@@ -1895,9 +1939,13 @@ function pageHtmlChirho(): string {
       const targetRowChirho = elChirho("div", { classChirho: "target-row-chirho" });
       targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Live span text" }));
       targetRowChirho.appendChild(elChirho("div", { classChirho: spanTextClassChirho(itemChirho), textChirho: itemChirho.liveSpanTextChirho }));
+      targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Live codepoints" }));
+      targetRowChirho.appendChild(elChirho("div", { classChirho: "mono-chirho codepoints-chirho", textChirho: codepointTextChirho(itemChirho.liveSpanTextChirho) }));
       if (itemChirho.hasLiveSpanTextDriftChirho) {
         targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Report text" }));
         targetRowChirho.appendChild(elChirho("div", { classChirho: spanTextClassChirho(itemChirho), textChirho: itemChirho.textChirho }));
+        targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Report codepoints" }));
+        targetRowChirho.appendChild(elChirho("div", { classChirho: "mono-chirho codepoints-chirho", textChirho: codepointTextChirho(itemChirho.textChirho) }));
       }
       targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Line text" }));
       targetRowChirho.appendChild(elChirho("div", { classChirho: "line-text-chirho", textChirho: itemChirho.lineTextChirho }));
@@ -1906,6 +1954,9 @@ function pageHtmlChirho(): string {
       editChirho.value = savedValidationChirho?.corrected_text_chirho ?? itemChirho.liveSpanTextChirho;
       if (reviewStateFilterChirho !== "pending-chirho") editChirho.setAttribute("readonly", "true");
       targetRowChirho.appendChild(editChirho);
+      targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Suggested codepoints" }));
+      const editCodepointsChirho = elChirho("div", { id: "edit-codepoints-chirho", classChirho: "mono-chirho codepoints-chirho", textChirho: codepointTextChirho(editChirho.value) });
+      targetRowChirho.appendChild(editCodepointsChirho);
       targetRowChirho.appendChild(typewriterChirho());
       leftChirho.appendChild(targetRowChirho);
 
@@ -2136,6 +2187,7 @@ function pageHtmlChirho(): string {
         const updateContinueButtonChirho = () => {
           updateReviewerStatusChirho();
           updateActionStatusChirho();
+          editCodepointsChirho.textContent = codepointTextChirho(editChirho.value);
           continueButtonChirho.textContent = cleanReviewActionTextChirho(itemChirho);
           continueButtonChirho.disabled = !cleanReviewCanSubmitChirho(itemChirho);
         };
