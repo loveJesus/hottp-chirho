@@ -552,6 +552,7 @@ function htmlChirho(): string {
     .meta-grid-chirho { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 13px; }
     .label-chirho { color: #59636f; font-size: 13px; font-weight: 650; }
     .mono-chirho { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; overflow-wrap: anywhere; }
+    .codepoints-chirho { direction: ltr; white-space: pre-wrap; font-size: 12px; color: #3d4650; }
     .input-grid-chirho { display: grid; gap: 8px; }
     .input-grid-chirho input, .input-grid-chirho textarea { width: 100%; box-sizing: border-box; border: 1px solid #b8bec7; padding: 8px; }
     .input-grid-chirho textarea { min-height: 76px; resize: vertical; }
@@ -759,6 +760,124 @@ function htmlChirho(): string {
     function currentItemChirho() { return activeItemsChirho()[indexChirho]; }
     function imageSrcChirho(pathChirho) { return "/asset-chirho?path=" + encodeURIComponent(pathChirho); }
     function fieldValueChirho(idChirho) { return document.getElementById(idChirho)?.value ?? ""; }
+    const hebrewBaseLetterNameByValueChirho = new Map([
+      ["א", "Hebrew letter alef"],
+      ["ב", "Hebrew letter bet"],
+      ["ג", "Hebrew letter gimel"],
+      ["ד", "Hebrew letter dalet"],
+      ["ה", "Hebrew letter he"],
+      ["ו", "Hebrew letter vav"],
+      ["ז", "Hebrew letter zayin"],
+      ["ח", "Hebrew letter het"],
+      ["ט", "Hebrew letter tet"],
+      ["י", "Hebrew letter yod"],
+      ["ך", "Hebrew letter final kaf"],
+      ["כ", "Hebrew letter kaf"],
+      ["ל", "Hebrew letter lamed"],
+      ["ם", "Hebrew letter final mem"],
+      ["מ", "Hebrew letter mem"],
+      ["ן", "Hebrew letter final nun"],
+      ["נ", "Hebrew letter nun"],
+      ["ס", "Hebrew letter samekh"],
+      ["ע", "Hebrew letter ayin"],
+      ["ף", "Hebrew letter final pe"],
+      ["פ", "Hebrew letter pe"],
+      ["ץ", "Hebrew letter final tsadi"],
+      ["צ", "Hebrew letter tsadi"],
+      ["ק", "Hebrew letter qof"],
+      ["ר", "Hebrew letter resh"],
+      ["ש", "Hebrew letter shin"],
+      ["ת", "Hebrew letter tav"]
+    ]);
+    const hebrewMarkNameByValueChirho = new Map([
+      ["֑", "Etnachta"],
+      ["֖", "Tipcha"],
+      ["ֽ", "Meteg"],
+      ["־", "Maqqef"],
+      ["׃", "Sof pasuq"],
+      ["ְ", "Sheva"],
+      ["ֱ", "Hataf segol"],
+      ["ֲ", "Hataf patah"],
+      ["ֳ", "Hataf qamats"],
+      ["ִ", "Hiriq"],
+      ["ֵ", "Tsere"],
+      ["ֶ", "Segol"],
+      ["ַ", "Patah"],
+      ["ָ", "Qamats"],
+      ["ֹ", "Holam"],
+      ["ֻ", "Qubuts"],
+      ["ּ", "Dagesh/mappiq/shuruk"],
+      ["ׁ", "Shin dot"],
+      ["ׂ", "Sin dot"],
+      ["ׇ", "Qamats qatan"]
+    ]);
+    const greekBaseLetterNameByValueChirho = new Map([
+      ["Α", "Greek capital alpha"], ["α", "Greek alpha"],
+      ["Β", "Greek capital beta"], ["β", "Greek beta"],
+      ["Γ", "Greek capital gamma"], ["γ", "Greek gamma"],
+      ["Δ", "Greek capital delta"], ["δ", "Greek delta"],
+      ["Ε", "Greek capital epsilon"], ["ε", "Greek epsilon"],
+      ["Ζ", "Greek capital zeta"], ["ζ", "Greek zeta"],
+      ["Η", "Greek capital eta"], ["η", "Greek eta"],
+      ["Θ", "Greek capital theta"], ["θ", "Greek theta"],
+      ["Ι", "Greek capital iota"], ["ι", "Greek iota"],
+      ["Κ", "Greek capital kappa"], ["κ", "Greek kappa"],
+      ["Λ", "Greek capital lambda"], ["λ", "Greek lambda"],
+      ["Μ", "Greek capital mu"], ["μ", "Greek mu"],
+      ["Ν", "Greek capital nu"], ["ν", "Greek nu"],
+      ["Ξ", "Greek capital xi"], ["ξ", "Greek xi"],
+      ["Ο", "Greek capital omicron"], ["ο", "Greek omicron"],
+      ["Π", "Greek capital pi"], ["π", "Greek pi"],
+      ["Ρ", "Greek capital rho"], ["ρ", "Greek rho"],
+      ["Σ", "Greek capital sigma"], ["σ", "Greek sigma"],
+      ["ς", "Greek final sigma"],
+      ["Τ", "Greek capital tau"], ["τ", "Greek tau"],
+      ["Υ", "Greek capital upsilon"], ["υ", "Greek upsilon"],
+      ["Φ", "Greek capital phi"], ["φ", "Greek phi"],
+      ["Χ", "Greek capital chi"], ["χ", "Greek chi"],
+      ["Ψ", "Greek capital psi"], ["ψ", "Greek psi"],
+      ["Ω", "Greek capital omega"], ["ω", "Greek omega"]
+    ]);
+    const combiningMarkNameByValueChirho = new Map([
+      ["̀", "grave"],
+      ["́", "acute"],
+      ["̈", "diaeresis"],
+      ["̓", "smooth breathing"],
+      ["̔", "rough breathing"],
+      ["͂", "circumflex/perispomeni"],
+      ["ͅ", "iota subscript"]
+    ]);
+    const combiningMarkReChirho = /[\u0300-\u036F\u0591-\u05BD\u05BF-\u05C7]/u;
+    function displayCodepointCharChirho(charChirho) {
+      return (combiningMarkReChirho.test(charChirho) ? "◌" : "") + charChirho;
+    }
+    function codepointNamePartChirho(charChirho) {
+      const directNameChirho =
+        hebrewBaseLetterNameByValueChirho.get(charChirho) ??
+        hebrewMarkNameByValueChirho.get(charChirho) ??
+        greekBaseLetterNameByValueChirho.get(charChirho) ??
+        combiningMarkNameByValueChirho.get(charChirho);
+      if (directNameChirho) return " " + directNameChirho;
+      const decomposedChirho = Array.from(charChirho.normalize("NFD"));
+      if (decomposedChirho.length <= 1) return "";
+      const partsChirho = decomposedChirho
+        .map((partChirho) =>
+          greekBaseLetterNameByValueChirho.get(partChirho) ??
+          combiningMarkNameByValueChirho.get(partChirho) ??
+          hebrewBaseLetterNameByValueChirho.get(partChirho) ??
+          hebrewMarkNameByValueChirho.get(partChirho)
+        )
+        .filter((partChirho) => typeof partChirho === "string" && partChirho.length > 0);
+      return partsChirho.length > 0 ? " " + partsChirho.join(" + ") : "";
+    }
+    function codepointTextChirho(valueChirho) {
+      const charsChirho = Array.from(String(valueChirho ?? "").normalize("NFC"));
+      if (charsChirho.length === 0) return "(empty)";
+      return charsChirho.map((charChirho) => {
+        const codepointChirho = charChirho.codePointAt(0).toString(16).toUpperCase().padStart(4, "0");
+        return "U+" + codepointChirho + " " + displayCodepointCharChirho(charChirho) + codepointNamePartChirho(charChirho);
+      }).join(" | ");
+    }
     function shellSingleQuoteChirho(valueChirho) {
       return "'" + String(valueChirho).normalize("NFC").replace(/'/g, "'\\"'\\"'") + "'";
     }
@@ -882,6 +1001,8 @@ function htmlChirho(): string {
       leftChirho.appendChild(imageWrapChirho);
       leftChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Current text" }));
       leftChirho.appendChild(elChirho("div", { classChirho: "text-box-chirho current-text-chirho", textChirho: itemChirho.currentTextChirho }));
+      leftChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Current codepoints" }));
+      leftChirho.appendChild(elChirho("div", { classChirho: "text-box-chirho mono-chirho codepoints-chirho", textChirho: codepointTextChirho(itemChirho.currentTextChirho) }));
 
       const sideChirho = elChirho("div", { classChirho: "side-chirho" });
       const metaChirho = elChirho("div", { classChirho: "box-chirho" });

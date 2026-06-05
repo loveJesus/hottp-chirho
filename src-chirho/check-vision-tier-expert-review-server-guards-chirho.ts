@@ -21,6 +21,14 @@ import {
 } from "./vision-tier-expert-confirmation-policy-chirho.ts";
 
 const MODULE_CHIRHO = "check-vision-tier-expert-review-server-guards-chirho";
+const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
+  "Current codepoints",
+  "Greek omicron",
+  "rough breathing",
+  "Greek final sigma",
+  "Hebrew letter alef",
+  "Dagesh/mappiq/shuruk",
+];
 
 interface ExpertReviewStateItemChirho {
   idChirho: string;
@@ -132,6 +140,18 @@ async function stateItemChirho(portChirho: number): Promise<ExpertReviewStateIte
   return itemChirho;
 }
 
+async function assertExpertReviewGuidanceHtmlChirho(portChirho: number): Promise<void> {
+  const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/`);
+  const htmlChirho = await responseChirho.text();
+  assertCheckChirho(responseChirho.ok, `expert page request failed: ${responseChirho.status}`);
+  for (const snippetChirho of EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO) {
+    assertCheckChirho(
+      htmlChirho.includes(snippetChirho),
+      `expert review server HTML is missing guidance snippet: ${snippetChirho}`
+    );
+  }
+}
+
 async function blankStateItemChirho(portChirho: number): Promise<ExpertReviewStateItemChirho | null> {
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/state-chirho`);
   const dataChirho = (await responseChirho.json()) as ExpertReviewStateResponseChirho;
@@ -207,6 +227,7 @@ async function mainChirho(): Promise<void> {
 
   try {
     await waitForServerChirho(portChirho, processChirho);
+    await assertExpertReviewGuidanceHtmlChirho(portChirho);
     const itemChirho = await stateItemChirho(portChirho);
     const blankItemChirho = await blankStateItemChirho(portChirho);
     const commonBodyChirho = {
