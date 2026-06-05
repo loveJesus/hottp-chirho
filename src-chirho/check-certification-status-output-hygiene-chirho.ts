@@ -215,6 +215,40 @@ function assertMarkdownContainsChirho(markdownChirho: string, expectedChirho: st
   assertGeneratedCheckChirho(markdownChirho.includes(expectedChirho), `status Markdown missing ${labelChirho}: ${expectedChirho}`);
 }
 
+function markdownSectionBodyChirho(markdownChirho: string, headingChirho: string): string {
+  const headingAtStartChirho = markdownChirho.startsWith(`${headingChirho}\n`) ? 0 : -1;
+  const headingAfterNewlineChirho = markdownChirho.indexOf(`\n${headingChirho}\n`);
+  const headingIndexChirho = headingAtStartChirho === 0 ? 0 : headingAfterNewlineChirho;
+  assertGeneratedCheckChirho(headingIndexChirho !== -1, `status Markdown missing section ${headingChirho}`);
+  const bodyStartChirho = headingIndexChirho + (headingIndexChirho === 0 ? headingChirho.length + 1 : headingChirho.length + 2);
+  const nextSectionIndexChirho = markdownChirho.indexOf("\n## ", bodyStartChirho);
+  return markdownChirho.slice(bodyStartChirho, nextSectionIndexChirho === -1 ? undefined : nextSectionIndexChirho);
+}
+
+function assertRemainingWorkMarkdownCoverageChirho(markdownChirho: string, remainingWorkChirho: string[]): void {
+  const sectionBodyChirho = markdownSectionBodyChirho(markdownChirho, "## Remaining Work");
+  const remainingWorkLinesChirho = sectionBodyChirho
+    .split(/\r?\n/)
+    .filter((lineChirho) => lineChirho.startsWith("- "));
+  if (remainingWorkChirho.length === 0) {
+    assertGeneratedCheckChirho(
+      remainingWorkLinesChirho.length === 1 && remainingWorkLinesChirho[0] === "- None.",
+      "status Markdown Remaining Work section must show only '- None.' when complete"
+    );
+    return;
+  }
+  assertGeneratedCheckChirho(
+    remainingWorkLinesChirho.length === remainingWorkChirho.length,
+    "status Markdown Remaining Work bullet count must match status JSON remainingWorkChirho"
+  );
+  for (const itemChirho of remainingWorkChirho) {
+    assertGeneratedCheckChirho(
+      remainingWorkLinesChirho.includes(`- ${itemChirho}`),
+      `status Markdown Remaining Work section missing exact blocker bullet: ${itemChirho}`
+    );
+  }
+}
+
 function assertRemainingWorkToggleChirho(
   remainingWorkChirho: string[],
   shouldExistChirho: boolean,
@@ -3118,12 +3152,7 @@ function mainChirho(): void {
   if (!statusChirho.certificationCompleteChirho) {
     assertGeneratedCheckChirho(remainingWorkChirho.length > 0, "incomplete status JSON has no remainingWorkChirho blockers");
   }
-  for (const itemChirho of remainingWorkStringsChirho) {
-    assertGeneratedCheckChirho(
-      markdownChirho.includes(itemChirho),
-      `status Markdown does not display remaining-work blocker: ${itemChirho}`
-    );
-  }
+  assertRemainingWorkMarkdownCoverageChirho(markdownChirho, remainingWorkStringsChirho);
   assertStructuralExportMarkdownCoverageChirho(markdownChirho, statusChirho);
   assertStructuralExportRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
   assertCoreRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
