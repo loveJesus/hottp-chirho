@@ -9,7 +9,7 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import { join, resolve, sep } from "path";
+import { join, relative, resolve, sep } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
@@ -39,6 +39,7 @@ interface CertificationStatusOutputChirho {
   latinSymbolVisionChirho?: unknown;
   visionTierChirho?: unknown;
   humanValidationDbChirho?: unknown;
+  structuralChirho?: unknown;
 }
 
 interface ReviewStartLinkCountCheckChirho {
@@ -126,6 +127,13 @@ function nullableStringFieldChirho(valueChirho: unknown, keyChirho: string, labe
   return fieldChirho;
 }
 
+function booleanFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): boolean {
+  const objectChirho = objectRecordChirho(valueChirho, labelChirho);
+  const fieldChirho = objectChirho[keyChirho];
+  assertGeneratedCheckChirho(typeof fieldChirho === "boolean", `${labelChirho}.${keyChirho} must be a boolean`);
+  return fieldChirho;
+}
+
 function arrayFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): unknown[] {
   const objectChirho = objectRecordChirho(valueChirho, labelChirho);
   const fieldChirho = objectChirho[keyChirho];
@@ -175,6 +183,25 @@ function shellSingleQuoteChirho(valueChirho: string): string {
 
 function assertMarkdownContainsChirho(markdownChirho: string, expectedChirho: string, labelChirho: string): void {
   assertGeneratedCheckChirho(markdownChirho.includes(expectedChirho), `status Markdown missing ${labelChirho}: ${expectedChirho}`);
+}
+
+function relativeProjectPathForStatusChirho(pathChirho: string): string {
+  const projectRootChirho = resolve(PROJECT_ROOT_CHIRHO);
+  const resolvedChirho = resolve(PROJECT_ROOT_CHIRHO, pathChirho);
+  assertGeneratedCheckChirho(
+    resolvedChirho === projectRootChirho || resolvedChirho.startsWith(`${projectRootChirho}${sep}`),
+    `status JSON local artifact path escapes project root: ${pathChirho}`
+  );
+  return relative(projectRootChirho, resolvedChirho).replaceAll(sep, "/");
+}
+
+function sha256OrNullFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): string | null {
+  const hashChirho = nullableStringFieldChirho(valueChirho, keyChirho, labelChirho);
+  assertGeneratedCheckChirho(
+    hashChirho === null || /^[a-f0-9]{64}$/.test(hashChirho),
+    `${labelChirho}.${keyChirho} must be a lowercase sha256 hex digest or null`
+  );
+  return hashChirho;
 }
 
 function volumeLinkCountChecksChirho(
@@ -428,6 +455,191 @@ function reattributeBatchCommandChirho(groupChirho: unknown, applyChirho: boolea
   return commandPartsChirho.join(" ");
 }
 
+function blankExpertSuppliedCommandTemplateChirho(handoffChirho: unknown, applyChirho: boolean): string {
+  const labelChirho = "structuralChirho.blankVisionTierHandoffsChirho[]";
+  const idChirho = stringFieldChirho(handoffChirho, "idChirho", labelChirho);
+  const expectedRoleChirho = nullableStringFieldChirho(handoffChirho, "expectedReviewerRoleChirho", labelChirho);
+  const sourceShaChirho = sha256OrNullFieldChirho(handoffChirho, "sourceSha256Chirho", labelChirho);
+  const packetShaChirho = sha256OrNullFieldChirho(handoffChirho, "packetSha256Chirho", labelChirho);
+  const commandPartsChirho = [
+    "bun run apply-expert-supplied-vision-text-chirho --",
+    `--id-chirho=${shellSingleQuoteChirho(idChirho)}`,
+    "--supplied-text-chirho='<exact printed text>'",
+    "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
+    `--reviewer-role-chirho=${shellSingleQuoteChirho(expectedRoleChirho ?? "<expected-script-role-chirho>")}`,
+    "--rationale-chirho='<why this exact text is supplied>'",
+    ...(sourceShaChirho === null ? [] : [`--expected-source-sha256-chirho=${sourceShaChirho}`]),
+    ...(packetShaChirho === null ? [] : [`--expected-packet-sha256-chirho=${packetShaChirho}`]),
+    ...(applyChirho ? ["--apply"] : []),
+  ];
+  return commandPartsChirho.join(" ");
+}
+
+function assertBlankExpertHandoffPathsChirho(markdownChirho: string, handoffChirho: unknown): void {
+  const labelChirho = "structuralChirho.blankVisionTierHandoffsChirho[]";
+  const sourcePathChirho = nullableStringFieldChirho(handoffChirho, "sourcePathChirho", labelChirho);
+  const packetPathChirho = nullableStringFieldChirho(handoffChirho, "packetPathChirho", labelChirho);
+  const markdownPathChirho = nullableStringFieldChirho(handoffChirho, "markdownPathChirho", labelChirho);
+  const handoffDocumentPathChirho = nullableStringFieldChirho(handoffChirho, "handoffDocumentPathChirho", labelChirho);
+  const handoffCropPathChirho = nullableStringFieldChirho(handoffChirho, "handoffCropPathChirho", labelChirho);
+  const sourceShaChirho = sha256OrNullFieldChirho(handoffChirho, "sourceSha256Chirho", labelChirho);
+  const packetShaChirho = sha256OrNullFieldChirho(handoffChirho, "packetSha256Chirho", labelChirho);
+  const cropShaChirho = sha256OrNullFieldChirho(handoffChirho, "handoffCropSha256Chirho", labelChirho);
+  const documentExistsChirho = booleanFieldChirho(handoffChirho, "handoffDocumentExistsChirho", labelChirho);
+  const cropExistsChirho = booleanFieldChirho(handoffChirho, "handoffCropExistsChirho", labelChirho);
+
+  if (sourcePathChirho !== null) {
+    assertGeneratedCheckChirho(existsSync(sourcePathChirho), `${labelChirho}.sourcePathChirho file is missing`);
+  }
+  if (packetPathChirho !== null) {
+    assertGeneratedCheckChirho(existsSync(packetPathChirho), `${labelChirho}.packetPathChirho file is missing`);
+  }
+  if (handoffDocumentPathChirho !== null) {
+    assertGeneratedCheckChirho(
+      existsSync(handoffDocumentPathChirho) === documentExistsChirho,
+      `${labelChirho}.handoffDocumentExistsChirho does not match filesystem`
+    );
+  }
+  if (handoffCropPathChirho !== null) {
+    assertGeneratedCheckChirho(
+      existsSync(handoffCropPathChirho) === cropExistsChirho,
+      `${labelChirho}.handoffCropExistsChirho does not match filesystem`
+    );
+  }
+
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `Source scanline: \`${sourcePathChirho === null ? "missing-manifest-source-chirho" : relativeProjectPathForStatusChirho(sourcePathChirho)}\``,
+    "blank expert handoff source path"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `Source scanline SHA-256: ${sourceShaChirho ?? "missing-source-hash-chirho"}`,
+    "blank expert handoff source hash"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `Packet image: \`${packetPathChirho === null ? "missing-manifest-packet-chirho" : relativeProjectPathForStatusChirho(packetPathChirho)}\``,
+    "blank expert handoff packet path"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `Packet image SHA-256: ${packetShaChirho ?? "missing-packet-hash-chirho"}`,
+    "blank expert handoff packet hash"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `Markdown image path: \`${markdownPathChirho ?? "missing-manifest-markdown-path-chirho"}\``,
+    "blank expert handoff markdown image path"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `Dedicated handoff document: \`${handoffDocumentPathChirho === null ? "missing-dedicated-handoff-document-chirho" : relativeProjectPathForStatusChirho(handoffDocumentPathChirho)}\` (present: ${documentExistsChirho})`,
+    "blank expert handoff document path"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `Dedicated handoff crop: \`${handoffCropPathChirho === null ? "missing-dedicated-handoff-crop-chirho" : relativeProjectPathForStatusChirho(handoffCropPathChirho)}\` (present: ${cropExistsChirho})`,
+    "blank expert handoff crop path"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `Dedicated handoff crop SHA-256: ${cropShaChirho ?? "missing-crop-hash-chirho"}`,
+    "blank expert handoff crop hash"
+  );
+}
+
+function assertBlankExpertHandoffCoverageChirho(markdownChirho: string, statusChirho: CertificationStatusOutputChirho): void {
+  const structuralChirho = statusChirho.structuralChirho;
+  const handoffsChirho = arrayFieldChirho(structuralChirho, "blankVisionTierHandoffsChirho", "structuralChirho");
+  const blankIssueCountChirho = countMapValueChirho(
+    structuralChirho,
+    "issueCodeCountsChirho",
+    "blank-span-text-chirho",
+    "structuralChirho"
+  );
+  assertGeneratedCheckChirho(
+    handoffsChirho.length === blankIssueCountChirho,
+    "structuralChirho.blankVisionTierHandoffsChirho must cover every blank-span-text-chirho issue"
+  );
+  assertMarkdownContainsChirho(markdownChirho, "### Blank Expert Transcription Handoff", "blank expert handoff heading");
+  if (handoffsChirho.length === 0) {
+    assertMarkdownContainsChirho(markdownChirho, "### Blank Expert Transcription Handoff\n\n- None.", "empty blank expert handoff section");
+    return;
+  }
+  for (const handoffChirho of handoffsChirho) {
+    const labelChirho = "structuralChirho.blankVisionTierHandoffsChirho[]";
+    const idChirho = stringFieldChirho(handoffChirho, "idChirho", labelChirho);
+    const locationChirho = stringFieldChirho(handoffChirho, "locationChirho", labelChirho);
+    const scriptChirho = nullableStringFieldChirho(handoffChirho, "scriptChirho", labelChirho);
+    const expectedRoleChirho = nullableStringFieldChirho(handoffChirho, "expectedReviewerRoleChirho", labelChirho);
+    const expertReviewUrlChirho = stringFieldChirho(handoffChirho, "expertReviewUrlChirho", labelChirho);
+    const dryRunCommandChirho = stringFieldChirho(handoffChirho, "dryRunCommandTemplateChirho", labelChirho);
+    const applyCommandChirho = stringFieldChirho(handoffChirho, "applyCommandTemplateChirho", labelChirho);
+    const manifestFreshChirho = booleanFieldChirho(handoffChirho, "manifestItemFreshChirho", labelChirho);
+    const documentMatchesChirho = booleanFieldChirho(handoffChirho, "handoffDocumentMatchesCurrentChirho", labelChirho);
+    const missingSnippetsChirho = stringArrayFieldChirho(handoffChirho, "handoffDocumentMissingSnippetsChirho", labelChirho);
+    assertGeneratedCheckChirho(
+      dryRunCommandChirho === blankExpertSuppliedCommandTemplateChirho(handoffChirho, false),
+      `${labelChirho}.dryRunCommandTemplateChirho does not match the handoff fields`
+    );
+    assertGeneratedCheckChirho(
+      applyCommandChirho === blankExpertSuppliedCommandTemplateChirho(handoffChirho, true),
+      `${labelChirho}.applyCommandTemplateChirho does not match the handoff fields`
+    );
+    const urlChirho = new URL(expertReviewUrlChirho);
+    assertGeneratedCheckChirho(urlChirho.protocol === "http:", `${labelChirho}.expertReviewUrlChirho must use http`);
+    assertGeneratedCheckChirho(urlChirho.hostname === "localhost", `${labelChirho}.expertReviewUrlChirho must target localhost`);
+    assertGeneratedCheckChirho(urlChirho.port === "8771", `${labelChirho}.expertReviewUrlChirho must target the expert reviewer`);
+    assertGeneratedCheckChirho(
+      urlChirho.searchParams.get("item-chirho") === idChirho,
+      `${labelChirho}.expertReviewUrlChirho must target the blank item`
+    );
+    assertGeneratedCheckChirho(
+      scriptChirho === null || urlChirho.searchParams.get("script-chirho") === scriptChirho,
+      `${labelChirho}.expertReviewUrlChirho must include the blank item script`
+    );
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `- ${idChirho} (${locationChirho}; script ${scriptChirho ?? "unknown-chirho"}; expected role ${expectedRoleChirho ?? "unknown-chirho"})`,
+      `blank expert handoff ${idChirho} header`
+    );
+    assertMarkdownContainsChirho(markdownChirho, `Expert review URL: ${expertReviewUrlChirho}`, `blank expert handoff ${idChirho} URL`);
+    assertBlankExpertHandoffPathsChirho(markdownChirho, handoffChirho);
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `Dedicated handoff document matches current blank span: ${documentMatchesChirho}`,
+      `blank expert handoff ${idChirho} document freshness`
+    );
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `Dedicated handoff missing snippet(s): ${missingSnippetsChirho.length === 0 ? "none" : missingSnippetsChirho.map((snippetChirho) => `\`${snippetChirho}\``).join("; ")}`,
+      `blank expert handoff ${idChirho} missing snippets`
+    );
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `Manifest item fresh against live queue: ${manifestFreshChirho}`,
+      `blank expert handoff ${idChirho} manifest freshness`
+    );
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `Expert-supplied text dry-run after exact script-reader transcription: \`${dryRunCommandChirho}\``,
+      `blank expert handoff ${idChirho} dry-run command`
+    );
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `Expert-supplied text apply after dry-run verification: \`${applyCommandChirho}\``,
+      `blank expert handoff ${idChirho} apply command`
+    );
+    assertMarkdownContainsChirho(markdownChirho, "Replace every placeholder before running", `blank expert handoff ${idChirho} placeholder warning`);
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      "Applying supplied text removes only the EMPTY-SPAN structural marker; the item remains vision-tier until explicit expert confirmation.",
+      `blank expert handoff ${idChirho} no-over-cert warning`
+    );
+  }
+}
+
 function assertPassCHumanReattributionHandoffChirho(
   markdownChirho: string,
   statusChirho: CertificationStatusOutputChirho,
@@ -586,6 +798,7 @@ function mainChirho(): void {
       `status Markdown does not display remaining-work blocker: ${itemChirho}`
     );
   }
+  assertBlankExpertHandoffCoverageChirho(markdownChirho, statusChirho);
   assertPassCHumanReattributionHandoffChirho(markdownChirho, statusChirho, remainingWorkStringsChirho);
   assertGeneratedCheckChirho(
     markdownChirho.includes(`Generated: ${statusChirho.generatedAtChirho}`),
