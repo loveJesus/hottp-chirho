@@ -26,12 +26,29 @@ const STATUS_MARKDOWN_PATH_CHIRHO = join(
 const STATUS_SPEC_DOC_RE_CHIRHO = /`(spec-chirho\/metropoliluya-chirho\/[^`\n]+\.md)`/g;
 const MARKDOWN_IMAGE_RE_CHIRHO = /!\[[^\]\n]*\]\(([^)\n]+)\)/g;
 const BACKTICK_RE_CHIRHO = /`([^`\n]+)`/g;
+const RAW_HEBREW_QUICKSTART_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/raw-hebrew-human-certification-quickstart-2026-06-05-chirho.md";
+const HALLELUJAH_SESSION_GUIDE_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/hallelujah-review-session-guide-2026-06-05-chirho.md";
 const LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
   "workspace-chirho/",
   "spec-chirho/",
   "src-chirho/",
   "app-chirho/",
 ];
+const RAW_HEBREW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
+  "If no issue boxes are selected, a save is clean only when the clean-certification acknowledgement is checked.",
+  "A dot inside a Hebrew letter is dagesh, mappiq, or shuruk, so classify it under Vowels/niqqud.",
+  "Several Hebrew words in one span are acceptable only when the box intentionally covers exactly those words",
+  "Flag segmentation when one of these is true:",
+  "The stored text collapses or splits words differently from the print.",
+  "When uncertain, skip or save an issue. Do not use a clean review to express \"probably right.\"",
+] as const;
+const HALLELUJAH_SESSION_GUIDE_SNIPPETS_CHIRHO = [
+  "Leaving all issue boxes unchecked is clean only when the clean-certification acknowledgement is checked.",
+  "A dot inside a Hebrew letter is usually dagesh or mappiq; inside vav for `וּ` it is shuruk.",
+  "Flag `Segmentation` when the box or text has a wrong word boundary",
+  "If the text is wrong, report an issue; do not confirm and hope a later correction fixes it.",
+  "Stop or skip when the crop is unclear, the script is outside your competence, the exact marks are uncertain",
+] as const;
 
 function isLocalArtifactPathChirho(valueChirho: string): boolean {
   return LOCAL_ARTIFACT_PREFIXES_CHIRHO.some((prefixChirho) => valueChirho.startsWith(prefixChirho));
@@ -66,6 +83,15 @@ function linkedSpecDocPathsChirho(statusMarkdownChirho: string): string[] {
   return [...new Set([...statusMarkdownChirho.matchAll(STATUS_SPEC_DOC_RE_CHIRHO)].map((matchChirho) => matchChirho[1]!))].sort();
 }
 
+function assertDocContainsSnippetsChirho(docPathChirho: string, textChirho: string, snippetsChirho: readonly string[]): void {
+  for (const snippetChirho of snippetsChirho) {
+    assertGeneratedCheckChirho(
+      textChirho.includes(snippetChirho),
+      `${docPathChirho} is missing required review guidance: ${snippetChirho}`
+    );
+  }
+}
+
 function checkSpecDocChirho(docPathChirho: string): void {
   assertProjectRelativePathExistsChirho(docPathChirho, "status-linked spec document");
   const absolutePathChirho = join(PROJECT_ROOT_CHIRHO, docPathChirho);
@@ -85,6 +111,13 @@ function checkSpecDocChirho(docPathChirho: string): void {
   }
   for (const matchChirho of textChirho.matchAll(MARKDOWN_IMAGE_RE_CHIRHO)) {
     assertRelativeDocImageExistsChirho(absolutePathChirho, matchChirho[1]!);
+  }
+
+  if (docPathChirho === RAW_HEBREW_QUICKSTART_DOC_CHIRHO) {
+    assertDocContainsSnippetsChirho(docPathChirho, textChirho, RAW_HEBREW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO);
+  }
+  if (docPathChirho === HALLELUJAH_SESSION_GUIDE_DOC_CHIRHO) {
+    assertDocContainsSnippetsChirho(docPathChirho, textChirho, HALLELUJAH_SESSION_GUIDE_SNIPPETS_CHIRHO);
   }
 }
 
