@@ -22,6 +22,7 @@ import {
 const MODULE_CHIRHO = "check-certification-status-output-hygiene-chirho";
 const DEFAULT_STATUS_OUT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "certification-status-chirho");
 const PACKAGE_JSON_PATH_CHIRHO = join(PROJECT_ROOT_CHIRHO, "package.json");
+const CERTIFICATION_TSCONFIG_PATH_CHIRHO = join(PROJECT_ROOT_CHIRHO, "tsconfig-certification-chirho.json");
 const STATUS_LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
   "workspace-chirho/",
   "spec-chirho/",
@@ -91,8 +92,40 @@ function packageScriptNamesChirho(): Set<string> {
   return new Set(Object.keys(packageJsonChirho.scripts as Record<string, unknown>));
 }
 
+function packageScriptsChirho(): Record<string, string> {
+  const packageJsonChirho = JSON.parse(readFileSync(PACKAGE_JSON_PATH_CHIRHO, "utf8")) as { scripts?: unknown };
+  assertGeneratedCheckChirho(
+    packageJsonChirho.scripts !== null && typeof packageJsonChirho.scripts === "object" && !Array.isArray(packageJsonChirho.scripts),
+    "package.json scripts must be an object"
+  );
+  const scriptsChirho = packageJsonChirho.scripts as Record<string, unknown>;
+  for (const [scriptNameChirho, commandChirho] of Object.entries(scriptsChirho)) {
+    assertGeneratedCheckChirho(typeof commandChirho === "string", `package.json script ${scriptNameChirho} must be a string`);
+  }
+  return scriptsChirho as Record<string, string>;
+}
+
+function certificationTypecheckIncludesChirho(): Set<string> {
+  const withoutLineCommentsChirho = readFileSync(CERTIFICATION_TSCONFIG_PATH_CHIRHO, "utf8").replace(/^\s*\/\/.*$/gm, "");
+  const tsconfigChirho = JSON.parse(withoutLineCommentsChirho) as { include?: unknown };
+  assertGeneratedCheckChirho(Array.isArray(tsconfigChirho.include), "tsconfig-certification-chirho.json include must be an array");
+  const includesChirho = tsconfigChirho.include;
+  assertGeneratedCheckChirho(
+    includesChirho.every((includeChirho) => typeof includeChirho === "string"),
+    "tsconfig-certification-chirho.json include must contain only strings"
+  );
+  return new Set((includesChirho as string[]).map((includeChirho) => includeChirho.replaceAll("\\", "/")));
+}
+
+function directBunRunTypescriptTargetChirho(commandChirho: string): string | null {
+  const matchChirho = commandChirho.match(/^\s*bun run\s+([^\s]+\.ts)(?:\s|$)/);
+  return matchChirho?.[1] ?? null;
+}
+
 function assertStatusBunRunCommandReferencesChirho(markdownChirho: string): void {
-  const packageScriptsChirho = packageScriptNamesChirho();
+  const scriptNamesChirho = packageScriptNamesChirho();
+  const scriptsChirho = packageScriptsChirho();
+  const typecheckIncludesChirho = certificationTypecheckIncludesChirho();
   const projectRootChirho = resolve(PROJECT_ROOT_CHIRHO);
   for (const matchChirho of markdownChirho.matchAll(STATUS_BUN_RUN_COMMAND_RE_CHIRHO)) {
     const targetChirho = matchChirho[1]!;
@@ -103,12 +136,23 @@ function assertStatusBunRunCommandReferencesChirho(markdownChirho: string): void
         `status Markdown bun run path escapes project root: ${targetChirho}`
       );
       assertGeneratedCheckChirho(existsSync(resolvedChirho), `status Markdown bun run path is missing: ${targetChirho}`);
+      assertGeneratedCheckChirho(
+        typecheckIncludesChirho.has(targetChirho.replaceAll("\\", "/")),
+        `status Markdown bun run path is not in tsconfig-certification-chirho.json include: ${targetChirho}`
+      );
       continue;
     }
     assertGeneratedCheckChirho(
-      packageScriptsChirho.has(targetChirho),
+      scriptNamesChirho.has(targetChirho),
       `status Markdown bun run script is missing from package.json scripts: ${targetChirho}`
     );
+    const scriptTypescriptTargetChirho = directBunRunTypescriptTargetChirho(scriptsChirho[targetChirho]!);
+    if (scriptTypescriptTargetChirho !== null) {
+      assertGeneratedCheckChirho(
+        typecheckIncludesChirho.has(scriptTypescriptTargetChirho.replaceAll("\\", "/")),
+        `status Markdown bun run script ${targetChirho} targets ${scriptTypescriptTargetChirho}, which is not in tsconfig-certification-chirho.json include`
+      );
+    }
   }
 }
 
