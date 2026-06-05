@@ -34,11 +34,13 @@ interface CertificationStatusOutputChirho {
   generatedAtChirho?: string;
   certificationCompleteChirho?: boolean;
   remainingWorkChirho?: unknown;
+  artifactsChirho?: unknown;
   reviewStartLinksChirho?: unknown;
   rawHebrewChirho?: unknown;
   latinSymbolVisionChirho?: unknown;
   visionTierChirho?: unknown;
   humanValidationDbChirho?: unknown;
+  passCHumanValidationBackupChirho?: unknown;
   structuralChirho?: unknown;
   normalizationChirho?: unknown;
   strictBlindScansChirho?: unknown;
@@ -216,6 +218,12 @@ function assertRemainingWorkToggleChirho(
 
 function displayValueChirho(valueChirho: string | number | boolean | null): string {
   return valueChirho === null ? "unknown" : String(valueChirho);
+}
+
+function countMapDisplayChirho(countsChirho: Record<string, number>): string {
+  return Object.entries(countsChirho)
+    .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
+    .join(", ") || "none";
 }
 
 function relativeProjectPathForStatusChirho(pathChirho: string): string {
@@ -671,6 +679,402 @@ function assertBlankExpertHandoffCoverageChirho(markdownChirho: string, statusCh
       `blank expert handoff ${idChirho} no-over-cert warning`
     );
   }
+}
+
+function assertRawHebrewQueueMarkdownCoverageChirho(markdownChirho: string, statusChirho: CertificationStatusOutputChirho): void {
+  const rawChirho = statusChirho.rawHebrewChirho;
+  const artifactsChirho = statusChirho.artifactsChirho;
+  const passCBackupChirho = statusChirho.passCHumanValidationBackupChirho;
+  const triageChirho = objectRecordChirho(
+    objectRecordChirho(rawChirho, "rawHebrewChirho").triageChirho,
+    "rawHebrewChirho.triageChirho"
+  );
+
+  const rawReportExistsChirho = booleanFieldChirho(artifactsChirho, "rawHebrewReportExistsChirho", "artifactsChirho");
+  const rawReportShapeOkChirho = booleanFieldChirho(artifactsChirho, "rawHebrewReportShapeOkChirho", "artifactsChirho");
+  const rawPackExistsChirho = booleanFieldChirho(artifactsChirho, "rawHebrewPackManifestExistsChirho", "artifactsChirho");
+  const rawPackShapeOkChirho = booleanFieldChirho(artifactsChirho, "rawHebrewPackManifestShapeOkChirho", "artifactsChirho");
+  const backupExistsChirho = booleanFieldChirho(artifactsChirho, "passCHumanValidationBackupExistsChirho", "artifactsChirho");
+  const backupShapeOkChirho = booleanFieldChirho(artifactsChirho, "passCHumanValidationBackupShapeOkChirho", "artifactsChirho");
+
+  assertMarkdownContainsChirho(markdownChirho, "## Raw Hebrew Human Queue", "raw Hebrew queue heading");
+  assertMarkdownContainsChirho(markdownChirho, `- Raw Hebrew report exists: ${rawReportExistsChirho}`, "raw Hebrew report existence");
+  assertMarkdownContainsChirho(markdownChirho, `- Raw Hebrew report shape OK: ${rawReportShapeOkChirho}`, "raw Hebrew report shape");
+  assertMarkdownContainsChirho(markdownChirho, `- Raw Hebrew packet manifest exists: ${rawPackExistsChirho}`, "raw Hebrew packet existence");
+  assertMarkdownContainsChirho(markdownChirho, `- Raw Hebrew packet manifest shape OK: ${rawPackShapeOkChirho}`, "raw Hebrew packet shape");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Report spans: ${numberFieldChirho(rawChirho, "reportSpanCountChirho", "rawHebrewChirho")}`,
+    "raw Hebrew report spans"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Packet items: ${numberFieldChirho(rawChirho, "packItemCountChirho", "rawHebrewChirho")}`,
+    "raw Hebrew packet items"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Packet generated: ${nullableStringFieldChirho(rawChirho, "packGeneratedAtChirho", "rawHebrewChirho") ?? "unknown"}`,
+    "raw Hebrew packet generated"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Packet count matches current report: ${booleanFieldChirho(rawChirho, "packCountMatchesCurrentChirho", "rawHebrewChirho")}`,
+    "raw Hebrew packet count freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Packet IDs match current report: ${booleanFieldChirho(rawChirho, "packIdsMatchCurrentChirho", "rawHebrewChirho")}`,
+    "raw Hebrew packet id freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Packet text matches current report: ${booleanFieldChirho(rawChirho, "packTextMatchesCurrentChirho", "rawHebrewChirho")}`,
+    "raw Hebrew packet text freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Packet line text matches current report: ${booleanFieldChirho(rawChirho, "packLineTextMatchesCurrentChirho", "rawHebrewChirho")}`,
+    "raw Hebrew packet line text freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Packet image hashes match current files: ${booleanFieldChirho(rawChirho, "packImagesMatchCurrentChirho", "rawHebrewChirho")}`,
+    "raw Hebrew packet image hash freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Packet image hash drift items: ${numberFieldChirho(rawChirho, "packImageDriftCountChirho", "rawHebrewChirho")}`,
+    "raw Hebrew packet image drift count"
+  );
+  for (const sampleChirho of stringArrayFieldChirho(rawChirho, "packImageDriftSamplesChirho", "rawHebrewChirho")) {
+    assertMarkdownContainsChirho(markdownChirho, `  - ${sampleChirho}`, `raw Hebrew packet image drift sample ${sampleChirho}`);
+  }
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Packet markdown image paths match hashed files: ${booleanFieldChirho(rawChirho, "packMarkdownPathsMatchCurrentChirho", "rawHebrewChirho")}`,
+    "raw Hebrew packet markdown path freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Packet markdown image path drift items: ${numberFieldChirho(rawChirho, "packMarkdownPathDriftCountChirho", "rawHebrewChirho")}`,
+    "raw Hebrew packet markdown path drift count"
+  );
+  for (const sampleChirho of stringArrayFieldChirho(rawChirho, "packMarkdownPathDriftSamplesChirho", "rawHebrewChirho")) {
+    assertMarkdownContainsChirho(markdownChirho, `  - ${sampleChirho}`, `raw Hebrew packet markdown path drift sample ${sampleChirho}`);
+  }
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Packet validation statuses match current report: ${booleanFieldChirho(rawChirho, "packStatusMatchesCurrentChirho", "rawHebrewChirho")}`,
+    "raw Hebrew packet status freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Raw report matches live span files: ${booleanFieldChirho(rawChirho, "liveReportMatchesSpanFilesChirho", "rawHebrewChirho")}`,
+    "raw Hebrew report live freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Raw report live drift items: ${numberFieldChirho(rawChirho, "liveReportDriftCountChirho", "rawHebrewChirho")}`,
+    "raw Hebrew report live drift count"
+  );
+  for (const sampleChirho of stringArrayFieldChirho(rawChirho, "liveReportDriftSamplesChirho", "rawHebrewChirho")) {
+    assertMarkdownContainsChirho(markdownChirho, `  - ${sampleChirho}`, `raw Hebrew report live drift sample ${sampleChirho}`);
+  }
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live pending spans: ${numberFieldChirho(rawChirho, "livePendingSpanCountChirho", "rawHebrewChirho")}`,
+    "raw Hebrew live pending spans"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Tokens: ${numberFieldChirho(rawChirho, "reportTokenCountChirho", "rawHebrewChirho")}`,
+    "raw Hebrew token count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Unvalidated spans: ${numberFieldChirho(rawChirho, "unvalidatedSpanCountChirho", "rawHebrewChirho")}`,
+    "raw Hebrew unvalidated count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live pending unvalidated spans: ${numberFieldChirho(rawChirho, "livePendingUnvalidatedSpanCountChirho", "rawHebrewChirho")}`,
+    "raw Hebrew live pending unvalidated count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Partial spans: ${numberFieldChirho(rawChirho, "partialValidatedSpanCountChirho", "rawHebrewChirho")}`,
+    "raw Hebrew partial count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live pending partial spans: ${numberFieldChirho(rawChirho, "livePendingPartialValidatedSpanCountChirho", "rawHebrewChirho")}`,
+    "raw Hebrew live pending partial count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- All-token spot checks: ${numberFieldChirho(rawChirho, "allTokenValidatedSpanCountChirho", "rawHebrewChirho")}`,
+    "raw Hebrew all-token spot count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live pending all-token spot checks: ${numberFieldChirho(rawChirho, "livePendingAllTokenValidatedSpanCountChirho", "rawHebrewChirho")}`,
+    "raw Hebrew live pending spot count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Tier counts: ${countMapDisplayChirho(countMapFieldChirho(rawChirho, "tierCountsChirho", "rawHebrewChirho"))}`,
+    "raw Hebrew tier counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live pending tier counts: ${countMapDisplayChirho(countMapFieldChirho(rawChirho, "livePendingTierCountsChirho", "rawHebrewChirho"))}`,
+    "raw Hebrew live pending tier counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live pending validation+tier counts: ${countMapDisplayChirho(countMapFieldChirho(rawChirho, "livePendingValidationTierCountsChirho", "rawHebrewChirho"))}`,
+    "raw Hebrew live pending validation tier counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Source counts before filter: ${countMapDisplayChirho(countMapFieldChirho(rawChirho, "sourceCountsChirho", "rawHebrewChirho"))}`,
+    "raw Hebrew source counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Export/report count match: ${booleanFieldChirho(rawChirho, "exportPassCOcrMatchesReportChirho", "rawHebrewChirho")}`,
+    "raw Hebrew export report count match"
+  );
+
+  assertMarkdownContainsChirho(markdownChirho, "### Raw Hebrew Review Triage", "raw Hebrew triage heading");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "This is a display-only prioritization aid from the current raw Hebrew packet.",
+    "raw Hebrew triage non-certification warning"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Low-confidence direct CRNN reads (<0.75): ${numberFieldChirho(triageChirho, "lowConfidenceItemCountChirho", "rawHebrewChirho.triageChirho")}`,
+    "raw Hebrew triage low-confidence count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Multi-token Hebrew spans: ${numberFieldChirho(triageChirho, "multiTokenItemCountChirho", "rawHebrewChirho.triageChirho")}`,
+    "raw Hebrew triage multi-token count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Delimiter/damaged-text notation spans: ${numberFieldChirho(triageChirho, "delimiterNotationItemCountChirho", "rawHebrewChirho.triageChirho")}`,
+    "raw Hebrew triage delimiter count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- No direct CRNN crop reads: ${numberFieldChirho(triageChirho, "noDirectReadItemCountChirho", "rawHebrewChirho.triageChirho")}`,
+    "raw Hebrew triage no-direct-read count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Attention items with at least one flag: ${numberFieldChirho(triageChirho, "attentionItemCountChirho", "rawHebrewChirho.triageChirho")}`,
+    "raw Hebrew triage attention count"
+  );
+  const triageNotesAvailableChirho = booleanFieldChirho(
+    triageChirho,
+    "preReviewNotesAvailableChirho",
+    "rawHebrewChirho.triageChirho"
+  );
+  const triageCoveredCountChirho = numberFieldChirho(
+    triageChirho,
+    "preReviewCoveredAttentionItemCountChirho",
+    "rawHebrewChirho.triageChirho"
+  );
+  const triageAttentionCountChirho = numberFieldChirho(triageChirho, "attentionItemCountChirho", "rawHebrewChirho.triageChirho");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Non-certifying pre-review note coverage: ${triageNotesAvailableChirho ? `${triageCoveredCountChirho}/${triageAttentionCountChirho} current attention item(s)` : "notes unavailable"}`,
+    "raw Hebrew triage pre-review coverage"
+  );
+  const triageUncoveredCountChirho = numberFieldChirho(
+    triageChirho,
+    "preReviewUncoveredAttentionItemCountChirho",
+    "rawHebrewChirho.triageChirho"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Current attention items not mentioned in the pre-review note: ${triageUncoveredCountChirho}`,
+    "raw Hebrew triage uncovered count"
+  );
+  const triageUncoveredSamplesChirho = stringArrayFieldChirho(
+    triageChirho,
+    "preReviewUncoveredSamplesChirho",
+    "rawHebrewChirho.triageChirho"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Pre-review uncovered attention samples: ${triageUncoveredSamplesChirho.length === 0 ? "none" : triageUncoveredSamplesChirho.join(", ")}`,
+    "raw Hebrew triage uncovered samples"
+  );
+
+  assertMarkdownContainsChirho(markdownChirho, "## Pass-C Human Validation Backup", "Pass-C backup heading");
+  assertMarkdownContainsChirho(markdownChirho, `- Backup exists: ${backupExistsChirho}`, "Pass-C backup existence");
+  assertMarkdownContainsChirho(markdownChirho, `- Backup shape OK: ${backupShapeOkChirho}`, "Pass-C backup shape");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Local DB rows: ${numberFieldChirho(passCBackupChirho, "dbRowsChirho", "passCHumanValidationBackupChirho")}`,
+    "Pass-C backup DB rows"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Backup rows: ${numberFieldChirho(passCBackupChirho, "backupRowsChirho", "passCHumanValidationBackupChirho")}`,
+    "Pass-C backup rows"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Local rows missing from backup: ${numberFieldChirho(passCBackupChirho, "localRowsMissingFromBackupChirho", "passCHumanValidationBackupChirho")}`,
+    "Pass-C backup missing row count"
+  );
+}
+
+function assertRawHebrewQueueRemainingWorkCoverageChirho(
+  statusChirho: CertificationStatusOutputChirho,
+  remainingWorkChirho: string[]
+): void {
+  const rawChirho = statusChirho.rawHebrewChirho;
+  const artifactsChirho = statusChirho.artifactsChirho;
+  const passCBackupChirho = statusChirho.passCHumanValidationBackupChirho;
+  const rawReportExistsChirho = booleanFieldChirho(artifactsChirho, "rawHebrewReportExistsChirho", "artifactsChirho");
+  const rawReportShapeOkChirho = booleanFieldChirho(artifactsChirho, "rawHebrewReportShapeOkChirho", "artifactsChirho");
+  const rawPackExistsChirho = booleanFieldChirho(artifactsChirho, "rawHebrewPackManifestExistsChirho", "artifactsChirho");
+  const rawPackShapeOkChirho = booleanFieldChirho(artifactsChirho, "rawHebrewPackManifestShapeOkChirho", "artifactsChirho");
+  const passCBackupExistsChirho = booleanFieldChirho(
+    artifactsChirho,
+    "passCHumanValidationBackupExistsChirho",
+    "artifactsChirho"
+  );
+  const passCBackupShapeOkChirho = booleanFieldChirho(
+    artifactsChirho,
+    "passCHumanValidationBackupShapeOkChirho",
+    "artifactsChirho"
+  );
+  const rawSpanCountChirho = numberFieldChirho(rawChirho, "reportSpanCountChirho", "rawHebrewChirho");
+  const passCBackupDbRowsChirho = numberFieldChirho(
+    passCBackupChirho,
+    "dbRowsChirho",
+    "passCHumanValidationBackupChirho"
+  );
+  const missingBackupRowsChirho = numberFieldChirho(
+    passCBackupChirho,
+    "localRowsMissingFromBackupChirho",
+    "passCHumanValidationBackupChirho"
+  );
+  const rawPackExistsAndShapeOkChirho = rawSpanCountChirho !== 0 && rawPackExistsChirho && rawPackShapeOkChirho;
+  const rawPackIdsMatchChirho = booleanFieldChirho(rawChirho, "packIdsMatchCurrentChirho", "rawHebrewChirho");
+
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    !rawReportExistsChirho,
+    "raw Hebrew validation report is missing; run validate-pass-c-hebrew-chirho --all",
+    "raw Hebrew validation report is missing"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    rawSpanCountChirho !== 0 && !rawPackExistsChirho,
+    "raw Hebrew human review packet is missing; run make-pass-c-hebrew-human-pack-chirho",
+    "raw Hebrew human review packet is missing"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    rawReportExistsChirho && !rawReportShapeOkChirho,
+    "raw Hebrew validation report is malformed; regenerate validate-pass-c-hebrew-chirho --all",
+    "raw Hebrew validation report is malformed"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    rawPackExistsChirho && !rawPackShapeOkChirho,
+    "raw Hebrew human review packet is malformed; regenerate make-pass-c-hebrew-human-pack-chirho",
+    "raw Hebrew human review packet is malformed"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    passCBackupExistsChirho && !passCBackupShapeOkChirho,
+    "Pass-C human validation backup is malformed; regenerate backup-pass-c-human-validations-chirho",
+    "Pass-C human validation backup is malformed"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(rawChirho, "liveReportDriftCountChirho", "rawHebrewChirho") !== 0,
+    `${numberFieldChirho(rawChirho, "liveReportDriftCountChirho", "rawHebrewChirho")} raw Hebrew validation report item(s) do not match live span files; regenerate validate-pass-c-hebrew-chirho --all and make-pass-c-hebrew-human-pack-chirho`,
+    "raw Hebrew validation report item(s) do not match live span files"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    rawPackExistsAndShapeOkChirho && !booleanFieldChirho(rawChirho, "packCountMatchesCurrentChirho", "rawHebrewChirho"),
+    "raw Hebrew human review packet count does not match current report; regenerate make-pass-c-hebrew-human-pack-chirho",
+    "raw Hebrew human review packet count does not match current report"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    rawPackExistsAndShapeOkChirho &&
+      booleanFieldChirho(rawChirho, "packCountMatchesCurrentChirho", "rawHebrewChirho") &&
+      !rawPackIdsMatchChirho,
+    "raw Hebrew human review packet item IDs do not match current report; regenerate make-pass-c-hebrew-human-pack-chirho",
+    "raw Hebrew human review packet item IDs do not match current report"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    rawPackExistsAndShapeOkChirho &&
+      rawPackIdsMatchChirho &&
+      !booleanFieldChirho(rawChirho, "packTextMatchesCurrentChirho", "rawHebrewChirho"),
+    "raw Hebrew human review packet text does not match current report; regenerate make-pass-c-hebrew-human-pack-chirho",
+    "raw Hebrew human review packet text does not match current report"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    rawPackExistsAndShapeOkChirho &&
+      rawPackIdsMatchChirho &&
+      !booleanFieldChirho(rawChirho, "packLineTextMatchesCurrentChirho", "rawHebrewChirho"),
+    "raw Hebrew human review packet line text does not match current report; regenerate make-pass-c-hebrew-human-pack-chirho",
+    "raw Hebrew human review packet line text does not match current report"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    rawPackExistsAndShapeOkChirho && numberFieldChirho(rawChirho, "packImageDriftCountChirho", "rawHebrewChirho") !== 0,
+    `${numberFieldChirho(rawChirho, "packImageDriftCountChirho", "rawHebrewChirho")} raw Hebrew human review packet image hash drift(s); regenerate make-pass-c-hebrew-human-pack-chirho`,
+    "raw Hebrew human review packet image hash drift(s)"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    rawPackExistsAndShapeOkChirho &&
+      numberFieldChirho(rawChirho, "packMarkdownPathDriftCountChirho", "rawHebrewChirho") !== 0,
+    `${numberFieldChirho(rawChirho, "packMarkdownPathDriftCountChirho", "rawHebrewChirho")} raw Hebrew human review packet markdown image path drift(s); regenerate make-pass-c-hebrew-human-pack-chirho`,
+    "raw Hebrew human review packet markdown image path drift(s)"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    rawPackExistsAndShapeOkChirho &&
+      rawPackIdsMatchChirho &&
+      !booleanFieldChirho(rawChirho, "packStatusMatchesCurrentChirho", "rawHebrewChirho"),
+    "raw Hebrew human review packet validation statuses do not match current report; regenerate make-pass-c-hebrew-human-pack-chirho",
+    "raw Hebrew human review packet validation statuses do not match current report"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    !booleanFieldChirho(rawChirho, "exportPassCOcrMatchesReportChirho", "rawHebrewChirho"),
+    "raw Hebrew validation report count does not match the latest export report; regenerate validation artifacts",
+    "raw Hebrew validation report count does not match the latest export report"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    passCBackupDbRowsChirho !== 0 && !passCBackupExistsChirho,
+    "Pass-C human validation backup is missing; run backup-pass-c-human-validations-chirho",
+    "Pass-C human validation backup is missing"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    missingBackupRowsChirho !== 0,
+    `${missingBackupRowsChirho} local Pass-C human validation row(s) need backup before certification can complete on a fresh checkout`,
+    "local Pass-C human validation row(s) need backup before certification can complete on a fresh checkout"
+  );
 }
 
 function assertCoreRemainingWorkCoverageChirho(
@@ -1315,6 +1719,8 @@ function mainChirho(): void {
     );
   }
   assertCoreRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
+  assertRawHebrewQueueMarkdownCoverageChirho(markdownChirho, statusChirho);
+  assertRawHebrewQueueRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
   assertStrictBlindScanCoverageChirho(markdownChirho, statusChirho, remainingWorkStringsChirho);
   assertBlankExpertHandoffCoverageChirho(markdownChirho, statusChirho);
   assertPassCHumanReattributionHandoffChirho(markdownChirho, statusChirho, remainingWorkStringsChirho);
