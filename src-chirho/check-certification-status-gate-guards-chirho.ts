@@ -2,8 +2,8 @@
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
 /**
- * Verify certification status turns generic Pass-C human reviewer rows into a
- * completion blocker.
+ * Verify certification status turns unsafe disposable review rows into
+ * completion blockers.
  *
  * This uses a disposable SQLite copy and status output directory. It does not
  * mutate production review state.
@@ -32,6 +32,7 @@ interface CertificationStatusForGuardChirho {
   };
   latinSymbolReviewDbChirho?: {
     genericReviewerRowsChirho?: number;
+    staleRowsChirho?: number;
   };
 }
 
@@ -116,6 +117,39 @@ function insertGenericLatinSymbolReviewChirho(dbPathChirho: string): string | nu
   }
 }
 
+function insertStaleLatinSymbolReviewChirho(dbPathChirho: string): string | null {
+  const manifestChirho = loadLatinSymbolPacketManifestChirho();
+  const liveItemsChirho = latinSymbolVisionLiveItemsChirho();
+  const manifestItemChirho = manifestChirho.itemsChirho?.[1];
+  if (manifestItemChirho === undefined) return null;
+  const liveItemChirho = liveItemsChirho.find((itemChirho) => itemChirho.idChirho === manifestItemChirho.idChirho);
+  if (liveItemChirho === undefined) return null;
+  const dbChirho = new Database(dbPathChirho);
+  try {
+    ensureLatinSymbolReviewSchemaChirho(dbChirho);
+    saveLatinSymbolReviewChirho({
+      dbChirho,
+      manifestChirho,
+      liveItemChirho,
+      verdictChirho: "accepted-clean-chirho",
+      acceptCleanChirho: true,
+      issueFlagsChirho: [],
+      notesChirho: null,
+      reviewerChirho: "hallelujah-chirho",
+    });
+    dbChirho
+      .prepare(`
+        UPDATE latin_symbol_vision_reviews_chirho
+           SET current_text_hash_chirho = '0000000000000000000000000000000000000000000000000000000000000000'
+         WHERE item_id_chirho = ?
+           AND is_current_chirho = 1`)
+      .run(liveItemChirho.idChirho);
+    return liveItemChirho.idChirho;
+  } finally {
+    dbChirho.close();
+  }
+}
+
 function runStatusChirho(dbPathChirho: string, outDirChirho: string): void {
   const argsChirho = [
     process.execPath,
@@ -153,6 +187,7 @@ function mainChirho(): void {
     copyProgressDbSnapshotChirho(dbPathChirho);
     const rowIdChirho = forceSingleGenericPassCHumanReviewerChirho(dbPathChirho);
     const latinItemIdChirho = insertGenericLatinSymbolReviewChirho(dbPathChirho);
+    const staleLatinItemIdChirho = insertStaleLatinSymbolReviewChirho(dbPathChirho);
     if (rowIdChirho === null) {
       console.log(`[${MODULE_CHIRHO}] no current schema-v2 Pass-C human validation row available; skipped generic reviewer status guard`);
       return;
@@ -182,9 +217,22 @@ function mainChirho(): void {
         "generic Latin/symbol reviewer status did not add the remaining-work blocker"
       );
     }
+    if (staleLatinItemIdChirho !== null) {
+      assertCheckChirho(
+        (statusChirho.latinSymbolReviewDbChirho?.staleRowsChirho ?? 0) >= 1,
+        "stale Latin/symbol review status did not report a stale row"
+      );
+      assertCheckChirho(
+        (statusChirho.remainingWorkChirho ?? []).some((itemChirho) =>
+          itemChirho.includes("Latin/symbol review row(s) are stale against current live span/D1 text")
+        ),
+        "stale Latin/symbol review status did not add the remaining-work blocker"
+      );
+    }
     console.log(
       `[${MODULE_CHIRHO}] generic reviewer status gate guard passed for disposable row ${rowIdChirho}` +
-        (latinItemIdChirho === null ? "" : ` and Latin/symbol item ${latinItemIdChirho}`)
+        (latinItemIdChirho === null ? "" : ` and Latin/symbol item ${latinItemIdChirho}`) +
+        (staleLatinItemIdChirho === null ? "" : `; stale Latin/symbol item ${staleLatinItemIdChirho}`)
     );
   } finally {
     rmSync(tempDirChirho, { recursive: true, force: true });
