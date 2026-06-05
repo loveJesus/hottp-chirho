@@ -49,6 +49,7 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "script-chirho=syriac-chirho&source-chirho=pass-c-ocr-span-chirho",
   "script-chirho=arabic-chirho&source-chirho=explicit-span-chirho",
   "text-state-chirho=nonblank-chirho",
+  "Target crop",
   "Target span",
   "Confirm only if you can certify this script's exact letters and relevant marks against the printed line.",
   "If this is outside your competence or uncertain, use Report issue for crop/source/segmentation problems or Skip.",
@@ -154,6 +155,23 @@ function displayGuardForItemChirho(itemChirho: ExpertReviewStateItemChirho): Rec
   };
 }
 
+function assertUsableSpanMarkerChirho(itemChirho: ExpertReviewStateItemChirho, labelChirho: string): void {
+  assertCheckChirho(
+    Number.isFinite(itemChirho.markerLeftPctChirho) &&
+      Number.isFinite(itemChirho.markerWidthPctChirho) &&
+      itemChirho.markerWidthPctChirho > 0,
+    `${labelChirho} lacks a usable span marker`
+  );
+  assertCheckChirho(
+    Number.isFinite(itemChirho.spanXMinPxChirho) &&
+      Number.isFinite(itemChirho.spanWidthPxChirho) &&
+      Number.isFinite(itemChirho.lineWidthPxChirho) &&
+      itemChirho.spanWidthPxChirho > 0 &&
+      itemChirho.lineWidthPxChirho >= itemChirho.spanXMinPxChirho + itemChirho.spanWidthPxChirho,
+    `${labelChirho} lacks usable target crop geometry`
+  );
+}
+
 async function postJsonChirho(
   portChirho: number,
   pathChirho: string,
@@ -180,12 +198,7 @@ async function stateItemChirho(portChirho: number): Promise<ExpertReviewStateIte
       candidateChirho.textIsBlankChirho !== true
   );
   if (itemChirho === undefined) throw new Error("expert review queue has no nonblank item for guard check");
-  assertCheckChirho(
-    Number.isFinite(itemChirho.markerLeftPctChirho) &&
-      Number.isFinite(itemChirho.markerWidthPctChirho) &&
-      itemChirho.markerWidthPctChirho > 0,
-    "expert review queue item lacks a usable span marker"
-  );
+  assertUsableSpanMarkerChirho(itemChirho, "expert review queue item");
   return itemChirho;
 }
 
@@ -299,6 +312,7 @@ async function mainChirho(): Promise<void> {
       ...displayGuardForItemChirho(itemChirho),
     };
     if (blankItemChirho !== null) {
+      assertUsableSpanMarkerChirho(blankItemChirho, "blank expert review queue item");
       const blankConfirmResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
         idChirho: blankItemChirho.idChirho,
         reviewerChirho: "dr-smith-human-reviewer-chirho",
