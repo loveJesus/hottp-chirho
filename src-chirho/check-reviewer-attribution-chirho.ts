@@ -20,8 +20,11 @@ import {
   isBlockedCertificationReviewerAttributionChirho,
   isGenericReviewerAttributionChirho,
   isMachineReviewerAttributionChirho,
+  isTemplatePlaceholderReviewerAttributionChirho,
   MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO,
   MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO,
+  REVIEWER_TEMPLATE_PLACEHOLDER_RE_FLAGS_CHIRHO,
+  REVIEWER_TEMPLATE_PLACEHOLDER_RE_SOURCE_CHIRHO,
 } from "./reviewer-attribution-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 import {
@@ -37,6 +40,7 @@ interface ReviewerAttributionCaseChirho {
   reviewerChirho: string;
   genericChirho: boolean;
   machineChirho: boolean;
+  placeholderChirho: boolean;
   explicitOkChirho: boolean;
   certifyingOkChirho: boolean;
 }
@@ -46,6 +50,7 @@ const REVIEWER_ATTRIBUTION_CASES_CHIRHO: ReviewerAttributionCaseChirho[] = [
     reviewerChirho: "",
     genericChirho: true,
     machineChirho: false,
+    placeholderChirho: false,
     explicitOkChirho: false,
     certifyingOkChirho: false,
   },
@@ -53,6 +58,7 @@ const REVIEWER_ATTRIBUTION_CASES_CHIRHO: ReviewerAttributionCaseChirho[] = [
     reviewerChirho: "human-chirho",
     genericChirho: true,
     machineChirho: false,
+    placeholderChirho: false,
     explicitOkChirho: false,
     certifyingOkChirho: false,
   },
@@ -60,6 +66,15 @@ const REVIEWER_ATTRIBUTION_CASES_CHIRHO: ReviewerAttributionCaseChirho[] = [
     reviewerChirho: "reviewer-chirho",
     genericChirho: true,
     machineChirho: false,
+    placeholderChirho: false,
+    explicitOkChirho: false,
+    certifyingOkChirho: false,
+  },
+  {
+    reviewerChirho: "<explicit-human-reviewer-id-chirho>",
+    genericChirho: true,
+    machineChirho: false,
+    placeholderChirho: true,
     explicitOkChirho: false,
     certifyingOkChirho: false,
   },
@@ -67,6 +82,7 @@ const REVIEWER_ATTRIBUTION_CASES_CHIRHO: ReviewerAttributionCaseChirho[] = [
     reviewerChirho: "hallelujah-chirho",
     genericChirho: false,
     machineChirho: false,
+    placeholderChirho: false,
     explicitOkChirho: true,
     certifyingOkChirho: true,
   },
@@ -74,6 +90,7 @@ const REVIEWER_ATTRIBUTION_CASES_CHIRHO: ReviewerAttributionCaseChirho[] = [
     reviewerChirho: "dr-brock-human-reviewer",
     genericChirho: false,
     machineChirho: false,
+    placeholderChirho: false,
     explicitOkChirho: true,
     certifyingOkChirho: true,
   },
@@ -81,6 +98,7 @@ const REVIEWER_ATTRIBUTION_CASES_CHIRHO: ReviewerAttributionCaseChirho[] = [
     reviewerChirho: "inhumane-bot-chirho",
     genericChirho: false,
     machineChirho: true,
+    placeholderChirho: false,
     explicitOkChirho: true,
     certifyingOkChirho: false,
   },
@@ -88,6 +106,7 @@ const REVIEWER_ATTRIBUTION_CASES_CHIRHO: ReviewerAttributionCaseChirho[] = [
     reviewerChirho: "ai-reviewer-chirho",
     genericChirho: false,
     machineChirho: true,
+    placeholderChirho: false,
     explicitOkChirho: true,
     certifyingOkChirho: false,
   },
@@ -95,6 +114,7 @@ const REVIEWER_ATTRIBUTION_CASES_CHIRHO: ReviewerAttributionCaseChirho[] = [
     reviewerChirho: "llm-reviewer-chirho",
     genericChirho: false,
     machineChirho: true,
+    placeholderChirho: false,
     explicitOkChirho: true,
     certifyingOkChirho: false,
   },
@@ -102,6 +122,7 @@ const REVIEWER_ATTRIBUTION_CASES_CHIRHO: ReviewerAttributionCaseChirho[] = [
     reviewerChirho: "codex-gpt5-chirho",
     genericChirho: false,
     machineChirho: true,
+    placeholderChirho: false,
     explicitOkChirho: true,
     certifyingOkChirho: false,
   },
@@ -109,6 +130,7 @@ const REVIEWER_ATTRIBUTION_CASES_CHIRHO: ReviewerAttributionCaseChirho[] = [
     reviewerChirho: "claude-opus-vision-chirho",
     genericChirho: false,
     machineChirho: true,
+    placeholderChirho: false,
     explicitOkChirho: true,
     certifyingOkChirho: false,
   },
@@ -116,6 +138,7 @@ const REVIEWER_ATTRIBUTION_CASES_CHIRHO: ReviewerAttributionCaseChirho[] = [
     reviewerChirho: "openai-o3-chirho",
     genericChirho: false,
     machineChirho: true,
+    placeholderChirho: false,
     explicitOkChirho: true,
     certifyingOkChirho: false,
   },
@@ -123,6 +146,7 @@ const REVIEWER_ATTRIBUTION_CASES_CHIRHO: ReviewerAttributionCaseChirho[] = [
     reviewerChirho: "codex-human-chirho",
     genericChirho: false,
     machineChirho: true,
+    placeholderChirho: false,
     explicitOkChirho: true,
     certifyingOkChirho: false,
   },
@@ -269,10 +293,15 @@ function mainChirho(): void {
     MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO,
     MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO
   );
+  const browserReviewerPlaceholderReChirho = new RegExp(
+    REVIEWER_TEMPLATE_PLACEHOLDER_RE_SOURCE_CHIRHO,
+    REVIEWER_TEMPLATE_PLACEHOLDER_RE_FLAGS_CHIRHO
+  );
 
   for (const caseChirho of REVIEWER_ATTRIBUTION_CASES_CHIRHO) {
     const labelChirho = JSON.stringify(caseChirho.reviewerChirho);
     const browserReviewerChirho = caseChirho.reviewerChirho.trim().toLowerCase();
+    const browserTrimmedReviewerChirho = caseChirho.reviewerChirho.trim();
     assertEqualChirho(
       isGenericReviewerAttributionChirho(caseChirho.reviewerChirho),
       caseChirho.genericChirho,
@@ -284,9 +313,19 @@ function mainChirho(): void {
       `${labelChirho} machine attribution`
     );
     assertEqualChirho(
+      isTemplatePlaceholderReviewerAttributionChirho(caseChirho.reviewerChirho),
+      caseChirho.placeholderChirho,
+      `${labelChirho} placeholder attribution`
+    );
+    assertEqualChirho(
       browserMachineReviewerReChirho.test(browserReviewerChirho),
       caseChirho.machineChirho,
       `${labelChirho} browser machine attribution`
+    );
+    assertEqualChirho(
+      browserReviewerPlaceholderReChirho.test(browserTrimmedReviewerChirho),
+      caseChirho.placeholderChirho,
+      `${labelChirho} browser placeholder attribution`
     );
     assertEqualChirho(
       isBlockedCertificationReviewerAttributionChirho(caseChirho.reviewerChirho),

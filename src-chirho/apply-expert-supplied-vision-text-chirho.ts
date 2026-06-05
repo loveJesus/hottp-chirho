@@ -58,6 +58,14 @@ const SUPPLIED_TEXT_PLACEHOLDER_VALUES_CHIRHO = new Set([
   "todo",
   "tbd",
 ]);
+const RATIONALE_PLACEHOLDER_VALUES_CHIRHO = new Set([
+  "why this exact text is supplied",
+  "rationale",
+  "reason",
+  "placeholder",
+  "todo",
+  "tbd",
+]);
 
 interface SpanChirho {
   segmentIndexChirho: number;
@@ -262,15 +270,15 @@ function loadFreshExpertPackItemChirho(itemIdChirho: string, liveItemChirho: Vis
   return packItemChirho;
 }
 
-function suppliedTextLooksPlaceholderChirho(suppliedTextChirho: string): boolean {
-  const normalizedChirho = suppliedTextChirho
+function valueLooksPlaceholderChirho(valueChirho: string, placeholderValuesChirho: Set<string>): boolean {
+  const normalizedChirho = valueChirho
     .trim()
     .toLowerCase()
     .replace(/\s+/g, " ");
   const unwrappedChirho = normalizedChirho.replace(/^<(.+)>$/u, "$1").trim();
   return (
-    SUPPLIED_TEXT_PLACEHOLDER_VALUES_CHIRHO.has(normalizedChirho) ||
-    SUPPLIED_TEXT_PLACEHOLDER_VALUES_CHIRHO.has(unwrappedChirho)
+    placeholderValuesChirho.has(normalizedChirho) ||
+    placeholderValuesChirho.has(unwrappedChirho)
   );
 }
 
@@ -278,18 +286,22 @@ function parseOptionsChirho(): ApplyOptionsChirho {
   const argsChirho = process.argv.slice(2);
   const suppliedTextChirho = normalizeTextForStorageChirho(nonEmptyArgChirho(argsChirho, "supplied-text-chirho"));
   if (suppliedTextChirho.trim().length === 0) throw new Error("--supplied-text-chirho must not normalize to empty text");
-  if (suppliedTextLooksPlaceholderChirho(suppliedTextChirho)) {
+  if (valueLooksPlaceholderChirho(suppliedTextChirho, SUPPLIED_TEXT_PLACEHOLDER_VALUES_CHIRHO)) {
     throw new Error("--supplied-text-chirho must be the exact printed transcription, not a template placeholder");
   }
   const reviewerChirho = nonEmptyArgChirho(argsChirho, "reviewer-chirho");
   assertCertifyingReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
+  const rationaleChirho = nonEmptyArgChirho(argsChirho, "rationale-chirho");
+  if (valueLooksPlaceholderChirho(rationaleChirho, RATIONALE_PLACEHOLDER_VALUES_CHIRHO)) {
+    throw new Error("--rationale-chirho must explain why this exact text is supplied, not a template placeholder");
+  }
   return {
     applyChirho: argsChirho.includes("--apply"),
     itemIdChirho: nonEmptyArgChirho(argsChirho, "id-chirho"),
     suppliedTextChirho,
     reviewerChirho,
     reviewerRoleChirho: nonEmptyArgChirho(argsChirho, "reviewer-role-chirho"),
-    rationaleChirho: nonEmptyArgChirho(argsChirho, "rationale-chirho"),
+    rationaleChirho,
     backupPathChirho: parseArgValueChirho(argsChirho, "backup-chirho") ?? DEFAULT_BACKUP_PATH_CHIRHO,
   };
 }

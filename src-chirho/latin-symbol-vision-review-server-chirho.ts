@@ -47,6 +47,8 @@ import {
   GENERIC_REVIEWER_IDS_CHIRHO,
   MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO,
   MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO,
+  REVIEWER_TEMPLATE_PLACEHOLDER_RE_FLAGS_CHIRHO,
+  REVIEWER_TEMPLATE_PLACEHOLDER_RE_SOURCE_CHIRHO,
 } from "./reviewer-attribution-chirho.ts";
 import { reviewServerStartupHealthChirho } from "./review-server-health-chirho.ts";
 
@@ -261,6 +263,10 @@ function htmlChirho(): string {
       ${scriptJsonChirho(MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO)},
       ${scriptJsonChirho(MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO)}
     );
+    const reviewerTemplatePlaceholderReChirho = new RegExp(
+      ${scriptJsonChirho(REVIEWER_TEMPLATE_PLACEHOLDER_RE_SOURCE_CHIRHO)},
+      ${scriptJsonChirho(REVIEWER_TEMPLATE_PLACEHOLDER_RE_FLAGS_CHIRHO)}
+    );
     let itemsChirho = [];
     let reviewsChirho = new Map();
     let acceptedPolicyIdsChirho = new Set();
@@ -302,6 +308,9 @@ function htmlChirho(): string {
       if (trimmedChirho.length === 0) return "Reviewer is required.";
       if (genericReviewerIdsChirho.has(normalizedChirho)) {
         return "Reviewer must identify the explicit reviewer, not " + trimmedChirho + ".";
+      }
+      if (reviewerTemplatePlaceholderReChirho.test(trimmedChirho)) {
+        return "Reviewer must identify the explicit reviewer, not template placeholder " + trimmedChirho + ".";
       }
       return null;
     }

@@ -34,10 +34,16 @@ export const GENERIC_REVIEWER_IDS_CHIRHO = new Set<string>([
 export const MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO =
   "(^|[^a-z0-9])(ai|anthropic|bot|claude|codex|gemini|gpt[-_ ]?[0-9]*|llama|llm|mistral|model|openai|o[0-9]+)([^a-z0-9]|$)";
 export const MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO = "i";
+export const REVIEWER_TEMPLATE_PLACEHOLDER_RE_SOURCE_CHIRHO = "^<[^<>]+>$";
+export const REVIEWER_TEMPLATE_PLACEHOLDER_RE_FLAGS_CHIRHO = "u";
 
 const MACHINE_REVIEWER_ID_RE_CHIRHO = new RegExp(
   MACHINE_REVIEWER_ID_RE_SOURCE_CHIRHO,
   MACHINE_REVIEWER_ID_RE_FLAGS_CHIRHO
+);
+const REVIEWER_TEMPLATE_PLACEHOLDER_RE_CHIRHO = new RegExp(
+  REVIEWER_TEMPLATE_PLACEHOLDER_RE_SOURCE_CHIRHO,
+  REVIEWER_TEMPLATE_PLACEHOLDER_RE_FLAGS_CHIRHO
 );
 
 function normalizedReviewerIdChirho(reviewerChirho: string): string {
@@ -46,11 +52,19 @@ function normalizedReviewerIdChirho(reviewerChirho: string): string {
 
 export function isGenericReviewerAttributionChirho(reviewerChirho: string): boolean {
   const trimmedChirho = normalizedReviewerIdChirho(reviewerChirho);
-  return trimmedChirho.length === 0 || GENERIC_REVIEWER_IDS_CHIRHO.has(trimmedChirho);
+  return (
+    trimmedChirho.length === 0 ||
+    GENERIC_REVIEWER_IDS_CHIRHO.has(trimmedChirho) ||
+    isTemplatePlaceholderReviewerAttributionChirho(reviewerChirho)
+  );
 }
 
 export function isMachineReviewerAttributionChirho(reviewerChirho: string): boolean {
   return MACHINE_REVIEWER_ID_RE_CHIRHO.test(normalizedReviewerIdChirho(reviewerChirho));
+}
+
+export function isTemplatePlaceholderReviewerAttributionChirho(reviewerChirho: string): boolean {
+  return REVIEWER_TEMPLATE_PLACEHOLDER_RE_CHIRHO.test(reviewerChirho.trim());
 }
 
 export function isBlockedCertificationReviewerAttributionChirho(reviewerChirho: string): boolean {
@@ -66,6 +80,9 @@ export function explicitReviewerAttributionErrorChirho(
   if (trimmedChirho.length === 0) return `${fieldNameChirho} is required`;
   if (GENERIC_REVIEWER_IDS_CHIRHO.has(trimmedChirho)) {
     return `${fieldNameChirho} must identify the explicit reviewer, not generic ${displayReviewerChirho}`;
+  }
+  if (isTemplatePlaceholderReviewerAttributionChirho(reviewerChirho)) {
+    return `${fieldNameChirho} must identify the explicit reviewer, not template placeholder ${displayReviewerChirho}`;
   }
   return null;
 }
