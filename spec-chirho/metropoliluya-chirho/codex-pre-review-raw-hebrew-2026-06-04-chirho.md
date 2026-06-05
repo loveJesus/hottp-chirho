@@ -75,12 +75,14 @@ span was surfaced.
   - Visual precheck: the target crop is a broad Hebrew phrase after French `dittographie de`; no obvious clipping or swallowed neighboring French is visible. This line appears to contrast with the prior shorter `מֵי` form, so do not merge the two notes.
   - Human check still needed: exact multi-word text, vowels/marks, and whether the longer `מֵימֵי` form is what the print says here.
 
-- `vol 2 p149 L19 S3`:
+- `vol 2 p149 L19 S1/S3`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A149%3A19%3A1`
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=2%3A149%3A19%3A3`
-  - Live text: `אָמַר`
-  - Attention reason: low direct-read confidence.
-  - Visual precheck: the crop is centered on the short Hebrew word and no obvious segmentation problem is visible.
-  - Human check still needed: exact vowels/marks and letter confirmation.
+  - Item IDs: `v2-p0149-l019-s1`, `v2-p0149-l019-s3`
+  - Live texts: `כְּחֶזְקַת` and `אָמַר`
+  - Attention reason: S1 is a current raw item in the no-pre-review-note lane; S3 has low direct-read confidence.
+  - Visual precheck: S1 is boxed after the preceding `Ta` context and before French `mais`; S3 is boxed before French `qui pré-`. The red boxes do not visibly swallow neighboring French/Latin text. Treat S1 as a real human review target because the direct OCR read `חהקת` is too weak for the exact letters/marks.
+  - Human check still needed: S1 exact consonants and pointing, especially the opening kaf/dagesh and middle consonants; S3 exact vowels/marks and letter confirmation.
 
 - `vol 2 p150 L37 S1`:
   `http://localhost:8766/?attention-chirho=delimiter-notation-chirho&item-chirho=2%3A150%3A37%3A1`
