@@ -3,16 +3,16 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Non-Latin Residue Candidate Scan Chirho
 
-Generated: 2026-06-05T13:57:01.135Z
+Generated: 2026-06-05T14:20:37.140Z
 
-This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, or apparatus residue inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.
+This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, apparatus residue, or context-unbalanced non-Hebrew delimiter punctuation inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.
 
 Standalone Greek recension sigla inside symbol spans are handled by the Latin/symbol proofing lane and are intentionally excluded here; Greek words or Hebrew/Syriac/Arabic residue in the wrong script remain reportable.
 
 ## Summary
 
 - Scanner source files: 7
-- Scanner source fingerprint: f4b9aa1ec66326321378a239219f6fdb331ae45cad23ab7bcbd44f6f1cf16b48
+- Scanner source fingerprint: 2d8862aefb4e7cee82161166fd5c5fe064d1b3d521dcaa4ed47839d5765bedf3
 - Span source files: 1789
 - Span source fingerprint: 7b48437c5e8dc366651f4b3cdfff49ed873cad03f5d4a5471a260224ea0100ff
 - Candidate lines: 0

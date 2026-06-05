@@ -92,6 +92,10 @@ function orderedSpansChirho(lineChirho: SpanLineChirho): SpanChirho[] {
   return [...lineChirho.spansChirho].sort((aChirho, bChirho) => aChirho.segmentIndexChirho - bChirho.segmentIndexChirho);
 }
 
+function lineIdentityKeyChirho(volumeChirho: number, pageChirho: number, lineIndexChirho: number): string {
+  return `${volumeChirho}:${pageChirho}:${lineIndexChirho}`;
+}
+
 function compactTextChirho(textChirho: string): string {
   return normalizeTextForStorageChirho(textChirho).replace(/\s+/g, " ").trim();
 }
@@ -134,6 +138,11 @@ function delimiterCountsChirho(textChirho: string): { roundOpenChirho: number; r
   };
 }
 
+function delimiterBalanceChirho(textChirho: string): number {
+  const countsChirho = delimiterCountsChirho(textChirho);
+  return countsChirho.roundOpenChirho - countsChirho.roundCloseChirho;
+}
+
 function nonHebrewOpenDelimiterUnbalancedChirho(spanChirho: SpanChirho, spansChirho: SpanChirho[], indexChirho: number): boolean {
   if (spanChirho.scriptChirho === "hebrew-chirho" || !NON_LATIN_SCRIPT_SET_CHIRHO.has(spanChirho.scriptChirho)) return false;
   if (!DELIMITER_RE_CHIRHO.test(spanChirho.utf8TextChirho)) return false;
@@ -145,6 +154,32 @@ function nonHebrewOpenDelimiterUnbalancedChirho(spanChirho: SpanChirho, spansChi
     .join(" ");
   const suffixCountsChirho = delimiterCountsChirho(suffixTextChirho);
   return suffixCountsChirho.roundOpenChirho > suffixCountsChirho.roundCloseChirho;
+}
+
+function nonHebrewCloseDelimiterUnbalancedChirho(
+  spanChirho: SpanChirho,
+  spansChirho: SpanChirho[],
+  indexChirho: number,
+  previousLineTextChirho: string | null
+): boolean {
+  if (spanChirho.scriptChirho === "hebrew-chirho" || !NON_LATIN_SCRIPT_SET_CHIRHO.has(spanChirho.scriptChirho)) return false;
+  if (!DELIMITER_RE_CHIRHO.test(spanChirho.utf8TextChirho)) return false;
+  const previousLineBalanceChirho = Math.max(0, delimiterBalanceChirho(previousLineTextChirho ?? ""));
+  const sameLinePrefixTextChirho = spansChirho
+    .slice(0, indexChirho)
+    .map((prefixSpanChirho) => prefixSpanChirho.utf8TextChirho)
+    .join(" ");
+  const sameLinePrefixBalanceChirho = Math.max(0, delimiterBalanceChirho(sameLinePrefixTextChirho));
+  let balanceChirho = previousLineBalanceChirho + sameLinePrefixBalanceChirho;
+  for (const charChirho of spanChirho.utf8TextChirho) {
+    if (charChirho === "(") {
+      balanceChirho += 1;
+    } else if (charChirho === ")") {
+      if (balanceChirho === 0) return true;
+      balanceChirho -= 1;
+    }
+  }
+  return false;
 }
 
 function wrongScriptReasonsChirho(spanChirho: SpanChirho): string[] {
@@ -159,7 +194,7 @@ function wrongScriptReasonsChirho(spanChirho: SpanChirho): string[] {
   return reasonsChirho;
 }
 
-function spanReasonsChirho(spanChirho: SpanChirho, spansChirho: SpanChirho[], indexChirho: number): string[] {
+function spanReasonsChirho(spanChirho: SpanChirho, spansChirho: SpanChirho[], indexChirho: number, previousLineTextChirho: string | null): string[] {
   const textChirho = compactTextChirho(spanChirho.utf8TextChirho);
   const reasonsChirho = wrongScriptReasonsChirho(spanChirho);
   if (
@@ -172,6 +207,9 @@ function spanReasonsChirho(spanChirho: SpanChirho, spansChirho: SpanChirho[], in
   }
   if (nonHebrewOpenDelimiterUnbalancedChirho(spanChirho, spansChirho, indexChirho)) {
     reasonsChirho.push("non-hebrew-open-delimiter-unbalanced-chirho");
+  }
+  if (nonHebrewCloseDelimiterUnbalancedChirho(spanChirho, spansChirho, indexChirho, previousLineTextChirho)) {
+    reasonsChirho.push("non-hebrew-close-delimiter-unbalanced-chirho");
   }
   return [...new Set(reasonsChirho)];
 }
@@ -198,6 +236,7 @@ function scoreCandidateChirho(lineReasonsValueChirho: string[], suspiciousSpansC
     if (spanChirho.reasonsChirho.some((reasonChirho) => reasonChirho.startsWith("arabic-chars-in-non-arabic"))) scoreChirho += 4;
     if (spanChirho.reasonsChirho.includes("short-garble-near-nonlatin-chirho")) scoreChirho += 4;
     if (spanChirho.reasonsChirho.includes("non-hebrew-open-delimiter-unbalanced-chirho")) scoreChirho += 6;
+    if (spanChirho.reasonsChirho.includes("non-hebrew-close-delimiter-unbalanced-chirho")) scoreChirho += 6;
   }
   if (suspiciousSpansChirho.length > 0) reasonsChirho.push("line-has-suspicious-span-chirho");
   scoreChirho += Math.min(3, suspiciousSpansChirho.length);
@@ -210,14 +249,14 @@ function priorityForScoreChirho(scoreChirho: number): CandidateChirho["priorityC
   return "low-chirho";
 }
 
-function candidateForLineChirho(pathChirho: string): CandidateChirho | null {
+function candidateForLineChirho(pathChirho: string, previousLineTextChirho: string | null): CandidateChirho | null {
   const lineChirho = readSpanLineChirho(pathChirho);
   const spansChirho = orderedSpansChirho(lineChirho);
   const lineTextValueChirho = lineTextChirho(lineChirho);
   const lineReasonsValueChirho = lineReasonsChirho(lineTextValueChirho);
   const suspiciousSpansChirho = spansChirho
     .map((spanChirho, indexChirho): SuspiciousSpanChirho | null => {
-      const reasonsChirho = spanReasonsChirho(spanChirho, spansChirho, indexChirho);
+      const reasonsChirho = spanReasonsChirho(spanChirho, spansChirho, indexChirho, previousLineTextChirho);
       if (reasonsChirho.length === 0) return null;
       return {
         segmentIndexChirho: spanChirho.segmentIndexChirho,
@@ -280,7 +319,7 @@ function renderReportChirho(
     "",
     `Generated: ${new Date().toISOString()}`,
     "",
-    "This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, or apparatus residue inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.",
+    "This is a machine-assisted review queue, not a certification result. It flags possible strict-blind Greek, Hebrew, Syriac, Arabic, apparatus residue, or context-unbalanced non-Hebrew delimiter punctuation inside spans whose current script label may hide the issue. Every item still needs visual review against the scanline before any span repair.",
     "",
     "Standalone Greek recension sigla inside symbol spans are handled by the Latin/symbol proofing lane and are intentionally excluded here; Greek words or Hebrew/Syriac/Arabic residue in the wrong script remain reportable.",
     "",
@@ -324,8 +363,24 @@ function mainChirho(): void {
   const spanLinePathsChirho = scanSpanLinePathsChirho();
   const spanSourceFingerprintChirho = sourceFingerprintForPathsChirho(spanLinePathsChirho);
   const scannerSourceFingerprintChirho = strictBlindScannerSourceFingerprintChirho(fileURLToPath(import.meta.url));
-  const candidatesChirho = spanLinePathsChirho
-    .map(candidateForLineChirho)
+  const lineEntriesChirho = spanLinePathsChirho.map((pathChirho) => {
+    const lineChirho = readSpanLineChirho(pathChirho);
+    return { pathChirho, lineChirho, lineTextValueChirho: lineTextChirho(lineChirho) };
+  });
+  const lineTextByPathChirho = new Map(lineEntriesChirho.map((entryChirho) => [entryChirho.pathChirho, entryChirho.lineTextValueChirho]));
+  const linePathByIdentityChirho = new Map(
+    lineEntriesChirho.map((entryChirho) => [
+      lineIdentityKeyChirho(entryChirho.lineChirho.volumeChirho, entryChirho.lineChirho.pageChirho, entryChirho.lineChirho.lineIndexChirho),
+      entryChirho.pathChirho,
+    ])
+  );
+  const candidatesChirho = lineEntriesChirho
+    .map((entryChirho) => {
+      const previousLinePathChirho = linePathByIdentityChirho.get(
+        lineIdentityKeyChirho(entryChirho.lineChirho.volumeChirho, entryChirho.lineChirho.pageChirho, entryChirho.lineChirho.lineIndexChirho - 1)
+      );
+      return candidateForLineChirho(entryChirho.pathChirho, previousLinePathChirho === undefined ? null : lineTextByPathChirho.get(previousLinePathChirho) ?? null);
+    })
     .filter((candidateChirho): candidateChirho is CandidateChirho => candidateChirho !== null)
     .sort((aChirho, bChirho) => {
       if (bChirho.scoreChirho !== aChirho.scoreChirho) return bChirho.scoreChirho - aChirho.scoreChirho;
