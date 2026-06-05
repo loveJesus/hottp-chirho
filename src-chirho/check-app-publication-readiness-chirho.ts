@@ -158,6 +158,7 @@ function relativeProjectPathChirho(pathChirho: string): string {
 function printNextReviewLinksChirho(statusChirho: CertificationStatusSummaryChirho): void {
   const linksChirho: Array<[string, string | null]> = [
     ["Raw Hebrew primary", reviewStartLinkChirho(statusChirho, "rawHebrewVols35UnvalidatedChirho")],
+    ["Raw Hebrew confident disagreement", reviewStartLinkChirho(statusChirho, "rawHebrewConfidentDirectReadDisagreementChirho")],
     ["Raw Hebrew attribution blocked", reviewStartLinkChirho(statusChirho, "rawHebrewAttributionBlockedChirho")],
     ["Raw Hebrew attribution unchanged", reviewStartLinkChirho(statusChirho, "rawHebrewAttributionBlockedUnchangedChirho")],
     ["Raw Hebrew attribution re-review", reviewStartLinkChirho(statusChirho, "rawHebrewAttributionRereviewChirho")],
