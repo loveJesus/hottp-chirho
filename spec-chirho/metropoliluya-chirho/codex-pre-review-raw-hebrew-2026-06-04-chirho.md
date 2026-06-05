@@ -209,12 +209,14 @@ span was surfaced.
   - Visual precheck: the target crop boxes the Hebrew word after French `les trois premières lettres de` and before French `qui, seules`; the Hebrew/French boundaries are clean, with no adjacent French swallowed by the Hebrew span.
   - Human check still needed: exact tav/qof/dalet-yod-shin-vav sequence, dagesh, vowels, shin-dot, and confirmation that the surrounding French phrase remains outside this Hebrew span.
 
-- `vol 2 p151 L1 S1`:
+- `vol 2 p151 L1 S1/S4`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A1%3A1`
-  - Live text: `תַקְדִּישׁוּ`
-  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
-  - Visual precheck: the Hebrew word is boxed after French `traduction de` and before Greek `(ἁγιάσατε)`; the adjacent Greek and the later Hebrew `לְמִקְדָּשׁ` are outside this target box. The direct OCR read has exact consonants, but it does not certify the printed vowels, dagesh, or shin-dot.
-  - Human check still needed: exact tav/qof/dalet-yod-shin-vav sequence, dagesh, vowels, and shin-dot against the print.
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A1%3A4`
+  - Item IDs: `v2-p0151-l001-s1`, `v2-p0151-l001-s4`
+  - Live texts: `תַקְדִּישׁוּ` and `לְמִקְדָּשׁ`
+  - Attention reason: both are current raw items in the no-pre-review-note lane; S4 is all-token-validated and line-final.
+  - Visual precheck: S1 is boxed after French `traduction de` and before Greek `(ἁγιάσατε)`, with adjacent Greek outside the Hebrew target. S4 is boxed after French `et de` at the right edge of the scanline; no intervening Greek/French text appears swallowed by the S4 Hebrew box.
+  - Human check still needed: for S1, exact tav/qof/dalet-yod-shin-vav sequence, dagesh, vowels, and shin-dot; for S4, exact lamed-prefix, mem-hiriq, qof-sheva, dalet-dagesh/qamats, shin-dot, and whether the right-edge crop fully preserves the line-final Hebrew word with no missing terminal punctuation.
 
 - `vol 2 p151 L8 S1/S3`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A8%3A1`
