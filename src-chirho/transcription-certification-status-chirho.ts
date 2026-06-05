@@ -162,6 +162,12 @@ const SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "syriac-blank-transcription-handoff-2026-06-04-chirho.md"
 );
+const SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_CROP_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "syriac-v3-p0151-l010-s3-context-crop-2026-06-04-chirho.png"
+);
 const EXPERT_SUPPLIED_VISION_TEXT_BACKUP_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -272,6 +278,10 @@ interface BlankVisionTierHandoffChirho {
   packetPathChirho: string | null;
   markdownPathChirho: string | null;
   manifestItemFreshChirho: boolean;
+  handoffDocumentPathChirho: string | null;
+  handoffDocumentExistsChirho: boolean;
+  handoffCropPathChirho: string | null;
+  handoffCropExistsChirho: boolean;
 }
 
 interface SuggestedCorrectionSpanChirho extends SpanLikeChirho {
@@ -1618,6 +1628,18 @@ function blankVisionTierSuppliedTextCommandTemplateChirho(
   return commandPartsChirho.join(" ");
 }
 
+function blankVisionTierHandoffArtifactPathsChirho(
+  idChirho: string
+): { documentPathChirho: string | null; cropPathChirho: string | null } {
+  if (idChirho !== "v3-p0151-l010-s3") {
+    return { documentPathChirho: null, cropPathChirho: null };
+  }
+  return {
+    documentPathChirho: SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO,
+    cropPathChirho: SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_CROP_PATH_CHIRHO,
+  };
+}
+
 function blankVisionTierHandoffsChirho(
   issuesChirho: ExportIssueChirho[],
   manifestItemsByIdChirho: Map<string, ExpertPackVisionItemChirho>,
@@ -1645,6 +1667,7 @@ function blankVisionTierHandoffsChirho(
         manifestItemChirho.scriptChirho === liveItemChirho.scriptChirho &&
         manifestItemChirho.visionSourceChirho === liveItemChirho.visionSourceChirho &&
         manifestItemChirho.currentTextChirho === liveItemChirho.currentTextChirho;
+      const artifactPathsChirho = blankVisionTierHandoffArtifactPathsChirho(idChirho);
       return {
         idChirho,
         locationChirho: `vol ${issueChirho.volumeChirho} p${issueChirho.pageChirho} line ${issueChirho.lineIndexChirho} seg ${issueChirho.segmentIndexChirho}`,
@@ -1665,6 +1688,12 @@ function blankVisionTierHandoffsChirho(
         packetPathChirho: manifestItemChirho?.packetPathChirho ?? null,
         markdownPathChirho: manifestItemChirho?.markdownPathChirho ?? null,
         manifestItemFreshChirho,
+        handoffDocumentPathChirho: artifactPathsChirho.documentPathChirho,
+        handoffDocumentExistsChirho:
+          artifactPathsChirho.documentPathChirho !== null && existsSync(artifactPathsChirho.documentPathChirho),
+        handoffCropPathChirho: artifactPathsChirho.cropPathChirho,
+        handoffCropExistsChirho:
+          artifactPathsChirho.cropPathChirho !== null && existsSync(artifactPathsChirho.cropPathChirho),
       };
     });
 }
@@ -3292,6 +3321,22 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
   if (latinSymbolD1ReadErrorChirho !== null) {
     remainingWorkChirho.push(`D1-derived Latin/symbol vision word scan failed: ${latinSymbolD1ReadErrorChirho}`);
   }
+  const blankHandoffMissingDocumentCountChirho = structuralChirho.blankVisionTierHandoffsChirho.filter(
+    (handoffChirho) => handoffChirho.handoffDocumentPathChirho === null || !handoffChirho.handoffDocumentExistsChirho
+  ).length;
+  const blankHandoffMissingCropCountChirho = structuralChirho.blankVisionTierHandoffsChirho.filter(
+    (handoffChirho) => handoffChirho.handoffCropPathChirho === null || !handoffChirho.handoffCropExistsChirho
+  ).length;
+  if (blankHandoffMissingDocumentCountChirho !== 0) {
+    remainingWorkChirho.push(
+      `${blankHandoffMissingDocumentCountChirho} blank expert transcription handoff document(s) are missing`
+    );
+  }
+  if (blankHandoffMissingCropCountChirho !== 0) {
+    remainingWorkChirho.push(
+      `${blankHandoffMissingCropCountChirho} blank expert transcription handoff crop image(s) are missing`
+    );
+  }
   if (exportReportExistsChirho && !exportReportShapeOkChirho) {
     remainingWorkChirho.push("strict export report is malformed; regenerate export-markdown-chirho --all --strict");
   }
@@ -3913,6 +3958,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
           `  - Source scanline: \`${handoffChirho.sourcePathChirho === null ? "missing-manifest-source-chirho" : relativeProjectPathChirho(handoffChirho.sourcePathChirho)}\``,
           `  - Packet image: \`${handoffChirho.packetPathChirho === null ? "missing-manifest-packet-chirho" : relativeProjectPathChirho(handoffChirho.packetPathChirho)}\``,
           `  - Markdown image path: \`${handoffChirho.markdownPathChirho ?? "missing-manifest-markdown-path-chirho"}\``,
+          `  - Dedicated handoff document: \`${handoffChirho.handoffDocumentPathChirho === null ? "missing-dedicated-handoff-document-chirho" : relativeProjectPathChirho(handoffChirho.handoffDocumentPathChirho)}\` (present: ${handoffChirho.handoffDocumentExistsChirho})`,
+          `  - Dedicated handoff crop: \`${handoffChirho.handoffCropPathChirho === null ? "missing-dedicated-handoff-crop-chirho" : relativeProjectPathChirho(handoffChirho.handoffCropPathChirho)}\` (present: ${handoffChirho.handoffCropExistsChirho})`,
           `  - Manifest item fresh against live queue: ${handoffChirho.manifestItemFreshChirho}`,
           `  - Expert-supplied text dry-run after exact script-reader transcription: \`${handoffChirho.dryRunCommandTemplateChirho}\``,
           `  - Expert-supplied text apply after dry-run verification: \`${handoffChirho.applyCommandTemplateChirho}\``,
