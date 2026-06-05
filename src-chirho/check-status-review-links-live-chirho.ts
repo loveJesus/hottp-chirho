@@ -218,7 +218,7 @@ function assertExpertQueryValuesChirho(urlChirho: URL, keyChirho: string): void 
   assertKnownSearchParamsChirho(
     urlChirho,
     keyChirho,
-    new Set(["item-chirho", "script-chirho", "priority-chirho", "text-state-chirho", "volume-chirho", "source-chirho"])
+    new Set(["item-chirho", "script-chirho", "priority-chirho", "text-state-chirho", "volume-chirho", "source-chirho", "exact-text-chirho"])
   );
   assertParamInSetChirho(urlChirho, keyChirho, "script-chirho", EXPERT_SCRIPTS_CHIRHO);
   assertParamInSetChirho(urlChirho, keyChirho, "priority-chirho", EXPERT_PRIORITIES_CHIRHO);
@@ -346,6 +346,10 @@ function assertExpertFiltersChirho(urlChirho: URL, itemChirho: ExpertItemChirho,
   const sourceChirho = urlChirho.searchParams.get("source-chirho");
   if (sourceChirho !== null) {
     assertGeneratedCheckChirho(itemChirho.visionSourceChirho === sourceChirho, `${keyChirho} item ${itemChirho.idChirho} does not match source-chirho=${sourceChirho}`);
+  }
+  const exactTextChirho = urlChirho.searchParams.get("exact-text-chirho");
+  if (exactTextChirho !== null) {
+    assertGeneratedCheckChirho(itemChirho.currentTextChirho === exactTextChirho, `${keyChirho} item ${itemChirho.idChirho} does not match exact-text-chirho`);
   }
   const volumeChirho = parseVolumeFilterChirho(urlChirho);
   if (volumeChirho !== null) {

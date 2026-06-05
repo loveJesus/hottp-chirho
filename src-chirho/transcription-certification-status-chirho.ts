@@ -1463,7 +1463,8 @@ function expertReviewUrlChirho(
   itemIdChirho?: string,
   volumeChirho?: number,
   textStateChirho?: string,
-  sourceChirho?: string
+  sourceChirho?: string,
+  exactTextChirho?: string
 ): string {
   const entriesChirho: Array<[string, string]> = [];
   if (scriptChirho !== undefined) entriesChirho.push(["script-chirho", scriptChirho]);
@@ -1471,6 +1472,7 @@ function expertReviewUrlChirho(
   if (volumeChirho !== undefined) entriesChirho.push(["volume-chirho", volumeFilterValueChirho(volumeChirho)]);
   if (textStateChirho !== undefined) entriesChirho.push(["text-state-chirho", textStateChirho]);
   if (sourceChirho !== undefined) entriesChirho.push(["source-chirho", sourceChirho]);
+  if (exactTextChirho !== undefined) entriesChirho.push(["exact-text-chirho", exactTextChirho]);
   if (itemIdChirho !== undefined) entriesChirho.push(["item-chirho", itemIdChirho]);
   const queryChirho = urlQueryChirho(entriesChirho);
   return queryChirho.length === 0 ? "http://localhost:8771/" : `http://localhost:8771/?${queryChirho}`;
@@ -1527,7 +1529,10 @@ function expertTextRepeatSummaryChirho(
           firstItemChirho.scriptChirho,
           undefined,
           firstItemChirho.idChirho,
-          itemVolumeChirho(firstItemChirho) ?? undefined
+          itemVolumeChirho(firstItemChirho) ?? undefined,
+          undefined,
+          undefined,
+          firstItemChirho.currentTextChirho
         ),
       };
     }),
