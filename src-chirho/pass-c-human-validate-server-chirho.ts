@@ -1121,11 +1121,15 @@ function witnessSnapshotChirho(itemChirho: QueueItemChirho): string {
   });
 }
 
-function sanitizeIssueFlagsChirho(issueFlagsChirho: unknown): string[] {
-  if (!Array.isArray(issueFlagsChirho)) return [];
+function parseIssueFlagsChirho(issueFlagsChirho: unknown): string[] {
+  if (!Array.isArray(issueFlagsChirho)) {
+    throw new Error("issueFlagsChirho must be an array");
+  }
   const cleanFlagsChirho: string[] = [];
   for (const flagChirho of issueFlagsChirho) {
-    if (typeof flagChirho !== "string" || !ISSUE_FLAG_VALUES_CHIRHO.has(flagChirho)) continue;
+    if (typeof flagChirho !== "string" || !ISSUE_FLAG_VALUES_CHIRHO.has(flagChirho)) {
+      throw new Error(`unsupported issue flag: ${String(flagChirho)}`);
+    }
     if (!cleanFlagsChirho.includes(flagChirho)) cleanFlagsChirho.push(flagChirho);
   }
   return cleanFlagsChirho;
@@ -2253,7 +2257,15 @@ Bun.serve({
           errorChirho: `Raw Hebrew review item is stale: ${staleDisplayChirho}; reload review state`,
         }, 409);
       }
-      const issueFlagsChirho = sanitizeIssueFlagsChirho(bodyChirho.issueFlagsChirho);
+      let issueFlagsChirho: string[];
+      try {
+        issueFlagsChirho = parseIssueFlagsChirho(bodyChirho.issueFlagsChirho);
+      } catch (errorChirho) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+        }, 400);
+      }
       const scriptVerdictChirho = queueModeChirho === "unknown-script-chirho"
         ? sanitizeScriptVerdictChirho(bodyChirho.scriptVerdictChirho)
         : null;

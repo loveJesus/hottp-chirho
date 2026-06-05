@@ -278,6 +278,68 @@ async function mainChirho(): Promise<void> {
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
       "missing-clean-ack POST persisted a row"
     );
+    const nonArrayIssueFlagsResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: "letters-chirho",
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: true,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const nonArrayIssueFlagsDataChirho = (await nonArrayIssueFlagsResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      nonArrayIssueFlagsResponseChirho.status === 400,
+      `expected non-array issue flags HTTP 400, got ${nonArrayIssueFlagsResponseChirho.status}`
+    );
+    assertCheckChirho(nonArrayIssueFlagsDataChirho.okChirho === false, "non-array issue flags POST unexpectedly returned ok");
+    assertCheckChirho(
+      String(nonArrayIssueFlagsDataChirho.errorChirho ?? "").includes("issueFlagsChirho must be an array"),
+      `non-array issue flags POST failed for the wrong reason: ${String(nonArrayIssueFlagsDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "non-array issue flags POST persisted a row"
+    );
+    const unknownIssueFlagResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: ["letters-typo-chirho"],
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "this unknown flag must not be silently converted to reviewed clean",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: true,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const unknownIssueFlagDataChirho = (await unknownIssueFlagResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      unknownIssueFlagResponseChirho.status === 400,
+      `expected unknown issue flag HTTP 400, got ${unknownIssueFlagResponseChirho.status}`
+    );
+    assertCheckChirho(unknownIssueFlagDataChirho.okChirho === false, "unknown issue flag POST unexpectedly returned ok");
+    assertCheckChirho(
+      String(unknownIssueFlagDataChirho.errorChirho ?? "").includes("unsupported issue flag: letters-typo-chirho"),
+      `unknown issue flag POST failed for the wrong reason: ${String(unknownIssueFlagDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "unknown issue flag POST persisted a row"
+    );
     const machineCleanResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
