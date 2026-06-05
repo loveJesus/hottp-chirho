@@ -301,6 +301,13 @@ span was surfaced.
   - Visual precheck: the Hebrew root is boxed after French `au hifil de`; no neighboring French appears swallowed by the target box. The same line also contains the earlier recovered vision-tier `קדש`, so do not let that repair substitute for reviewing this raw `ערץ` item.
   - Human check still needed: exact ayin-resh-tsade letters and whether the visible terminal period after the Hebrew word should be included with this Hebrew span or recorded as adjacent punctuation before French `Or`.
 
+- `vol 2 p152 L18 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A152%3A18%3A1`
+  - Live text: `בָּהּ`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane; this is a short line-fragment item.
+  - Visual precheck: the line fragment reads French `sation.` immediately followed by the boxed Hebrew word. The period before the Hebrew appears to belong to the preceding French fragment and is outside the red Hebrew box; the Hebrew target itself is line-final with no following neighboring span.
+  - Human check still needed: exact bet/qamats/dagesh, final he with mappiq, and confirmation that the preceding period remains outside the Hebrew span.
+
 - `vol 5 p149 L28 S1`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A149%3A28%3A1`
   - Live text: `ליץ`
