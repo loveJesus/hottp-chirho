@@ -52,7 +52,7 @@ magick workspace-chirho/scanlines-chirho/vol-3-chirho/page-0148-chirho/line-059-
 
 The local WLC verse row for Zechariah 9:2 has raw verse text:
 
-`וְגַם־חֲמָ֖ת תִּגְבׇּל־בָּ֑הּ צֹ֣ר וְצִיד֔וֹן כִּ֥י חָֽכְמָ֖ה מְאֹֽד׃`
+`וְגַם־חֲמָ֖ת תִּגְבׇּל־בָּ֑הּ צֹ֣ר וְצִיד֔וֹן כִּ֥י חָֽכְמָ֖ה מְאֹֽד׃`
 
 The WLC word table normalizes away the maqqef and accent for this word:
 
