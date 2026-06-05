@@ -3,7 +3,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Hidden Hebrew Candidate Scan Chirho
 
-Generated: 2026-06-05T10:50:46.646Z
+Generated: 2026-06-05T11:14:31.880Z
 
 This is a machine-assisted review queue, not a certification result. It flags lines where OCR may have rendered printed Hebrew as valid-looking French, Latin, symbols, short Latin/bracket garbage, or digit garbage. Every item still needs visual review against the scanline before any span repair.
 
@@ -12,7 +12,7 @@ This is a machine-assisted review queue, not a certification result. It flags li
 - Scanner source files: 7
 - Scanner source fingerprint: b054fb87018b9489593924b8912ecaa3217740965a6b10906015a2e4cf929dde
 - Span source files: 1789
-- Span source fingerprint: 4f5442c5d34dfe20e7eb48447cdca35e5c980fb43117efbb1519fcbb8e9b8386
+- Span source fingerprint: 0a868a630e041adbf2d115b35338f70d81891d418ffe1f543cb2e8278cfb14b7
 - Candidate lines: 0
 - High priority: 0
 - Medium priority: 0

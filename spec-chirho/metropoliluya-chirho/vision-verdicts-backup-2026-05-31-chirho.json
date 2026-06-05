@@ -1,9 +1,9 @@
 {
   "john316Chirho": "For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16",
   "schemaVersionChirho": 1,
-  "generatedAtChirho": "2026-06-05T10:50:08.345Z",
+  "generatedAtChirho": "2026-06-05T11:13:46.809Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 882,
+  "countChirho": 885,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8810,21 +8810,51 @@
       "volumeChirho": 5,
       "pageChirho": 151,
       "lineIndexChirho": 1,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "raw symbol text `𝔐` in a printed `Quant au 𝔗` Targum/Aramaic quote",
+      "scriptChirho": "symbol-chirho",
+      "utf8TextChirho": "𝔗",
+      "notesChirho": "Repaired vol 5 p151 line 1 S1 witness siglum: the print reads `Quant au 𝔗`, not `Quant au 𝔐`. This keeps the witness label consistent with the Targum/Aramaic quote on the same line. Stored as vision-chirho and routed to Latin/symbol proofing; exact witness-siglum confirmation remains human-review tier."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 151,
+      "lineIndexChirho": 1,
       "segmentIndexChirho": 3,
-      "garbleTextChirho": "previously assigned `רוּחִ֣י חֻ֭בָּלָה` to the S3 box",
+      "garbleTextChirho": "previous vision-tier text `קְבָרִ֣ים` in a Targum/Aramaic 𝔗 quote",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "קְבָרִ֣ים",
-      "notesChirho": "Corrected vol 5 p151 line 1 S3 after packet crop inspection: the S3 target box is on the leftmost Hebrew word `קְבָרִ֣ים`, not the previously stored accented phrase `רוּחִ֣י חֻ֭בָּלָה`. Stored as vision-chirho because this is a machine-witnessed geometry/text reassignment; exact letters, accents, niqqud, and the slash-separated RTL run remain Hebrew/WLC expert-confirmation tier."
+      "utf8TextChirho": "קבורין",
+      "notesChirho": "Repaired vol 5 p151 line 1 S3 in the `Quant au 𝔗` Job 17:4 quote: the printed box reads Targum/Aramaic consonants `קבורין`, not Hebrew/WLC-style `קְבָרִ֣ים`. Stored consonants-only as vision-chirho; exact Aramaic spelling, vowels, and marks remain Targum/Hebrew-script expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 151,
+      "lineIndexChirho": 1,
+      "segmentIndexChirho": 5,
+      "garbleTextChirho": "raw Pass-C text `יָמַ֣י נִזְעָ֑כוּ` in a Targum/Aramaic 𝔗 quote",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "יומי דעיכו",
+      "notesChirho": "Repaired vol 5 p151 line 1 S5 in the `Quant au 𝔗` Job 17:4 quote: the printed middle phrase reads Targum/Aramaic consonants `יומי דעיכו`, not Hebrew/WLC-style `יָמַ֣י נִזְעָ֑כוּ`. Stored consonants-only as vision-chirho; exact Aramaic spelling, vowels, and marks remain Targum/Hebrew-script expert-confirmation tier."
     },
     {
       "volumeChirho": 5,
       "pageChirho": 151,
       "lineIndexChirho": 1,
       "segmentIndexChirho": 7,
-      "garbleTextChirho": "previously assigned `קְבָרִ֣ים` to the S7 box",
+      "garbleTextChirho": "previous vision-tier text `רוּחִ֣י חֻ֭בָּלָה` in a Targum/Aramaic 𝔗 quote",
       "scriptChirho": "hebrew-chirho",
-      "utf8TextChirho": "רוּחִ֣י חֻ֭בָּלָה",
-      "notesChirho": "Corrected vol 5 p151 line 1 S7 after packet crop inspection: the S7 target box is on the rightmost accented phrase `רוּחִ֣י חֻ֭בָּלָה`, not the previously stored `קְבָרִ֣ים`. The line carries lineTextOrderChirho=rtl-runs-logical-chirho so exported Markdown keeps the logical Hebrew run order while span text matches the boxed geometry. Stored as vision-chirho pending Hebrew/WLC expert confirmation."
+      "utf8TextChirho": "נפשי מתחבלא",
+      "notesChirho": "Repaired vol 5 p151 line 1 S7 in the `Quant au 𝔗` Job 17:4 quote: the printed rightmost phrase reads Targum/Aramaic consonants `נפשי מתחבלא`, not Hebrew/WLC-style `רוּחִ֣י חֻ֭בָּלָה`. Stored consonants-only as vision-chirho; exact Aramaic spelling, vowels, and marks remain Targum/Hebrew-script expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 151,
+      "lineIndexChirho": 2,
+      "segmentIndexChirho": 0,
+      "garbleTextChirho": "raw Pass-C text `לִֽי` omitted the preceding Targum/Aramaic word",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "מתקנן לי",
+      "notesChirho": "Repaired vol 5 p151 line 2 S0, the continuation of the `Quant au 𝔗` Job 17:4 quote: the scanline contains a Targum/Aramaic word before `לי`, visually read here as consonants `מתקנן לי`; the old raw span stored only `לִֽי`. Stored consonants-only as vision-chirho; exact Aramaic spelling (including any yod/nun distinction), vowels, marks, and punctuation relation to the following period remain expert-confirmation tier."
     }
   ]
 }
