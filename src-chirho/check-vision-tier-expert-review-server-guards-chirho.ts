@@ -201,6 +201,22 @@ async function mainChirho(): Promise<void> {
       reviewerRoleChirho: itemChirho.reviewerChirho,
       ...displayGuardForItemChirho(itemChirho),
     };
+    const staleDisplayResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
+      ...commonBodyChirho,
+      expectedCurrentTextChirho: `${itemChirho.currentTextChirho} stale-display-guard-chirho`,
+      rationaleChirho: "server guard check should reject stale displayed expert text",
+      certifyExactChirho: true,
+    });
+    assertCheckChirho(
+      staleDisplayResultChirho.responseChirho.status === 409,
+      `stale display expected HTTP 409, got ${staleDisplayResultChirho.responseChirho.status}`
+    );
+    assertCheckChirho(staleDisplayResultChirho.dataChirho.okChirho === false, "stale display unexpectedly returned ok");
+    assertCheckChirho(
+      String(staleDisplayResultChirho.dataChirho.errorChirho ?? "").includes("Expert review item is stale"),
+      `stale display failed for wrong reason: ${String(staleDisplayResultChirho.dataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(!existsSync(policyPathChirho), "stale display wrote a policy file");
     const missingCertifyResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
       ...commonBodyChirho,
       rationaleChirho: "server guard check should reject missing exact-certification acknowledgement",
