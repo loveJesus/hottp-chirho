@@ -1415,13 +1415,13 @@ function assertReviewStartLinkCoverageChirho(statusChirho: CertificationStatusOu
 function reattributeSingleCommandChirho(rowChirho: unknown, applyChirho: boolean): string {
   const labelChirho = "humanValidationDbChirho.genericReviewerRowDetailsChirho[]";
   const idChirho = numberFieldChirho(rowChirho, "idChirho", labelChirho);
-  const liveTextChirho = nullableStringFieldChirho(rowChirho, "liveTextChirho", labelChirho);
+  const liveTextHashChirho = nullableStringFieldChirho(rowChirho, "liveTextHashChirho", labelChirho);
   const commandPartsChirho = [
     "bun run reattribute-pass-c-human-validations-chirho --",
     `--validation-id-chirho=${idChirho}`,
     "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
     "--rationale-chirho='<why this existing row is attributable to that reviewer>'",
-    ...(liveTextChirho === null ? [] : [`--expected-live-text-chirho=${shellSingleQuoteChirho(liveTextChirho)}`]),
+    ...(liveTextHashChirho === null ? [] : [`--expected-live-text-hash-chirho=${idChirho}:${liveTextHashChirho}`]),
     ...(applyChirho ? ["--apply-chirho"] : []),
   ];
   return commandPartsChirho.join(" ");
@@ -3677,12 +3677,12 @@ function assertPassCHumanReattributionHandoffChirho(
   }
   assertMarkdownContainsChirho(
     markdownChirho,
-    "- Attribution-blocked reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>'`",
+    "- Attribution-blocked reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-hash-chirho='<id>:<current-live-text-sha256>'`",
     "Pass-C reattribution single-row dry-run template"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
-    "- Attribution-blocked reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>' --apply-chirho`",
+    "- Attribution-blocked reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-hash-chirho='<id>:<current-live-text-sha256>' --apply-chirho`",
     "Pass-C reattribution single-row apply template"
   );
   assertMarkdownContainsChirho(

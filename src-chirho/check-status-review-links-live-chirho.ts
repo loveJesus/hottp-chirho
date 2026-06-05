@@ -179,6 +179,7 @@ interface AttributionCleanupRowChirho {
   liveSpanExistsChirho: boolean;
   liveSpanReadErrorChirho: string | null;
   liveTextChirho: string | null;
+  liveTextHashChirho: string | null;
   liveScriptChirho: string | null;
   liveProvenanceChirho: string | null;
   liveTextMatchesOriginalChirho: boolean | null;
@@ -487,10 +488,6 @@ function oneLineSnippetForCheckChirho(textChirho: string, maxLengthChirho: numbe
     : `${normalizedChirho.slice(0, Math.max(0, maxLengthChirho - 1))}…`;
 }
 
-function shellSingleQuoteForCheckChirho(valueChirho: string): string {
-  return `'${valueChirho.replace(/'/g, `'\\''`)}'`;
-}
-
 function relativeProjectPathForCheckChirho(pathChirho: string): string {
   return pathChirho.startsWith(PROJECT_ROOT_CHIRHO)
     ? pathChirho.slice(PROJECT_ROOT_CHIRHO.length + 1)
@@ -568,6 +565,7 @@ function assertAttributionCleanupRowShapeChirho(rowChirho: AttributionCleanupRow
   booleanFieldChirho(rowChirho.liveSpanExistsChirho, `${rowPathChirho}.liveSpanExistsChirho`);
   nullableStringFieldChirho(rowChirho.liveSpanReadErrorChirho, `${rowPathChirho}.liveSpanReadErrorChirho`);
   nullableStringFieldChirho(rowChirho.liveTextChirho, `${rowPathChirho}.liveTextChirho`);
+  nullableStringFieldChirho(rowChirho.liveTextHashChirho, `${rowPathChirho}.liveTextHashChirho`);
   nullableStringFieldChirho(rowChirho.liveScriptChirho, `${rowPathChirho}.liveScriptChirho`);
   nullableStringFieldChirho(rowChirho.liveProvenanceChirho, `${rowPathChirho}.liveProvenanceChirho`);
   nullableBooleanFieldChirho(rowChirho.liveTextMatchesOriginalChirho, `${rowPathChirho}.liveTextMatchesOriginalChirho`);
@@ -1111,13 +1109,13 @@ function assertAttributionCleanupHandoffMatchesStatusChirho(statusChirho: Certif
       `- Source scanline: ${markdownCodeSpanForCheckChirho(relativeProjectPathForCheckChirho(rowChirho.liveScanlinePathChirho))} (${scanlineStatusChirho})`,
       `row ${rowChirho.idChirho} scanline path`
     );
-    if (rowChirho.liveTextMatchesOriginalChirho === true && rowChirho.liveTextChirho !== null) {
+    if (rowChirho.liveTextMatchesOriginalChirho === true && rowChirho.liveTextHashChirho !== null) {
       const baseCommandPartsChirho = [
         "bun run reattribute-pass-c-human-validations-chirho --",
         `--validation-id-chirho=${rowChirho.idChirho}`,
         "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
         "--rationale-chirho='<why this existing row is attributable to that reviewer>'",
-        `--expected-live-text-chirho=${shellSingleQuoteForCheckChirho(rowChirho.liveTextChirho)}`,
+        `--expected-live-text-hash-chirho=${rowChirho.idChirho}:${rowChirho.liveTextHashChirho}`,
       ];
       assertAttributionMarkdownIncludesChirho(
         markdownChirho,

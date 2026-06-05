@@ -5558,9 +5558,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
               `--validation-id-chirho=${rowChirho.idChirho}`,
               "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
               "--rationale-chirho='<why this existing row is attributable to that reviewer>'",
-              ...(rowChirho.liveTextChirho === null
+              ...(rowChirho.liveTextHashChirho === null
                 ? []
-                : [`--expected-live-text-chirho=${shellSingleQuoteChirho(rowChirho.liveTextChirho)}`]),
+                : [`--expected-live-text-hash-chirho=${rowChirho.idChirho}:${rowChirho.liveTextHashChirho}`]),
             ];
             const dryRunCommandChirho = baseCommandPartsChirho.join(" ");
             const applyCommandChirho = [...baseCommandPartsChirho, "--apply-chirho"].join(" ");
@@ -5960,8 +5960,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Attribution-blocked rows whose live text has changed since the original review: ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextMismatchRowsChirho}`,
     `- Attribution-blocked rows whose live text could not be checked: ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextUnknownRowsChirho}`,
     `- Attribution cleanup handoff: \`${ATTRIBUTION_CLEANUP_HANDOFF_RELATIVE_PATH_CHIRHO}\``,
-    "- Attribution-blocked reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>'`",
-    "- Attribution-blocked reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>' --apply-chirho`",
+    "- Attribution-blocked reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-hash-chirho='<id>:<current-live-text-sha256>'`",
+    "- Attribution-blocked reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-hash-chirho='<id>:<current-live-text-sha256>' --apply-chirho`",
     ...genericReviewerBulkLinesChirho,
     "- Reattribution commands reject copied template placeholders; replace reviewer and rationale placeholders before running.",
     "- Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit human reviewer.",
@@ -6171,14 +6171,14 @@ function attributionCleanupRowLinesChirho(rowChirho: GenericHumanValidationRevie
       ? "present-chirho"
       : "missing-chirho";
   const reattributeLinesChirho =
-    rowChirho.liveTextMatchesOriginalChirho === true && rowChirho.liveTextChirho !== null
+    rowChirho.liveTextMatchesOriginalChirho === true && rowChirho.liveTextHashChirho !== null
       ? (() => {
           const baseCommandPartsChirho = [
             "bun run reattribute-pass-c-human-validations-chirho --",
             `--validation-id-chirho=${rowChirho.idChirho}`,
             "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
             "--rationale-chirho='<why this existing row is attributable to that reviewer>'",
-            `--expected-live-text-chirho=${shellSingleQuoteChirho(rowChirho.liveTextChirho)}`,
+            `--expected-live-text-hash-chirho=${rowChirho.idChirho}:${rowChirho.liveTextHashChirho}`,
           ];
           const dryRunCommandChirho = baseCommandPartsChirho.join(" ");
           const applyCommandChirho = [...baseCommandPartsChirho, "--apply-chirho"].join(" ");
