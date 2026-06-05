@@ -35,6 +35,7 @@ const REVIEW_SERVER_SOURCE_FILES_BY_KEY_CHIRHO: Record<ReviewServerKeyChirho, re
     ...COMMON_REVIEW_SERVER_SOURCE_FILES_CHIRHO,
     "src-chirho/pass-c-human-validate-server-chirho.ts",
     "src-chirho/pass-c-human-validation-backup-chirho.ts",
+    "src-chirho/raw-hebrew-pre-review-notes-chirho.ts",
     "src-chirho/raw-hebrew-review-tier-chirho.ts",
     "src-chirho/raw-hebrew-review-triage-chirho.ts",
     "src-chirho/span-line-text-chirho.ts",
@@ -49,6 +50,7 @@ const REVIEW_SERVER_SOURCE_FILES_BY_KEY_CHIRHO: Record<ReviewServerKeyChirho, re
     "src-chirho/latin-symbol-vision-review-store-chirho.ts",
     "src-chirho/packet-image-fingerprint-chirho.ts",
     "src-chirho/source-fingerprint-chirho.ts",
+    "src-chirho/span-line-text-chirho.ts",
     "src-chirho/template-placeholder-chirho.ts",
     "src-chirho/atomic-json-chirho.ts",
   ],
@@ -63,7 +65,7 @@ const REVIEW_SERVER_SOURCE_FILES_BY_KEY_CHIRHO: Record<ReviewServerKeyChirho, re
   ],
 };
 
-function sortedSourceFilesChirho(keyChirho: ReviewServerKeyChirho): string[] {
+export function reviewServerSourceFilesChirho(keyChirho: ReviewServerKeyChirho): string[] {
   return [...new Set(REVIEW_SERVER_SOURCE_FILES_BY_KEY_CHIRHO[keyChirho])].sort();
 }
 
@@ -71,7 +73,7 @@ export function reviewServerSourceFingerprintChirho(
   keyChirho: ReviewServerKeyChirho
 ): ReviewServerSourceFingerprintChirho {
   const hashChirho = createHashChirho("sha256");
-  const filesChirho = sortedSourceFilesChirho(keyChirho);
+  const filesChirho = reviewServerSourceFilesChirho(keyChirho);
   for (const relativePathChirho of filesChirho) {
     const absolutePathChirho = join(PROJECT_ROOT_CHIRHO, relativePathChirho);
     const portablePathChirho = relative(PROJECT_ROOT_CHIRHO, absolutePathChirho);

@@ -109,6 +109,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
     argsChirho: [process.execPath, "run", "review-servers-chirho", "--", "--check-chirho"],
   },
   {
+    labelChirho: "review server health source coverage",
+    argsChirho: [process.execPath, "run", "check-review-server-health-source-coverage-chirho"],
+  },
+  {
     labelChirho: "live status review links",
     argsChirho: [process.execPath, "run", "check-status-review-links-live-chirho"],
   },
