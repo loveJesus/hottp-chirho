@@ -1229,7 +1229,7 @@ function htmlChirho(): string {
         reviewerRoleMatchesItemChirho(itemChirho);
     }
     function issueCanSubmitChirho() {
-      return reviewerFieldsCompleteChirho() && currentIssueFlagsChirho().length > 0;
+      return reviewerFieldsCompleteChirho() && currentIssueFlagsChirho().length > 0 && !certifyExactCheckedChirho();
     }
     function saveReviewerFieldsChirho() {
       localStorage.setItem("expertReviewerChirho", fieldValueChirho("reviewer-chirho"));
@@ -1449,6 +1449,7 @@ function htmlChirho(): string {
         else if (!certifyExactCheckedChirho()) actionMessagesChirho.push("Confirm needs exact-certification checkbox");
         if (currentIssueFlagsChirho().length > 0) actionMessagesChirho.push("Confirm requires no issue flags; use Report issue for flagged items");
         if (currentIssueFlagsChirho().length === 0) actionMessagesChirho.push("Report issue needs an issue flag");
+        if (currentIssueFlagsChirho().length > 0 && certifyExactCheckedChirho()) actionMessagesChirho.push("Report issue cannot carry the exact-certification checkbox");
         actionStatusChirho.textContent = actionMessagesChirho.length === 0
           ? "Confirm and Report issue requirements are currently satisfied."
           : "Action requirements: " + actionMessagesChirho.join("; ") + ".";
@@ -1540,6 +1541,10 @@ function htmlChirho(): string {
       const rationaleErrorChirho = rationaleAttributionErrorChirho(fieldValueChirho("rationale-chirho"));
       if (rationaleErrorChirho !== null) {
         setStatusChirho(rationaleErrorChirho);
+        return;
+      }
+      if (certifyExactCheckedChirho()) {
+        setStatusChirho("Uncheck the exact-certification box before reporting an issue.");
         return;
       }
       saveReviewerFieldsChirho();
@@ -1771,6 +1776,12 @@ const serverChirho = Bun.serve({
           }, 400);
         }
         if (issueFlagsChirho.length === 0) return jsonResponseChirho({ okChirho: false, errorChirho: "at least one issue flag is required" }, 400);
+        if (bodyChirho.certifyExactChirho === true) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: "issue-chirho cannot include certifyExactChirho=true; use Confirm only for exact confirmed items",
+          }, 400);
+        }
         const { manifestChirho, liveItemsChirho, liveByIdChirho } = loadCurrentStateChirho(policyPathChirho);
         const liveItemChirho = liveByIdChirho.get(itemIdChirho);
         if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);

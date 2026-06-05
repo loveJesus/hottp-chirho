@@ -442,6 +442,19 @@ async function mainChirho(): Promise<void> {
       policyPathChirho,
       expectedErrorChirho: "unsupported issue flag: uncertain-typo-chirho",
     });
+    const issueWithCertifyExactResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
+      ...commonBodyChirho,
+      rationaleChirho: "server guard check should reject issue reporting with exact-certification acknowledgement",
+      issueFlagsChirho: ["uncertain-chirho"],
+      certifyExactChirho: true,
+    });
+    assertRejectedWithoutPolicyChirho({
+      labelChirho: "issue with exact-certification acknowledgement",
+      responseChirho: issueWithCertifyExactResultChirho.responseChirho,
+      dataChirho: issueWithCertifyExactResultChirho.dataChirho,
+      policyPathChirho,
+      expectedErrorChirho: "issue-chirho cannot include certifyExactChirho=true",
+    });
     const issueResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
       ...commonBodyChirho,
       rationaleChirho: "<why this issue is recorded>",
