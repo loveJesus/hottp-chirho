@@ -58,8 +58,12 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "/quickstart-chirho",
   "Recommended raw review order",
   "Vols 3-5 unvalidated",
+  "Delimiter notation",
+  "No direct read",
   "Attribution cleanup",
   "attention-chirho=multi-token-chirho",
+  "attention-chirho=delimiter-notation-chirho",
+  "attention-chirho=no-direct-read-chirho",
 ];
 
 interface RawReviewQueueItemChirho {

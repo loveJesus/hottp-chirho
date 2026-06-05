@@ -1449,6 +1449,8 @@ function pageHtmlChirho(): string {
       <a data-lane-shortcut-chirho="spot-check-chirho" href="/?validation-status-chirho=all-token-validated-chirho&tier-chirho=${RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO}">Spot check <span class="lane-shortcut-count-chirho"></span></a>
       <a data-lane-shortcut-chirho="low-confidence-chirho" href="/?attention-chirho=${RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO}">Low confidence <span class="lane-shortcut-count-chirho"></span></a>
       <a data-lane-shortcut-chirho="multi-token-chirho" href="/?attention-chirho=${RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO}">Multi-token <span class="lane-shortcut-count-chirho"></span></a>
+      <a data-lane-shortcut-chirho="delimiter-notation-chirho" href="/?attention-chirho=${RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO}">Delimiter notation <span class="lane-shortcut-count-chirho"></span></a>
+      <a data-lane-shortcut-chirho="no-direct-read-chirho" href="/?attention-chirho=${RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO}">No direct read <span class="lane-shortcut-count-chirho"></span></a>
       <a data-lane-shortcut-chirho="with-pre-review-note-chirho" href="/?pre-review-note-chirho=with-note-chirho">With pre-review note <span class="lane-shortcut-count-chirho"></span></a>
       <a data-lane-shortcut-chirho="without-pre-review-note-chirho" href="/?pre-review-note-chirho=without-note-chirho">No pre-review note <span class="lane-shortcut-count-chirho"></span></a>
       <a data-lane-shortcut-chirho="attribution-cleanup-chirho" href="/?review-state-chirho=attribution-blocked-chirho">Attribution cleanup <span class="lane-shortcut-count-chirho"></span></a>
@@ -1638,6 +1640,22 @@ function pageHtmlChirho(): string {
         validationStatusChirho: "all-chirho",
         tierChirho: "all-chirho",
         attentionChirho: "${RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO}",
+        preReviewNoteChirho: "all-chirho",
+        volumeChirho: "all-chirho"
+      }],
+      ["delimiter-notation-chirho", {
+        reviewStateChirho: "pending-chirho",
+        validationStatusChirho: "all-chirho",
+        tierChirho: "all-chirho",
+        attentionChirho: "${RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO}",
+        preReviewNoteChirho: "all-chirho",
+        volumeChirho: "all-chirho"
+      }],
+      ["no-direct-read-chirho", {
+        reviewStateChirho: "pending-chirho",
+        validationStatusChirho: "all-chirho",
+        tierChirho: "all-chirho",
+        attentionChirho: "${RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO}",
         preReviewNoteChirho: "all-chirho",
         volumeChirho: "all-chirho"
       }],
