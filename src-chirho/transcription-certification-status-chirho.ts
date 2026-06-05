@@ -103,10 +103,9 @@ import {
 } from "./vision-tier-expert-live-items-chirho.ts";
 
 const MODULE_CHIRHO = "transcription-certification-status-chirho";
+const MARKDOWN_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "markdown-chirho");
 const EXPORT_REPORT_PATH_CHIRHO = join(
-  PROJECT_ROOT_CHIRHO,
-  "workspace-chirho",
-  "markdown-chirho",
+  MARKDOWN_DIR_CHIRHO,
   "export-report-chirho.json"
 );
 const RAW_HEBREW_REPORT_PATH_CHIRHO = join(
@@ -236,6 +235,7 @@ interface ExportReportChirho {
   issueCountChirho?: number;
   issuesChirho?: ExportIssueChirho[];
   pagesChirho?: ExportPageReportChirho[];
+  volumesChirho?: ExportVolumeReportChirho[];
   unknownSpanCountChirho?: number;
   nonNfcSpanCountChirho?: number;
   hebrewSpanCountChirho?: number;
@@ -247,6 +247,15 @@ interface ExportReportChirho {
 interface ExportPageReportChirho {
   volumeChirho?: number;
   pageChirho?: number;
+  markdownPathChirho?: string;
+  markdownSha256Chirho?: string;
+}
+
+interface ExportVolumeReportChirho {
+  volumeChirho?: number;
+  markdownPathChirho?: string;
+  markdownSha256Chirho?: string;
+  pageCountChirho?: number;
 }
 
 interface ExportIssueChirho {
@@ -736,6 +745,12 @@ interface CertificationStatusChirho {
     liveSpanSourceFileCountChirho: number;
     liveSpanCountChirho: number;
     spanSourceFingerprintMatchesCurrentChirho: boolean;
+    markdownPageFingerprintCountChirho: number | null;
+    markdownVolumeFingerprintCountChirho: number | null;
+    markdownMissingFingerprintCountChirho: number;
+    markdownPathMismatchCountChirho: number;
+    markdownHashDriftCountChirho: number;
+    markdownFingerprintsMatchCurrentChirho: boolean;
     d1AuditDbPathChirho: string | null;
     liveD1AuditDbPathChirho: string | null;
     d1AuditPageRowCountChirho: number | null;
@@ -1672,6 +1687,117 @@ function fileNameForPathChirho(pathChirho: string): string {
 function fileSha256Chirho(pathChirho: string | null): string | null {
   if (pathChirho === null || !existsSync(pathChirho)) return null;
   return createHashChirho("sha256").update(readFileSync(pathChirho)).digest("hex");
+}
+
+interface ExportMarkdownFingerprintSummaryChirho {
+  pageFingerprintCountChirho: number | null;
+  volumeFingerprintCountChirho: number | null;
+  missingFingerprintCountChirho: number;
+  pathMismatchCountChirho: number;
+  hashDriftCountChirho: number;
+  matchesCurrentChirho: boolean;
+}
+
+function sha256LooksValidChirho(valueChirho: unknown): valueChirho is string {
+  return typeof valueChirho === "string" && /^[0-9a-f]{64}$/.test(valueChirho);
+}
+
+function expectedExportPageMarkdownPathChirho(pageChirho: ExportPageReportChirho): string | null {
+  if (!Number.isInteger(pageChirho.volumeChirho) || !Number.isInteger(pageChirho.pageChirho)) return null;
+  return join(
+    MARKDOWN_DIR_CHIRHO,
+    `vol-${pageChirho.volumeChirho}-chirho`,
+    `page-${String(pageChirho.pageChirho).padStart(4, "0")}-chirho.md`
+  );
+}
+
+function expectedExportVolumeMarkdownPathChirho(volumeChirho: ExportVolumeReportChirho): string | null {
+  if (!Number.isInteger(volumeChirho.volumeChirho)) return null;
+  return join(
+    MARKDOWN_DIR_CHIRHO,
+    `vol-${volumeChirho.volumeChirho}-chirho`,
+    `volume-${volumeChirho.volumeChirho}-chirho.md`
+  );
+}
+
+function summarizeExportMarkdownFingerprintsChirho(
+  exportReportChirho: ExportReportChirho,
+  exportReportExistsChirho: boolean,
+  exportReportShapeOkChirho: boolean
+): ExportMarkdownFingerprintSummaryChirho {
+  if (!exportReportExistsChirho || !exportReportShapeOkChirho) {
+    return {
+      pageFingerprintCountChirho: null,
+      volumeFingerprintCountChirho: null,
+      missingFingerprintCountChirho: 0,
+      pathMismatchCountChirho: 0,
+      hashDriftCountChirho: 0,
+      matchesCurrentChirho: false,
+    };
+  }
+  const pagesChirho = Array.isArray(exportReportChirho.pagesChirho) ? exportReportChirho.pagesChirho : [];
+  const volumesChirho = Array.isArray(exportReportChirho.volumesChirho) ? exportReportChirho.volumesChirho : [];
+  let pageFingerprintCountChirho = 0;
+  let volumeFingerprintCountChirho = 0;
+  let missingFingerprintCountChirho = 0;
+  let pathMismatchCountChirho = 0;
+  let hashDriftCountChirho = 0;
+  const expectedVolumeNumbersChirho = new Set(
+    pagesChirho
+      .map((pageChirho) => pageChirho.volumeChirho)
+      .filter((volumeChirho): volumeChirho is number => Number.isInteger(volumeChirho))
+  );
+  const seenExpectedVolumeNumbersChirho = new Set<number>();
+
+  for (const pageChirho of pagesChirho) {
+    const expectedPathChirho = expectedExportPageMarkdownPathChirho(pageChirho);
+    if (!sha256LooksValidChirho(pageChirho.markdownSha256Chirho)) {
+      missingFingerprintCountChirho += 1;
+      continue;
+    }
+    pageFingerprintCountChirho += 1;
+    if (expectedPathChirho === null || pageChirho.markdownPathChirho !== expectedPathChirho) {
+      pathMismatchCountChirho += 1;
+    }
+    if (expectedPathChirho === null || fileSha256Chirho(expectedPathChirho) !== pageChirho.markdownSha256Chirho) {
+      hashDriftCountChirho += 1;
+    }
+  }
+
+  for (const volumeChirho of volumesChirho) {
+    const expectedPathChirho = expectedExportVolumeMarkdownPathChirho(volumeChirho);
+    if (!expectedVolumeNumbersChirho.has(volumeChirho.volumeChirho ?? -1)) {
+      pathMismatchCountChirho += 1;
+    } else {
+      seenExpectedVolumeNumbersChirho.add(volumeChirho.volumeChirho!);
+    }
+    if (!sha256LooksValidChirho(volumeChirho.markdownSha256Chirho)) {
+      missingFingerprintCountChirho += 1;
+      continue;
+    }
+    volumeFingerprintCountChirho += 1;
+    if (expectedPathChirho === null || volumeChirho.markdownPathChirho !== expectedPathChirho) {
+      pathMismatchCountChirho += 1;
+    }
+    if (expectedPathChirho === null || fileSha256Chirho(expectedPathChirho) !== volumeChirho.markdownSha256Chirho) {
+      hashDriftCountChirho += 1;
+    }
+  }
+  missingFingerprintCountChirho += Math.max(0, expectedVolumeNumbersChirho.size - seenExpectedVolumeNumbersChirho.size);
+
+  return {
+    pageFingerprintCountChirho,
+    volumeFingerprintCountChirho,
+    missingFingerprintCountChirho,
+    pathMismatchCountChirho,
+    hashDriftCountChirho,
+    matchesCurrentChirho:
+      missingFingerprintCountChirho === 0 &&
+      pathMismatchCountChirho === 0 &&
+      hashDriftCountChirho === 0 &&
+      pageFingerprintCountChirho === pagesChirho.length &&
+      volumeFingerprintCountChirho === expectedVolumeNumbersChirho.size,
+  };
 }
 
 function blankVisionTierHandoffGeometrySnippetChirho(issueChirho: {
@@ -2965,6 +3091,11 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     exportReportHasSpanSourceFingerprintChirho &&
     exportReportChirho.spanSourceFileCountChirho === liveSpanSourceFingerprintChirho.fileCountChirho &&
     exportReportChirho.spanSourceFingerprintChirho === liveSpanSourceFingerprintChirho.sha256Chirho;
+  const exportMarkdownFingerprintSummaryChirho = summarizeExportMarkdownFingerprintsChirho(
+    exportReportChirho,
+    exportReportExistsChirho,
+    exportReportShapeOkChirho
+  );
   const exportReportUsesD1AuditChirho =
     exportReportChirho.d1DbPathChirho !== null && exportReportChirho.d1DbPathChirho !== undefined;
   const liveD1AuditDbPathChirho = latestLocalD1PathChirho();
@@ -3163,6 +3294,12 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     liveSpanSourceFileCountChirho: liveSpanSourceFingerprintChirho.fileCountChirho,
     liveSpanCountChirho,
     spanSourceFingerprintMatchesCurrentChirho: exportReportSpanSourceFingerprintMatchesCurrentChirho,
+    markdownPageFingerprintCountChirho: exportMarkdownFingerprintSummaryChirho.pageFingerprintCountChirho,
+    markdownVolumeFingerprintCountChirho: exportMarkdownFingerprintSummaryChirho.volumeFingerprintCountChirho,
+    markdownMissingFingerprintCountChirho: exportMarkdownFingerprintSummaryChirho.missingFingerprintCountChirho,
+    markdownPathMismatchCountChirho: exportMarkdownFingerprintSummaryChirho.pathMismatchCountChirho,
+    markdownHashDriftCountChirho: exportMarkdownFingerprintSummaryChirho.hashDriftCountChirho,
+    markdownFingerprintsMatchCurrentChirho: exportMarkdownFingerprintSummaryChirho.matchesCurrentChirho,
     d1AuditDbPathChirho: exportReportChirho.d1DbPathChirho ?? null,
     liveD1AuditDbPathChirho,
     d1AuditPageRowCountChirho: exportReportChirho.d1AuditPageRowCountChirho ?? null,
@@ -3647,6 +3784,27 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     !exportReportSpanSourceFingerprintMatchesCurrentChirho
   ) {
     remainingWorkChirho.push("strict export report span-source fingerprint does not match live span files; regenerate export-markdown-chirho --all --strict");
+  }
+  if (
+    exportReportExistsChirho &&
+    exportReportShapeOkChirho &&
+    exportMarkdownFingerprintSummaryChirho.missingFingerprintCountChirho !== 0
+  ) {
+    remainingWorkChirho.push("strict export report lacks Markdown artifact fingerprints; regenerate export-markdown-chirho --all --strict");
+  }
+  if (
+    exportReportExistsChirho &&
+    exportReportShapeOkChirho &&
+    exportMarkdownFingerprintSummaryChirho.pathMismatchCountChirho !== 0
+  ) {
+    remainingWorkChirho.push("strict export report Markdown artifact path(s) are not canonical; regenerate export-markdown-chirho --all --strict");
+  }
+  if (
+    exportReportExistsChirho &&
+    exportReportShapeOkChirho &&
+    exportMarkdownFingerprintSummaryChirho.hashDriftCountChirho !== 0
+  ) {
+    remainingWorkChirho.push("strict export report Markdown fingerprints do not match current Markdown files; regenerate export-markdown-chirho --all --strict");
   }
   if (
     exportReportExistsChirho &&
@@ -4525,6 +4683,12 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Live span-source files for report pages: ${statusChirho.structuralChirho.liveSpanSourceFileCountChirho}`,
     `- Live span count for report pages: ${statusChirho.structuralChirho.liveSpanCountChirho}`,
     `- Export span-source fingerprint matches live spans: ${statusChirho.structuralChirho.spanSourceFingerprintMatchesCurrentChirho}`,
+    `- Export Markdown page fingerprints in report: ${statusChirho.structuralChirho.markdownPageFingerprintCountChirho ?? "unknown"}`,
+    `- Export Markdown volume fingerprints in report: ${statusChirho.structuralChirho.markdownVolumeFingerprintCountChirho ?? "unknown"}`,
+    `- Export Markdown fingerprint missing items: ${statusChirho.structuralChirho.markdownMissingFingerprintCountChirho}`,
+    `- Export Markdown canonical path mismatches: ${statusChirho.structuralChirho.markdownPathMismatchCountChirho}`,
+    `- Export Markdown hash drift items: ${statusChirho.structuralChirho.markdownHashDriftCountChirho}`,
+    `- Export Markdown fingerprints match current files: ${statusChirho.structuralChirho.markdownFingerprintsMatchCurrentChirho}`,
     `- Export D1 audit path: ${statusChirho.structuralChirho.d1AuditDbPathChirho ?? "none"}`,
     `- Live D1 audit path: ${statusChirho.structuralChirho.liveD1AuditDbPathChirho ?? "none"}`,
     `- D1 audit fingerprint read error: ${statusChirho.structuralChirho.d1AuditFingerprintReadErrorChirho ?? "none"}`,
