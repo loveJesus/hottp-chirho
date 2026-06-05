@@ -38,6 +38,8 @@ import {
   VISION_TIER_EXPERT_CONFIRMATION_REVIEWED_ISSUES_CHIRHO,
   VISION_TIER_EXPERT_ISSUE_FLAGS_CHIRHO,
   VISION_TIER_EXPERT_ISSUE_FLAG_VALUES_CHIRHO,
+  VISION_TIER_EXPERT_RATIONALE_PLACEHOLDER_VALUES_CHIRHO,
+  visionTierExpertRationaleLooksPlaceholderChirho,
   type VisionTierExpertConfirmationFileChirho,
   type VisionTierExpertConfirmationItemChirho,
   type VisionTierExpertConfirmationPolicyChirho,
@@ -620,6 +622,7 @@ function htmlChirho(): string {
       ${scriptJsonChirho(REVIEWER_TEMPLATE_PLACEHOLDER_RE_SOURCE_CHIRHO)},
       ${scriptJsonChirho(REVIEWER_TEMPLATE_PLACEHOLDER_RE_FLAGS_CHIRHO)}
     );
+    const rationalePlaceholderValuesChirho = new Set(${scriptJsonChirho([...VISION_TIER_EXPERT_RATIONALE_PLACEHOLDER_VALUES_CHIRHO])});
     let itemsChirho = [];
     let indexChirho = 0;
     const queryChirho = new URLSearchParams(window.location.search);
@@ -760,6 +763,19 @@ function htmlChirho(): string {
       }
       return null;
     }
+    function valueLooksTemplatePlaceholderChirho(valueChirho, placeholderValuesChirho) {
+      const normalizedChirho = String(valueChirho || "").trim().toLowerCase().replace(/\\s+/g, " ");
+      const unwrappedChirho = normalizedChirho.replace(/^<(.+)>$/u, "$1").trim();
+      return placeholderValuesChirho.has(normalizedChirho) || placeholderValuesChirho.has(unwrappedChirho);
+    }
+    function rationaleAttributionErrorChirho(valueChirho) {
+      const trimmedChirho = String(valueChirho || "").trim();
+      if (trimmedChirho.length === 0) return "Rationale is required.";
+      if (valueLooksTemplatePlaceholderChirho(trimmedChirho, rationalePlaceholderValuesChirho)) {
+        return "Rationale must explain the exact review decision, not a template placeholder.";
+      }
+      return null;
+    }
     function isMachineReviewerAttributionChirho(valueChirho) {
       return machineReviewerIdReChirho.test(String(valueChirho || "").trim().toLowerCase());
     }
@@ -787,7 +803,7 @@ function htmlChirho(): string {
     function reviewerFieldsCompleteChirho() {
       return reviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho")) === null &&
         fieldValueChirho("reviewer-role-chirho").trim().length > 0 &&
-        fieldValueChirho("rationale-chirho").trim().length > 0;
+        rationaleAttributionErrorChirho(fieldValueChirho("rationale-chirho")) === null;
     }
     function reviewerRoleMatchesItemChirho(itemChirho) {
       return fieldValueChirho("reviewer-role-chirho").trim() === itemChirho.reviewerChirho;
@@ -948,7 +964,8 @@ function htmlChirho(): string {
           ? "Confirmation role OK."
           : "Confirm role must be " + itemChirho.reviewerChirho + ".";
         const actionMessagesChirho = [];
-        if (fieldValueChirho("rationale-chirho").trim().length === 0) actionMessagesChirho.push("rationale required");
+        const rationaleErrorChirho = rationaleAttributionErrorChirho(fieldValueChirho("rationale-chirho"));
+        if (rationaleErrorChirho !== null) actionMessagesChirho.push(rationaleErrorChirho);
         if (certifyingReviewerErrorChirho !== null) actionMessagesChirho.push("Confirm needs explicit human reviewer");
         if (itemTextIsBlankChirho(itemChirho)) actionMessagesChirho.push("Confirm needs expert-supplied text first");
         else if (!certifyExactCheckedChirho()) actionMessagesChirho.push("Confirm needs exact-certification checkbox");
@@ -993,6 +1010,11 @@ function htmlChirho(): string {
         setStatusChirho(reviewerErrorChirho);
         return;
       }
+      const rationaleErrorChirho = rationaleAttributionErrorChirho(fieldValueChirho("rationale-chirho"));
+      if (rationaleErrorChirho !== null) {
+        setStatusChirho(rationaleErrorChirho);
+        return;
+      }
       saveReviewerFieldsChirho();
       setStatusChirho("Saving...");
       const responseChirho = await fetch("/api-chirho/confirm-chirho", {
@@ -1028,6 +1050,11 @@ function htmlChirho(): string {
       const reviewerErrorChirho = reviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho"));
       if (reviewerErrorChirho !== null) {
         setStatusChirho(reviewerErrorChirho);
+        return;
+      }
+      const rationaleErrorChirho = rationaleAttributionErrorChirho(fieldValueChirho("rationale-chirho"));
+      if (rationaleErrorChirho !== null) {
+        setStatusChirho(rationaleErrorChirho);
         return;
       }
       saveReviewerFieldsChirho();
@@ -1153,6 +1180,12 @@ Bun.serve({
         if (reviewerErrorChirho !== null) return jsonResponseChirho({ okChirho: false, errorChirho: reviewerErrorChirho }, 400);
         if (reviewerRoleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerRoleChirho is required" }, 400);
         if (rationaleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "rationaleChirho is required" }, 400);
+        if (visionTierExpertRationaleLooksPlaceholderChirho(rationaleChirho)) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: "rationaleChirho must explain the exact review decision, not a template placeholder",
+          }, 400);
+        }
         const { manifestChirho, liveItemsChirho, liveByIdChirho } = loadCurrentStateChirho(policyPathChirho);
         const liveItemChirho = liveByIdChirho.get(itemIdChirho);
         if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);
@@ -1194,6 +1227,12 @@ Bun.serve({
         if (reviewerErrorChirho !== null) return jsonResponseChirho({ okChirho: false, errorChirho: reviewerErrorChirho }, 400);
         if (reviewerRoleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerRoleChirho is required" }, 400);
         if (rationaleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "rationaleChirho is required" }, 400);
+        if (visionTierExpertRationaleLooksPlaceholderChirho(rationaleChirho)) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: "rationaleChirho must explain the exact review decision, not a template placeholder",
+          }, 400);
+        }
         if (issueFlagsChirho.length === 0) return jsonResponseChirho({ okChirho: false, errorChirho: "at least one issue flag is required" }, 400);
         const { manifestChirho, liveItemsChirho, liveByIdChirho } = loadCurrentStateChirho(policyPathChirho);
         const liveItemChirho = liveByIdChirho.get(itemIdChirho);
