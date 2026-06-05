@@ -35,6 +35,7 @@ interface ServerCheckChirho {
   errorChirho: string | null;
   checkedUrlsChirho: string[];
   portRespondedChirho: boolean;
+  staleSameServiceChirho: boolean;
   sourceFingerprintChirho: string | null;
   expectedSourceFingerprintChirho: string | null;
 }
@@ -65,10 +66,11 @@ const REVIEW_SERVERS_CHIRHO: ReviewServerChirho[] = [
 
 function usageChirho(): string {
   return [
-    `Usage: bun run review-servers-chirho [--check-chirho]`,
+    `Usage: bun run review-servers-chirho [--check-chirho] [--restart-stale-chirho]`,
     "",
     "Default mode starts any missing standard review servers and keeps this process open.",
     "Check mode reports whether the standard review servers respond, without starting anything.",
+    "Restart-stale mode may stop a responding stale server only when its health endpoint identifies it as the same review service.",
   ].join("\n");
 }
 
@@ -116,6 +118,7 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
           errorChirho: `${probePathChirho} HTTP ${responseChirho.status}`,
           checkedUrlsChirho,
           portRespondedChirho: true,
+          staleSameServiceChirho: false,
           sourceFingerprintChirho: null,
           expectedSourceFingerprintChirho: null,
         };
@@ -129,6 +132,7 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
         errorChirho: `${probePathChirho} ${messageChirho}`,
         checkedUrlsChirho,
         portRespondedChirho: false,
+        staleSameServiceChirho: false,
         sourceFingerprintChirho: null,
         expectedSourceFingerprintChirho: null,
       };
@@ -147,6 +151,9 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
       healthChirho.sourceFingerprintChirho !== expectedFingerprintChirho.sourceFingerprintChirho ||
       healthChirho.sourceFileCountChirho !== expectedFingerprintChirho.sourceFileCountChirho
     ) {
+      const staleSameServiceChirho =
+        healthChirho.schemaVersionChirho === 1 &&
+        healthChirho.keyChirho === serviceChirho.keyChirho;
       return {
         serviceChirho,
         runningChirho: false,
@@ -157,6 +164,7 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
           ` server=${String(healthChirho.sourceFingerprintChirho ?? "").slice(0, 12)}`,
         checkedUrlsChirho,
         portRespondedChirho: true,
+        staleSameServiceChirho,
         sourceFingerprintChirho: healthChirho.sourceFingerprintChirho ?? null,
         expectedSourceFingerprintChirho: expectedFingerprintChirho.sourceFingerprintChirho,
       };
@@ -168,6 +176,7 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
       errorChirho: null,
       checkedUrlsChirho,
       portRespondedChirho: true,
+      staleSameServiceChirho: false,
       sourceFingerprintChirho: healthChirho.sourceFingerprintChirho,
       expectedSourceFingerprintChirho: expectedFingerprintChirho.sourceFingerprintChirho,
     };
@@ -180,6 +189,7 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
       errorChirho: `/api-chirho/server-health-chirho ${messageChirho}`,
       checkedUrlsChirho,
       portRespondedChirho: true,
+      staleSameServiceChirho: false,
       sourceFingerprintChirho: null,
       expectedSourceFingerprintChirho: expectedFingerprintChirho.sourceFingerprintChirho,
     };
@@ -217,17 +227,72 @@ async function checkAllChirho(): Promise<boolean> {
   return checksChirho.every((checkChirho) => checkChirho.runningChirho);
 }
 
-async function startMissingServersChirho(): Promise<void> {
+async function pidsListeningOnPortChirho(portChirho: number): Promise<number[]> {
+  const processChirho = Bun.spawn(["lsof", "-nP", `-tiTCP:${portChirho}`, "-sTCP:LISTEN"], {
+    cwd: PROJECT_ROOT_CHIRHO,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  const outputChirho = await new Response(processChirho.stdout).text();
+  const exitCodeChirho = await processChirho.exited;
+  if (exitCodeChirho !== 0) return [];
+  return outputChirho
+    .split(/\s+/)
+    .map((valueChirho) => Number.parseInt(valueChirho, 10))
+    .filter((pidChirho) => Number.isInteger(pidChirho) && pidChirho > 0);
+}
+
+async function waitForPortToClearChirho(serviceChirho: ReviewServerChirho): Promise<boolean> {
+  const deadlineChirho = Date.now() + START_TIMEOUT_MS_CHIRHO;
+  let lastCheckChirho = await checkServerChirho(serviceChirho);
+  while (lastCheckChirho.portRespondedChirho && Date.now() < deadlineChirho) {
+    await new Promise((resolveChirho) => setTimeout(resolveChirho, 250));
+    lastCheckChirho = await checkServerChirho(serviceChirho);
+  }
+  return !lastCheckChirho.portRespondedChirho;
+}
+
+async function stopStaleSameServiceChirho(checkChirho: ServerCheckChirho): Promise<void> {
+  if (!checkChirho.staleSameServiceChirho) {
+    throw new Error(`${checkChirho.serviceChirho.labelChirho} is responding but is not a same-service stale review server; refusing to stop it`);
+  }
+  const pidsChirho = await pidsListeningOnPortChirho(checkChirho.serviceChirho.portChirho);
+  if (pidsChirho.length === 0) {
+    throw new Error(`${checkChirho.serviceChirho.labelChirho} is stale but no listening PID was found on ${serverUrlChirho(checkChirho.serviceChirho)}`);
+  }
+  console.log(
+    `[${MODULE_CHIRHO}] stopping stale ${checkChirho.serviceChirho.labelChirho} PID(s): ${pidsChirho.join(", ")}`
+  );
+  for (const pidChirho of pidsChirho) {
+    process.kill(pidChirho, "SIGTERM");
+  }
+  const clearedChirho = await waitForPortToClearChirho(checkChirho.serviceChirho);
+  if (!clearedChirho) {
+    throw new Error(`${checkChirho.serviceChirho.labelChirho} did not stop cleanly on ${serverUrlChirho(checkChirho.serviceChirho)}`);
+  }
+}
+
+async function startMissingServersChirho(optionsChirho: { restartStaleChirho: boolean }): Promise<void> {
   const spawnedProcessesChirho: Bun.Subprocess[] = [];
   for (const serviceChirho of REVIEW_SERVERS_CHIRHO) {
-    const initialCheckChirho = await checkServerChirho(serviceChirho);
+    let initialCheckChirho = await checkServerChirho(serviceChirho);
     if (initialCheckChirho.runningChirho) {
       console.log(`[${MODULE_CHIRHO}] already running ${serviceChirho.labelChirho}: ${serverUrlChirho(serviceChirho)}`);
       continue;
     }
     if (initialCheckChirho.portRespondedChirho) {
       printCheckChirho(initialCheckChirho);
-      throw new Error(`${serviceChirho.labelChirho} is responding but stale or unhealthy; stop it and restart ${serviceChirho.scriptPathChirho}`);
+      if (!optionsChirho.restartStaleChirho) {
+        throw new Error(
+          `${serviceChirho.labelChirho} is responding but stale or unhealthy; rerun with --restart-stale-chirho only if this is the same review service`
+        );
+      }
+      await stopStaleSameServiceChirho(initialCheckChirho);
+      initialCheckChirho = await checkServerChirho(serviceChirho);
+      if (initialCheckChirho.portRespondedChirho) {
+        printCheckChirho(initialCheckChirho);
+        throw new Error(`${serviceChirho.labelChirho} is still responding after stale restart attempt`);
+      }
     }
     console.log(
       `[${MODULE_CHIRHO}] starting ${serviceChirho.labelChirho}: bun run ${serviceChirho.scriptPathChirho}`
@@ -277,17 +342,18 @@ async function mainChirho(): Promise<void> {
     console.log(usageChirho());
     return;
   }
-  const allowedArgsChirho = new Set(["--check-chirho", "--help-chirho", "-h"]);
+  const allowedArgsChirho = new Set(["--check-chirho", "--restart-stale-chirho", "--help-chirho", "-h"]);
   const unknownArgChirho = argsChirho.find((argChirho) => !allowedArgsChirho.has(argChirho));
   if (unknownArgChirho !== undefined) {
     throw new Error(`unknown argument ${unknownArgChirho}\n${usageChirho()}`);
   }
+  const restartStaleChirho = argsChirho.includes("--restart-stale-chirho");
   if (argsChirho.includes("--check-chirho")) {
     const allRunningChirho = await checkAllChirho();
     if (!allRunningChirho) process.exitCode = 1;
     return;
   }
-  await startMissingServersChirho();
+  await startMissingServersChirho({ restartStaleChirho });
 }
 
 mainChirho().catch((errorChirho) => {
