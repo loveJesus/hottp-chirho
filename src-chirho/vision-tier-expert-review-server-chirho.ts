@@ -61,6 +61,12 @@ const EXPERT_PACK_DIR_CHIRHO = join(
   "2026-05-31-chirho"
 );
 const EXPERT_PACK_MANIFEST_PATH_CHIRHO = join(EXPERT_PACK_DIR_CHIRHO, "manifest-chirho.json");
+const VISION_TIER_EXPERT_CONFIRMATION_QUICKSTART_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "vision-tier-expert-confirmation-quickstart-2026-06-05-chirho.md"
+);
 
 interface ExpertPackItemChirho {
   idChirho: string;
@@ -545,7 +551,9 @@ function htmlChirho(): string {
     .title-chirho { font-size: 20px; font-weight: 750; }
     .summary-chirho, .status-chirho { color: #59636f; font-size: 13px; }
     .toolbar-chirho { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-    .toolbar-chirho select, .toolbar-chirho button { border: 1px solid #aab1b9; background: white; min-height: 34px; padding: 5px 8px; }
+    .toolbar-chirho select, .toolbar-chirho button, .toolbar-link-chirho { border: 1px solid #aab1b9; background: white; min-height: 34px; padding: 5px 8px; box-sizing: border-box; }
+    .toolbar-link-chirho { display: inline-flex; align-items: center; color: #1f2933; text-decoration: none; font-size: 13px; }
+    .toolbar-link-chirho:hover { background: #edf1f4; }
     .main-chirho { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 18px; padding-top: 18px; }
     .image-label-chirho { color: #59636f; font-size: 13px; font-weight: 650; margin: 0 0 6px; }
     .image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: auto; margin-bottom: 12px; }
@@ -568,7 +576,8 @@ function htmlChirho(): string {
     .certify-option-chirho { display: flex; gap: 8px; align-items: flex-start; border: 1px solid #b8d5ca; background: #f2fbf7; padding: 10px; font-size: 13px; line-height: 1.35; cursor: pointer; }
     .certify-option-chirho input { width: auto; margin: 3px 0 0; }
     .actions-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-    .actions-chirho button, .toolbar-chirho button { border: 1px solid #aab1b9; background: white; padding: 10px; cursor: pointer; min-height: 42px; }
+    .actions-chirho button, .toolbar-chirho button { cursor: pointer; }
+    .actions-chirho button { border: 1px solid #aab1b9; background: white; padding: 10px; min-height: 42px; }
     .actions-chirho button:hover, .toolbar-chirho button:hover { background: #edf1f4; }
     .actions-chirho button:disabled, .actions-chirho button:disabled:hover { color: #8a9199; border-color: #cfd4d9 !important; background: #f0f2f4; cursor: not-allowed; }
     .confirm-chirho { color: #116149; border-color: #499b7f !important; font-weight: 750; }
@@ -625,6 +634,7 @@ function htmlChirho(): string {
       <button type="button" id="prev-chirho">Previous</button>
       <button type="button" id="next-chirho">Skip</button>
       <button type="button" id="copy-link-chirho">Copy link</button>
+      <a class="toolbar-link-chirho" href="/quickstart-chirho" target="_blank" rel="noreferrer">Quickstart</a>
     </div>
     <section class="main-chirho" id="app-chirho"></section>
   </main>
@@ -1344,6 +1354,14 @@ const serverChirho = Bun.serve({
       }
       if (urlChirho.pathname === "/api-chirho/server-health-chirho") {
         return jsonResponseChirho(SERVER_HEALTH_CHIRHO);
+      }
+      if (urlChirho.pathname === "/quickstart-chirho") {
+        if (!existsSync(VISION_TIER_EXPERT_CONFIRMATION_QUICKSTART_PATH_CHIRHO)) {
+          return new Response("quickstart not found", { status: 404 });
+        }
+        return new Response(readFileSync(VISION_TIER_EXPERT_CONFIRMATION_QUICKSTART_PATH_CHIRHO, "utf8"), {
+          headers: { "Content-Type": "text/markdown; charset=utf-8" },
+        });
       }
       if (urlChirho.pathname === "/asset-chirho") {
         const relativePathChirho = urlChirho.searchParams.get("path");

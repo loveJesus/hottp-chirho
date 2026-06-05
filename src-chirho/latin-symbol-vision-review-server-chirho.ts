@@ -10,10 +10,10 @@
  */
 
 import { Database } from "bun:sqlite";
-import { existsSync } from "fs";
-import { resolve } from "path";
+import { existsSync, readFileSync } from "fs";
+import { join, resolve } from "path";
 
-import { PROGRESS_DB_PATH_CHIRHO } from "./config-chirho.ts";
+import { PROGRESS_DB_PATH_CHIRHO, PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
   LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO,
   readLatinSymbolAcceptancePolicyFileChirho,
@@ -59,6 +59,12 @@ import {
 const MODULE_CHIRHO = "latin-symbol-vision-review-server-chirho";
 const SERVER_HEALTH_CHIRHO = reviewServerStartupHealthChirho("latin-symbol-chirho");
 const DEFAULT_PORT_CHIRHO = 8770;
+const LATIN_SYMBOL_HUMAN_REVIEW_QUICKSTART_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "latin-symbol-human-review-quickstart-2026-06-05-chirho.md"
+);
 const SYMBOL_RISK_OPTIONS_CHIRHO = [
   { valueChirho: "all-chirho", labelChirho: "All risk classes" },
   { valueChirho: "trivial-punctuation-chirho", labelChirho: "Trivial punctuation" },
@@ -185,7 +191,9 @@ function htmlChirho(): string {
     .title-chirho { font-size: 20px; font-weight: 750; }
     .summary-chirho, .status-chirho { color: #59636f; font-size: 13px; }
     .toolbar-chirho { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-    .toolbar-chirho select, .toolbar-chirho button { border: 1px solid #aab1b9; background: white; min-height: 34px; padding: 5px 8px; }
+    .toolbar-chirho select, .toolbar-chirho button, .toolbar-link-chirho { border: 1px solid #aab1b9; background: white; min-height: 34px; padding: 5px 8px; box-sizing: border-box; }
+    .toolbar-link-chirho { display: inline-flex; align-items: center; color: #1f2933; text-decoration: none; font-size: 13px; }
+    .toolbar-link-chirho:hover { background: #edf1f4; }
     .main-chirho { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 18px; padding-top: 18px; }
     .panel-chirho { min-width: 0; }
     .image-label-chirho { color: #59636f; font-size: 13px; font-weight: 650; margin: 0 0 6px; }
@@ -256,6 +264,7 @@ function htmlChirho(): string {
       <button type="button" id="prev-chirho">Previous</button>
       <button type="button" id="next-chirho">Skip</button>
       <button type="button" id="copy-link-chirho">Copy link</button>
+      <a class="toolbar-link-chirho" href="/quickstart-chirho" target="_blank" rel="noreferrer">Quickstart</a>
     </div>
     <section class="main-chirho" id="app-chirho"></section>
   </main>
@@ -911,6 +920,14 @@ const serverChirho = Bun.serve({
       }
       if (urlChirho.pathname === "/api-chirho/server-health-chirho") {
         return jsonResponseChirho(SERVER_HEALTH_CHIRHO);
+      }
+      if (urlChirho.pathname === "/quickstart-chirho") {
+        if (!existsSync(LATIN_SYMBOL_HUMAN_REVIEW_QUICKSTART_PATH_CHIRHO)) {
+          return new Response("quickstart not found", { status: 404 });
+        }
+        return new Response(readFileSync(LATIN_SYMBOL_HUMAN_REVIEW_QUICKSTART_PATH_CHIRHO, "utf8"), {
+          headers: { "Content-Type": "text/markdown; charset=utf-8" },
+        });
       }
       if (urlChirho.pathname === "/asset-chirho") {
         const relativePathChirho = urlChirho.searchParams.get("path");

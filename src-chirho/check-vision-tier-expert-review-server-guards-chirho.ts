@@ -36,6 +36,15 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "--expected-source-sha256-chirho",
   "--expected-packet-sha256-chirho",
   "Copy command",
+  "Quickstart",
+  "/quickstart-chirho",
+];
+const EXPERT_QUICKSTART_SNIPPETS_CHIRHO = [
+  "Vision-Tier Expert Confirmation Quickstart Chirho",
+  "Confirm Only If",
+  "Report Issue",
+  "Blank Text",
+  "expert-supplied text",
 ];
 
 interface ExpertReviewStateItemChirho {
@@ -160,6 +169,18 @@ async function assertExpertReviewGuidanceHtmlChirho(portChirho: number): Promise
   }
 }
 
+async function assertExpertQuickstartEndpointChirho(portChirho: number): Promise<void> {
+  const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/quickstart-chirho`);
+  const markdownChirho = await responseChirho.text();
+  assertCheckChirho(responseChirho.ok, `expert quickstart request failed: ${responseChirho.status}`);
+  for (const snippetChirho of EXPERT_QUICKSTART_SNIPPETS_CHIRHO) {
+    assertCheckChirho(
+      markdownChirho.includes(snippetChirho),
+      `expert quickstart is missing snippet: ${snippetChirho}`
+    );
+  }
+}
+
 async function blankStateItemChirho(portChirho: number): Promise<ExpertReviewStateItemChirho | null> {
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/state-chirho`);
   const dataChirho = (await responseChirho.json()) as ExpertReviewStateResponseChirho;
@@ -236,6 +257,7 @@ async function mainChirho(): Promise<void> {
   try {
     await waitForServerChirho(portChirho, processChirho);
     await assertExpertReviewGuidanceHtmlChirho(portChirho);
+    await assertExpertQuickstartEndpointChirho(portChirho);
     const itemChirho = await stateItemChirho(portChirho);
     const blankItemChirho = await blankStateItemChirho(portChirho);
     const commonBodyChirho = {

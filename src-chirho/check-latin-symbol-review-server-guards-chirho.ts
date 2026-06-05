@@ -24,6 +24,14 @@ const LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "not equal sign",
   "Greek final sigma",
   "Dagesh/mappiq/shuruk",
+  "Quickstart",
+  "/quickstart-chirho",
+];
+const LATIN_SYMBOL_QUICKSTART_SNIPPETS_CHIRHO = [
+  "Latin/Symbol Human Review Quickstart Chirho",
+  "Symbol Risk",
+  "Witness sigla matter",
+  "When uncertain, skip or save an issue",
 ];
 
 interface LatinSymbolReviewStateItemChirho {
@@ -151,6 +159,18 @@ async function assertLatinSymbolReviewGuidanceHtmlChirho(portChirho: number): Pr
   }
 }
 
+async function assertLatinSymbolQuickstartEndpointChirho(portChirho: number): Promise<void> {
+  const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/quickstart-chirho`);
+  const markdownChirho = await responseChirho.text();
+  assertCheckChirho(responseChirho.ok, `Latin/symbol quickstart request failed: ${responseChirho.status}`);
+  for (const snippetChirho of LATIN_SYMBOL_QUICKSTART_SNIPPETS_CHIRHO) {
+    assertCheckChirho(
+      markdownChirho.includes(snippetChirho),
+      `Latin/symbol quickstart is missing snippet: ${snippetChirho}`
+    );
+  }
+}
+
 function displayGuardForItemChirho(itemChirho: LatinSymbolReviewStateItemChirho): Record<string, unknown> {
   return {
     expectedItemKindChirho: itemChirho.itemKindChirho,
@@ -222,6 +242,7 @@ async function mainChirho(): Promise<void> {
   try {
     await waitForServerChirho(portChirho, processChirho);
     await assertLatinSymbolReviewGuidanceHtmlChirho(portChirho);
+    await assertLatinSymbolQuickstartEndpointChirho(portChirho);
     const itemChirho = await stateItemChirho(portChirho);
     const commonBodyChirho = {
       idChirho: itemChirho.idChirho,

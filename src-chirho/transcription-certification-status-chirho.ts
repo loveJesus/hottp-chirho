@@ -155,6 +155,18 @@ const LATIN_SYMBOL_PACK_DIR_CHIRHO = join(
 );
 const LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO = join(LATIN_SYMBOL_PACK_DIR_CHIRHO, "manifest-chirho.json");
 const LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO = join(LATIN_SYMBOL_PACK_DIR_CHIRHO, "index-chirho.md");
+const LATIN_SYMBOL_HUMAN_REVIEW_QUICKSTART_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "latin-symbol-human-review-quickstart-2026-06-05-chirho.md"
+);
+const VISION_TIER_EXPERT_CONFIRMATION_QUICKSTART_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "vision-tier-expert-confirmation-quickstart-2026-06-05-chirho.md"
+);
 const REVIEWER_SCOPE_GUIDE_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -4704,6 +4716,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     ...latinSymbolVolumeLaneLinesChirho,
     "- Latin/symbol pending counts subtract accepted-clean reviews and accepted explicit policies; open issue reviews keep items pending.",
     `- Latin/symbol image packet: \`${relativeProjectPathChirho(LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO)}\``,
+    `- Latin/symbol human review quickstart: \`${relativeProjectPathChirho(LATIN_SYMBOL_HUMAN_REVIEW_QUICKSTART_PATH_CHIRHO)}\``,
     `- Expert non-Latin live reviewer: http://localhost:8771/ (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s); command: \`bun run vision-tier-expert-review-chirho\`${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertAllChirho)})`,
     `- Expert non-Latin has-text lane: ${expertReviewUrlChirho(undefined, undefined, undefined, undefined, "nonblank-chirho")} (${statusChirho.visionTierChirho.pendingNonblankTextItemCountChirho} pending confirmation(s) with current text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertNonblankChirho)})`,
     `- Expert non-Latin blank-text lane: ${expertReviewUrlChirho(undefined, undefined, undefined, undefined, "blank-chirho")} (${statusChirho.visionTierChirho.pendingBlankTextItemCountChirho} pending blank item(s) requiring supplied text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertBlankChirho)})`,
@@ -4720,6 +4733,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Expert Arabist lane: ${expertReviewUrlChirho("arabic-chirho")} (${pendingExpertScriptCountChirho("arabic-chirho")} pending of ${expertScriptCountChirho("arabic-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertArabicChirho)})`,
     ...expertVolumeLaneLinesChirho,
     `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,
+    `- Expert confirmation quickstart: \`${relativeProjectPathChirho(VISION_TIER_EXPERT_CONFIRMATION_QUICKSTART_PATH_CHIRHO)}\``,
     `- Reviewer scope and primer guide: \`${relativeProjectPathChirho(REVIEWER_SCOPE_GUIDE_PATH_CHIRHO)}\``,
     `- Syriac blank transcription handoff: \`${relativeProjectPathChirho(SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO)}\` (for v3-p0151-l010-s3; no proposed text)`,
     `- Resolved Zechariah historical aid: \`${relativeProjectPathChirho(ZECHARIAH_TIPCHA_CONFIRMATION_AID_PATH_CHIRHO)}\``,
