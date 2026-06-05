@@ -64,15 +64,24 @@ interface CertificationStatusSummaryChirho {
   certificationCompleteChirho?: unknown;
   remainingWorkChirho?: unknown;
   reviewStartLinksChirho?: Record<string, unknown>;
+  rawHebrewChirho?: {
+    livePendingSpanCountChirho?: unknown;
+  };
   structuralChirho?: {
     strictPassedChirho?: unknown;
     passCOcrHebrewSpanCountChirho?: unknown;
   };
   visionTierChirho?: {
     remainingConfirmationCountChirho?: unknown;
+    pendingVisionCountsChirho?: Record<string, unknown>;
+    pendingBlankTextCountsChirho?: Record<string, unknown>;
   };
   latinSymbolVisionChirho?: {
     remainingDecisionCountChirho?: unknown;
+    pendingDecisionCountsChirho?: Record<string, unknown>;
+    pendingMixedScriptSymbolItemCountChirho?: unknown;
+    pendingNontrivialSymbolItemCountChirho?: unknown;
+    pendingTrivialPunctuationSymbolItemCountChirho?: unknown;
   };
   humanValidationDbChirho?: {
     genericReviewerRowsChirho?: unknown;
@@ -104,6 +113,27 @@ function readCertificationStatusChirho(): CertificationStatusSummaryChirho {
 
 function numberOrUnknownChirho(valueChirho: unknown): string {
   return typeof valueChirho === "number" && Number.isFinite(valueChirho) ? String(valueChirho) : "unknown";
+}
+
+function finiteNumberChirho(valueChirho: unknown): number | null {
+  return typeof valueChirho === "number" && Number.isFinite(valueChirho) ? valueChirho : null;
+}
+
+function recordNumberChirho(recordChirho: Record<string, unknown> | undefined, keyChirho: string): number | null {
+  return finiteNumberChirho(recordChirho?.[keyChirho]);
+}
+
+function sumNumbersChirho(valuesChirho: Array<number | null>): number | null {
+  if (valuesChirho.some((valueChirho) => valueChirho === null)) return null;
+  let sumChirho = 0;
+  for (const valueChirho of valuesChirho) {
+    sumChirho += valueChirho ?? 0;
+  }
+  return sumChirho;
+}
+
+function numberTextChirho(valueChirho: number | null): string {
+  return valueChirho === null ? "unknown" : String(valueChirho);
 }
 
 function stringOrUnknownChirho(valueChirho: unknown): string {
@@ -155,6 +185,58 @@ function printReviewGuidePathsChirho(): void {
   }
 }
 
+function printReviewRoutingSummaryChirho(statusChirho: CertificationStatusSummaryChirho): void {
+  const rawHebrewPendingChirho =
+    finiteNumberChirho(statusChirho.rawHebrewChirho?.livePendingSpanCountChirho) ??
+    finiteNumberChirho(statusChirho.structuralChirho?.passCOcrHebrewSpanCountChirho);
+  const pendingExpertCountsChirho = statusChirho.visionTierChirho?.pendingVisionCountsChirho;
+  const expertHebrewChirho = recordNumberChirho(pendingExpertCountsChirho, "hebrew-chirho");
+  const expertGreekChirho = recordNumberChirho(pendingExpertCountsChirho, "greek-chirho");
+  const expertSyriacChirho = recordNumberChirho(pendingExpertCountsChirho, "syriac-chirho");
+  const expertArabicChirho = recordNumberChirho(pendingExpertCountsChirho, "arabic-chirho");
+  const blankSyriacChirho = recordNumberChirho(statusChirho.visionTierChirho?.pendingBlankTextCountsChirho, "syriac-chirho");
+  const hallelujahScriptTargetsChirho = sumNumbersChirho([
+    rawHebrewPendingChirho,
+    expertHebrewChirho,
+    expertGreekChirho,
+  ]);
+  const externalScriptTargetsChirho = sumNumbersChirho([
+    expertSyriacChirho,
+    expertArabicChirho,
+  ]);
+
+  const pendingLatinCountsChirho = statusChirho.latinSymbolVisionChirho?.pendingDecisionCountsChirho;
+  const frenchChirho = recordNumberChirho(pendingLatinCountsChirho, "french-chirho");
+  const latinNonFrenchChirho = recordNumberChirho(pendingLatinCountsChirho, "latin-non-french-chirho");
+  const symbolChirho = recordNumberChirho(pendingLatinCountsChirho, "symbol-chirho");
+
+  console.log(`[${MODULE_CHIRHO}] Review routing summary:`);
+  console.log(
+    `- Hallelujah script lanes: ${numberTextChirho(hallelujahScriptTargetsChirho)} target(s) = ` +
+      `raw Hebrew ${numberTextChirho(rawHebrewPendingChirho)} + ` +
+      `expert Hebrew/WLC ${numberTextChirho(expertHebrewChirho)} + ` +
+      `expert Greek ${numberTextChirho(expertGreekChirho)}`
+  );
+  console.log(
+    `- External script-expert lanes: ${numberTextChirho(externalScriptTargetsChirho)} item(s) = ` +
+      `Syriac ${numberTextChirho(expertSyriacChirho)} + Arabic ${numberTextChirho(expertArabicChirho)}; ` +
+      `blank Syriac handoff ${numberTextChirho(blankSyriacChirho)}`
+  );
+  console.log(
+    `- Latin/symbol proofing: ${numberOrUnknownChirho(statusChirho.latinSymbolVisionChirho?.remainingDecisionCountChirho)} item(s) = ` +
+      `French ${numberTextChirho(frenchChirho)} + ` +
+      `Latin/non-French ${numberTextChirho(latinNonFrenchChirho)} + ` +
+      `symbol ${numberTextChirho(symbolChirho)} ` +
+      `(symbol risk: ${numberOrUnknownChirho(statusChirho.latinSymbolVisionChirho?.pendingMixedScriptSymbolItemCountChirho)} script/sigla, ` +
+      `${numberOrUnknownChirho(statusChirho.latinSymbolVisionChirho?.pendingNontrivialSymbolItemCountChirho)} nontrivial, ` +
+      `${numberOrUnknownChirho(statusChirho.latinSymbolVisionChirho?.pendingTrivialPunctuationSymbolItemCountChirho)} trivial pending)`
+  );
+  console.log(
+    `- Attribution cleanup: ${numberOrUnknownChirho(statusChirho.humanValidationDbChirho?.genericReviewerRowsChirho)} row(s); ` +
+      `reattribute only if genuinely attributable, otherwise use re-review`
+  );
+}
+
 function printReadinessSummaryChirho(statusChirho: CertificationStatusSummaryChirho): void {
   const contentReadyChirho = statusChirho.certificationCompleteChirho === true;
   console.log(`[${MODULE_CHIRHO}] Review app build readiness: yes`);
@@ -172,6 +254,7 @@ function printReadinessSummaryChirho(statusChirho: CertificationStatusSummaryChi
     for (const itemChirho of remainingWorkLinesChirho(statusChirho)) {
       console.log(`- ${itemChirho}`);
     }
+    printReviewRoutingSummaryChirho(statusChirho);
     printNextReviewLinksChirho(statusChirho);
     printReviewGuidePathsChirho();
   }
