@@ -1427,7 +1427,8 @@ function rawHebrewReviewUrlChirho(
   itemKeyChirho?: string,
   volumeChirho?: number,
   attentionChirho?: string,
-  preReviewNoteChirho?: string
+  preReviewNoteChirho?: string,
+  attributionTextChirho?: string
 ): string {
   const entriesChirho: Array<[string, string]> = [];
   if (validationStatusChirho !== undefined) entriesChirho.push(["validation-status-chirho", validationStatusChirho]);
@@ -1436,6 +1437,7 @@ function rawHebrewReviewUrlChirho(
   if (volumeChirho !== undefined) entriesChirho.push(["volume-chirho", volumeFilterValueChirho(volumeChirho)]);
   if (attentionChirho !== undefined) entriesChirho.push(["attention-chirho", attentionChirho]);
   if (preReviewNoteChirho !== undefined) entriesChirho.push(["pre-review-note-chirho", preReviewNoteChirho]);
+  if (attributionTextChirho !== undefined) entriesChirho.push(["attribution-text-chirho", attributionTextChirho]);
   if (itemKeyChirho !== undefined) entriesChirho.push(["item-chirho", itemKeyChirho]);
   const queryChirho = urlQueryChirho(entriesChirho);
   return queryChirho.length === 0 ? "http://localhost:8766/" : `http://localhost:8766/?${queryChirho}`;
@@ -4627,12 +4629,44 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
   }
   const rawHebrewAttributionBlockedStartLocationChirho =
     humanSummaryChirho.genericReviewerRowDetailsChirho.find((rowChirho) => rowChirho.liveSpanExistsChirho)?.locationChirho ?? null;
+  const rawHebrewAttributionUnchangedStartLocationChirho =
+    humanSummaryChirho.genericReviewerRowDetailsChirho.find((rowChirho) =>
+      rowChirho.liveSpanExistsChirho && rowChirho.liveTextMatchesOriginalChirho === true
+    )?.locationChirho ?? null;
+  const rawHebrewAttributionChangedStartLocationChirho =
+    humanSummaryChirho.genericReviewerRowDetailsChirho.find((rowChirho) =>
+      rowChirho.liveSpanExistsChirho && rowChirho.liveTextMatchesOriginalChirho === false
+    )?.locationChirho ?? null;
   const rawHebrewAttributionBlockedStartUrlChirho = rawHebrewAttributionBlockedStartLocationChirho === null
     ? null
     : rawHebrewReviewUrlChirho(undefined, "attribution-blocked-chirho", undefined, rawHebrewAttributionBlockedStartLocationChirho);
   const rawHebrewAttributionRereviewStartUrlChirho = rawHebrewAttributionBlockedStartLocationChirho === null
     ? null
     : rawHebrewReviewUrlChirho(undefined, "attribution-rereview-chirho", undefined, rawHebrewAttributionBlockedStartLocationChirho);
+  const rawHebrewAttributionUnchangedStartUrlChirho = rawHebrewAttributionUnchangedStartLocationChirho === null
+    ? null
+    : rawHebrewReviewUrlChirho(
+        undefined,
+        "attribution-blocked-chirho",
+        undefined,
+        rawHebrewAttributionUnchangedStartLocationChirho,
+        undefined,
+        undefined,
+        undefined,
+        "unchanged-chirho"
+      );
+  const rawHebrewAttributionChangedRereviewStartUrlChirho = rawHebrewAttributionChangedStartLocationChirho === null
+    ? null
+    : rawHebrewReviewUrlChirho(
+        undefined,
+        "attribution-rereview-chirho",
+        undefined,
+        rawHebrewAttributionChangedStartLocationChirho,
+        undefined,
+        undefined,
+        undefined,
+        "changed-chirho"
+      );
   const reviewStartLinksChirho: Record<string, string | null> = {
     rawHebrewAllChirho: rawHebrewReviewStartUrlChirho(livePendingRawSpansChirho),
     rawHebrewUnvalidatedChirho: rawHebrewReviewStartUrlChirho(livePendingRawSpansChirho, "unvalidated-chirho"),
@@ -4688,6 +4722,8 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     ),
     rawHebrewAttributionBlockedChirho: rawHebrewAttributionBlockedStartUrlChirho,
     rawHebrewAttributionRereviewChirho: rawHebrewAttributionRereviewStartUrlChirho,
+    rawHebrewAttributionBlockedUnchangedChirho: rawHebrewAttributionUnchangedStartUrlChirho,
+    rawHebrewAttributionRereviewChangedChirho: rawHebrewAttributionChangedRereviewStartUrlChirho,
     latinSymbolAllChirho: latinSymbolReviewStartUrlChirho(pendingLatinSymbolLiveItemsChirho),
     latinSymbolFrenchChirho: latinSymbolReviewStartUrlChirho(pendingLatinSymbolLiveItemsChirho, "french-chirho"),
     latinSymbolNonFrenchChirho: latinSymbolReviewStartUrlChirho(pendingLatinSymbolLiveItemsChirho, "latin-non-french-chirho"),
@@ -5385,6 +5421,10 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   const rawHebrewAttributionRereviewFirstTextChirho = rawHebrewAttributionRereviewFirstUrlChirho === null
     ? ""
     : `; first re-review: ${rawHebrewAttributionRereviewFirstUrlChirho}`;
+  const rawHebrewAttributionUnchangedFirstTextChirho =
+    withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewAttributionBlockedUnchangedChirho);
+  const rawHebrewAttributionChangedRereviewFirstTextChirho =
+    withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewAttributionRereviewChangedChirho);
   return [
     "<!-- For God so loved the world that he gave his only begotten Son,",
     "that whoever believes in him should not perish but have eternal life. John 3:16 -->",
@@ -5421,7 +5461,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     ...rawHebrewVolumeLaneLinesChirho,
     `- Raw Hebrew saved issue lane: ${rawHebrewReviewUrlChirho(undefined, "saved-issues-chirho")} (${statusChirho.humanValidationDbChirho.rawQueueIssueRowsChirho} read-only current issue row(s))`,
     `- Raw Hebrew attribution-blocked lane: ${rawHebrewReviewUrlChirho(undefined, "attribution-blocked-chirho")} (${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho} read-only current row(s) needing explicit reviewer attribution${rawHebrewAttributionBlockedFirstTextChirho})`,
+    `- Raw Hebrew attribution unchanged-live-text lane: ${rawHebrewReviewUrlChirho(undefined, "attribution-blocked-chirho", undefined, undefined, undefined, undefined, undefined, "unchanged-chirho")} (${statusChirho.humanValidationDbChirho.genericReviewerLiveTextMatchRowsChirho} read-only row(s) eligible for guarded reattribute commands after attribution is confirmed${rawHebrewAttributionUnchangedFirstTextChirho})`,
     `- Raw Hebrew attribution re-review lane: ${rawHebrewReviewUrlChirho(undefined, "attribution-rereview-chirho")} (${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho} writable current row(s) for fresh explicit review when reattribution is not justified${rawHebrewAttributionRereviewFirstTextChirho})`,
+    `- Raw Hebrew attribution changed-live-text re-review lane: ${rawHebrewReviewUrlChirho(undefined, "attribution-rereview-chirho", undefined, undefined, undefined, undefined, undefined, "changed-chirho")} (${statusChirho.humanValidationDbChirho.genericReviewerLiveTextMismatchRowsChirho} writable changed row(s); re-check current live text against the print before saving${rawHebrewAttributionChangedRereviewFirstTextChirho})`,
     "- Raw Hebrew pending counts match the live validator; report totals include already-saved rows.",
     `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Raw Hebrew human certification quickstart: \`${relativeProjectPathChirho(RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO)}\``,

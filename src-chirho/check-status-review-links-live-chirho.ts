@@ -82,6 +82,10 @@ const RAW_PRE_REVIEW_NOTE_FILTERS_CHIRHO = new Set([
   "with-note-chirho",
   "without-note-chirho",
 ]);
+const RAW_ATTRIBUTION_TEXT_FILTERS_CHIRHO = new Set([
+  "unchanged-chirho",
+  "changed-chirho",
+]);
 const LATIN_SYMBOL_SCRIPTS_CHIRHO = new Set([
   "french-chirho",
   "latin-non-french-chirho",
@@ -135,6 +139,7 @@ interface RawHebrewQueueItemChirho {
   tierChirho: string;
   attentionKindsChirho: string[];
   preReviewNoteChirho?: string | null;
+  attributionTextStateChirho?: string;
   volumeChirho: number;
 }
 
@@ -229,6 +234,7 @@ function assertRawQueryValuesChirho(urlChirho: URL, keyChirho: string): void {
       "tier-chirho",
       "attention-chirho",
       "pre-review-note-chirho",
+      "attribution-text-chirho",
       "volume-chirho",
       "review-state-chirho",
     ])
@@ -238,6 +244,7 @@ function assertRawQueryValuesChirho(urlChirho: URL, keyChirho: string): void {
   assertParamInSetChirho(urlChirho, keyChirho, "tier-chirho", RAW_REVIEW_TIERS_CHIRHO);
   assertParamInSetChirho(urlChirho, keyChirho, "attention-chirho", RAW_ATTENTION_KINDS_CHIRHO);
   assertParamInSetChirho(urlChirho, keyChirho, "pre-review-note-chirho", RAW_PRE_REVIEW_NOTE_FILTERS_CHIRHO);
+  assertParamInSetChirho(urlChirho, keyChirho, "attribution-text-chirho", RAW_ATTRIBUTION_TEXT_FILTERS_CHIRHO);
   parseVolumeFilterChirho(urlChirho);
 }
 
@@ -339,6 +346,13 @@ function assertRawFiltersChirho(urlChirho: URL, itemChirho: RawHebrewQueueItemCh
       itemChirho.validationStatusChirho === "attribution-blocked-chirho",
       `${keyChirho} item ${itemChirho.keyChirho} is not attribution-blocked`
     );
+    const attributionTextChirho = urlChirho.searchParams.get("attribution-text-chirho");
+    if (attributionTextChirho !== null) {
+      assertGeneratedCheckChirho(
+        itemChirho.attributionTextStateChirho === attributionTextChirho,
+        `${keyChirho} item ${itemChirho.keyChirho} does not match attribution-text-chirho=${attributionTextChirho}`
+      );
+    }
   }
 }
 

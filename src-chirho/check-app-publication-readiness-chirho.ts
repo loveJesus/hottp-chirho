@@ -159,7 +159,9 @@ function printNextReviewLinksChirho(statusChirho: CertificationStatusSummaryChir
   const linksChirho: Array<[string, string | null]> = [
     ["Raw Hebrew primary", reviewStartLinkChirho(statusChirho, "rawHebrewVols35UnvalidatedChirho")],
     ["Raw Hebrew attribution blocked", reviewStartLinkChirho(statusChirho, "rawHebrewAttributionBlockedChirho")],
+    ["Raw Hebrew attribution unchanged", reviewStartLinkChirho(statusChirho, "rawHebrewAttributionBlockedUnchangedChirho")],
     ["Raw Hebrew attribution re-review", reviewStartLinkChirho(statusChirho, "rawHebrewAttributionRereviewChirho")],
+    ["Raw Hebrew attribution changed re-review", reviewStartLinkChirho(statusChirho, "rawHebrewAttributionRereviewChangedChirho")],
     ["Latin/symbol proofing", reviewStartLinkChirho(statusChirho, "latinSymbolAllChirho")],
     ["Expert blank Syriac", reviewStartLinkChirho(statusChirho, "expertSyriacBlankChirho")],
     ["Expert Hebrew/WLC", reviewStartLinkChirho(statusChirho, "expertHebrewChirho")],

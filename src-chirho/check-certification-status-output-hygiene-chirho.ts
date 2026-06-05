@@ -593,8 +593,16 @@ function reviewStartLinkCountChecksChirho(statusChirho: CertificationStatusOutpu
       countChirho: liveAttributionBlockedRowCountChirho,
     },
     {
+      keyChirho: "rawHebrewAttributionBlockedUnchangedChirho",
+      countChirho: numberFieldChirho(humanChirho, "genericReviewerLiveTextMatchRowsChirho", "humanValidationDbChirho"),
+    },
+    {
       keyChirho: "rawHebrewAttributionRereviewChirho",
       countChirho: liveAttributionBlockedRowCountChirho,
+    },
+    {
+      keyChirho: "rawHebrewAttributionRereviewChangedChirho",
+      countChirho: numberFieldChirho(humanChirho, "genericReviewerLiveTextMismatchRowsChirho", "humanValidationDbChirho"),
     },
     ...volumeLinkCountChecksChirho(
       "rawHebrewChirho",
@@ -1001,6 +1009,16 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     markdownChirho,
     `- Raw Hebrew saved issue lane: http://localhost:8766/?review-state-chirho=saved-issues-chirho (${numberFieldChirho(humanDbChirho, "rawQueueIssueRowsChirho", "humanValidationDbChirho")} read-only current issue row(s))`,
     "raw Hebrew saved issue lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Raw Hebrew attribution unchanged-live-text lane: http://localhost:8766/?review-state-chirho=attribution-blocked-chirho&attribution-text-chirho=unchanged-chirho (${numberFieldChirho(humanDbChirho, "genericReviewerLiveTextMatchRowsChirho", "humanValidationDbChirho")} read-only row(s) eligible for guarded reattribute commands after attribution is confirmed${reviewStartSuffixChirho(linksChirho, "rawHebrewAttributionBlockedUnchangedChirho")})`,
+    "raw Hebrew attribution unchanged-live-text lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Raw Hebrew attribution changed-live-text re-review lane: http://localhost:8766/?review-state-chirho=attribution-rereview-chirho&attribution-text-chirho=changed-chirho (${numberFieldChirho(humanDbChirho, "genericReviewerLiveTextMismatchRowsChirho", "humanValidationDbChirho")} writable changed row(s); re-check current live text against the print before saving${reviewStartSuffixChirho(linksChirho, "rawHebrewAttributionRereviewChangedChirho")})`,
+    "raw Hebrew attribution changed-live-text re-review lane"
   );
   assertMarkdownContainsChirho(markdownChirho, "- Raw Hebrew pending counts match the live validator; report totals include already-saved rows.", "raw Hebrew pending-count note");
   assertMarkdownContainsChirho(

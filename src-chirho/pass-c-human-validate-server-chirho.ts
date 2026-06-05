@@ -221,6 +221,7 @@ interface QueueItemChirho extends ReportSpanChirho {
   attentionKindsChirho: string[];
   attentionReasonsChirho: string[];
   preReviewNoteChirho: string | null;
+  attributionTextStateChirho: string;
   priorityChirho: number;
 }
 
@@ -725,6 +726,7 @@ function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): Queue
         attentionKindsChirho: rawHebrewAttentionKindsChirho(spanChirho),
         attentionReasonsChirho: rawHebrewAttentionReasonsChirho(spanChirho),
         preReviewNoteChirho: preReviewNotesChirho.get(keyChirho) ?? null,
+        attributionTextStateChirho: "not-attribution-chirho",
         priorityChirho: queuePriorityChirho(spanChirho),
       };
     })
@@ -1149,6 +1151,14 @@ function currentValidationRowForItemChirho(itemChirho: QueueItemChirho): HumanVa
   return rowChirho === null || rowChirho === undefined ? null : rowWithKeyChirho(rowChirho);
 }
 
+function attributionTextStateForQueueItemChirho(itemChirho: QueueItemChirho): string {
+  const rowChirho = currentValidationRowForItemChirho(itemChirho);
+  if (rowChirho === null || !validationRowCountsAsAttributionBlockedChirho(rowChirho)) return "not-attribution-chirho";
+  if (rowChirho.original_text_hash_chirho !== itemChirho.originalTextHashChirho) return "changed-chirho";
+  if (rowChirho.original_text_chirho !== itemChirho.liveSpanTextChirho) return "changed-chirho";
+  return "unchanged-chirho";
+}
+
 function attributionBlockedReportSpanFromRowChirho(rowChirho: HumanValidationRowChirho): ReportSpanChirho | null {
   if (!validationRowCountsAsAttributionBlockedChirho(rowChirho)) return null;
   const spanStubChirho = {
@@ -1199,7 +1209,10 @@ function loadedQueueWithAttributionBlockedRowsChirho(baseQueueChirho: LoadedQueu
 const loadedQueueChirho = loadedQueueWithAttributionBlockedRowsChirho(loadQueueForModeChirho(queueModeChirho));
 const queueGeneratedAtChirho = loadedQueueChirho.queueGeneratedAtChirho;
 const queueTitleChirho = loadedQueueChirho.titleChirho;
-const queueChirho = loadedQueueChirho.queueChirho;
+const queueChirho = loadedQueueChirho.queueChirho.map((itemChirho) => ({
+  ...itemChirho,
+  attributionTextStateChirho: attributionTextStateForQueueItemChirho(itemChirho),
+}));
 const queueByKeyChirho = new Map(queueChirho.map((itemChirho) => [itemChirho.keyChirho, itemChirho]));
 
 function scriptJsonChirho(valueChirho: unknown): string {
@@ -1426,6 +1439,12 @@ function pageHtmlChirho(): string {
         <option value="with-note-chirho">Has note</option>
         <option value="without-note-chirho">No note</option>
       </select>
+      <label class="label-chirho" for="attribution-text-filter-chirho">Attribution text</label>
+      <select id="attribution-text-filter-chirho">
+        <option value="all-chirho">All</option>
+        <option value="unchanged-chirho">Unchanged live text</option>
+        <option value="changed-chirho">Changed live text</option>
+      </select>
       <label class="label-chirho" for="volume-filter-chirho">Volume</label>
       <select id="volume-filter-chirho">
         <option value="all-chirho">All</option>
@@ -1454,6 +1473,8 @@ function pageHtmlChirho(): string {
       <a data-lane-shortcut-chirho="with-pre-review-note-chirho" href="/?pre-review-note-chirho=with-note-chirho">With pre-review note <span class="lane-shortcut-count-chirho"></span></a>
       <a data-lane-shortcut-chirho="without-pre-review-note-chirho" href="/?pre-review-note-chirho=without-note-chirho">No pre-review note <span class="lane-shortcut-count-chirho"></span></a>
       <a data-lane-shortcut-chirho="attribution-cleanup-chirho" href="/?review-state-chirho=attribution-blocked-chirho">Attribution cleanup <span class="lane-shortcut-count-chirho"></span></a>
+      <a data-lane-shortcut-chirho="attribution-unchanged-chirho" href="/?review-state-chirho=attribution-blocked-chirho&attribution-text-chirho=unchanged-chirho">Attribution unchanged <span class="lane-shortcut-count-chirho"></span></a>
+      <a data-lane-shortcut-chirho="attribution-changed-rereview-chirho" href="/?review-state-chirho=attribution-rereview-chirho&attribution-text-chirho=changed-chirho">Attribution changed re-review <span class="lane-shortcut-count-chirho"></span></a>
     </div>
     <section class="main-chirho" id="app-chirho"></section>
   </main>
@@ -1589,6 +1610,11 @@ function pageHtmlChirho(): string {
       initialSearchParamsChirho.get("pre-review-note-chirho"),
       "all-chirho"
     );
+    let attributionTextFilterChirho = selectValueOrDefaultChirho(
+      "attribution-text-filter-chirho",
+      initialSearchParamsChirho.get("attribution-text-chirho"),
+      "all-chirho"
+    );
     let volumeFilterChirho = selectValueOrDefaultChirho(
       "volume-filter-chirho",
       initialSearchParamsChirho.get("volume-chirho"),
@@ -1682,6 +1708,24 @@ function pageHtmlChirho(): string {
         attentionChirho: "all-chirho",
         preReviewNoteChirho: "all-chirho",
         volumeChirho: "all-chirho"
+      }],
+      ["attribution-unchanged-chirho", {
+        reviewStateChirho: "attribution-blocked-chirho",
+        validationStatusChirho: "all-chirho",
+        tierChirho: "all-chirho",
+        attentionChirho: "all-chirho",
+        preReviewNoteChirho: "all-chirho",
+        attributionTextChirho: "unchanged-chirho",
+        volumeChirho: "all-chirho"
+      }],
+      ["attribution-changed-rereview-chirho", {
+        reviewStateChirho: "attribution-rereview-chirho",
+        validationStatusChirho: "all-chirho",
+        tierChirho: "all-chirho",
+        attentionChirho: "all-chirho",
+        preReviewNoteChirho: "all-chirho",
+        attributionTextChirho: "changed-chirho",
+        volumeChirho: "all-chirho"
       }]
     ]);
     function syncFilterControlsChirho() {
@@ -1690,6 +1734,7 @@ function pageHtmlChirho(): string {
       document.getElementById("tier-filter-chirho").value = tierFilterChirho;
       document.getElementById("attention-filter-chirho").value = attentionFilterChirho;
       document.getElementById("pre-review-note-filter-chirho").value = preReviewNoteFilterChirho;
+      document.getElementById("attribution-text-filter-chirho").value = attributionTextFilterChirho;
       document.getElementById("volume-filter-chirho").value = volumeFilterChirho;
     }
     function volumeFilterNumberForValueChirho(volumeValueChirho) {
@@ -1707,6 +1752,7 @@ function pageHtmlChirho(): string {
       if (tierFilterChirho !== "all-chirho") paramsChirho.set("tier-chirho", tierFilterChirho);
       if (attentionFilterChirho !== "all-chirho") paramsChirho.set("attention-chirho", attentionFilterChirho);
       if (preReviewNoteFilterChirho !== "all-chirho") paramsChirho.set("pre-review-note-chirho", preReviewNoteFilterChirho);
+      if (attributionTextFilterChirho !== "all-chirho") paramsChirho.set("attribution-text-chirho", attributionTextFilterChirho);
       if (volumeFilterChirho !== "all-chirho") paramsChirho.set("volume-chirho", volumeFilterChirho);
       const itemChirho = currentItemChirho();
       if (itemChirho) paramsChirho.set("item-chirho", itemChirho.keyChirho);
@@ -1759,6 +1805,9 @@ function pageHtmlChirho(): string {
     function reviewStateIsAttributionModeChirho() {
       return reviewStateFilterChirho === "attribution-blocked-chirho" || reviewStateFilterChirho === "attribution-rereview-chirho";
     }
+    function reviewStateValueIsAttributionModeChirho(reviewStateValueChirho) {
+      return reviewStateValueChirho === "attribution-blocked-chirho" || reviewStateValueChirho === "attribution-rereview-chirho";
+    }
     function validationVisibleForReviewStateValueChirho(itemChirho, reviewStateValueChirho) {
       const rowChirho = validationsChirho.get(itemChirho.keyChirho);
       if (reviewStateValueChirho === "pending-chirho") {
@@ -1807,6 +1856,8 @@ function pageHtmlChirho(): string {
     function itemMatchesFilterValuesChirho(itemChirho, filtersChirho) {
       const volumeChirho = volumeFilterNumberForValueChirho(filtersChirho.volumeChirho);
       const hasPreReviewNoteChirho = typeof itemChirho.preReviewNoteChirho === "string" && itemChirho.preReviewNoteChirho.length > 0;
+      const attributionTextChirho = filtersChirho.attributionTextChirho ?? "all-chirho";
+      const attributionTextFilterAppliesChirho = reviewStateValueIsAttributionModeChirho(filtersChirho.reviewStateChirho);
       return validationVisibleForReviewStateValueChirho(itemChirho, filtersChirho.reviewStateChirho) &&
         (filtersChirho.validationStatusChirho === "all-chirho" || itemChirho.validationStatusChirho === filtersChirho.validationStatusChirho) &&
         (filtersChirho.tierChirho === "all-chirho" || itemChirho.tierChirho === filtersChirho.tierChirho) &&
@@ -1814,6 +1865,9 @@ function pageHtmlChirho(): string {
         (filtersChirho.preReviewNoteChirho === "all-chirho" ||
           (filtersChirho.preReviewNoteChirho === "with-note-chirho" && hasPreReviewNoteChirho) ||
           (filtersChirho.preReviewNoteChirho === "without-note-chirho" && !hasPreReviewNoteChirho)) &&
+        (!attributionTextFilterAppliesChirho ||
+          attributionTextChirho === "all-chirho" ||
+          itemChirho.attributionTextStateChirho === attributionTextChirho) &&
         (volumeChirho === null || itemChirho.volumeChirho === volumeChirho);
     }
     function activeQueueChirho() {
@@ -1824,6 +1878,7 @@ function pageHtmlChirho(): string {
           tierChirho: tierFilterChirho,
           attentionChirho: attentionFilterChirho,
           preReviewNoteChirho: preReviewNoteFilterChirho,
+          attributionTextChirho: attributionTextFilterChirho,
           volumeChirho: volumeFilterChirho
         })
       );
@@ -1889,6 +1944,14 @@ function pageHtmlChirho(): string {
         }
         if (preReviewNoteFilterChirho === "without-note-chirho" && typeof requestedItemChirho.preReviewNoteChirho === "string" && requestedItemChirho.preReviewNoteChirho.length > 0) {
           preReviewNoteFilterChirho = "all-chirho";
+          changedFiltersChirho = true;
+        }
+        if (
+          attributionTextFilterChirho !== "all-chirho" &&
+          requestedAttributionBlockedChirho &&
+          requestedItemChirho.attributionTextStateChirho !== attributionTextFilterChirho
+        ) {
+          attributionTextFilterChirho = "all-chirho";
           changedFiltersChirho = true;
         }
         if (volumeChirho !== null && requestedItemChirho.volumeChirho !== volumeChirho) {
@@ -2731,6 +2794,12 @@ function pageHtmlChirho(): string {
     });
     document.getElementById("pre-review-note-filter-chirho").addEventListener("change", (eventChirho) => {
       preReviewNoteFilterChirho = eventChirho.target.value;
+      requestedItemKeyChirho = null;
+      indexChirho = 0;
+      renderChirho();
+    });
+    document.getElementById("attribution-text-filter-chirho").addEventListener("change", (eventChirho) => {
+      attributionTextFilterChirho = eventChirho.target.value;
       requestedItemKeyChirho = null;
       indexChirho = 0;
       renderChirho();
