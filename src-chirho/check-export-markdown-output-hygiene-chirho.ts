@@ -9,6 +9,7 @@
  * report without certifying any text.
  */
 
+import { createHash } from "crypto";
 import { existsSync, readdirSync, readFileSync, statSync } from "fs";
 import { join, relative, resolve, sep } from "path";
 
@@ -29,6 +30,7 @@ interface ExportPageReportChirho {
   volumeChirho?: number;
   pageChirho?: number;
   markdownPathChirho?: string;
+  markdownSha256Chirho?: string;
   lineCountChirho?: number;
   spanCountChirho?: number;
   unknownSpanCountChirho?: number;
@@ -37,6 +39,13 @@ interface ExportPageReportChirho {
   crnnValidatedHebrewSpanCountChirho?: number;
   issueCountChirho?: number;
   qualityStatusChirho?: string;
+}
+
+interface ExportVolumeReportChirho {
+  volumeChirho?: number;
+  markdownPathChirho?: string;
+  markdownSha256Chirho?: string;
+  pageCountChirho?: number;
 }
 
 interface ExportIssueChirho {
@@ -52,6 +61,7 @@ interface ExportReportChirho {
   volumeCountChirho?: number;
   issueCountChirho?: number;
   pagesChirho?: ExportPageReportChirho[];
+  volumesChirho?: ExportVolumeReportChirho[];
   issuesChirho?: ExportIssueChirho[];
 }
 
@@ -84,6 +94,17 @@ function collectMarkdownFilesChirho(dirChirho: string): string[] {
 
 function emptySpanMarkerChirho(issueChirho: ExportIssueChirho): string {
   return `[EMPTY-SPAN-CHIRHO line=${issueChirho.lineIndexChirho} segment=${issueChirho.segmentIndexChirho}]`;
+}
+
+function sha256TextChirho(textChirho: string): string {
+  return createHash("sha256").update(textChirho, "utf8").digest("hex");
+}
+
+function assertSha256FieldChirho(valueChirho: unknown, labelChirho: string): void {
+  assertGeneratedCheckChirho(
+    typeof valueChirho === "string" && /^[0-9a-f]{64}$/.test(valueChirho),
+    `${labelChirho} must be a lowercase sha256 hex digest`
+  );
 }
 
 function skipNewlinesChirho(textChirho: string, indexChirho: number): number {
@@ -307,6 +328,7 @@ function mainChirho(): void {
   assertGeneratedTextHygieneChirho(EXPORT_REPORT_PATH_CHIRHO, reportTextChirho);
   const reportChirho = JSON.parse(reportTextChirho) as ExportReportChirho;
   assertGeneratedCheckChirho(Array.isArray(reportChirho.pagesChirho), "export report pagesChirho must be an array");
+  assertGeneratedCheckChirho(Array.isArray(reportChirho.volumesChirho), "export report volumesChirho must be an array");
   assertGeneratedCheckChirho(Array.isArray(reportChirho.issuesChirho), "export report issuesChirho must be an array");
   assertGeneratedCheckChirho(
     reportChirho.pageCountChirho === reportChirho.pagesChirho.length,
@@ -320,6 +342,7 @@ function mainChirho(): void {
   const expectedMarkdownPathsChirho = new Set<string>();
   const pagesByKeyChirho = new Map<string, ExportPageReportChirho>();
   const pagesByVolumeChirho = new Map<number, ExportPageReportChirho[]>();
+  const volumeReportsByVolumeChirho = new Map<number, ExportVolumeReportChirho>();
   const volumesChirho = new Set<number>();
   for (const pageChirho of reportChirho.pagesChirho) {
     assertGeneratedCheckChirho(Number.isInteger(pageChirho.volumeChirho), "export page volumeChirho must be an integer");
@@ -328,6 +351,7 @@ function mainChirho(): void {
       typeof pageChirho.markdownPathChirho === "string",
       "export page markdownPathChirho must be a string"
     );
+    assertSha256FieldChirho(pageChirho.markdownSha256Chirho, `export page ${pageChirho.volumeChirho}:${pageChirho.pageChirho} markdownSha256Chirho`);
     assertInsideMarkdownDirChirho(pageChirho.markdownPathChirho);
     const markdownPathChirho = normalizedPathChirho(pageChirho.markdownPathChirho);
     const keyChirho = `${pageChirho.volumeChirho}:${pageChirho.pageChirho}`;
@@ -339,13 +363,43 @@ function mainChirho(): void {
     expectedMarkdownPathsChirho.add(markdownPathChirho);
     volumesChirho.add(pageChirho.volumeChirho!);
   }
+  for (const volumeReportChirho of reportChirho.volumesChirho) {
+    assertGeneratedCheckChirho(Number.isInteger(volumeReportChirho.volumeChirho), "export volume volumeChirho must be an integer");
+    assertGeneratedCheckChirho(
+      typeof volumeReportChirho.markdownPathChirho === "string",
+      "export volume markdownPathChirho must be a string"
+    );
+    assertGeneratedCheckChirho(
+      Number.isInteger(volumeReportChirho.pageCountChirho),
+      "export volume pageCountChirho must be an integer"
+    );
+    assertSha256FieldChirho(
+      volumeReportChirho.markdownSha256Chirho,
+      `export volume ${volumeReportChirho.volumeChirho} markdownSha256Chirho`
+    );
+    assertInsideMarkdownDirChirho(volumeReportChirho.markdownPathChirho);
+    assertGeneratedCheckChirho(
+      !volumeReportsByVolumeChirho.has(volumeReportChirho.volumeChirho!),
+      `duplicate export volume report key ${volumeReportChirho.volumeChirho}`
+    );
+    volumeReportsByVolumeChirho.set(volumeReportChirho.volumeChirho!, volumeReportChirho);
+  }
   assertGeneratedCheckChirho(
     reportChirho.volumeCountChirho === undefined || reportChirho.volumeCountChirho === volumesChirho.size,
     "export report volumeCountChirho does not match page volumes"
   );
+  assertGeneratedCheckChirho(
+    volumeReportsByVolumeChirho.size === volumesChirho.size,
+    "export report volumesChirho count does not match page volumes"
+  );
   for (const volumeChirho of volumesChirho) {
-    expectedMarkdownPathsChirho.add(
-      normalizedPathChirho(join(MARKDOWN_DIR_CHIRHO, `vol-${volumeChirho}-chirho`, `volume-${volumeChirho}-chirho.md`))
+    const volumeReportChirho = volumeReportsByVolumeChirho.get(volumeChirho);
+    assertGeneratedCheckChirho(volumeReportChirho !== undefined, `missing export volume report for volume ${volumeChirho}`);
+    expectedMarkdownPathsChirho.add(normalizedPathChirho(volumeReportChirho.markdownPathChirho!));
+    assertGeneratedCheckChirho(
+      normalizedPathChirho(volumeReportChirho.markdownPathChirho!) ===
+        normalizedPathChirho(join(MARKDOWN_DIR_CHIRHO, `vol-${volumeChirho}-chirho`, `volume-${volumeChirho}-chirho.md`)),
+      `export volume ${volumeChirho} markdownPathChirho is not the canonical volume path`
     );
   }
 
@@ -368,13 +422,35 @@ function mainChirho(): void {
     markdownTextByPathChirho.set(markdownPathChirho, textChirho);
   }
 
+  for (const pageChirho of reportChirho.pagesChirho) {
+    const pagePathChirho = normalizedPathChirho(pageChirho.markdownPathChirho!);
+    const pageTextChirho = markdownTextByPathChirho.get(pagePathChirho) ?? "";
+    assertGeneratedCheckChirho(
+      sha256TextChirho(pageTextChirho) === pageChirho.markdownSha256Chirho,
+      `page Markdown SHA-256 does not match export report for volume ${pageChirho.volumeChirho}, page ${pageChirho.pageChirho}`
+    );
+  }
+
+  for (const volumeReportChirho of reportChirho.volumesChirho) {
+    const volumePathChirho = normalizedPathChirho(volumeReportChirho.markdownPathChirho!);
+    const volumeTextChirho = markdownTextByPathChirho.get(volumePathChirho) ?? "";
+    assertGeneratedCheckChirho(
+      sha256TextChirho(volumeTextChirho) === volumeReportChirho.markdownSha256Chirho,
+      `volume Markdown SHA-256 does not match export report for volume ${volumeReportChirho.volumeChirho}`
+    );
+  }
+
   for (const volumeChirho of volumesChirho) {
     const volumePathChirho = normalizedPathChirho(
-      join(MARKDOWN_DIR_CHIRHO, `vol-${volumeChirho}-chirho`, `volume-${volumeChirho}-chirho.md`)
+      volumeReportsByVolumeChirho.get(volumeChirho)!.markdownPathChirho!
     );
     const volumeTextChirho = markdownTextByPathChirho.get(volumePathChirho) ?? "";
     const pagesForVolumeChirho = (pagesByVolumeChirho.get(volumeChirho) ?? []).toSorted(
       (leftChirho, rightChirho) => leftChirho.pageChirho! - rightChirho.pageChirho!
+    );
+    assertGeneratedCheckChirho(
+      volumeReportsByVolumeChirho.get(volumeChirho)!.pageCountChirho === pagesForVolumeChirho.length,
+      `export volume ${volumeChirho} pageCountChirho does not match report page count`
     );
     assertVolumeMetadataChirho(volumeChirho, volumePathChirho, volumeTextChirho, pagesForVolumeChirho.length);
     const headingCountsChirho = volumeMarkdownPageHeadingsChirho(volumeTextChirho);

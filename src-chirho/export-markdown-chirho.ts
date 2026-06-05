@@ -22,6 +22,7 @@
  */
 
 import { Database } from "bun:sqlite";
+import { createHash } from "crypto";
 import {
   existsSync,
   mkdirSync,
@@ -231,6 +232,7 @@ interface PageReportChirho {
   volumeChirho: number;
   pageChirho: number;
   markdownPathChirho: string;
+  markdownSha256Chirho: string;
   lineCountChirho: number;
   expectedLineCountChirho: number | null;
   spanCountChirho: number;
@@ -244,6 +246,13 @@ interface PageReportChirho {
   provenanceCountsChirho: Record<string, number>;
   issueCountChirho: number;
   qualityStatusChirho: "complete-chirho" | "needs-review-chirho";
+}
+
+interface VolumeReportChirho {
+  volumeChirho: number;
+  markdownPathChirho: string;
+  markdownSha256Chirho: string;
+  pageCountChirho: number;
 }
 
 interface D1PageWitnessChirho {
@@ -293,6 +302,7 @@ interface ExportReportChirho {
   issueCountChirho: number;
   strictPassedChirho: boolean;
   pagesChirho: PageReportChirho[];
+  volumesChirho: VolumeReportChirho[];
   issuesChirho: Array<SpanIssueChirho & TargetPageChirho>;
 }
 
@@ -1172,6 +1182,10 @@ function volumeMarkdownPathChirho(outDirChirho: string, volumeChirho: number): s
   return join(outDirChirho, `vol-${volumeChirho}-chirho`, `volume-${volumeChirho}-chirho.md`);
 }
 
+function sha256TextChirho(textChirho: string): string {
+  return createHash("sha256").update(textChirho, "utf8").digest("hex");
+}
+
 function buildVolumeMarkdownChirho(
   volumeChirho: number,
   pagesChirho: PageExportChirho[]
@@ -1209,6 +1223,7 @@ function pageReportChirho(outDirChirho: string, pageChirho: PageExportChirho): P
     volumeChirho: pageChirho.targetChirho.volumeChirho,
     pageChirho: pageChirho.targetChirho.pageChirho,
     markdownPathChirho: pageMarkdownPathChirho(outDirChirho, pageChirho.targetChirho),
+    markdownSha256Chirho: sha256TextChirho(pageChirho.markdownChirho),
     lineCountChirho: pageChirho.lineCountChirho,
     expectedLineCountChirho: pageChirho.contextChirho.totalLinesChirho ?? null,
     spanCountChirho: pageChirho.spanCountChirho,
@@ -1240,6 +1255,7 @@ async function runExportChirho(optionsChirho: CliOptionsChirho): Promise<ExportR
     exportPageChirho(targetChirho, optionsChirho, d1AuditChirho)
   );
   const pagesByVolumeChirho = new Map<number, PageExportChirho[]>();
+  const volumeReportsChirho: VolumeReportChirho[] = [];
 
   for (const pageChirho of pageExportsChirho) {
     const volumePagesChirho = pagesByVolumeChirho.get(pageChirho.targetChirho.volumeChirho) ?? [];
@@ -1254,8 +1270,15 @@ async function runExportChirho(optionsChirho: CliOptionsChirho): Promise<ExportR
   for (const [volumeChirho, pagesChirho] of [...pagesByVolumeChirho.entries()].sort((aChirho, bChirho) => aChirho[0] - bChirho[0])) {
     const sortedPagesChirho = pagesChirho.sort((aChirho, bChirho) => aChirho.targetChirho.pageChirho - bChirho.targetChirho.pageChirho);
     const volumePathChirho = volumeMarkdownPathChirho(optionsChirho.outDirChirho, volumeChirho);
+    const volumeMarkdownChirho = buildVolumeMarkdownChirho(volumeChirho, sortedPagesChirho);
     ensureDirChirho(join(optionsChirho.outDirChirho, `vol-${volumeChirho}-chirho`));
-    writeTextAtomicChirho(volumePathChirho, buildVolumeMarkdownChirho(volumeChirho, sortedPagesChirho));
+    writeTextAtomicChirho(volumePathChirho, volumeMarkdownChirho);
+    volumeReportsChirho.push({
+      volumeChirho,
+      markdownPathChirho: volumePathChirho,
+      markdownSha256Chirho: sha256TextChirho(volumeMarkdownChirho),
+      pageCountChirho: sortedPagesChirho.length,
+    });
   }
 
   const pageReportsChirho = pageExportsChirho.map((pageChirho) => pageReportChirho(optionsChirho.outDirChirho, pageChirho));
@@ -1302,6 +1325,7 @@ async function runExportChirho(optionsChirho: CliOptionsChirho): Promise<ExportR
     issueCountChirho: issuesChirho.length,
     strictPassedChirho,
     pagesChirho: pageReportsChirho,
+    volumesChirho: volumeReportsChirho.sort((aChirho, bChirho) => aChirho.volumeChirho - bChirho.volumeChirho),
     issuesChirho,
   };
 
