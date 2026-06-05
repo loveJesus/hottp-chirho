@@ -280,6 +280,13 @@ span was surfaced.
   - Visual precheck: this short line ends with the Hebrew target after French `loin en ce même vs, par`; the red box covers the target word to the line edge without a following neighboring span. The direct OCR read `להקלא` is weak at the tav/hey position and does not certify the printed vowels.
   - Human check still needed: exact lamed-sheva opening, tav vs he at the second letter, qof-lamed-alef sequence, qamats/patah/sheva marks, and whether any terminal dot-like ink is a Hebrew mark rather than punctuation.
 
+- `vol 2 p151 L29 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A29%3A1`
+  - Live text: `לְמִקְדָּשׁ`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane; the direct OCR read `מלדש` is weak and WLC-absent, so it is not a certification witness.
+  - Visual precheck: the target crop boxes the Hebrew word after French `A la présence de` and before French `en 14, Duhm...`; the adjacent French text remains outside the Hebrew box and no terminal punctuation is visible inside the target.
+  - Human check still needed: exact lamed-prefix, mem-hiriq, qof-sheva, dalet-dagesh/qamats, shin-dot, and confirmation that this occurrence is independently checked rather than accepted from similar `לְמִקְדָּשׁ` lines.
+
 - `vol 2 p151 L36 S1`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A36%3A1`
   - Live text: `תַקְדִּישׁוּ`
