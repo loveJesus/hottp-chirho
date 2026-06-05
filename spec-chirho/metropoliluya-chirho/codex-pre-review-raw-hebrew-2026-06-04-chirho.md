@@ -141,6 +141,13 @@ span was surfaced.
   - Visual precheck: the line says `En 14, c'est`, then S1, then French `qui y tient la place de`, then S3. Both target boxes are separate from the French text and from each other. The S1 direct OCR read `לפורעכ` is weak, and S3's stronger witnesses still do not certify the exact printed marks.
   - Human check still needed: for S1, exact pe/vav/tsade/final-kaf sequence and all vowels; for S3, exact mem-qof-dalet-shin sequence, dagesh, shin-dot, and whether the final mark/dot belongs to the Hebrew word rather than adjacent punctuation.
 
+- `vol 2 p151 L17 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A17%3A1`
+  - Live text: `וּלְמוֹקֵשׁ`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the Hebrew word is boxed between French `Vorlage` and `puisque`; no neighboring French appears swallowed by the target box. The direct OCR read `למוקש` is close on the base word but does not preserve the prefixed vav/shuruk or certify the vowel marks.
+  - Human check still needed: exact prefixed vav/shuruk, lamed sheva, mem-vav-qof-shin sequence, tsere/holam placement, and shin-dot/final marks against the print.
+
 - `vol 5 p149 L28 S1`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A149%3A28%3A1`
   - Live text: `ליץ`
