@@ -153,6 +153,65 @@ function checkMachineAcceptedCleanRejectedChirho(liveItemChirho: LatinSymbolVisi
   }
 }
 
+function checkAcceptedCleanReviewerRejectedChirho(
+  liveItemChirho: LatinSymbolVisionLiveItemChirho,
+  reviewerChirho: string,
+  expectedMessageChirho: string
+): void {
+  const tempChirho = tempDbPathChirho();
+  try {
+    const argsChirho = recordArgsChirho(tempChirho.dbPathChirho, liveItemChirho, reviewerChirho);
+    const resultChirho = runCommandChirho(argsChirho);
+    const combinedOutputChirho = `${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`;
+    assertCheckChirho(
+      resultChirho.exitCodeChirho !== 0,
+      `blocked accepted-clean reviewer command unexpectedly succeeded: ${commandTextChirho(argsChirho)}`
+    );
+    assertCheckChirho(
+      combinedOutputChirho.includes(expectedMessageChirho),
+      `blocked accepted-clean reviewer command failed for the wrong reason: ${combinedOutputChirho}`
+    );
+    assertCheckChirho(
+      reviewRowCountChirho(tempChirho.dbPathChirho) === 0,
+      "blocked accepted-clean reviewer command wrote review rows"
+    );
+  } finally {
+    rmSync(tempChirho.dirChirho, { force: true, recursive: true });
+  }
+}
+
+function checkIssueReviewerRejectedChirho(
+  liveItemChirho: LatinSymbolVisionLiveItemChirho,
+  reviewerChirho: string,
+  expectedMessageChirho: string
+): void {
+  const tempChirho = tempDbPathChirho();
+  try {
+    const argsChirho = issueRecordArgsChirho(
+      tempChirho.dbPathChirho,
+      liveItemChirho,
+      reviewerChirho,
+      "guard issue explanation chirho"
+    );
+    const resultChirho = runCommandChirho(argsChirho);
+    const combinedOutputChirho = `${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`;
+    assertCheckChirho(
+      resultChirho.exitCodeChirho !== 0,
+      `blocked issue reviewer command unexpectedly succeeded: ${commandTextChirho(argsChirho)}`
+    );
+    assertCheckChirho(
+      combinedOutputChirho.includes(expectedMessageChirho),
+      `blocked issue reviewer command failed for the wrong reason: ${combinedOutputChirho}`
+    );
+    assertCheckChirho(
+      reviewRowCountChirho(tempChirho.dbPathChirho) === 0,
+      "blocked issue reviewer command wrote review rows"
+    );
+  } finally {
+    rmSync(tempChirho.dirChirho, { force: true, recursive: true });
+  }
+}
+
 function checkHumanIssueWithoutNotesRejectedChirho(liveItemChirho: LatinSymbolVisionLiveItemChirho): void {
   const tempChirho = tempDbPathChirho();
   try {
@@ -253,6 +312,26 @@ function checkHumanAcceptedCleanStillWritesChirho(liveItemChirho: LatinSymbolVis
 function mainChirho(): void {
   const liveItemChirho = firstLivePacketItemChirho();
   checkMachineAcceptedCleanRejectedChirho(liveItemChirho);
+  checkAcceptedCleanReviewerRejectedChirho(
+    liveItemChirho,
+    "human-chirho",
+    "--reviewer must identify the explicit reviewer, not generic human-chirho"
+  );
+  checkAcceptedCleanReviewerRejectedChirho(
+    liveItemChirho,
+    "<explicit-human-reviewer-id-chirho>",
+    "--reviewer must identify the explicit reviewer, not template placeholder <explicit-human-reviewer-id-chirho>"
+  );
+  checkIssueReviewerRejectedChirho(
+    liveItemChirho,
+    "human-chirho",
+    "--reviewer must identify the explicit reviewer, not generic human-chirho"
+  );
+  checkIssueReviewerRejectedChirho(
+    liveItemChirho,
+    "<explicit-human-reviewer-id-chirho>",
+    "--reviewer must identify the explicit reviewer, not template placeholder <explicit-human-reviewer-id-chirho>"
+  );
   checkHumanIssueWithoutNotesRejectedChirho(liveItemChirho);
   checkHumanIssuePlaceholderNotesRejectedChirho(liveItemChirho);
   checkHumanIssueWithNotesStillWritesChirho(liveItemChirho);
