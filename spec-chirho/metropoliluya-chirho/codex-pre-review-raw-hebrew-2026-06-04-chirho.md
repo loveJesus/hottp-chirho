@@ -84,6 +84,13 @@ span was surfaced.
   - Visual precheck: S1 is boxed after the preceding `Ta` context and before French `mais`; S3 is boxed before French `qui pré-`. The red boxes do not visibly swallow neighboring French/Latin text. Treat S1 as a real human review target because the direct OCR read `חהקת` is too weak for the exact letters/marks.
   - Human check still needed: S1 exact consonants and pointing, especially the opening kaf/dagesh and middle consonants; S3 exact vowels/marks and letter confirmation.
 
+- `vol 2 p149 L26 S3`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A149%3A26%3A3`
+  - Live text: `סור`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane.
+  - Visual precheck: the crop cleanly boxes the Hebrew root between French `hifil de` and the following parenthesis; no neighboring French or apparatus sigla appear swallowed by the Hebrew target box. The direct read and token witnesses are strong aids, not certification.
+  - Human check still needed: exact samekh-vav-resh letters, whether the bare consonantal form is what the print intends here, and whether the following parenthesis stays outside the Hebrew span.
+
 - `vol 2 p150 L7 S1/S3`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A7%3A1`
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A7%3A3`
