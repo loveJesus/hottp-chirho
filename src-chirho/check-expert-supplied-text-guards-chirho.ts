@@ -6,10 +6,15 @@
  *
  * These checks exercise the actual command-line boundary without mutation. They
  * prove generic/machine reviewer attribution is rejected before any target
- * mutation can happen, prove --apply requires the image hashes before target
- * lookup, and, while a blank vision-tier item exists, prove the live dry-run
- * and wrong-role rejection paths still behave as expected.
+ * mutation can happen, prove --apply requires the image hashes and a
+ * well-formed backup before target lookup, and, while a blank vision-tier item
+ * exists, prove the live dry-run and wrong-role rejection paths still behave
+ * as expected.
  */
+
+import { mkdtempSync, rmSync, writeFileSync } from "fs";
+import { tmpdir } from "os";
+import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
@@ -185,6 +190,37 @@ function checkApplyRequiresImageHashesBeforeTargetChirho(): void {
   );
 }
 
+function checkMalformedBackupRejectedBeforeTargetChirho(): void {
+  const tempDirChirho = mkdtempSync(join(tmpdir(), "expert-supplied-backup-guard-chirho-"));
+  const backupPathChirho = join(tempDirChirho, "schema-less-backup-chirho.json");
+  try {
+    writeFileSync(backupPathChirho, "{\"recordsChirho\":[]}\n", "utf8");
+    const argsChirho = applyArgsChirho([
+      "--id-chirho=v0-p0000-l000-s0",
+      "--supplied-text-chirho=x",
+      "--reviewer-chirho=dr-expert-supplied-guard-check-chirho",
+      "--reviewer-role-chirho=Syriac reader",
+      "--rationale-chirho=certification guard malformed backup check only",
+      "--expected-source-sha256-chirho=0000000000000000000000000000000000000000000000000000000000000000",
+      "--expected-packet-sha256-chirho=0000000000000000000000000000000000000000000000000000000000000000",
+      `--backup-chirho=${backupPathChirho}`,
+      "--apply",
+    ]);
+    const resultChirho = runCommandChirho(argsChirho);
+    const combinedOutputChirho = `${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`;
+    assertCommandChirho(
+      resultChirho.exitCodeChirho !== 0,
+      `malformed-backup apply command unexpectedly succeeded: ${commandTextChirho(argsChirho)}`
+    );
+    assertCommandChirho(
+      combinedOutputChirho.includes("unsupported backup schemaVersionChirho undefined"),
+      `malformed-backup apply command failed for the wrong reason: ${combinedOutputChirho}`
+    );
+  } finally {
+    rmSync(tempDirChirho, { recursive: true, force: true });
+  }
+}
+
 function blankLiveItemChirho(): VisionTierExpertLiveItemChirho | null {
   return (
     visionTierExpertLiveItemsChirho().find((itemChirho) => {
@@ -302,6 +338,7 @@ function mainChirho(): void {
   checkPlaceholderReviewerRejectedBeforeTargetChirho();
   checkPlaceholderRationaleRejectedBeforeTargetChirho();
   checkApplyRequiresImageHashesBeforeTargetChirho();
+  checkMalformedBackupRejectedBeforeTargetChirho();
   const nonblankItemChirho = nonblankLiveItemChirho();
   if (nonblankItemChirho === null) {
     console.log(`[${MODULE_CHIRHO}] no nonblank explicit-span vision-tier item is currently live; skipped no-clobber check`);

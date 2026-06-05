@@ -144,6 +144,11 @@ interface ExpertSuppliedTranscriptionsBackupChirho {
   recordsChirho?: ExpertSuppliedTranscriptionRecordChirho[];
 }
 
+interface WritableExpertSuppliedTranscriptionsBackupChirho extends ExpertSuppliedTranscriptionsBackupChirho {
+  schemaVersionChirho: number;
+  recordsChirho: ExpertSuppliedTranscriptionRecordChirho[];
+}
+
 interface ParsedItemIdChirho {
   volumeChirho: number;
   pageChirho: number;
@@ -199,6 +204,18 @@ function optionalSha256ArgChirho(argsChirho: string[], nameChirho: string): stri
     throw new Error(`--${nameChirho} must be a lowercase sha256 hex digest`);
   }
   return valueChirho;
+}
+
+function assertBackupFileWritableChirho(pathChirho: string): WritableExpertSuppliedTranscriptionsBackupChirho | null {
+  if (!existsSync(pathChirho)) return null;
+  const backupChirho = loadJsonChirho<ExpertSuppliedTranscriptionsBackupChirho>(pathChirho);
+  if (backupChirho.schemaVersionChirho !== EXPERT_SUPPLIED_TRANSCRIPTIONS_BACKUP_SCHEMA_VERSION_CHIRHO) {
+    throw new Error(`unsupported backup schemaVersionChirho ${backupChirho.schemaVersionChirho}`);
+  }
+  if (!Array.isArray(backupChirho.recordsChirho)) {
+    throw new Error("backup recordsChirho must be an array");
+  }
+  return backupChirho as WritableExpertSuppliedTranscriptionsBackupChirho;
 }
 
 function parsedItemIdChirho(itemIdChirho: string): ParsedItemIdChirho {
@@ -329,6 +346,10 @@ function parseOptionsChirho(): ApplyOptionsChirho {
   if (applyChirho && expectedPacketSha256Chirho === null) {
     throw new Error("--expected-packet-sha256-chirho is required with --apply");
   }
+  const backupPathChirho = parseArgValueChirho(argsChirho, "backup-chirho") ?? DEFAULT_BACKUP_PATH_CHIRHO;
+  if (applyChirho) {
+    assertBackupFileWritableChirho(backupPathChirho);
+  }
   return {
     applyChirho,
     itemIdChirho: nonEmptyArgChirho(argsChirho, "id-chirho"),
@@ -336,7 +357,7 @@ function parseOptionsChirho(): ApplyOptionsChirho {
     reviewerChirho,
     reviewerRoleChirho: nonEmptyArgChirho(argsChirho, "reviewer-role-chirho"),
     rationaleChirho,
-    backupPathChirho: parseArgValueChirho(argsChirho, "backup-chirho") ?? DEFAULT_BACKUP_PATH_CHIRHO,
+    backupPathChirho,
     expectedSourceSha256Chirho,
     expectedPacketSha256Chirho,
   };
@@ -365,20 +386,14 @@ function writeBackupRecordChirho(
   recordChirho: ExpertSuppliedTranscriptionRecordChirho,
   generatedAtChirho: string
 ): void {
-  const backupChirho = existsSync(pathChirho)
-    ? loadJsonChirho<ExpertSuppliedTranscriptionsBackupChirho>(pathChirho)
-    : {
+  const backupChirho =
+    assertBackupFileWritableChirho(pathChirho) ??
+    {
         john316Chirho:
           "For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16",
         schemaVersionChirho: EXPERT_SUPPLIED_TRANSCRIPTIONS_BACKUP_SCHEMA_VERSION_CHIRHO,
         recordsChirho: [],
       };
-  if (backupChirho.schemaVersionChirho !== EXPERT_SUPPLIED_TRANSCRIPTIONS_BACKUP_SCHEMA_VERSION_CHIRHO) {
-    throw new Error(`unsupported backup schemaVersionChirho ${backupChirho.schemaVersionChirho}`);
-  }
-  if (!Array.isArray(backupChirho.recordsChirho)) {
-    throw new Error("backup recordsChirho must be an array");
-  }
   const recordsChirho = backupChirho.recordsChirho.filter(
     (candidateChirho) => candidateChirho.itemIdChirho !== recordChirho.itemIdChirho
   );
