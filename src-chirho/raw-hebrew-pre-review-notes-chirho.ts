@@ -17,15 +17,39 @@ export function rawHebrewPreReviewNoteKeyChirho(
   return `${volumeChirho}:${pageChirho}:${lineIndexChirho}:${segmentIndexChirho}`;
 }
 
-export function rawHebrewPreReviewNoteHeadingKeyChirho(lineChirho: string): string | null {
-  const matchChirho = lineChirho.match(/^- `vol (\d+) p(\d+) L(\d+) S(\d+)`:/);
+export function rawHebrewPreReviewNoteHeadingKeysChirho(lineChirho: string): string[] | null {
+  const matchChirho = lineChirho.match(/^- `vol (\d+) p(\d+) L(\d+) S([0-9S/,]+)`:/);
   if (matchChirho === null) return null;
-  return rawHebrewPreReviewNoteKeyChirho(
-    Number.parseInt(matchChirho[1]!, 10),
-    Number.parseInt(matchChirho[2]!, 10),
-    Number.parseInt(matchChirho[3]!, 10),
-    Number.parseInt(matchChirho[4]!, 10)
+  const volumeChirho = Number.parseInt(matchChirho[1]!, 10);
+  const pageChirho = Number.parseInt(matchChirho[2]!, 10);
+  const lineIndexChirho = Number.parseInt(matchChirho[3]!, 10);
+  const segmentIndexesChirho = matchChirho[4]!
+    .split(/[\/,]/)
+    .map((segmentChirho) => Number.parseInt(segmentChirho.replace(/^S/, ""), 10))
+    .filter((segmentChirho) => Number.isInteger(segmentChirho));
+  if (segmentIndexesChirho.length === 0) return null;
+  return [...new Set(segmentIndexesChirho)].map((segmentIndexChirho) =>
+    rawHebrewPreReviewNoteKeyChirho(
+      volumeChirho,
+      pageChirho,
+      lineIndexChirho,
+      segmentIndexChirho
+    )
   );
+}
+
+export function rawHebrewPreReviewNoteHeadingKeyChirho(lineChirho: string): string | null {
+  return rawHebrewPreReviewNoteHeadingKeysChirho(lineChirho)?.[0] ?? null;
+}
+
+function rawHebrewPreReviewSetNotesChirho(
+  notesChirho: Map<string, string>,
+  keysChirho: string[],
+  noteChirho: string
+): void {
+  for (const keyChirho of keysChirho) {
+    notesChirho.set(keyChirho, noteChirho);
+  }
 }
 
 export function rawHebrewPreReviewNoteTextLineChirho(lineChirho: string): string | null {
@@ -39,28 +63,28 @@ export function rawHebrewPreReviewNoteTextLineChirho(lineChirho: string): string
 export function parseRawHebrewPreReviewNotesChirho(textChirho: string): Map<string, string> {
   const notesChirho = new Map<string, string>();
   const linesChirho = textChirho.split(/\r?\n/);
-  let currentKeyChirho: string | null = null;
+  let currentKeysChirho: string[] | null = null;
   let currentLinesChirho: string[] = [];
   const flushChirho = (): void => {
-    if (currentKeyChirho === null) return;
+    if (currentKeysChirho === null) return;
     const noteChirho = currentLinesChirho
       .map((lineChirho) => rawHebrewPreReviewNoteTextLineChirho(lineChirho))
       .filter((lineChirho): lineChirho is string => lineChirho !== null && lineChirho.length > 0)
       .join("\n");
-    if (noteChirho.length > 0) notesChirho.set(currentKeyChirho, noteChirho);
+    if (noteChirho.length > 0) rawHebrewPreReviewSetNotesChirho(notesChirho, currentKeysChirho, noteChirho);
     currentLinesChirho = [];
   };
   for (const lineChirho of linesChirho) {
-    const headingKeyChirho = rawHebrewPreReviewNoteHeadingKeyChirho(lineChirho);
-    if (headingKeyChirho !== null) {
+    const headingKeysChirho = rawHebrewPreReviewNoteHeadingKeysChirho(lineChirho);
+    if (headingKeysChirho !== null) {
       flushChirho();
-      currentKeyChirho = headingKeyChirho;
+      currentKeysChirho = headingKeysChirho;
       continue;
     }
-    if (currentKeyChirho === null) continue;
+    if (currentKeysChirho === null) continue;
     if (lineChirho.startsWith("## ")) {
       flushChirho();
-      currentKeyChirho = null;
+      currentKeysChirho = null;
       continue;
     }
     currentLinesChirho.push(lineChirho);
