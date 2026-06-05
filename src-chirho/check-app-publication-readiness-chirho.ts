@@ -16,7 +16,7 @@
  */
 
 import { readFileSync } from "fs";
-import { join } from "path";
+import { join, relative } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
@@ -27,6 +27,30 @@ const STATUS_JSON_PATH_CHIRHO = join(
   "workspace-chirho",
   "certification-status-chirho",
   "status-chirho.json"
+);
+const RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "raw-hebrew-human-certification-quickstart-2026-06-05-chirho.md"
+);
+const LATIN_SYMBOL_HUMAN_REVIEW_QUICKSTART_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "latin-symbol-human-review-quickstart-2026-06-05-chirho.md"
+);
+const VISION_TIER_EXPERT_CONFIRMATION_QUICKSTART_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "vision-tier-expert-confirmation-quickstart-2026-06-05-chirho.md"
+);
+const HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "hallelujah-review-session-guide-2026-06-05-chirho.md"
 );
 
 interface CommandChirho {
@@ -96,6 +120,11 @@ function reviewStartLinkChirho(statusChirho: CertificationStatusSummaryChirho, k
   return typeof linkChirho === "string" && linkChirho.length > 0 ? linkChirho : null;
 }
 
+function relativeProjectPathChirho(pathChirho: string): string {
+  const relativePathChirho = relative(PROJECT_ROOT_CHIRHO, pathChirho).replaceAll("\\", "/");
+  return relativePathChirho.startsWith("..") ? pathChirho : relativePathChirho;
+}
+
 function printNextReviewLinksChirho(statusChirho: CertificationStatusSummaryChirho): void {
   const linksChirho: Array<[string, string | null]> = [
     ["Raw Hebrew primary", reviewStartLinkChirho(statusChirho, "rawHebrewVols35UnvalidatedChirho")],
@@ -110,6 +139,19 @@ function printNextReviewLinksChirho(statusChirho: CertificationStatusSummaryChir
   console.log(`[${MODULE_CHIRHO}] Next review links:`);
   for (const [labelChirho, linkChirho] of linksChirho) {
     console.log(`- ${labelChirho}: ${linkChirho}`);
+  }
+}
+
+function printReviewGuidePathsChirho(): void {
+  const guidePathsChirho: Array<[string, string]> = [
+    ["Raw Hebrew certification quickstart", RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO],
+    ["Latin/symbol proofing quickstart", LATIN_SYMBOL_HUMAN_REVIEW_QUICKSTART_PATH_CHIRHO],
+    ["Expert confirmation quickstart", VISION_TIER_EXPERT_CONFIRMATION_QUICKSTART_PATH_CHIRHO],
+    ["Hallelujah review session guide", HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO],
+  ];
+  console.log(`[${MODULE_CHIRHO}] Review guides:`);
+  for (const [labelChirho, pathChirho] of guidePathsChirho) {
+    console.log(`- ${labelChirho}: ${relativeProjectPathChirho(pathChirho)}`);
   }
 }
 
@@ -131,6 +173,7 @@ function printReadinessSummaryChirho(statusChirho: CertificationStatusSummaryChi
       console.log(`- ${itemChirho}`);
     }
     printNextReviewLinksChirho(statusChirho);
+    printReviewGuidePathsChirho();
   }
 }
 
