@@ -6045,6 +6045,52 @@ function attributionCleanupRowLinesChirho(rowChirho: GenericHumanValidationRevie
   ];
 }
 
+function attributionCleanupBatchCommandChirho(
+  idsChirho: number[],
+  expectedLiveTextHashArgsChirho: string[]
+): { dryRunCommandChirho: string; applyCommandChirho: string } {
+  const validationIdArgsChirho = idsChirho.map((idChirho) => `--validation-id-chirho=${idChirho}`);
+  const baseCommandPartsChirho = [
+    "bun run reattribute-pass-c-human-validations-chirho --",
+    ...validationIdArgsChirho,
+    "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
+    "--rationale-chirho='<why every unchanged selected row is attributable to that reviewer>'",
+    ...expectedLiveTextHashArgsChirho,
+  ];
+  return {
+    dryRunCommandChirho: baseCommandPartsChirho.join(" "),
+    applyCommandChirho: [...baseCommandPartsChirho, "--apply-chirho"].join(" "),
+  };
+}
+
+function attributionCleanupBatchLinesChirho(statusChirho: CertificationStatusChirho): string[] {
+  const groupsChirho = statusChirho.humanValidationDbChirho.genericReviewerRowGroupsChirho
+    .filter((groupChirho) => groupChirho.liveTextMatchIdsChirho.length > 1);
+  const bodyLinesChirho = groupsChirho.length === 0
+    ? ["- No unchanged-live-text exact-ID batch groups currently have more than one row."]
+    : [
+        "- Use these only when every selected unchanged row is genuinely attributable to the same explicit human reviewer.",
+        "- Changed or unchecked rows are excluded from these commands; use Attribution re-review for them.",
+        ...groupsChirho.flatMap((groupChirho) => {
+          const { dryRunCommandChirho, applyCommandChirho } = attributionCleanupBatchCommandChirho(
+            groupChirho.liveTextMatchIdsChirho,
+            groupChirho.liveTextMatchExpectedLiveTextHashArgsChirho
+          );
+          return [
+            `- Applied ${groupChirho.appliedAtChirho ?? "not-applied-chirho"}; current reviewer ${markdownCodeSpanChirho(groupChirho.reviewerChirho)}; unchanged ids ${groupChirho.liveTextMatchIdsChirho.join(", ")}; excluded changed ids ${groupChirho.liveTextMismatchIdsChirho.join(", ") || "none"}; excluded unchecked ids ${groupChirho.liveTextUnknownIdsChirho.join(", ") || "none"}`,
+            `  - Unchanged batch dry-run: ${markdownCodeSpanChirho(dryRunCommandChirho)}`,
+            `  - Unchanged batch apply: ${markdownCodeSpanChirho(applyCommandChirho)}`,
+          ];
+        }),
+      ];
+  return [
+    "## Unchanged-Live-Text Batch Commands",
+    "",
+    ...bodyLinesChirho,
+    "",
+  ];
+}
+
 function attributionCleanupHandoffMarkdownChirho(statusChirho: CertificationStatusChirho): string {
   const rowsChirho = statusChirho.humanValidationDbChirho.genericReviewerRowDetailsChirho;
   const rowLinesChirho = rowsChirho.length === 0
@@ -6071,6 +6117,7 @@ function attributionCleanupHandoffMarkdownChirho(statusChirho: CertificationStat
     "- Changed-live-text rows should be re-reviewed in the Attribution re-review lane. The generated commands intentionally omit `--allow-live-text-changed-chirho`.",
     "- Placeholder reviewer/rationale values are rejected by the command; this file is a queue, not a certification artifact.",
     "",
+    ...attributionCleanupBatchLinesChirho(statusChirho),
     ...rowLinesChirho,
   ].join("\n");
 }
