@@ -33,7 +33,7 @@ The boxed region is the current Syriac span geometry: x `767..950` in the 1285px
 
 ## Live Reviewer Display Check
 
-Before using the live reviewer URL, confirm the page title is `Expert Non-Latin Review`, the page shows a `Target crop` panel above `Printed line`, and the red target box covers x `767..950` of the 1285px line. If the page only starts at `Printed line` or the Syriac is not visibly boxed, hard-refresh the browser tab or restart the stale review server before transcribing.
+Before using the live reviewer URL, confirm the page title is `Expert Non-Latin Review`, the page shows a `Target crop` panel above `Printed line`, and the red target box covers x `767..950` of the 1285px line. If the page title is still `Vision-Tier Expert Review`, the page only starts at `Printed line`, or the Syriac is not visibly boxed, hard-refresh the browser tab or restart the stale review server before transcribing.
 
 ## Current Live Line
 
