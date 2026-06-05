@@ -26,6 +26,7 @@ import { reviewServerStartupHealthChirho } from "./review-server-health-chirho.t
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 import {
   EXPERT_MARKDOWN_PATH_PAIRS_CHIRHO,
+  fileSha256Chirho,
   packetMarkdownPathDriftsChirho,
 } from "./packet-image-fingerprint-chirho.ts";
 import {
@@ -88,6 +89,8 @@ interface ExpertReviewItemChirho extends ExpertPackItemChirho {
   issueReportedChirho: boolean;
   openIssueChirho: ExpertOpenIssueChirho | null;
   textIsBlankChirho: boolean;
+  sourceSha256Chirho: string;
+  packetSha256Chirho: string;
 }
 
 interface ConfirmRequestChirho {
@@ -500,6 +503,8 @@ function reviewItemsForStateChirho(
     issueReportedChirho: reviewedIssueIdsChirho.has(itemChirho.idChirho),
     openIssueChirho: openIssueDetailsByIdChirho.get(itemChirho.idChirho) ?? null,
     textIsBlankChirho: itemChirho.currentTextChirho.trim().length === 0,
+    sourceSha256Chirho: fileSha256Chirho(itemChirho.sourcePathChirho),
+    packetSha256Chirho: fileSha256Chirho(itemChirho.packetPathChirho),
   }));
 }
 
@@ -889,7 +894,9 @@ function htmlChirho(): string {
         "--supplied-text-chirho='<exact printed text>'",
         "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
         "--reviewer-role-chirho=" + shellSingleQuoteChirho(itemChirho.reviewerChirho),
-        "--rationale-chirho='<why this exact text is supplied>'"
+        "--rationale-chirho='<why this exact text is supplied>'",
+        "--expected-source-sha256-chirho=" + itemChirho.sourceSha256Chirho,
+        "--expected-packet-sha256-chirho=" + itemChirho.packetSha256Chirho
       ];
       if (applyChirho) commandPartsChirho.push("--apply");
       return commandPartsChirho.join(" ");

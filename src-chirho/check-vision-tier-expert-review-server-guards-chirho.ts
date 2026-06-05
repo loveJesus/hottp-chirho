@@ -28,6 +28,11 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Greek final sigma",
   "Hebrew letter alef",
   "Dagesh/mappiq/shuruk",
+  "Dry-run after exact script-reader transcription",
+  "Apply after dry-run verification",
+  "bun run apply-expert-supplied-vision-text-chirho",
+  "--expected-source-sha256-chirho",
+  "--expected-packet-sha256-chirho",
 ];
 
 interface ExpertReviewStateItemChirho {
