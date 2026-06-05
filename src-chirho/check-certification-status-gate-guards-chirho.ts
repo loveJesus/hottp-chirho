@@ -39,6 +39,11 @@ interface CertificationStatusForGuardChirho {
   artifactsChirho?: {
     expertSuppliedVisionTextBackupShapeOkChirho?: boolean;
   };
+  visionTierExpertConfirmationPolicyChirho?: {
+    policyFileShapeOkChirho?: boolean;
+    shapeErrorsChirho?: string[];
+    validConfirmedPolicyItemCountChirho?: number;
+  };
   structuralChirho?: {
     blankVisionTierHandoffsChirho?: Array<{
       handoffDocumentExistsChirho?: boolean;
@@ -244,10 +249,50 @@ function writeGenericExpertSuppliedBackupFixtureChirho(pathChirho: string): void
   );
 }
 
+function writeBlankConfirmedExpertPolicyFixtureChirho(pathChirho: string): void {
+  writeFileSync(
+    pathChirho,
+    `${JSON.stringify(
+      {
+        john316Chirho:
+          "For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16",
+        schemaVersionChirho: 1,
+        generatedAtChirho: "2026-06-04T00:00:00.000Z",
+        policiesChirho: [
+          {
+            policyIdChirho: "expert-confirm-blank-disposable-chirho",
+            decisionChirho: "confirmed-expert-chirho",
+            reviewerChirho: "dr-syriac-reader-human-reviewer-chirho",
+            reviewerRoleChirho: "Syriac reader",
+            confirmedAtChirho: "2026-06-04T00:00:00.000Z",
+            certifyExactChirho: true,
+            rationaleChirho: "disposable status gate guard should reject confirming blank expert text",
+            scopeChirho: "id=v3-p0151-l010-s3; script=syriac-chirho; visionSource=explicit-span-chirho",
+            itemCountChirho: 1,
+            itemsChirho: [
+              {
+                itemIdChirho: "v3-p0151-l010-s3",
+                scriptChirho: "syriac-chirho",
+                visionSourceChirho: "explicit-span-chirho",
+                currentTextChirho: "",
+                currentTextHashChirho: hashTextChirho(""),
+              },
+            ],
+          },
+        ],
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+}
+
 function runStatusChirho(
   dbPathChirho: string,
   outDirChirho: string,
   expertSuppliedBackupPathChirho: string,
+  expertConfirmationPolicyPathChirho: string,
   syriacBlankHandoffDocumentPathChirho: string,
   syriacBlankHandoffCropPathChirho: string
 ): void {
@@ -259,6 +304,7 @@ function runStatusChirho(
     `--db=${dbPathChirho}`,
     `--out-dir=${outDirChirho}`,
     `--expert-supplied-backup-chirho=${expertSuppliedBackupPathChirho}`,
+    `--expert-confirmation-policy-chirho=${expertConfirmationPolicyPathChirho}`,
     `--syriac-blank-handoff-document-chirho=${syriacBlankHandoffDocumentPathChirho}`,
     `--syriac-blank-handoff-crop-chirho=${syriacBlankHandoffCropPathChirho}`,
   ];
@@ -287,6 +333,7 @@ function mainChirho(): void {
   const outDirChirho = join(tempDirChirho, "status-output-chirho");
   const staleOutDirChirho = join(tempDirChirho, "stale-status-output-chirho");
   const expertSuppliedBackupPathChirho = join(tempDirChirho, "expert-supplied-backup-chirho.json");
+  const blankConfirmedExpertPolicyPathChirho = join(tempDirChirho, "blank-confirmed-expert-policy-chirho.json");
   const missingSyriacBlankHandoffDocumentPathChirho = join(
     tempDirChirho,
     "missing-syriac-blank-handoff-document-chirho.md"
@@ -308,6 +355,7 @@ function mainChirho(): void {
   try {
     copyProgressDbSnapshotChirho(dbPathChirho);
     writeGenericExpertSuppliedBackupFixtureChirho(expertSuppliedBackupPathChirho);
+    writeBlankConfirmedExpertPolicyFixtureChirho(blankConfirmedExpertPolicyPathChirho);
     writeFileSync(
       staleSyriacBlankHandoffDocumentPathChirho,
       [
@@ -334,6 +382,7 @@ function mainChirho(): void {
       dbPathChirho,
       outDirChirho,
       expertSuppliedBackupPathChirho,
+      blankConfirmedExpertPolicyPathChirho,
       missingSyriacBlankHandoffDocumentPathChirho,
       missingSyriacBlankHandoffCropPathChirho
     );
@@ -402,6 +451,26 @@ function mainChirho(): void {
       "generic expert-supplied backup status did not add the malformed-backup remaining-work blocker"
     );
     assertCheckChirho(
+      statusChirho.visionTierExpertConfirmationPolicyChirho?.policyFileShapeOkChirho === false,
+      "blank confirmed expert policy status did not fail shape validation"
+    );
+    assertCheckChirho(
+      statusChirho.visionTierExpertConfirmationPolicyChirho?.validConfirmedPolicyItemCountChirho === 0,
+      "blank confirmed expert policy status counted a valid confirmation"
+    );
+    assertCheckChirho(
+      (statusChirho.visionTierExpertConfirmationPolicyChirho?.shapeErrorsChirho ?? []).some((errorChirho) =>
+        errorChirho.includes("confirmed policy cannot certify blank currentTextChirho")
+      ),
+      "blank confirmed expert policy status did not report the blank-text shape error"
+    );
+    assertCheckChirho(
+      (statusChirho.remainingWorkChirho ?? []).some((itemChirho) =>
+        itemChirho.includes("vision-tier expert confirmation policy is malformed")
+      ),
+      "blank confirmed expert policy status did not add the malformed-policy remaining-work blocker"
+    );
+    assertCheckChirho(
       (statusChirho.structuralChirho?.blankVisionTierHandoffsChirho ?? []).some(
         (handoffChirho) => handoffChirho.handoffDocumentExistsChirho === false
       ),
@@ -429,6 +498,7 @@ function mainChirho(): void {
       dbPathChirho,
       staleOutDirChirho,
       expertSuppliedBackupPathChirho,
+      blankConfirmedExpertPolicyPathChirho,
       staleSyriacBlankHandoffDocumentPathChirho,
       presentSyriacBlankHandoffCropPathChirho
     );
@@ -491,7 +561,7 @@ function mainChirho(): void {
         (latinItemIdChirho === null ? "" : ` and Latin/symbol item ${latinItemIdChirho}`) +
         (staleLatinItemIdChirho === null ? "" : `; stale Latin/symbol item ${staleLatinItemIdChirho}`) +
         (invalidLatinItemIdChirho === null ? "" : `; invalid Latin/symbol item ${invalidLatinItemIdChirho}`) +
-        "; generic expert-supplied backup blocked; blank Syriac handoff artifacts blocked"
+        "; generic expert-supplied backup blocked; blank expert confirmation policy blocked; blank Syriac handoff artifacts blocked"
     );
   } finally {
     rmSync(tempDirChirho, { recursive: true, force: true });

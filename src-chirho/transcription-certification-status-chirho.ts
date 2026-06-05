@@ -2895,6 +2895,7 @@ function validLatinSymbolReviewIdsChirho(
 
 interface BuildStatusOptionsChirho {
   expertSuppliedVisionTextBackupPathChirho?: string;
+  visionTierExpertConfirmationPolicyPathChirho?: string;
   syriacBlankTranscriptionHandoffPathChirho?: string;
   syriacBlankTranscriptionHandoffCropPathChirho?: string;
 }
@@ -2902,6 +2903,8 @@ interface BuildStatusOptionsChirho {
 function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptionsChirho = {}): CertificationStatusChirho {
   const expertSuppliedVisionTextBackupPathChirho =
     optionsChirho.expertSuppliedVisionTextBackupPathChirho ?? EXPERT_SUPPLIED_VISION_TEXT_BACKUP_PATH_CHIRHO;
+  const visionTierExpertConfirmationPolicyPathChirho =
+    optionsChirho.visionTierExpertConfirmationPolicyPathChirho ?? VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO;
   const syriacBlankTranscriptionHandoffPathChirho =
     optionsChirho.syriacBlankTranscriptionHandoffPathChirho ?? SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO;
   const syriacBlankTranscriptionHandoffCropPathChirho =
@@ -2913,7 +2916,7 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
   const passCHumanValidationBackupExistsChirho = existsSync(PASS_C_HUMAN_VALIDATION_BACKUP_PATH_CHIRHO);
   const expertPackManifestExistsChirho = existsSync(EXPERT_PACK_MANIFEST_PATH_CHIRHO);
   const expertSuppliedVisionTextBackupExistsChirho = existsSync(expertSuppliedVisionTextBackupPathChirho);
-  const visionTierExpertConfirmationPolicyExistsChirho = existsSync(VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO);
+  const visionTierExpertConfirmationPolicyExistsChirho = existsSync(visionTierExpertConfirmationPolicyPathChirho);
   const latinSymbolPackManifestExistsChirho = existsSync(LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO);
   const latinSymbolReviewBackupExistsChirho = existsSync(LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO);
   const latinSymbolAcceptancePolicyExistsChirho = existsSync(LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO);
@@ -2929,7 +2932,9 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     expertSuppliedVisionTextBackupPathChirho,
     {}
   );
-  const visionTierExpertConfirmationFileChirho = readVisionTierExpertConfirmationFileChirho();
+  const visionTierExpertConfirmationFileChirho = readVisionTierExpertConfirmationFileChirho(
+    visionTierExpertConfirmationPolicyPathChirho
+  );
   const latinSymbolManifestChirho = readJsonFileChirho<LatinSymbolPackManifestChirho>(
     LATIN_SYMBOL_PACK_MANIFEST_PATH_CHIRHO,
     {}
@@ -4809,9 +4814,14 @@ function mainChirho(): void {
     argsChirho,
     "syriac-blank-handoff-crop-chirho"
   );
+  const visionTierExpertConfirmationPolicyPathChirho = parseArgValueChirho(
+    argsChirho,
+    "expert-confirmation-policy-chirho"
+  );
   mkdirSync(outDirChirho, { recursive: true });
   const statusChirho = buildStatusChirho(dbPathChirho, {
     expertSuppliedVisionTextBackupPathChirho,
+    visionTierExpertConfirmationPolicyPathChirho,
     syriacBlankTranscriptionHandoffPathChirho,
     syriacBlankTranscriptionHandoffCropPathChirho,
   });
