@@ -29,6 +29,7 @@ const STATUS_LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
 ];
 const STATUS_BACKTICK_RE_CHIRHO = /`([^`\n]+)`/g;
 const REVIEW_SERVER_PORTS_CHIRHO = new Set([8766, 8770, 8771]);
+const REVIEW_VOLUMES_CHIRHO = [1, 2, 3, 4, 5] as const;
 
 interface CertificationStatusOutputChirho {
   generatedAtChirho?: string;
@@ -462,6 +463,34 @@ function reviewStartSuffixChirho(linksChirho: Record<string, unknown>, keyChirho
   return linkChirho === null ? "" : `; first pending: ${linkChirho}`;
 }
 
+function reviewVolumeValueChirho(volumeChirho: number): string {
+  return `vol-${volumeChirho}-chirho`;
+}
+
+function reviewVolumeLinkKeyChirho(prefixChirho: string, volumeChirho: number): string {
+  return `${prefixChirho}Vol${volumeChirho}Chirho`;
+}
+
+function assertVolumeLaneMarkdownCoverageChirho(
+  markdownChirho: string,
+  linksChirho: Record<string, unknown>,
+  labelChirho: string,
+  baseUrlChirho: string,
+  countsChirho: Record<string, number>,
+  linkPrefixChirho: string,
+  unitChirho: string
+): void {
+  for (const volumeChirho of REVIEW_VOLUMES_CHIRHO) {
+    const countChirho = countsChirho[reviewVolumeValueChirho(volumeChirho)] ?? 0;
+    if (countChirho === 0) continue;
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `- ${labelChirho} vol ${volumeChirho} lane: ${baseUrlChirho}?volume-chirho=${reviewVolumeValueChirho(volumeChirho)} (${countChirho} pending ${unitChirho}${reviewStartSuffixChirho(linksChirho, reviewVolumeLinkKeyChirho(linkPrefixChirho, volumeChirho))})`,
+      `${labelChirho} vol ${volumeChirho} lane`
+    );
+  }
+}
+
 function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, statusChirho: CertificationStatusOutputChirho): void {
   const rawChirho = statusChirho.rawHebrewChirho;
   const latinChirho = statusChirho.latinSymbolVisionChirho;
@@ -469,6 +498,7 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
   const humanDbChirho = statusChirho.humanValidationDbChirho;
   const structuralChirho = statusChirho.structuralChirho;
   const linksChirho = objectRecordChirho(statusChirho.reviewStartLinksChirho, "reviewStartLinksChirho");
+  const rawTriageChirho = objectRecordChirho(objectRecordChirho(rawChirho, "rawHebrewChirho").triageChirho, "rawHebrewChirho.triageChirho");
   const rawVols35UnvalidatedCountChirho = countMapValueChirho(
     rawChirho,
     "livePendingValidationTierCountsChirho",
@@ -524,6 +554,9 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     expertPendingNonblankScriptChirho("syriac-chirho") + expertPendingNonblankScriptChirho("arabic-chirho");
   const externalExpertBlankCountChirho =
     expertPendingBlankScriptChirho("syriac-chirho") + expertPendingBlankScriptChirho("arabic-chirho");
+  const rawVolumeCountsChirho = countMapFieldChirho(rawChirho, "livePendingVolumeCountsChirho", "rawHebrewChirho");
+  const latinVolumeCountsChirho = countMapFieldChirho(latinChirho, "pendingDecisionVolumeCountsChirho", "latinSymbolVisionChirho");
+  const expertVolumeCountsChirho = countMapFieldChirho(expertChirho, "pendingVolumeCountsChirho", "visionTierChirho");
 
   assertMarkdownContainsChirho(markdownChirho, "## Review Entry Points", "review entry heading");
   assertMarkdownContainsChirho(
@@ -570,6 +603,35 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     markdownChirho,
     `- Raw Hebrew all-token spot-check lane: http://localhost:8766/?validation-status-chirho=all-token-validated-chirho&tier-chirho=spot-check-chirho (${rawSpotCheckCountChirho} pending of ${rawSpotCheckCountChirho} report span(s)${reviewStartSuffixChirho(linksChirho, "rawHebrewSpotCheckChirho")})`,
     "raw Hebrew spot-check lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Raw Hebrew low-confidence lane: http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho (${numberFieldChirho(rawTriageChirho, "lowConfidenceItemCountChirho", "rawHebrewChirho.triageChirho")} pending attention span(s)${reviewStartSuffixChirho(linksChirho, "rawHebrewLowConfidenceChirho")})`,
+    "raw Hebrew low-confidence lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Raw Hebrew multi-token lane: http://localhost:8766/?attention-chirho=multi-token-chirho (${numberFieldChirho(rawTriageChirho, "multiTokenItemCountChirho", "rawHebrewChirho.triageChirho")} pending attention span(s)${reviewStartSuffixChirho(linksChirho, "rawHebrewMultiTokenChirho")})`,
+    "raw Hebrew multi-token lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Raw Hebrew delimiter/damaged-notation lane: http://localhost:8766/?attention-chirho=delimiter-notation-chirho (${numberFieldChirho(rawTriageChirho, "delimiterNotationItemCountChirho", "rawHebrewChirho.triageChirho")} pending attention span(s)${reviewStartSuffixChirho(linksChirho, "rawHebrewDelimiterNotationChirho")})`,
+    "raw Hebrew delimiter/damaged-notation lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Raw Hebrew no-direct-read lane: http://localhost:8766/?attention-chirho=no-direct-read-chirho (${numberFieldChirho(rawTriageChirho, "noDirectReadItemCountChirho", "rawHebrewChirho.triageChirho")} pending attention span(s)${reviewStartSuffixChirho(linksChirho, "rawHebrewNoDirectReadChirho")})`,
+    "raw Hebrew no-direct-read lane"
+  );
+  assertVolumeLaneMarkdownCoverageChirho(
+    markdownChirho,
+    linksChirho,
+    "Raw Hebrew",
+    "http://localhost:8766/",
+    rawVolumeCountsChirho,
+    "rawHebrewChirho",
+    "report span(s)"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
@@ -621,6 +683,15 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     `- Latin/symbol nontrivial-symbol lane: http://localhost:8770/?script-chirho=symbol-chirho&symbol-risk-chirho=nontrivial-symbol-chirho (${numberFieldChirho(latinChirho, "pendingNontrivialSymbolItemCountChirho", "latinSymbolVisionChirho")} pending of ${latinNontrivialOnlyCountChirho} item(s)${reviewStartSuffixChirho(linksChirho, "latinSymbolNontrivialSymbolChirho")})`,
     "Latin/symbol nontrivial-symbol lane"
   );
+  assertVolumeLaneMarkdownCoverageChirho(
+    markdownChirho,
+    linksChirho,
+    "Latin/symbol",
+    "http://localhost:8770/",
+    latinVolumeCountsChirho,
+    "latinSymbolChirho",
+    "decision(s)"
+  );
   assertMarkdownContainsChirho(markdownChirho, "- Latin/symbol pending counts subtract accepted-clean reviews and accepted explicit policies; open issue reviews keep items pending.", "Latin/symbol pending-count note");
   assertMarkdownContainsChirho(
     markdownChirho,
@@ -632,6 +703,11 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     markdownChirho,
     `- Expert non-Latin live reviewer: http://localhost:8771/ (${numberFieldChirho(expertChirho, "remainingConfirmationCountChirho", "visionTierChirho")} remaining confirmation(s); command: \`bun run vision-tier-expert-review-chirho\`${reviewStartSuffixChirho(linksChirho, "expertAllChirho")})`,
     "expert live reviewer entry"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Expert non-Latin has-text lane: http://localhost:8771/?text-state-chirho=nonblank-chirho (${numberFieldChirho(expertChirho, "pendingNonblankTextItemCountChirho", "visionTierChirho")} pending confirmation(s) with current text${reviewStartSuffixChirho(linksChirho, "expertNonblankChirho")})`,
+    "expert has-text lane"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
@@ -660,6 +736,16 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
   );
   assertMarkdownContainsChirho(
     markdownChirho,
+    `- Expert Syriac reader lane: http://localhost:8771/?script-chirho=syriac-chirho (${expertPendingScriptChirho("syriac-chirho")} pending of ${expertScriptTotalChirho("syriac-chirho")} item(s)${reviewStartSuffixChirho(linksChirho, "expertSyriacChirho")})`,
+    "expert Syriac lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Expert Syriac reader has-text lane: http://localhost:8771/?script-chirho=syriac-chirho&text-state-chirho=nonblank-chirho (${expertPendingNonblankScriptChirho("syriac-chirho")} pending confirmation(s) with current text${reviewStartSuffixChirho(linksChirho, "expertSyriacNonblankChirho")})`,
+    "expert Syriac has-text lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
     `- Expert Syriac reader blank-text handoff lane: http://localhost:8771/?script-chirho=syriac-chirho&text-state-chirho=blank-chirho (${expertPendingBlankScriptChirho("syriac-chirho")} pending blank item(s) requiring supplied text${reviewStartSuffixChirho(linksChirho, "expertSyriacBlankChirho")})`,
     "expert Syriac blank lane"
   );
@@ -678,6 +764,15 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     markdownChirho,
     `- Expert Arabist lane: http://localhost:8771/?script-chirho=arabic-chirho (${expertPendingScriptChirho("arabic-chirho")} pending of ${expertScriptTotalChirho("arabic-chirho")} item(s)${reviewStartSuffixChirho(linksChirho, "expertArabicChirho")})`,
     "expert Arabic lane"
+  );
+  assertVolumeLaneMarkdownCoverageChirho(
+    markdownChirho,
+    linksChirho,
+    "Expert non-Latin",
+    "http://localhost:8771/",
+    expertVolumeCountsChirho,
+    "expertChirho",
+    "confirmation(s)"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
