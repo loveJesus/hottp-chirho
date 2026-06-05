@@ -78,6 +78,70 @@ function emptySpanMarkerChirho(issueChirho: ExportIssueChirho): string {
   return `[EMPTY-SPAN-CHIRHO line=${issueChirho.lineIndexChirho} segment=${issueChirho.segmentIndexChirho}]`;
 }
 
+function skipNewlinesChirho(textChirho: string, indexChirho: number): number {
+  let nextIndexChirho = indexChirho;
+  while (textChirho[nextIndexChirho] === "\n") {
+    nextIndexChirho += 1;
+  }
+  return nextIndexChirho;
+}
+
+function pageMarkdownBodyChirho(markdownPathChirho: string, textChirho: string): string {
+  const sourceCommentStartChirho = textChirho.indexOf("<!-- source-chirho:");
+  assertGeneratedCheckChirho(
+    sourceCommentStartChirho !== -1,
+    `page Markdown lacks source metadata comment: ${relative(PROJECT_ROOT_CHIRHO, markdownPathChirho)}`
+  );
+  const sourceCommentEndChirho = textChirho.indexOf("-->", sourceCommentStartChirho);
+  assertGeneratedCheckChirho(
+    sourceCommentEndChirho !== -1,
+    `page Markdown source metadata comment is not closed: ${relative(PROJECT_ROOT_CHIRHO, markdownPathChirho)}`
+  );
+  return textChirho.slice(skipNewlinesChirho(textChirho, sourceCommentEndChirho + 3)).trimEnd();
+}
+
+function volumeMarkdownPageBodyChirho(
+  volumePathChirho: string,
+  textChirho: string,
+  pageNumberChirho: number
+): string {
+  const headingChirho = `\n## Page ${pageNumberChirho}\n\n`;
+  const headingStartChirho = textChirho.indexOf(headingChirho);
+  assertGeneratedCheckChirho(
+    headingStartChirho !== -1,
+    `volume Markdown lacks page section ${pageNumberChirho}: ${relative(PROJECT_ROOT_CHIRHO, volumePathChirho)}`
+  );
+  assertGeneratedCheckChirho(
+    textChirho.indexOf(headingChirho, headingStartChirho + headingChirho.length) === -1,
+    `volume Markdown repeats page section ${pageNumberChirho}: ${relative(PROJECT_ROOT_CHIRHO, volumePathChirho)}`
+  );
+
+  const statusStartChirho = headingStartChirho + headingChirho.length;
+  assertGeneratedCheckChirho(
+    textChirho.startsWith("<!-- status-chirho:", statusStartChirho),
+    `volume Markdown page ${pageNumberChirho} lacks status metadata comment: ${relative(PROJECT_ROOT_CHIRHO, volumePathChirho)}`
+  );
+  const statusEndChirho = textChirho.indexOf("-->", statusStartChirho);
+  assertGeneratedCheckChirho(
+    statusEndChirho !== -1,
+    `volume Markdown page ${pageNumberChirho} status metadata comment is not closed: ${relative(PROJECT_ROOT_CHIRHO, volumePathChirho)}`
+  );
+
+  const bodyStartChirho = skipNewlinesChirho(textChirho, statusEndChirho + 3);
+  const nextPageStartChirho = textChirho.indexOf("\n---\n\n## Page ", bodyStartChirho);
+  const bodyEndChirho = nextPageStartChirho === -1 ? textChirho.length : nextPageStartChirho;
+  return textChirho.slice(bodyStartChirho, bodyEndChirho).trimEnd();
+}
+
+function volumeMarkdownPageHeadingsChirho(textChirho: string): Map<number, number> {
+  const countsChirho = new Map<number, number>();
+  for (const matchChirho of textChirho.matchAll(/^## Page ([0-9]+)$/gm)) {
+    const pageNumberChirho = Number(matchChirho[1]);
+    countsChirho.set(pageNumberChirho, (countsChirho.get(pageNumberChirho) ?? 0) + 1);
+  }
+  return countsChirho;
+}
+
 function mainChirho(): void {
   assertGeneratedCheckChirho(existsSync(EXPORT_REPORT_PATH_CHIRHO), `missing export report: ${EXPORT_REPORT_PATH_CHIRHO}`);
   const reportTextChirho = readFileSync(EXPORT_REPORT_PATH_CHIRHO, "utf8");
@@ -96,6 +160,7 @@ function mainChirho(): void {
 
   const expectedMarkdownPathsChirho = new Set<string>();
   const pagesByKeyChirho = new Map<string, ExportPageReportChirho>();
+  const pagesByVolumeChirho = new Map<number, ExportPageReportChirho[]>();
   const volumesChirho = new Set<number>();
   for (const pageChirho of reportChirho.pagesChirho) {
     assertGeneratedCheckChirho(Number.isInteger(pageChirho.volumeChirho), "export page volumeChirho must be an integer");
@@ -109,6 +174,9 @@ function mainChirho(): void {
     const keyChirho = `${pageChirho.volumeChirho}:${pageChirho.pageChirho}`;
     assertGeneratedCheckChirho(!pagesByKeyChirho.has(keyChirho), `duplicate export page report key ${keyChirho}`);
     pagesByKeyChirho.set(keyChirho, pageChirho);
+    const pagesForVolumeChirho = pagesByVolumeChirho.get(pageChirho.volumeChirho!) ?? [];
+    pagesForVolumeChirho.push(pageChirho);
+    pagesByVolumeChirho.set(pageChirho.volumeChirho!, pagesForVolumeChirho);
     expectedMarkdownPathsChirho.add(markdownPathChirho);
     volumesChirho.add(pageChirho.volumeChirho!);
   }
@@ -139,6 +207,36 @@ function mainChirho(): void {
     assertGeneratedTextHygieneChirho(markdownPathChirho, textChirho);
     assertMarkdownHeaderChirho(markdownPathChirho, textChirho, JOHN_316_BLOCK_MARKDOWN_HEADER_CHIRHO);
     markdownTextByPathChirho.set(markdownPathChirho, textChirho);
+  }
+
+  for (const volumeChirho of volumesChirho) {
+    const volumePathChirho = normalizedPathChirho(
+      join(MARKDOWN_DIR_CHIRHO, `vol-${volumeChirho}-chirho`, `volume-${volumeChirho}-chirho.md`)
+    );
+    const volumeTextChirho = markdownTextByPathChirho.get(volumePathChirho) ?? "";
+    const pagesForVolumeChirho = (pagesByVolumeChirho.get(volumeChirho) ?? []).toSorted(
+      (leftChirho, rightChirho) => leftChirho.pageChirho! - rightChirho.pageChirho!
+    );
+    const headingCountsChirho = volumeMarkdownPageHeadingsChirho(volumeTextChirho);
+    assertGeneratedCheckChirho(
+      headingCountsChirho.size === pagesForVolumeChirho.length,
+      `volume Markdown page section count ${headingCountsChirho.size} does not match report page count ${pagesForVolumeChirho.length} for volume ${volumeChirho}`
+    );
+    for (const pageChirho of pagesForVolumeChirho) {
+      const pageNumberChirho = pageChirho.pageChirho!;
+      assertGeneratedCheckChirho(
+        headingCountsChirho.get(pageNumberChirho) === 1,
+        `volume Markdown page section ${pageNumberChirho} is missing or duplicated for volume ${volumeChirho}`
+      );
+      const pagePathChirho = normalizedPathChirho(pageChirho.markdownPathChirho!);
+      const pageTextChirho = markdownTextByPathChirho.get(pagePathChirho) ?? "";
+      const pageBodyChirho = pageMarkdownBodyChirho(pagePathChirho, pageTextChirho);
+      const volumeBodyChirho = volumeMarkdownPageBodyChirho(volumePathChirho, volumeTextChirho, pageNumberChirho);
+      assertGeneratedCheckChirho(
+        pageBodyChirho === volumeBodyChirho,
+        `volume Markdown page body does not match page Markdown for volume ${volumeChirho}, page ${pageNumberChirho}`
+      );
+    }
   }
 
   const blankIssuesChirho = reportChirho.issuesChirho.filter((issueChirho) => issueChirho.codeChirho === "blank-span-text-chirho");
