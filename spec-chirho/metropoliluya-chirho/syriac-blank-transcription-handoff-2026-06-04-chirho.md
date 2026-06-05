@@ -24,6 +24,7 @@ The boxed region is the current Syriac span geometry: x `767..950` in the 1285px
 ![Boxed Syriac crop for v3-p0151-l010-s3](syriac-v3-p0151-l010-s3-context-crop-2026-06-04-chirho.png)
 
 - Crop SHA-256: `bb43be97ee2efea410e39109fcabb3083e1ab3215d9941665adb427631062bde`
+- Supplied text boundary: transcribe only the Syriac text inside the red box. The French open parenthesis before the box and the comma after the box are already stored in neighboring French spans and should not be included in the supplied Syriac text.
 
 ## Current Live Line
 
@@ -39,6 +40,7 @@ The Syriac item is boxed and routed, but the UTF-8 text is empty. That emptiness
 
 1. Read the boxed Syriac text directly from the print/crop.
 2. Supply the exact UTF-8 text, including relevant Syriac letters, dots, vowels, spacing, and punctuation if present.
+   Do not include the surrounding French parenthesis or comma unless a qualified Syriac reader determines that a Syriac-script mark inside the boxed region belongs to the Syriac text.
 3. Run the dry-run command first, without `--apply`, using the exact text and reviewer identity:
 
 ```bash
