@@ -315,6 +315,15 @@ another.
   - Visual precheck: the line itself discusses a haplography of one of the `mem` letters, and the red box cleanly brackets the Hebrew form after French `d'une forme`. The printed cluster shows the repeated mem sequence at review resolution; the following period is outside the Hebrew box.
   - Human check still needed: exact count/order of the mem letters, sheva/holam/tsere placement, and final mem.
 
+- `vol 5 p152 L24 S1/S3`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A152%3A24%3A1`
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A152%3A24%3A3`
+  - Item IDs: `v5-p0152-l024-s1`, `v5-p0152-l024-s3`
+  - Live texts: `תְּרְמָם` and `תִּרְמֵם`
+  - Attention reason: none; these are current raw items in the no-pre-review-note lane.
+  - Visual precheck: the line says the versions would not have vocalized one form `ou` the other; both target boxes cleanly bracket their Hebrew words and leave the French separator/comma outside. This is a same-line vowel/pointing contrast, not a visible segmentation issue.
+  - Human check still needed: exact tav-vowel/dagesh, resh sheva, qamats vs tsere on the mem, and whether the two printed forms are correctly distinguished.
+
 - `vol 5 p152 L13 S3/S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A3`
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A5`
