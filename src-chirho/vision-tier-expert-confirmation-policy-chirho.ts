@@ -17,6 +17,7 @@ import {
   certifyingReviewerAttributionErrorChirho,
   isGenericReviewerAttributionChirho,
 } from "./reviewer-attribution-chirho.ts";
+import { valueLooksTemplatePlaceholderChirho } from "./template-placeholder-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
 import {
   VISION_TIER_EXPERT_REVIEWER_LABELS_CHIRHO,
@@ -33,6 +34,18 @@ export const VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO = join(
 export const VISION_TIER_EXPERT_CONFIRMATION_DRAFT_CHIRHO = "draft-chirho";
 export const VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO = "confirmed-expert-chirho";
 export const VISION_TIER_EXPERT_CONFIRMATION_REVIEWED_ISSUES_CHIRHO = "reviewed-issues-expert-chirho";
+export const VISION_TIER_EXPERT_RATIONALE_PLACEHOLDER_VALUES_CHIRHO = new Set([
+  "why these exact items are confirmed",
+  "why this exact item is confirmed",
+  "why this issue is recorded",
+  "why these issues are recorded",
+  "why this exact text is supplied",
+  "rationale",
+  "reason",
+  "placeholder",
+  "todo",
+  "tbd",
+]);
 export const VISION_TIER_EXPERT_ISSUE_FLAGS_CHIRHO = [
   "letters-chirho",
   "marks-chirho",
@@ -115,6 +128,13 @@ export function reviewerRoleMatchesScriptChirho(scriptChirho: string, reviewerRo
   return expectedRoleChirho !== null && reviewerRoleChirho.trim() === expectedRoleChirho;
 }
 
+export function visionTierExpertRationaleLooksPlaceholderChirho(rationaleChirho: string): boolean {
+  return valueLooksTemplatePlaceholderChirho(
+    rationaleChirho,
+    VISION_TIER_EXPERT_RATIONALE_PLACEHOLDER_VALUES_CHIRHO
+  );
+}
+
 function reviewerRoleShapeErrorsChirho(policyChirho: VisionTierExpertConfirmationPolicyChirho): string[] {
   const errorsChirho: string[] = [];
   const policyIdChirho = policyChirho.policyIdChirho ?? "<missing-policy-id-chirho>";
@@ -185,6 +205,8 @@ function validateConfirmationShapeChirho(fileChirho: VisionTierExpertConfirmatio
       }
       if (!nonEmptyStringChirho(policyChirho.rationaleChirho)) {
         errorsChirho.push(`${policyIdChirho}: confirmed policy requires rationaleChirho`);
+      } else if (visionTierExpertRationaleLooksPlaceholderChirho(policyChirho.rationaleChirho)) {
+        errorsChirho.push(`${policyIdChirho}: confirmed policy rationaleChirho must not be a template placeholder`);
       }
       errorsChirho.push(...reviewerRoleShapeErrorsChirho(policyChirho));
     }
@@ -202,6 +224,8 @@ function validateConfirmationShapeChirho(fileChirho: VisionTierExpertConfirmatio
       }
       if (!nonEmptyStringChirho(policyChirho.rationaleChirho)) {
         errorsChirho.push(`${policyIdChirho}: reviewed-issues policy requires rationaleChirho`);
+      } else if (visionTierExpertRationaleLooksPlaceholderChirho(policyChirho.rationaleChirho)) {
+        errorsChirho.push(`${policyIdChirho}: reviewed-issues policy rationaleChirho must not be a template placeholder`);
       }
       if (
         !Array.isArray(policyChirho.issueFlagsChirho) ||

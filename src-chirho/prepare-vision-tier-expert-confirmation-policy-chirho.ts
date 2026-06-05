@@ -26,6 +26,7 @@ import {
   VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO,
   VISION_TIER_EXPERT_CONFIRMATION_DRAFT_CHIRHO,
   VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO,
+  visionTierExpertRationaleLooksPlaceholderChirho,
   type VisionTierExpertConfirmationFileChirho,
   type VisionTierExpertConfirmationPolicyChirho,
 } from "./vision-tier-expert-confirmation-policy-chirho.ts";
@@ -123,6 +124,9 @@ function mainChirho(): void {
     assertCertifyingReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
     if (reviewerRoleChirho.trim().length === 0) throw new Error("--reviewer-role-chirho is required for confirmed policy");
     if (rationaleChirho.trim().length === 0) throw new Error("--rationale-chirho is required for confirmed policy");
+    if (visionTierExpertRationaleLooksPlaceholderChirho(rationaleChirho)) {
+      throw new Error("--rationale-chirho must explain the exact expert confirmation, not a template placeholder");
+    }
     if (!certifyExactChirho) {
       throw new Error(
         "--certify-exact-chirho is required for confirmed policy after checking the exact printed letters and relevant marks"

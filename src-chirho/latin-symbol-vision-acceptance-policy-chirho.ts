@@ -21,6 +21,7 @@ import {
   isBlockedCertificationReviewerAttributionChirho,
   isGenericReviewerAttributionChirho,
 } from "./reviewer-attribution-chirho.ts";
+import { valueLooksTemplatePlaceholderChirho } from "./template-placeholder-chirho.ts";
 
 export const LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -31,6 +32,16 @@ export const LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO = join(
 
 export const LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO = "accepted-clean-policy-chirho";
 export const LATIN_SYMBOL_POLICY_DECISION_DRAFT_CHIRHO = "draft-chirho";
+export const LATIN_SYMBOL_ACCEPTANCE_RATIONALE_PLACEHOLDER_VALUES_CHIRHO = new Set([
+  "why this policy is accepted",
+  "why these items are accepted clean",
+  "why every selected item is accepted clean",
+  "rationale",
+  "reason",
+  "placeholder",
+  "todo",
+  "tbd",
+]);
 
 export interface LatinSymbolAcceptancePolicyItemChirho {
   itemIdChirho?: string;
@@ -92,6 +103,13 @@ function policyReviewerHasBroadAcceptancePrivilegeChirho(policyChirho: LatinSymb
   return /(^hallelujah([_-]|$)|(^|[_-])human([_-]|$))/i.test(reviewerChirho);
 }
 
+export function latinSymbolAcceptanceRationaleLooksPlaceholderChirho(rationaleChirho: string): boolean {
+  return valueLooksTemplatePlaceholderChirho(
+    rationaleChirho,
+    LATIN_SYMBOL_ACCEPTANCE_RATIONALE_PLACEHOLDER_VALUES_CHIRHO
+  );
+}
+
 function validatePolicyShapeChirho(fileChirho: LatinSymbolAcceptancePolicyFileChirho): string[] {
   const errorsChirho: string[] = [];
   if (fileChirho.schemaVersionChirho !== 1) {
@@ -135,6 +153,8 @@ function validatePolicyShapeChirho(fileChirho: LatinSymbolAcceptancePolicyFileCh
       }
       if (!nonEmptyStringChirho(policyChirho.rationaleChirho)) {
         errorsChirho.push(`${policyIdChirho}: accepted policy requires rationaleChirho`);
+      } else if (latinSymbolAcceptanceRationaleLooksPlaceholderChirho(policyChirho.rationaleChirho)) {
+        errorsChirho.push(`${policyIdChirho}: accepted policy rationaleChirho must not be a template placeholder`);
       }
     }
     for (const itemChirho of policyChirho.itemsChirho) {

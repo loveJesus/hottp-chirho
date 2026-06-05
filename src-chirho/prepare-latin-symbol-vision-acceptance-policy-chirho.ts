@@ -30,6 +30,7 @@ import {
   LATIN_SYMBOL_ACCEPTANCE_POLICY_PATH_CHIRHO,
   LATIN_SYMBOL_POLICY_DECISION_ACCEPTED_CHIRHO,
   LATIN_SYMBOL_POLICY_DECISION_DRAFT_CHIRHO,
+  latinSymbolAcceptanceRationaleLooksPlaceholderChirho,
   type LatinSymbolAcceptancePolicyChirho,
   type LatinSymbolAcceptancePolicyFileChirho,
 } from "./latin-symbol-vision-acceptance-policy-chirho.ts";
@@ -138,6 +139,9 @@ function mainChirho(): void {
     if (reviewerChirho.trim().length === 0) throw new Error("--reviewer-chirho is required for accepted policy");
     assertExplicitReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
     if (rationaleChirho.trim().length === 0) throw new Error("--rationale-chirho is required for accepted policy");
+    if (latinSymbolAcceptanceRationaleLooksPlaceholderChirho(rationaleChirho)) {
+      throw new Error("--rationale-chirho must explain the accepted-clean policy, not a template placeholder");
+    }
     if (!acceptCleanChirho) {
       throw new Error(
         "--accept-clean-chirho is required for accepted policy after checking every selected item crop and full line against the print"

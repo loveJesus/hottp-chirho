@@ -48,6 +48,7 @@ const REVIEW_SERVER_SOURCE_FILES_BY_KEY_CHIRHO: Record<ReviewServerKeyChirho, re
     "src-chirho/latin-symbol-vision-review-store-chirho.ts",
     "src-chirho/packet-image-fingerprint-chirho.ts",
     "src-chirho/source-fingerprint-chirho.ts",
+    "src-chirho/template-placeholder-chirho.ts",
     "src-chirho/atomic-json-chirho.ts",
   ],
   "expert-non-latin-chirho": [
@@ -56,6 +57,7 @@ const REVIEW_SERVER_SOURCE_FILES_BY_KEY_CHIRHO: Record<ReviewServerKeyChirho, re
     "src-chirho/vision-tier-expert-confirmation-policy-chirho.ts",
     "src-chirho/vision-tier-expert-live-items-chirho.ts",
     "src-chirho/packet-image-fingerprint-chirho.ts",
+    "src-chirho/template-placeholder-chirho.ts",
     "src-chirho/atomic-json-chirho.ts",
   ],
 };

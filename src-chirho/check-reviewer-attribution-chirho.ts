@@ -185,6 +185,13 @@ const LATIN_SYMBOL_POLICY_LIVE_ITEM_CHIRHO: LatinSymbolVisionLiveItemChirho = {
 };
 
 function expertPolicyFileChirho(reviewerChirho: string): VisionTierExpertConfirmationFileChirho {
+  return expertPolicyFileWithRationaleChirho(reviewerChirho, "reviewer attribution invariant check");
+}
+
+function expertPolicyFileWithRationaleChirho(
+  reviewerChirho: string,
+  rationaleChirho: string
+): VisionTierExpertConfirmationFileChirho {
   return {
     schemaVersionChirho: 1,
     policiesChirho: [
@@ -195,7 +202,7 @@ function expertPolicyFileChirho(reviewerChirho: string): VisionTierExpertConfirm
         reviewerRoleChirho: "Hebrew/WLC reviewer",
         confirmedAtChirho: "2026-06-04T00:00:00.000Z",
         certifyExactChirho: true,
-        rationaleChirho: "reviewer attribution invariant check",
+        rationaleChirho,
         itemCountChirho: 1,
         itemsChirho: [
           {
@@ -212,6 +219,13 @@ function expertPolicyFileChirho(reviewerChirho: string): VisionTierExpertConfirm
 }
 
 function latinSymbolPolicyFileChirho(reviewerChirho: string): LatinSymbolAcceptancePolicyFileChirho {
+  return latinSymbolPolicyFileWithRationaleChirho(reviewerChirho, "reviewer attribution invariant check");
+}
+
+function latinSymbolPolicyFileWithRationaleChirho(
+  reviewerChirho: string,
+  rationaleChirho: string
+): LatinSymbolAcceptancePolicyFileChirho {
   return {
     schemaVersionChirho: 1,
     policiesChirho: [
@@ -221,7 +235,7 @@ function latinSymbolPolicyFileChirho(reviewerChirho: string): LatinSymbolAccepta
         reviewerChirho,
         acceptedAtChirho: "2026-06-04T00:00:00.000Z",
         acceptCleanChirho: true,
-        rationaleChirho: "reviewer attribution invariant check",
+        rationaleChirho,
         scopeChirho: "script=symbol-chirho; kind=all-chirho; safeSymbolsOnly=false",
         itemCountChirho: 1,
         itemsChirho: [
@@ -261,6 +275,25 @@ function checkExpertConfirmationPolicyAttributionChirho(): void {
   ) {
     throw new Error(`machine expert policy did not report reviewer attribution error: ${machineSummaryChirho.shapeErrorsChirho.join("; ")}`);
   }
+
+  const placeholderRationaleSummaryChirho = summarizeVisionTierExpertConfirmationsChirho(
+    expertPolicyFileWithRationaleChirho("dr-brock-human-reviewer", "<why these exact items are confirmed>"),
+    true,
+    [EXPERT_POLICY_LIVE_ITEM_CHIRHO]
+  );
+  assertEqualChirho(placeholderRationaleSummaryChirho.policyFileShapeOkChirho, false, "placeholder-rationale expert policy shape");
+  assertEqualChirho(
+    placeholderRationaleSummaryChirho.validConfirmedPolicyItemCountChirho,
+    0,
+    "placeholder-rationale expert policy valid item count"
+  );
+  if (
+    !placeholderRationaleSummaryChirho.shapeErrorsChirho.some((errorChirho) =>
+      errorChirho.includes("rationaleChirho must not be a template placeholder")
+    )
+  ) {
+    throw new Error(`placeholder-rationale expert policy did not report rationale error: ${placeholderRationaleSummaryChirho.shapeErrorsChirho.join("; ")}`);
+  }
 }
 
 function checkLatinSymbolPolicyAttributionChirho(): void {
@@ -285,6 +318,25 @@ function checkLatinSymbolPolicyAttributionChirho(): void {
     )
   ) {
     throw new Error(`machine-human Latin/symbol policy did not report trivial-only scope error: ${machineSummaryChirho.shapeErrorsChirho.join("; ")}`);
+  }
+
+  const placeholderRationaleSummaryChirho = summarizeLatinSymbolAcceptancePolicyChirho(
+    latinSymbolPolicyFileWithRationaleChirho("dr-smith-human-reviewer", "<why these items are accepted clean>"),
+    true,
+    [LATIN_SYMBOL_POLICY_LIVE_ITEM_CHIRHO]
+  );
+  assertEqualChirho(placeholderRationaleSummaryChirho.policyFileShapeOkChirho, false, "placeholder-rationale Latin/symbol policy shape");
+  assertEqualChirho(
+    placeholderRationaleSummaryChirho.validAcceptedPolicyItemCountChirho,
+    0,
+    "placeholder-rationale Latin/symbol policy valid item count"
+  );
+  if (
+    !placeholderRationaleSummaryChirho.shapeErrorsChirho.some((errorChirho) =>
+      errorChirho.includes("rationaleChirho must not be a template placeholder")
+    )
+  ) {
+    throw new Error(`placeholder-rationale Latin/symbol policy did not report rationale error: ${placeholderRationaleSummaryChirho.shapeErrorsChirho.join("; ")}`);
   }
 }
 
