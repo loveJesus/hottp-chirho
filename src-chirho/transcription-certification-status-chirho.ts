@@ -4384,7 +4384,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
             const baseCommandPartsChirho = [
               "bun run reattribute-pass-c-human-validations-chirho --",
               `--validation-id-chirho=${rowChirho.idChirho}`,
-              "--reviewer-chirho=<explicit-human-reviewer-id-chirho>",
+              "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
               "--rationale-chirho='<why this existing row is attributable to that reviewer>'",
               ...(rowChirho.liveTextChirho === null
                 ? []
@@ -4422,7 +4422,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
             const baseCommandPartsChirho = [
               "bun run reattribute-pass-c-human-validations-chirho --",
               ...validationIdArgsChirho,
-              "--reviewer-chirho=<explicit-human-reviewer-id-chirho>",
+              "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
               "--rationale-chirho='<why every selected row is attributable to that reviewer>'",
               ...groupChirho.expectedLiveTextHashArgsChirho,
             ];
@@ -4633,10 +4633,10 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw queue applied rows: ${statusChirho.humanValidationDbChirho.rawQueueAppliedRowsChirho}`,
     `- Legacy current rows ignored by apply/certification: ${statusChirho.humanValidationDbChirho.legacyCurrentRowsChirho}`,
     `- Attribution-blocked reviewer rows: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho}`,
-    "- Attribution-blocked reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho=<id> --reviewer-chirho=<explicit-human-reviewer-id-chirho> --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>'`",
-    "- Attribution-blocked reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho=<id> --reviewer-chirho=<explicit-human-reviewer-id-chirho> --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>' --apply-chirho`",
-    `- Attribution-blocked reviewer bulk dry-run path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho=<explicit-human-reviewer-id-chirho> --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>'\``,
-    `- Attribution-blocked reviewer bulk apply path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho=<explicit-human-reviewer-id-chirho> --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>' --apply-chirho\``,
+    "- Attribution-blocked reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>'`",
+    "- Attribution-blocked reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>' --apply-chirho`",
+    `- Attribution-blocked reviewer bulk dry-run path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>'\``,
+    `- Attribution-blocked reviewer bulk apply path (same explicit human reviewer only, ${genericReviewerBulkGuardLabelChirho}): \`bun run reattribute-pass-c-human-validations-chirho -- --all-generic-chirho ${genericReviewerBulkGuardArgsChirho} --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>' --apply-chirho\``,
     "- Reattribution commands reject copied template placeholders; replace reviewer and rationale placeholders before running.",
     "- Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit human reviewer.",
     ...genericReviewerBatchLinesChirho,
