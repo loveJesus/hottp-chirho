@@ -34,6 +34,7 @@ const LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Check a flag and write a note for any wrong letter/digit/siglum, punctuation, spacing, crop, split, missing text, or extra text.",
   "I checked the target crop and full line against the print; if no issue flags are checked, this item is intentionally accepted clean.",
   "clean acceptance checkbox required",
+  "issue review cannot carry the clean-acceptance checkbox",
   "clean acceptance covers only this target crop and current text, with exact letters/digits/sigla, punctuation, spacing, and segmentation checked against the full line.",
 ];
 const LATIN_SYMBOL_QUICKSTART_SNIPPETS_CHIRHO = [
@@ -319,6 +320,22 @@ async function mainChirho(): Promise<void> {
     assertCheckChirho(
       String(unknownIssueFlagResultChirho.dataChirho.errorChirho ?? "").includes("unknown issue flag punctuation-typo-chirho"),
       `unknown issue flag failed for wrong reason: ${String(unknownIssueFlagResultChirho.dataChirho.errorChirho ?? "")}`
+    );
+    const issueWithCleanAckResultChirho = await postReviewChirho(portChirho, {
+      ...commonBodyChirho,
+      issueFlagsChirho: ["punctuation-chirho"],
+      acceptCleanChirho: true,
+      notesChirho: "guard check should reject a contradictory issue plus clean acknowledgement",
+    });
+    assertReviewRejectedChirho({
+      labelChirho: "issue with accepted-clean acknowledgement",
+      responseChirho: issueWithCleanAckResultChirho.responseChirho,
+      dataChirho: issueWithCleanAckResultChirho.dataChirho,
+      dbPathChirho,
+    });
+    assertCheckChirho(
+      String(issueWithCleanAckResultChirho.dataChirho.errorChirho ?? "").includes("acceptCleanChirho cannot be true when issueFlagsChirho are present"),
+      `issue with accepted-clean acknowledgement failed for wrong reason: ${String(issueWithCleanAckResultChirho.dataChirho.errorChirho ?? "")}`
     );
     const machineCleanResultChirho = await postReviewChirho(portChirho, {
       ...commonBodyChirho,

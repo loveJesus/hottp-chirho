@@ -625,6 +625,7 @@ function htmlChirho(): string {
         : reviewerAttributionErrorChirho(currentReviewerChirho());
       return reviewerErrorChirho === null &&
         (!currentReviewWouldBeCleanChirho() || cleanAcceptAcknowledgedChirho()) &&
+        (currentReviewWouldBeCleanChirho() || !cleanAcceptAcknowledgedChirho()) &&
         (currentReviewWouldBeCleanChirho() || reviewNotesErrorChirho(currentNotesChirho()) === null);
     }
     function latinSymbolReviewActionMessagesChirho() {
@@ -637,6 +638,9 @@ function htmlChirho(): string {
         messagesChirho.push("clean acceptance checkbox required");
       }
       if (!currentReviewWouldBeCleanChirho()) {
+        if (cleanAcceptAcknowledgedChirho()) {
+          messagesChirho.push("issue review cannot carry the clean-acceptance checkbox");
+        }
         const notesErrorChirho = reviewNotesErrorChirho(currentNotesChirho());
         if (notesErrorChirho !== null) messagesChirho.push(notesErrorChirho);
       }
@@ -824,6 +828,10 @@ function htmlChirho(): string {
         return;
       }
       if (flagsChirho.length > 0) {
+        if (cleanAcceptAcknowledgedChirho()) {
+          setStatusChirho("Uncheck the clean acceptance box before saving an issue.");
+          return;
+        }
         const notesErrorChirho = reviewNotesErrorChirho(notesChirho);
         if (notesErrorChirho !== null) {
           setStatusChirho(notesErrorChirho);
@@ -994,6 +1002,12 @@ const serverChirho = Bun.serve({
           return jsonResponseChirho({
             okChirho: false,
             errorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+          }, 400);
+        }
+        if (issueFlagsChirho.length > 0 && bodyChirho.acceptCleanChirho === true) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: "acceptCleanChirho cannot be true when issueFlagsChirho are present; save the row as reviewed-issues",
           }, 400);
         }
         if (issueFlagsChirho.length === 0 && bodyChirho.acceptCleanChirho !== true) {
