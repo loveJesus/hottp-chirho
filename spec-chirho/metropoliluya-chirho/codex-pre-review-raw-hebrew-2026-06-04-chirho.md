@@ -222,6 +222,13 @@ another.
   - Visual precheck: the crop sits on the middle phrase in the slash-separated `Le 𝔐 porte pour ce verset` line; the neighboring slash separators sit outside the red box. Earlier S3/S7 crop review found a geometry/text assignment swap, so those two spans were moved out of raw Pass-C and into vision-tier expert review before this note was updated.
   - Human check still needed: exact niqqud/marks and word spacing for this middle phrase independently.
 
+- `vol 5 p150 L9 S0`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A150%3A9%3A0`
+  - Live text: `לִי`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the tiny continuation line contains only this Hebrew form and the following period. The enlarged scanline appears to show lamed with hiriq plus final yod, fitting Job 17:1 `קְבָרִים לִי`; however, the direct OCR read reports `לו`, so this should be checked by eye rather than accepted from the machine read.
+  - Human check still needed: final letter yod vs vav, exact hiriq placement under the lamed, and whether the following period remains outside the Hebrew span.
+
 - `vol 5 p151 L1 S3/S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A1%3A3`
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A1%3A5`
