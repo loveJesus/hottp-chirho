@@ -34,6 +34,7 @@
     "check-certification-chirho": "bun run src-chirho/check-certification-chirho.ts",
     "check-certification-status-gate-guards-chirho": "bun run src-chirho/check-certification-status-gate-guards-chirho.ts",
     "check-certification-status-output-hygiene-chirho": "bun run src-chirho/check-certification-status-output-hygiene-chirho.ts",
+    "check-active-certification-json-artifacts-hygiene-chirho": "bun run src-chirho/check-active-certification-json-artifacts-hygiene-chirho.ts",
     "check-export-markdown-output-hygiene-chirho": "bun run src-chirho/check-export-markdown-output-hygiene-chirho.ts",
     "check-review-packet-output-hygiene-chirho": "bun run src-chirho/check-review-packet-output-hygiene-chirho.ts",
     "check-status-linked-spec-docs-hygiene-chirho": "bun run src-chirho/check-status-linked-spec-docs-hygiene-chirho.ts",

@@ -31,7 +31,10 @@ import {
   type LatinSymbolVisionLiveItemChirho,
   type LatinSymbolVisionSymbolRiskSummaryChirho,
 } from "./latin-symbol-vision-live-items-chirho.ts";
-import { parseStoredLatinSymbolIssueFlagsResultChirho } from "./latin-symbol-vision-review-store-chirho.ts";
+import {
+  LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO,
+  parseStoredLatinSymbolIssueFlagsResultChirho,
+} from "./latin-symbol-vision-review-store-chirho.ts";
 import {
   countPassCHumanValidationRowsMissingFromBackupChirho,
   passCHumanValidationBackupRowsChirho,
@@ -211,12 +214,6 @@ const HEBREW_DELIMITER_ORDER_SCANNER_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "src-chirho",
   "scan-hebrew-delimiter-order-chirho.ts"
-);
-const LATIN_SYMBOL_REVIEW_BACKUP_PATH_CHIRHO = join(
-  PROJECT_ROOT_CHIRHO,
-  "spec-chirho",
-  "metropoliluya-chirho",
-  "latin-symbol-vision-reviews-backup-2026-05-31-chirho.json"
 );
 const OUT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "certification-status-chirho");
 const ALLOWED_WLC_CORRECTION_FLAGS_CHIRHO = new Set([
