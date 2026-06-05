@@ -4643,6 +4643,14 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     genericReviewerAllLiveTextHashArgsChirho.length === statusChirho.humanValidationDbChirho.genericReviewerRowsChirho
       ? "count+hash-guarded"
       : "count-guarded; missing some live hash guards";
+  const rawHebrewAttributionBlockedFirstKeyChirho =
+    statusChirho.humanValidationDbChirho.genericReviewerRowDetailsChirho.find((rowChirho) => rowChirho.liveSpanExistsChirho)?.locationChirho ?? null;
+  const rawHebrewAttributionBlockedFirstUrlChirho = rawHebrewAttributionBlockedFirstKeyChirho === null
+    ? null
+    : rawHebrewReviewUrlChirho(undefined, "attribution-blocked-chirho", undefined, rawHebrewAttributionBlockedFirstKeyChirho);
+  const rawHebrewAttributionBlockedFirstTextChirho = rawHebrewAttributionBlockedFirstUrlChirho === null
+    ? ""
+    : `; first blocked: ${rawHebrewAttributionBlockedFirstUrlChirho}`;
   return [
     "<!-- For God so loved the world that he gave his only begotten Son,",
     "that whoever believes in him should not perish but have eternal life. John 3:16 -->",
@@ -4669,6 +4677,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     ...rawHebrewAttentionLaneLinesChirho,
     ...rawHebrewVolumeLaneLinesChirho,
     `- Raw Hebrew saved issue lane: ${rawHebrewReviewUrlChirho(undefined, "saved-issues-chirho")} (${statusChirho.humanValidationDbChirho.rawQueueIssueRowsChirho} read-only current issue row(s))`,
+    `- Raw Hebrew attribution-blocked lane: ${rawHebrewReviewUrlChirho(undefined, "attribution-blocked-chirho")} (${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho} read-only current row(s) needing explicit reviewer attribution${rawHebrewAttributionBlockedFirstTextChirho})`,
     "- Raw Hebrew pending counts match the live validator; report totals include already-saved rows.",
     `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Raw Hebrew pre-review notes: \`${relativeProjectPathChirho(RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO)}\` (non-certifying; current/superseded notes only)`,

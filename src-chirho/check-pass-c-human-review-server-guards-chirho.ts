@@ -88,12 +88,25 @@ async function processOutputChirho(processChirho: Bun.Subprocess): Promise<strin
   return [stdoutChirho, stderrChirho].filter((valueChirho) => valueChirho.length > 0).join("\n");
 }
 
-function firstQueueItemFromHtmlChirho(htmlChirho: string): RawReviewQueueItemChirho {
+function queueItemsFromHtmlChirho(htmlChirho: string): RawReviewQueueItemChirho[] {
   const matchChirho = htmlChirho.match(/const queueChirho = (.*?);\n\s+const queueModeChirho/s);
   if (matchChirho === null) throw new Error("could not find queueChirho JSON in raw review server HTML");
-  const queueChirho = JSON.parse(matchChirho[1]!) as RawReviewQueueItemChirho[];
-  const itemChirho = queueChirho[0];
-  if (itemChirho === undefined) throw new Error("raw review queue is empty; cannot run guard check");
+  return JSON.parse(matchChirho[1]!) as RawReviewQueueItemChirho[];
+}
+
+function firstQueueItemFromHtmlChirho(htmlChirho: string): RawReviewQueueItemChirho {
+  const itemChirho = queueItemsFromHtmlChirho(htmlChirho).find(
+    (candidateChirho) => candidateChirho.validationStatusChirho !== "attribution-blocked-chirho"
+  );
+  if (itemChirho === undefined) throw new Error("raw review queue has no normal item; cannot run guard check");
+  return itemChirho;
+}
+
+function firstAttributionBlockedQueueItemFromHtmlChirho(htmlChirho: string): RawReviewQueueItemChirho {
+  const itemChirho = queueItemsFromHtmlChirho(htmlChirho).find(
+    (candidateChirho) => candidateChirho.validationStatusChirho === "attribution-blocked-chirho"
+  );
+  if (itemChirho === undefined) throw new Error("raw review queue has no attribution-blocked item; cannot run guard check");
   return itemChirho;
 }
 
@@ -215,6 +228,41 @@ async function mainChirho(): Promise<void> {
       responseChirho.text()
     );
     const itemChirho = firstQueueItemFromHtmlChirho(pageHtmlChirho);
+    const attributionBlockedItemChirho = firstAttributionBlockedQueueItemFromHtmlChirho(pageHtmlChirho);
+    const attributionBlockedSubmitResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: attributionBlockedItemChirho.keyChirho,
+        issueFlagsChirho: [],
+        correctedTextChirho: attributionBlockedItemChirho.liveSpanTextChirho,
+        notesChirho: "",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: true,
+        ...displayGuardForItemChirho(attributionBlockedItemChirho),
+      }),
+    });
+    const attributionBlockedSubmitDataChirho = (await attributionBlockedSubmitResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      attributionBlockedSubmitResponseChirho.status === 400,
+      `expected attribution-blocked submit HTTP 400, got ${attributionBlockedSubmitResponseChirho.status}`
+    );
+    assertCheckChirho(
+      attributionBlockedSubmitDataChirho.okChirho === false,
+      "attribution-blocked submit unexpectedly returned ok"
+    );
+    assertCheckChirho(
+      String(attributionBlockedSubmitDataChirho.errorChirho ?? "").includes("Attribution-blocked rows are read-only"),
+      `attribution-blocked submit failed for the wrong reason: ${String(attributionBlockedSubmitDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "attribution-blocked submit persisted a row"
+    );
     const staleDisplayResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
