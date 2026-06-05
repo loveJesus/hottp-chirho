@@ -941,6 +941,126 @@ function htmlChirho(): string {
       ["Ψ", "Greek capital psi"], ["ψ", "Greek psi"],
       ["Ω", "Greek capital omega"], ["ω", "Greek omega"]
     ]);
+    const syriacLetterNameByValueChirho = new Map([
+      ["ܐ", "Syriac letter alaph"],
+      ["ܒ", "Syriac letter beth"],
+      ["ܓ", "Syriac letter gamal"],
+      ["ܔ", "Syriac letter gamal garshuni"],
+      ["ܕ", "Syriac letter dalath"],
+      ["ܖ", "Syriac letter dotless dalath rish"],
+      ["ܗ", "Syriac letter he"],
+      ["ܘ", "Syriac letter waw"],
+      ["ܙ", "Syriac letter zain"],
+      ["ܚ", "Syriac letter heth"],
+      ["ܛ", "Syriac letter teth"],
+      ["ܜ", "Syriac letter teth garshuni"],
+      ["ܝ", "Syriac letter yudh"],
+      ["ܞ", "Syriac letter yudh he"],
+      ["ܟ", "Syriac letter kaph"],
+      ["ܠ", "Syriac letter lamadh"],
+      ["ܡ", "Syriac letter mim"],
+      ["ܢ", "Syriac letter nun"],
+      ["ܣ", "Syriac letter semkath"],
+      ["ܤ", "Syriac letter final semkath"],
+      ["ܥ", "Syriac letter e"],
+      ["ܦ", "Syriac letter pe"],
+      ["ܧ", "Syriac letter reversed pe"],
+      ["ܨ", "Syriac letter sadhe"],
+      ["ܩ", "Syriac letter qaph"],
+      ["ܪ", "Syriac letter rish"],
+      ["ܫ", "Syriac letter shin"],
+      ["ܬ", "Syriac letter taw"],
+      ["ݍ", "Syriac letter sogdian zhain"],
+      ["ݎ", "Syriac letter sogdian khaph"],
+      ["ݏ", "Syriac letter sogdian fe"]
+    ]);
+    const syriacMarkNameByValueChirho = new Map([
+      ["܏", "Syriac abbreviation mark"],
+      ["ܑ", "Syriac supralinear full stop"],
+      ["ܰ", "Syriac pthaha above"],
+      ["ܱ", "Syriac pthaha below"],
+      ["ܲ", "Syriac pthaha dotted"],
+      ["ܳ", "Syriac zqapha above"],
+      ["ܴ", "Syriac zqapha below"],
+      ["ܵ", "Syriac zqapha dotted"],
+      ["ܶ", "Syriac rbasa above"],
+      ["ܷ", "Syriac rbasa below"],
+      ["ܸ", "Syriac dotted zlama horizontal"],
+      ["ܹ", "Syriac dotted zlama angular"],
+      ["ܺ", "Syriac hbasa above"],
+      ["ܻ", "Syriac hbasa below"],
+      ["ܼ", "Syriac hbasa-esasa dotted"],
+      ["ܽ", "Syriac esasa above"],
+      ["ܾ", "Syriac esasa below"],
+      ["ܿ", "Syriac rwaha"],
+      ["݀", "Syriac feminine dot"],
+      ["݁", "Syriac qushshaya"],
+      ["݂", "Syriac rukkakha"],
+      ["݃", "Syriac two vertical dots above"],
+      ["݄", "Syriac two vertical dots below"],
+      ["݅", "Syriac three dots above"],
+      ["݆", "Syriac three dots below"],
+      ["݇", "Syriac oblique line above"],
+      ["݈", "Syriac oblique line below"],
+      ["݊", "Syriac barrekh"]
+    ]);
+    const arabicLetterNameByValueChirho = new Map([
+      ["ء", "Arabic letter hamza"],
+      ["آ", "Arabic letter alef with madda above"],
+      ["أ", "Arabic letter alef with hamza above"],
+      ["ؤ", "Arabic letter waw with hamza above"],
+      ["إ", "Arabic letter alef with hamza below"],
+      ["ئ", "Arabic letter yeh with hamza above"],
+      ["ا", "Arabic letter alef"],
+      ["ب", "Arabic letter beh"],
+      ["ة", "Arabic letter teh marbuta"],
+      ["ت", "Arabic letter teh"],
+      ["ث", "Arabic letter theh"],
+      ["ج", "Arabic letter jeem"],
+      ["ح", "Arabic letter hah"],
+      ["خ", "Arabic letter khah"],
+      ["د", "Arabic letter dal"],
+      ["ذ", "Arabic letter thal"],
+      ["ر", "Arabic letter reh"],
+      ["ز", "Arabic letter zain"],
+      ["س", "Arabic letter seen"],
+      ["ش", "Arabic letter sheen"],
+      ["ص", "Arabic letter sad"],
+      ["ض", "Arabic letter dad"],
+      ["ط", "Arabic letter tah"],
+      ["ظ", "Arabic letter zah"],
+      ["ع", "Arabic letter ain"],
+      ["غ", "Arabic letter ghain"],
+      ["ـ", "Arabic tatweel"],
+      ["ف", "Arabic letter feh"],
+      ["ق", "Arabic letter qaf"],
+      ["ك", "Arabic letter kaf"],
+      ["ل", "Arabic letter lam"],
+      ["م", "Arabic letter meem"],
+      ["ن", "Arabic letter noon"],
+      ["ه", "Arabic letter heh"],
+      ["و", "Arabic letter waw"],
+      ["ى", "Arabic letter alef maksura"],
+      ["ي", "Arabic letter yeh"],
+      ["ٱ", "Arabic letter alef wasla"],
+      ["پ", "Arabic letter peh"],
+      ["چ", "Arabic letter tcheh"],
+      ["ژ", "Arabic letter jeh"],
+      ["ک", "Arabic letter keheh"],
+      ["گ", "Arabic letter gaf"],
+      ["ی", "Arabic letter farsi yeh"]
+    ]);
+    const arabicMarkNameByValueChirho = new Map([
+      ["ً", "Arabic fathatan"],
+      ["ٌ", "Arabic dammatan"],
+      ["ٍ", "Arabic kasratan"],
+      ["َ", "Arabic fatha"],
+      ["ُ", "Arabic damma"],
+      ["ِ", "Arabic kasra"],
+      ["ّ", "Arabic shadda"],
+      ["ْ", "Arabic sukun"],
+      ["ٰ", "Arabic superscript alef"]
+    ]);
     const combiningMarkNameByValueChirho = new Map([
       ["̀", "grave"],
       ["́", "acute"],
@@ -950,7 +1070,7 @@ function htmlChirho(): string {
       ["͂", "circumflex/perispomeni"],
       ["ͅ", "iota subscript"]
     ]);
-    const combiningMarkReChirho = /[\u0300-\u036F\u0591-\u05BD\u05BF-\u05C7]/u;
+    const combiningMarkReChirho = /[\u0300-\u036F\u0591-\u05BD\u05BF-\u05C7\u0610-\u061A\u064B-\u065F\u0670\u06D6-\u06ED\u070F\u0730-\u074A]/u;
     function displayCodepointCharChirho(charChirho) {
       return (combiningMarkReChirho.test(charChirho) ? "◌" : "") + charChirho;
     }
@@ -959,6 +1079,10 @@ function htmlChirho(): string {
         hebrewBaseLetterNameByValueChirho.get(charChirho) ??
         hebrewMarkNameByValueChirho.get(charChirho) ??
         greekBaseLetterNameByValueChirho.get(charChirho) ??
+        syriacLetterNameByValueChirho.get(charChirho) ??
+        syriacMarkNameByValueChirho.get(charChirho) ??
+        arabicLetterNameByValueChirho.get(charChirho) ??
+        arabicMarkNameByValueChirho.get(charChirho) ??
         combiningMarkNameByValueChirho.get(charChirho);
       if (directNameChirho) return " " + directNameChirho;
       const decomposedChirho = Array.from(charChirho.normalize("NFD"));
@@ -968,7 +1092,11 @@ function htmlChirho(): string {
           greekBaseLetterNameByValueChirho.get(partChirho) ??
           combiningMarkNameByValueChirho.get(partChirho) ??
           hebrewBaseLetterNameByValueChirho.get(partChirho) ??
-          hebrewMarkNameByValueChirho.get(partChirho)
+          hebrewMarkNameByValueChirho.get(partChirho) ??
+          syriacLetterNameByValueChirho.get(partChirho) ??
+          syriacMarkNameByValueChirho.get(partChirho) ??
+          arabicLetterNameByValueChirho.get(partChirho) ??
+          arabicMarkNameByValueChirho.get(partChirho)
         )
         .filter((partChirho) => typeof partChirho === "string" && partChirho.length > 0);
       return partsChirho.length > 0 ? " " + partsChirho.join(" + ") : "";
