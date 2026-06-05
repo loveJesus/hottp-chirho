@@ -17,6 +17,14 @@ import { join } from "path";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
 const MODULE_CHIRHO = "check-latin-symbol-review-server-guards-chirho";
+const LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
+  "Current codepoints",
+  "mathematical alphanumeric symbol",
+  "Latin letter with diacritic/extension",
+  "not equal sign",
+  "Greek final sigma",
+  "Dagesh/mappiq/shuruk",
+];
 
 interface LatinSymbolReviewStateItemChirho {
   idChirho: string;
@@ -131,6 +139,18 @@ async function stateItemChirho(portChirho: number): Promise<LatinSymbolReviewSta
   return itemChirho;
 }
 
+async function assertLatinSymbolReviewGuidanceHtmlChirho(portChirho: number): Promise<void> {
+  const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/`);
+  const htmlChirho = await responseChirho.text();
+  assertCheckChirho(responseChirho.ok, `Latin/symbol page request failed: ${responseChirho.status}`);
+  for (const snippetChirho of LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO) {
+    assertCheckChirho(
+      htmlChirho.includes(snippetChirho),
+      `Latin/symbol review server HTML is missing guidance snippet: ${snippetChirho}`
+    );
+  }
+}
+
 function displayGuardForItemChirho(itemChirho: LatinSymbolReviewStateItemChirho): Record<string, unknown> {
   return {
     expectedItemKindChirho: itemChirho.itemKindChirho,
@@ -201,6 +221,7 @@ async function mainChirho(): Promise<void> {
 
   try {
     await waitForServerChirho(portChirho, processChirho);
+    await assertLatinSymbolReviewGuidanceHtmlChirho(portChirho);
     const itemChirho = await stateItemChirho(portChirho);
     const commonBodyChirho = {
       idChirho: itemChirho.idChirho,
