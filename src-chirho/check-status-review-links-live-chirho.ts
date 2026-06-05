@@ -160,6 +160,10 @@ interface CertificationStatusChirho {
     pendingDecisionCountChirho?: number;
     repeatSummaryChirho?: LatinSymbolRepeatSummaryChirho;
   };
+  visionTierChirho?: {
+    pendingVisionItemCountChirho?: number;
+    repeatSummaryChirho?: ExpertRepeatSummaryChirho;
+  };
 }
 
 interface AttributionCleanupRowChirho {
@@ -253,6 +257,31 @@ interface LatinSymbolRepeatSummaryChirho {
   duplicateTextGroupCountsByScriptChirho?: Record<string, number>;
   duplicateTextItemCountsByScriptChirho?: Record<string, number>;
   groupsChirho?: LatinSymbolRepeatGroupChirho[];
+}
+
+interface ExpertRepeatItemChirho {
+  idChirho: string;
+  volumeChirho: number | null;
+  reviewUrlChirho: string;
+}
+
+interface ExpertRepeatGroupChirho {
+  scriptChirho: string;
+  currentTextChirho: string;
+  countChirho: number;
+  firstItemIdChirho: string;
+  reviewUrlChirho: string;
+  itemsChirho: ExpertRepeatItemChirho[];
+}
+
+interface ExpertRepeatSummaryChirho {
+  textGroupCountChirho?: number;
+  duplicateTextGroupCountChirho?: number;
+  duplicateTextItemCountChirho?: number;
+  singletonTextGroupCountChirho?: number;
+  duplicateTextGroupCountsByScriptChirho?: Record<string, number>;
+  duplicateTextItemCountsByScriptChirho?: Record<string, number>;
+  groupsChirho?: ExpertRepeatGroupChirho[];
 }
 
 interface RawHebrewQueueItemChirho {
@@ -492,6 +521,10 @@ function assertLatinSymbolRepeatMarkdownIncludesChirho(markdownChirho: string, s
   assertGeneratedCheckChirho(markdownChirho.includes(snippetChirho), `Latin/symbol repeat-cluster handoff missing ${contextChirho}: ${snippetChirho}`);
 }
 
+function assertExpertRepeatMarkdownIncludesChirho(markdownChirho: string, snippetChirho: string, contextChirho: string): void {
+  assertGeneratedCheckChirho(markdownChirho.includes(snippetChirho), `expert repeat-cluster handoff missing ${contextChirho}: ${snippetChirho}`);
+}
+
 function numberArrayFieldChirho(valueChirho: unknown, pathChirho: string): number[] {
   assertGeneratedCheckChirho(
     Array.isArray(valueChirho) && valueChirho.every((entryChirho) => typeof entryChirho === "number"),
@@ -624,6 +657,29 @@ function assertLatinSymbolRepeatGroupShapeChirho(groupChirho: LatinSymbolRepeatG
   );
 }
 
+function assertExpertRepeatItemShapeChirho(itemChirho: ExpertRepeatItemChirho, pathChirho: string): void {
+  stringFieldChirho(itemChirho.idChirho, `${pathChirho}.idChirho`);
+  assertGeneratedCheckChirho(itemChirho.volumeChirho === null || typeof itemChirho.volumeChirho === "number", `status JSON missing ${pathChirho}.volumeChirho number/null`);
+  stringFieldChirho(itemChirho.reviewUrlChirho, `${pathChirho}.reviewUrlChirho`);
+}
+
+function assertExpertRepeatGroupShapeChirho(groupChirho: ExpertRepeatGroupChirho, indexChirho: number): void {
+  const groupPathChirho = `visionTierChirho.repeatSummaryChirho.groupsChirho[${indexChirho}]`;
+  stringFieldChirho(groupChirho.scriptChirho, `${groupPathChirho}.scriptChirho`);
+  stringFieldChirho(groupChirho.currentTextChirho, `${groupPathChirho}.currentTextChirho`);
+  numberFieldChirho(groupChirho.countChirho, `${groupPathChirho}.countChirho`);
+  stringFieldChirho(groupChirho.firstItemIdChirho, `${groupPathChirho}.firstItemIdChirho`);
+  stringFieldChirho(groupChirho.reviewUrlChirho, `${groupPathChirho}.reviewUrlChirho`);
+  assertGeneratedCheckChirho(Array.isArray(groupChirho.itemsChirho), `status JSON missing ${groupPathChirho}.itemsChirho array`);
+  assertGeneratedCheckChirho(
+    groupChirho.itemsChirho.length === groupChirho.countChirho,
+    `status JSON ${groupPathChirho}.itemsChirho length ${groupChirho.itemsChirho.length} does not match countChirho ${groupChirho.countChirho}`
+  );
+  groupChirho.itemsChirho.forEach((itemChirho, itemIndexChirho) =>
+    assertExpertRepeatItemShapeChirho(itemChirho, `${groupPathChirho}.itemsChirho[${itemIndexChirho}]`)
+  );
+}
+
 function assertRawHebrewRepeatHandoffMatchesStatusChirho(statusChirho: CertificationStatusChirho, markdownChirho: string): void {
   assertGeneratedCheckChirho(
     statusChirho.rawHebrewChirho !== undefined &&
@@ -717,6 +773,99 @@ function assertRawHebrewRepeatHandoffMatchesStatusChirho(statusChirho: Certifica
         markdownChirho,
         `  - ${itemChirho.itemKeyChirho} (${volumeTextChirho}; ${itemChirho.validationStatusChirho}): ${itemChirho.reviewUrlChirho}`,
         `group ${groupNumberChirho} item ${itemChirho.itemKeyChirho}`
+      );
+    }
+  });
+}
+
+function assertExpertRepeatHandoffMatchesStatusChirho(statusChirho: CertificationStatusChirho, markdownChirho: string): void {
+  assertGeneratedCheckChirho(
+    statusChirho.visionTierChirho !== undefined &&
+      typeof statusChirho.visionTierChirho === "object" &&
+      statusChirho.visionTierChirho.repeatSummaryChirho !== undefined &&
+      typeof statusChirho.visionTierChirho.repeatSummaryChirho === "object",
+    "status JSON missing visionTierChirho.repeatSummaryChirho object"
+  );
+  const visionTierChirho = statusChirho.visionTierChirho;
+  const summaryChirho = visionTierChirho.repeatSummaryChirho!;
+  const pendingCountChirho = numberFieldChirho(visionTierChirho.pendingVisionItemCountChirho, "visionTierChirho.pendingVisionItemCountChirho");
+  const textGroupCountChirho = numberFieldChirho(summaryChirho.textGroupCountChirho, "visionTierChirho.repeatSummaryChirho.textGroupCountChirho");
+  const duplicateTextGroupCountChirho = numberFieldChirho(
+    summaryChirho.duplicateTextGroupCountChirho,
+    "visionTierChirho.repeatSummaryChirho.duplicateTextGroupCountChirho"
+  );
+  const duplicateTextItemCountChirho = numberFieldChirho(
+    summaryChirho.duplicateTextItemCountChirho,
+    "visionTierChirho.repeatSummaryChirho.duplicateTextItemCountChirho"
+  );
+  const singletonTextGroupCountChirho = numberFieldChirho(
+    summaryChirho.singletonTextGroupCountChirho,
+    "visionTierChirho.repeatSummaryChirho.singletonTextGroupCountChirho"
+  );
+  const duplicateGroupCountsByScriptChirho = numberRecordFieldChirho(
+    summaryChirho.duplicateTextGroupCountsByScriptChirho,
+    "visionTierChirho.repeatSummaryChirho.duplicateTextGroupCountsByScriptChirho"
+  );
+  const duplicateItemCountsByScriptChirho = numberRecordFieldChirho(
+    summaryChirho.duplicateTextItemCountsByScriptChirho,
+    "visionTierChirho.repeatSummaryChirho.duplicateTextItemCountsByScriptChirho"
+  );
+  assertGeneratedCheckChirho(Array.isArray(summaryChirho.groupsChirho), "status JSON missing visionTierChirho.repeatSummaryChirho.groupsChirho array");
+  const groupsChirho = summaryChirho.groupsChirho;
+  assertGeneratedCheckChirho(
+    groupsChirho.length === duplicateTextGroupCountChirho,
+    `expert repeat status has ${groupsChirho.length} rendered duplicate group(s), expected ${duplicateTextGroupCountChirho}`
+  );
+
+  assertExpertRepeatMarkdownIncludesChirho(markdownChirho, `- Pending expert items: ${pendingCountChirho}`, "pending expert count");
+  assertExpertRepeatMarkdownIncludesChirho(markdownChirho, `- Text groups: ${textGroupCountChirho}`, "text group count");
+  assertExpertRepeatMarkdownIncludesChirho(markdownChirho, `- Duplicate groups: ${duplicateTextGroupCountChirho}`, "duplicate group count");
+  assertExpertRepeatMarkdownIncludesChirho(markdownChirho, `- Duplicate items: ${duplicateTextItemCountChirho}`, "duplicate item count");
+  assertExpertRepeatMarkdownIncludesChirho(markdownChirho, `- Singleton groups: ${singletonTextGroupCountChirho}`, "singleton group count");
+  assertExpertRepeatMarkdownIncludesChirho(
+    markdownChirho,
+    `- Duplicate groups by script: ${countEntriesForCheckChirho(duplicateGroupCountsByScriptChirho)}`,
+    "duplicate groups by script"
+  );
+  assertExpertRepeatMarkdownIncludesChirho(
+    markdownChirho,
+    `- Duplicate items by script: ${countEntriesForCheckChirho(duplicateItemCountsByScriptChirho)}`,
+    "duplicate items by script"
+  );
+
+  const renderedGroupHeadingCountChirho = [...markdownChirho.matchAll(/^## \d+\. .+ x\d+ /gmu)].length;
+  assertGeneratedCheckChirho(
+    renderedGroupHeadingCountChirho === groupsChirho.length,
+    `expert repeat handoff rendered ${renderedGroupHeadingCountChirho} group heading(s), expected ${groupsChirho.length}`
+  );
+  if (groupsChirho.length === 0) {
+    assertExpertRepeatMarkdownIncludesChirho(markdownChirho, "- No duplicate expert text groups are currently pending.", "empty duplicate group notice");
+    return;
+  }
+
+  groupsChirho.forEach((groupChirho, indexChirho) => {
+    assertExpertRepeatGroupShapeChirho(groupChirho, indexChirho);
+    const groupNumberChirho = indexChirho + 1;
+    const textDisplayChirho = groupChirho.currentTextChirho.trim().length === 0
+      ? "(blank text)"
+      : markdownCodeSpanForCheckChirho(groupChirho.currentTextChirho);
+    assertExpertRepeatMarkdownIncludesChirho(
+      markdownChirho,
+      `## ${groupNumberChirho}. ${groupChirho.scriptChirho} x${groupChirho.countChirho} ${textDisplayChirho}`,
+      `group ${groupNumberChirho} heading`
+    );
+    assertExpertRepeatMarkdownIncludesChirho(markdownChirho, `- First pending: ${groupChirho.reviewUrlChirho}`, `group ${groupNumberChirho} first URL`);
+    assertExpertRepeatMarkdownIncludesChirho(
+      markdownChirho,
+      `- Item IDs: ${groupChirho.itemsChirho.map((itemChirho) => itemChirho.idChirho).join(", ")}`,
+      `group ${groupNumberChirho} item IDs`
+    );
+    for (const itemChirho of groupChirho.itemsChirho) {
+      const volumeTextChirho = itemChirho.volumeChirho === null ? "vol ?" : `vol ${itemChirho.volumeChirho}`;
+      assertExpertRepeatMarkdownIncludesChirho(
+        markdownChirho,
+        `  - ${itemChirho.idChirho} (${volumeTextChirho}): ${itemChirho.reviewUrlChirho}`,
+        `group ${groupNumberChirho} item ${itemChirho.idChirho}`
       );
     }
   });
@@ -1394,6 +1543,7 @@ async function mainChirho(): Promise<void> {
   assertRawHebrewAttentionHandoffMatchesStatusChirho(statusChirho, rawHebrewAttentionMarkdownChirho);
   assertRawHebrewRepeatHandoffMatchesStatusChirho(statusChirho, rawHebrewRepeatMarkdownChirho);
   assertLatinSymbolRepeatHandoffMatchesStatusChirho(statusChirho, latinSymbolRepeatMarkdownChirho);
+  assertExpertRepeatHandoffMatchesStatusChirho(statusChirho, expertRepeatMarkdownChirho);
   const checkedLinksChirho = new Set<string>();
   let jsonCheckedCountChirho = 0;
   for (const [keyChirho, linkChirho] of Object.entries(statusChirho.reviewStartLinksChirho)) {
