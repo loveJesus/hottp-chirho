@@ -29,6 +29,10 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Suggested codepoints",
   "Hebrew letter alef",
   "Hebrew letter qof",
+  "Attribution-blocked row shown read-only. Inspect the crop; reattribute only if this existing row is genuinely attributable to the named human reviewer.",
+  "bun run reattribute-pass-c-human-validations-chirho",
+  "--expected-live-text-chirho",
+  "Apply after dry run",
 ];
 
 interface RawReviewQueueItemChirho {
