@@ -33,6 +33,7 @@ interface CertificationStatusForGuardChirho {
   };
   latinSymbolReviewDbChirho?: {
     genericReviewerRowsChirho?: number;
+    invalidReviewRowsChirho?: number;
     staleRowsChirho?: number;
   };
   artifactsChirho?: {
@@ -168,6 +169,39 @@ function insertStaleLatinSymbolReviewChirho(dbPathChirho: string): string | null
   }
 }
 
+function insertInvalidLatinSymbolReviewChirho(dbPathChirho: string): string | null {
+  const manifestChirho = loadLatinSymbolPacketManifestChirho();
+  const liveItemsChirho = latinSymbolVisionLiveItemsChirho();
+  const manifestItemChirho = manifestChirho.itemsChirho?.[2];
+  if (manifestItemChirho === undefined) return null;
+  const liveItemChirho = liveItemsChirho.find((itemChirho) => itemChirho.idChirho === manifestItemChirho.idChirho);
+  if (liveItemChirho === undefined) return null;
+  const dbChirho = new Database(dbPathChirho);
+  try {
+    ensureLatinSymbolReviewSchemaChirho(dbChirho);
+    saveLatinSymbolReviewChirho({
+      dbChirho,
+      manifestChirho,
+      liveItemChirho,
+      verdictChirho: "accepted-clean-chirho",
+      acceptCleanChirho: true,
+      issueFlagsChirho: [],
+      notesChirho: null,
+      reviewerChirho: "hallelujah-chirho",
+    });
+    dbChirho
+      .prepare(`
+        UPDATE latin_symbol_vision_reviews_chirho
+           SET issue_flags_chirho = ?
+         WHERE item_id_chirho = ?
+           AND is_current_chirho = 1`)
+      .run(JSON.stringify("punctuation-chirho"), liveItemChirho.idChirho);
+    return liveItemChirho.idChirho;
+  } finally {
+    dbChirho.close();
+  }
+}
+
 function writeGenericExpertSuppliedBackupFixtureChirho(pathChirho: string): void {
   const suppliedTextChirho = "ܐ";
   writeFileSync(
@@ -288,6 +322,7 @@ function mainChirho(): void {
     const rowIdChirho = forceSingleGenericPassCHumanReviewerChirho(dbPathChirho);
     const latinItemIdChirho = insertGenericLatinSymbolReviewChirho(dbPathChirho);
     const staleLatinItemIdChirho = insertStaleLatinSymbolReviewChirho(dbPathChirho);
+    const invalidLatinItemIdChirho = insertInvalidLatinSymbolReviewChirho(dbPathChirho);
     if (rowIdChirho === null) {
       console.log(`[${MODULE_CHIRHO}] no current schema-v2 Pass-C human validation row available; skipped generic reviewer status guard`);
       return;
@@ -333,6 +368,18 @@ function mainChirho(): void {
           itemChirho.includes("Latin/symbol review row(s) are stale against current live span/D1 text")
         ),
         "stale Latin/symbol review status did not add the remaining-work blocker"
+      );
+    }
+    if (invalidLatinItemIdChirho !== null) {
+      assertCheckChirho(
+        (statusChirho.latinSymbolReviewDbChirho?.invalidReviewRowsChirho ?? 0) >= 1,
+        "invalid Latin/symbol review status did not report a malformed row"
+      );
+      assertCheckChirho(
+        (statusChirho.remainingWorkChirho ?? []).some((itemChirho) =>
+          itemChirho.includes("Latin/symbol review row(s) have malformed or verdict-inconsistent issue metadata")
+        ),
+        "invalid Latin/symbol review status did not add the remaining-work blocker"
       );
     }
     assertCheckChirho(
@@ -440,6 +487,7 @@ function mainChirho(): void {
       `[${MODULE_CHIRHO}] generic reviewer status gate guard passed for disposable row ${rowIdChirho}` +
         (latinItemIdChirho === null ? "" : ` and Latin/symbol item ${latinItemIdChirho}`) +
         (staleLatinItemIdChirho === null ? "" : `; stale Latin/symbol item ${staleLatinItemIdChirho}`) +
+        (invalidLatinItemIdChirho === null ? "" : `; invalid Latin/symbol item ${invalidLatinItemIdChirho}`) +
         "; generic expert-supplied backup blocked; blank Syriac handoff artifacts blocked"
     );
   } finally {

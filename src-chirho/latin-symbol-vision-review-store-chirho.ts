@@ -116,10 +116,16 @@ export interface LatinSymbolReviewRowChirho {
   verdictChirho: string;
   acceptCleanChirho: boolean;
   issueFlagsChirho: string[];
+  issueFlagsShapeErrorChirho: string | null;
   notesChirho: string | null;
   reviewerChirho: string;
   currentTextHashChirho: string;
   updatedAtChirho: string;
+}
+
+export interface ParsedLatinSymbolIssueFlagsChirho {
+  flagsChirho: string[];
+  shapeErrorChirho: string | null;
 }
 
 export interface SaveLatinSymbolReviewParamsChirho {
@@ -293,13 +299,25 @@ export function parseLatinSymbolIssueFlagsChirho(valueChirho: unknown): string[]
   return normalizeLatinSymbolIssueFlagsChirho(flagsChirho);
 }
 
-export function parseStoredLatinSymbolIssueFlagsChirho(valueChirho: string | null): string[] {
-  if (!valueChirho) return [];
-  try {
-    return parseLatinSymbolIssueFlagsChirho(JSON.parse(valueChirho));
-  } catch {
-    return [];
+export function parseStoredLatinSymbolIssueFlagsResultChirho(valueChirho: string | null): ParsedLatinSymbolIssueFlagsChirho {
+  if (valueChirho === null || valueChirho.trim().length === 0) {
+    return { flagsChirho: [], shapeErrorChirho: null };
   }
+  try {
+    return {
+      flagsChirho: parseLatinSymbolIssueFlagsChirho(JSON.parse(valueChirho)),
+      shapeErrorChirho: null,
+    };
+  } catch (errorChirho) {
+    return {
+      flagsChirho: [],
+      shapeErrorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+    };
+  }
+}
+
+export function parseStoredLatinSymbolIssueFlagsChirho(valueChirho: string | null): string[] {
+  return parseStoredLatinSymbolIssueFlagsResultChirho(valueChirho).flagsChirho;
 }
 
 export function currentLatinSymbolReviewRowsChirho(dbChirho: Database): LatinSymbolReviewDbRowChirho[] {
@@ -319,17 +337,21 @@ export function currentLatinSymbolReviewRowsChirho(dbChirho: Database): LatinSym
 }
 
 export function publicLatinSymbolReviewRowsChirho(dbChirho: Database): LatinSymbolReviewRowChirho[] {
-  return currentLatinSymbolReviewRowsChirho(dbChirho).map((rowChirho) => ({
-    idChirho: rowChirho.id_chirho,
-    itemIdChirho: rowChirho.item_id_chirho,
-    verdictChirho: rowChirho.verdict_chirho,
-    acceptCleanChirho: rowChirho.accept_clean_chirho === 1,
-    issueFlagsChirho: parseStoredLatinSymbolIssueFlagsChirho(rowChirho.issue_flags_chirho),
-    notesChirho: rowChirho.notes_chirho,
-    reviewerChirho: rowChirho.reviewer_chirho,
-    currentTextHashChirho: rowChirho.current_text_hash_chirho,
-    updatedAtChirho: rowChirho.updated_at_chirho,
-  }));
+  return currentLatinSymbolReviewRowsChirho(dbChirho).map((rowChirho) => {
+    const parsedFlagsChirho = parseStoredLatinSymbolIssueFlagsResultChirho(rowChirho.issue_flags_chirho);
+    return {
+      idChirho: rowChirho.id_chirho,
+      itemIdChirho: rowChirho.item_id_chirho,
+      verdictChirho: rowChirho.verdict_chirho,
+      acceptCleanChirho: rowChirho.accept_clean_chirho === 1,
+      issueFlagsChirho: parsedFlagsChirho.flagsChirho,
+      issueFlagsShapeErrorChirho: parsedFlagsChirho.shapeErrorChirho,
+      notesChirho: rowChirho.notes_chirho,
+      reviewerChirho: rowChirho.reviewer_chirho,
+      currentTextHashChirho: rowChirho.current_text_hash_chirho,
+      updatedAtChirho: rowChirho.updated_at_chirho,
+    };
+  });
 }
 
 export function writeLatinSymbolReviewBackupChirho(
@@ -349,33 +371,37 @@ export function writeLatinSymbolReviewBackupChirho(
     packetGeneratedAtChirho: manifestChirho.generatedAtChirho ?? null,
     liveItemCountChirho: liveItemsChirho.length,
     reviewCountChirho: rowsChirho.length,
-    reviewsChirho: rowsChirho.map((rowChirho) => ({
-      dbIdChirho: rowChirho.id_chirho,
-      itemIdChirho: rowChirho.item_id_chirho,
-      itemKindChirho: rowChirho.item_kind_chirho,
-      volumeChirho: rowChirho.volume_chirho,
-      pageChirho: rowChirho.page_chirho,
-      lineIndexChirho: rowChirho.line_index_chirho,
-      segmentIndexChirho: rowChirho.segment_index_chirho,
-      wordIndexChirho: rowChirho.word_index_chirho,
-      scriptChirho: rowChirho.script_chirho,
-      sourceChirho: rowChirho.source_chirho,
-      currentTextChirho: rowChirho.current_text_chirho,
-      currentTextHashChirho: rowChirho.current_text_hash_chirho,
-      currentHashMatchesLiveChirho: liveHashByIdChirho.get(rowChirho.item_id_chirho) === rowChirho.current_text_hash_chirho,
-      lineTextChirho: rowChirho.line_text_chirho,
-      verdictChirho: rowChirho.verdict_chirho,
-      acceptCleanChirho: rowChirho.accept_clean_chirho === 1,
-      issueFlagsChirho: parseStoredLatinSymbolIssueFlagsChirho(rowChirho.issue_flags_chirho),
-      notesChirho: rowChirho.notes_chirho,
-      packetGeneratedAtChirho: rowChirho.packet_generated_at_chirho,
-      reviewerChirho: rowChirho.reviewer_chirho,
-      createdAtChirho: rowChirho.created_at_chirho,
-      updatedAtChirho: rowChirho.updated_at_chirho,
-      supersedesIdChirho: rowChirho.supersedes_id_chirho,
-      appliedAtChirho: rowChirho.applied_at_chirho,
-      schemaVersionChirho: rowChirho.schema_version_chirho,
-    })),
+    reviewsChirho: rowsChirho.map((rowChirho) => {
+      const parsedFlagsChirho = parseStoredLatinSymbolIssueFlagsResultChirho(rowChirho.issue_flags_chirho);
+      return {
+        dbIdChirho: rowChirho.id_chirho,
+        itemIdChirho: rowChirho.item_id_chirho,
+        itemKindChirho: rowChirho.item_kind_chirho,
+        volumeChirho: rowChirho.volume_chirho,
+        pageChirho: rowChirho.page_chirho,
+        lineIndexChirho: rowChirho.line_index_chirho,
+        segmentIndexChirho: rowChirho.segment_index_chirho,
+        wordIndexChirho: rowChirho.word_index_chirho,
+        scriptChirho: rowChirho.script_chirho,
+        sourceChirho: rowChirho.source_chirho,
+        currentTextChirho: rowChirho.current_text_chirho,
+        currentTextHashChirho: rowChirho.current_text_hash_chirho,
+        currentHashMatchesLiveChirho: liveHashByIdChirho.get(rowChirho.item_id_chirho) === rowChirho.current_text_hash_chirho,
+        lineTextChirho: rowChirho.line_text_chirho,
+        verdictChirho: rowChirho.verdict_chirho,
+        acceptCleanChirho: rowChirho.accept_clean_chirho === 1,
+        issueFlagsChirho: parsedFlagsChirho.flagsChirho,
+        issueFlagsShapeErrorChirho: parsedFlagsChirho.shapeErrorChirho,
+        notesChirho: rowChirho.notes_chirho,
+        packetGeneratedAtChirho: rowChirho.packet_generated_at_chirho,
+        reviewerChirho: rowChirho.reviewer_chirho,
+        createdAtChirho: rowChirho.created_at_chirho,
+        updatedAtChirho: rowChirho.updated_at_chirho,
+        supersedesIdChirho: rowChirho.supersedes_id_chirho,
+        appliedAtChirho: rowChirho.applied_at_chirho,
+        schemaVersionChirho: rowChirho.schema_version_chirho,
+      };
+    }),
   };
   writeJsonAtomicChirho(backupPathChirho, backupChirho);
   return rowsChirho.length;
@@ -391,18 +417,28 @@ export function validLatinSymbolReviewIdsByVerdictChirho(
   );
   const rowsChirho = dbChirho
     .query(`
-      SELECT item_id_chirho, current_text_hash_chirho, accept_clean_chirho
+      SELECT item_id_chirho, current_text_hash_chirho, accept_clean_chirho, issue_flags_chirho
         FROM latin_symbol_vision_reviews_chirho
        WHERE is_current_chirho = 1
          AND verdict_chirho = ?`)
-    .all(verdictChirho) as Array<{ item_id_chirho: string; current_text_hash_chirho: string; accept_clean_chirho: number }>;
+    .all(verdictChirho) as Array<{
+      item_id_chirho: string;
+      current_text_hash_chirho: string;
+      accept_clean_chirho: number;
+      issue_flags_chirho: string | null;
+    }>;
   return new Set(
     rowsChirho
-      .filter(
-        (rowChirho) =>
-          (verdictChirho !== "accepted-clean-chirho" || rowChirho.accept_clean_chirho === 1) &&
-          hashByIdChirho.get(rowChirho.item_id_chirho) === rowChirho.current_text_hash_chirho
-      )
+      .filter((rowChirho) => {
+        if (hashByIdChirho.get(rowChirho.item_id_chirho) !== rowChirho.current_text_hash_chirho) return false;
+        const parsedFlagsChirho = parseStoredLatinSymbolIssueFlagsResultChirho(rowChirho.issue_flags_chirho);
+        if (verdictChirho === "accepted-clean-chirho") {
+          return rowChirho.accept_clean_chirho === 1 &&
+            parsedFlagsChirho.shapeErrorChirho === null &&
+            parsedFlagsChirho.flagsChirho.length === 0;
+        }
+        return parsedFlagsChirho.shapeErrorChirho !== null || parsedFlagsChirho.flagsChirho.length > 0;
+      })
       .map((rowChirho) => rowChirho.item_id_chirho)
   );
 }
@@ -500,6 +536,7 @@ VALUES
     verdictChirho: paramsChirho.verdictChirho,
     acceptCleanChirho: paramsChirho.acceptCleanChirho,
     issueFlagsChirho,
+    issueFlagsShapeErrorChirho: null,
     notesChirho,
     reviewerChirho: paramsChirho.reviewerChirho,
     currentTextHashChirho,
