@@ -33,6 +33,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
     argsChirho: [process.execPath, "run", "check-certification-status-gate-guards-chirho"],
   },
   {
+    labelChirho: "certification strict status exit behavior",
+    argsChirho: [process.execPath, "run", "check-certification-strict-status-chirho"],
+  },
+  {
     labelChirho: "expert-supplied text CLI guards",
     argsChirho: [process.execPath, "run", "check-expert-supplied-text-guards-chirho"],
   },

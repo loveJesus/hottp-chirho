@@ -33,6 +33,7 @@
     "review-servers-chirho": "bun run src-chirho/review-servers-chirho.ts",
     "check-certification-chirho": "bun run src-chirho/check-certification-chirho.ts",
     "check-certification-status-gate-guards-chirho": "bun run src-chirho/check-certification-status-gate-guards-chirho.ts",
+    "check-certification-strict-status-chirho": "bun run src-chirho/check-certification-strict-status-chirho.ts",
     "check-reviewer-attribution-chirho": "bun run src-chirho/check-reviewer-attribution-chirho.ts",
     "check-expert-supplied-text-guards-chirho": "bun run src-chirho/check-expert-supplied-text-guards-chirho.ts",
     "check-human-suggested-correction-cli-guards-chirho": "bun run src-chirho/check-human-suggested-correction-cli-guards-chirho.ts",
