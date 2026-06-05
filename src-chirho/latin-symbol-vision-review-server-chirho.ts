@@ -203,6 +203,7 @@ function htmlChirho(): string {
     .image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: auto; margin-bottom: 12px; }
     .target-image-chirho { display: block; width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
     .line-image-chirho { display: block; max-width: none; width: 1400px; height: auto; image-rendering: -webkit-optimize-contrast; }
+    .target-scope-note-chirho { margin: -4px 0 12px; border: 1px solid #d6d9dd; border-top: 0; background: #fff; color: #3d4650; font-size: 12px; line-height: 1.35; padding: 8px 10px; }
     .text-box-chirho { background: white; border: 1px solid #d6d9dd; padding: 10px; line-height: 1.45; overflow-wrap: anywhere; }
     .current-text-chirho { font-size: 22px; }
     .line-text-chirho { font-size: 16px; }
@@ -648,6 +649,12 @@ function htmlChirho(): string {
       const optionChirho = symbolRiskOptionsChirho.find((candidateChirho) => candidateChirho.valueChirho === valueChirho);
       return optionChirho ? optionChirho.labelChirho : valueChirho;
     }
+    function targetScopeTextChirho(itemChirho) {
+      return "Target item: " + itemChirho.itemKindChirho +
+        "; script " + itemChirho.scriptChirho +
+        "; risk " + symbolRiskLabelChirho(itemChirho.symbolRiskChirho) +
+        "; clean acceptance covers only this target crop and current text, with exact letters/digits/sigla, punctuation, spacing, and segmentation checked against the full line.";
+    }
     async function loadStateChirho() {
       const responseChirho = await fetch("/api-chirho/state-chirho");
       const dataChirho = await responseChirho.json();
@@ -684,6 +691,7 @@ function htmlChirho(): string {
       const targetWrapChirho = elChirho("div", { classChirho: "image-wrap-chirho" });
       targetWrapChirho.appendChild(elChirho("img", { classChirho: "target-image-chirho", src: imageSrcChirho(itemChirho.targetMarkdownPathChirho), alt: "" }));
       leftChirho.appendChild(targetWrapChirho);
+      leftChirho.appendChild(elChirho("div", { classChirho: "target-scope-note-chirho", textChirho: targetScopeTextChirho(itemChirho) }));
       leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Full line" }));
       const lineWrapChirho = elChirho("div", { classChirho: "image-wrap-chirho" });
       lineWrapChirho.appendChild(elChirho("img", { classChirho: "line-image-chirho", src: imageSrcChirho(itemChirho.lineMarkdownPathChirho), alt: "" }));
