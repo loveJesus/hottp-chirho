@@ -85,6 +85,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
     argsChirho: [process.execPath, "run", "check-certification-status-output-hygiene-chirho"],
   },
   {
+    labelChirho: "export Markdown output hygiene",
+    argsChirho: [process.execPath, "run", "check-export-markdown-output-hygiene-chirho"],
+  },
+  {
     labelChirho: "review server health",
     argsChirho: [process.execPath, "run", "review-servers-chirho", "--", "--check-chirho"],
   },
