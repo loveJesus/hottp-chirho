@@ -50,6 +50,12 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "script-chirho=arabic-chirho&source-chirho=explicit-span-chirho",
   "text-state-chirho=nonblank-chirho",
   "Target span",
+  "Confirm only if you can certify this script's exact letters and relevant marks against the printed line.",
+  "If this is outside your competence or uncertain, use Report issue for crop/source/segmentation problems or Skip.",
+  "This item has no current text. Do not confirm an empty transcription",
+  "blank text means supply only the script text inside the red box, not neighboring punctuation or context",
+  "Confirm needs exact-certification checkbox",
+  "Report issue needs an issue flag",
 ];
 const EXPERT_QUICKSTART_SNIPPETS_CHIRHO = [
   "Vision-Tier Expert Confirmation Quickstart Chirho",
