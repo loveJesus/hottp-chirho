@@ -21,6 +21,7 @@ import {
 
 const MODULE_CHIRHO = "check-certification-status-output-hygiene-chirho";
 const DEFAULT_STATUS_OUT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "certification-status-chirho");
+const PACKAGE_JSON_PATH_CHIRHO = join(PROJECT_ROOT_CHIRHO, "package.json");
 const STATUS_LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
   "workspace-chirho/",
   "spec-chirho/",
@@ -28,6 +29,7 @@ const STATUS_LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
   "app-chirho/",
 ];
 const STATUS_BACKTICK_RE_CHIRHO = /`([^`\n]+)`/g;
+const STATUS_BUN_RUN_COMMAND_RE_CHIRHO = /\bbun run\s+([^\s`]+)/g;
 const REVIEW_SERVER_PORTS_CHIRHO = new Set([8766, 8770, 8771]);
 const REVIEW_VOLUMES_CHIRHO = [1, 2, 3, 4, 5] as const;
 
@@ -77,6 +79,36 @@ function assertStatusLocalArtifactLinksChirho(markdownChirho: string): void {
       `status Markdown local artifact path escapes project root: ${valueChirho}`
     );
     assertGeneratedCheckChirho(existsSync(resolvedChirho), `status Markdown local artifact path is missing: ${valueChirho}`);
+  }
+}
+
+function packageScriptNamesChirho(): Set<string> {
+  const packageJsonChirho = JSON.parse(readFileSync(PACKAGE_JSON_PATH_CHIRHO, "utf8")) as { scripts?: unknown };
+  assertGeneratedCheckChirho(
+    packageJsonChirho.scripts !== null && typeof packageJsonChirho.scripts === "object" && !Array.isArray(packageJsonChirho.scripts),
+    "package.json scripts must be an object"
+  );
+  return new Set(Object.keys(packageJsonChirho.scripts as Record<string, unknown>));
+}
+
+function assertStatusBunRunCommandReferencesChirho(markdownChirho: string): void {
+  const packageScriptsChirho = packageScriptNamesChirho();
+  const projectRootChirho = resolve(PROJECT_ROOT_CHIRHO);
+  for (const matchChirho of markdownChirho.matchAll(STATUS_BUN_RUN_COMMAND_RE_CHIRHO)) {
+    const targetChirho = matchChirho[1]!;
+    if (targetChirho.endsWith(".ts")) {
+      const resolvedChirho = resolve(PROJECT_ROOT_CHIRHO, targetChirho);
+      assertGeneratedCheckChirho(
+        resolvedChirho === projectRootChirho || resolvedChirho.startsWith(`${projectRootChirho}${sep}`),
+        `status Markdown bun run path escapes project root: ${targetChirho}`
+      );
+      assertGeneratedCheckChirho(existsSync(resolvedChirho), `status Markdown bun run path is missing: ${targetChirho}`);
+      continue;
+    }
+    assertGeneratedCheckChirho(
+      packageScriptsChirho.has(targetChirho),
+      `status Markdown bun run script is missing from package.json scripts: ${targetChirho}`
+    );
   }
 }
 
@@ -3128,6 +3160,7 @@ function mainChirho(): void {
   assertGeneratedTextHygieneChirho(jsonPathChirho, jsonTextChirho);
   assertMarkdownHeaderChirho(markdownPathChirho, markdownChirho, JOHN_316_INLINE_MARKDOWN_HEADER_CHIRHO);
   assertStatusLocalArtifactLinksChirho(markdownChirho);
+  assertStatusBunRunCommandReferencesChirho(markdownChirho);
 
   const statusChirho = JSON.parse(jsonTextChirho) as CertificationStatusOutputChirho;
   assertGeneratedCheckChirho(typeof statusChirho.generatedAtChirho === "string", "status JSON missing generatedAtChirho");
