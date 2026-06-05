@@ -67,6 +67,12 @@ const SPANS_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-ch
 const SCANLINES_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "scanlines-chirho");
 const PASS_C_CONTEXT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "pass-c-context-chirho");
 const DEFAULT_DB_PATH_CHIRHO = join(PROJECT_ROOT_CHIRHO, "spec-chirho", "progress-chirho.sqlite");
+const RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "raw-hebrew-human-certification-quickstart-2026-06-05-chirho.md"
+);
 
 interface TokenWitnessChirho {
   sourceChirho: string;
@@ -1280,7 +1286,9 @@ function pageHtmlChirho(): string {
     .typewriter-button-chirho:hover { background: #edf1f4; }
     .typewriter-button-chirho:focus-visible { outline: 2px solid #bd7a1b; outline-offset: 1px; }
     .toolbar-chirho { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
-    .toolbar-chirho select, .toolbar-chirho button { border: 1px solid #aab1b9; background: #fff; min-height: 34px; padding: 5px 8px; }
+    .toolbar-chirho select, .toolbar-chirho button, .toolbar-link-chirho { border: 1px solid #aab1b9; background: #fff; min-height: 34px; padding: 5px 8px; box-sizing: border-box; }
+    .toolbar-link-chirho { display: inline-flex; align-items: center; color: #1f2933; text-decoration: none; font-size: 13px; }
+    .toolbar-link-chirho:hover { background: #edf1f4; }
     .side-chirho { display: flex; flex-direction: column; gap: 12px; }
     .box-chirho { border: 1px solid #d6d9dd; background: #fff; padding: 12px; }
     .meta-grid-chirho { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 13px; }
@@ -1370,6 +1378,7 @@ function pageHtmlChirho(): string {
       <button type="button" id="prev-chirho">Previous</button>
       <button type="button" id="next-chirho">Skip</button>
       <button type="button" id="copy-link-chirho">Copy link</button>
+      <a class="toolbar-link-chirho" href="/quickstart-chirho" target="_blank" rel="noreferrer">Quickstart</a>
     </div>
     <section class="main-chirho" id="app-chirho"></section>
   </main>
@@ -2473,6 +2482,14 @@ const serverChirho = Bun.serve({
     }
     if (urlChirho.pathname === "/api-chirho/server-health-chirho") {
       return jsonResponseChirho(SERVER_HEALTH_CHIRHO);
+    }
+    if (urlChirho.pathname === "/quickstart-chirho") {
+      if (!existsSync(RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO)) {
+        return new Response("quickstart not found", { status: 404 });
+      }
+      return new Response(readFileSync(RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO, "utf8"), {
+        headers: { "Content-Type": "text/markdown; charset=utf-8" },
+      });
     }
     if (urlChirho.pathname.startsWith("/line-image-chirho/")) {
       const keyChirho = decodeURIComponent(urlChirho.pathname.slice("/line-image-chirho/".length));

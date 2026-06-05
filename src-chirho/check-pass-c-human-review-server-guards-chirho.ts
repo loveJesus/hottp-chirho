@@ -37,6 +37,8 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "--expected-live-text-chirho",
   "Apply after dry run",
   "Copy command",
+  "Quickstart",
+  "/quickstart-chirho",
 ];
 
 interface RawReviewQueueItemChirho {
@@ -119,6 +121,22 @@ function assertRawReviewGuidanceHtmlChirho(htmlChirho: string): void {
     assertCheckChirho(
       htmlChirho.includes(snippetChirho),
       `raw review server HTML is missing guidance snippet: ${snippetChirho}`
+    );
+  }
+}
+
+async function assertQuickstartEndpointChirho(portChirho: number): Promise<void> {
+  const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/quickstart-chirho`);
+  const textChirho = await responseChirho.text();
+  assertCheckChirho(responseChirho.ok, `quickstart endpoint failed: HTTP ${responseChirho.status}`);
+  for (const snippetChirho of [
+    "Raw Hebrew Human Certification Quickstart Chirho",
+    "A dot inside a letter belongs here.",
+    "Several Hebrew words in one span are acceptable only when the box intentionally covers exactly those words",
+  ]) {
+    assertCheckChirho(
+      textChirho.includes(snippetChirho),
+      `quickstart endpoint is missing expected snippet: ${snippetChirho}`
     );
   }
 }
@@ -257,6 +275,7 @@ async function mainChirho(): Promise<void> {
       responseChirho.text()
     );
     assertRawReviewGuidanceHtmlChirho(pageHtmlChirho);
+    await assertQuickstartEndpointChirho(portChirho);
     const itemChirho = firstQueueItemFromHtmlChirho(pageHtmlChirho);
     const attributionBlockedItemChirho = firstAttributionBlockedQueueItemFromHtmlChirho(pageHtmlChirho);
     const attributionBlockedSubmitResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
