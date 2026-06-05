@@ -42,6 +42,7 @@ interface CertificationStatusForGuardChirho {
     blankVisionTierHandoffsChirho?: Array<{
       handoffDocumentExistsChirho?: boolean;
       handoffCropExistsChirho?: boolean;
+      handoffCropSha256Chirho?: string | null;
       handoffDocumentMatchesCurrentChirho?: boolean;
       handoffDocumentMissingSnippetsChirho?: string[];
     }>;
@@ -396,6 +397,16 @@ function mainChirho(): void {
         )
       ),
       "stale blank Syriac handoff document did not report the missing live item snippet"
+    );
+    assertCheckChirho(
+      (staleStatusChirho.structuralChirho?.blankVisionTierHandoffsChirho ?? []).some(
+        (handoffChirho) =>
+          typeof handoffChirho.handoffCropSha256Chirho === "string" &&
+          (handoffChirho.handoffDocumentMissingSnippetsChirho ?? []).some((snippetChirho) =>
+            snippetChirho.includes(handoffChirho.handoffCropSha256Chirho!)
+          )
+      ),
+      "stale blank Syriac handoff document did not report the missing crop hash snippet"
     );
     assertCheckChirho(
       (staleStatusChirho.remainingWorkChirho ?? []).some((itemChirho) =>

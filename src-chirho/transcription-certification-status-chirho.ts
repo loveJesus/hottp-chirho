@@ -11,6 +11,7 @@
  */
 
 import { Database } from "bun:sqlite";
+import { createHash as createHashChirho } from "crypto";
 import { existsSync, mkdirSync, readFileSync } from "fs";
 import { join } from "path";
 
@@ -282,6 +283,7 @@ interface BlankVisionTierHandoffChirho {
   handoffDocumentExistsChirho: boolean;
   handoffCropPathChirho: string | null;
   handoffCropExistsChirho: boolean;
+  handoffCropSha256Chirho: string | null;
   handoffDocumentMatchesCurrentChirho: boolean;
   handoffDocumentMissingSnippetsChirho: string[];
 }
@@ -1648,6 +1650,11 @@ function fileNameForPathChirho(pathChirho: string): string {
   return pathChirho.replace(/\\/g, "/").split("/").pop() ?? pathChirho;
 }
 
+function fileSha256Chirho(pathChirho: string | null): string | null {
+  if (pathChirho === null || !existsSync(pathChirho)) return null;
+  return createHashChirho("sha256").update(readFileSync(pathChirho)).digest("hex");
+}
+
 function blankVisionTierHandoffGeometrySnippetChirho(issueChirho: {
   volumeChirho: number;
   pageChirho: number;
@@ -1688,6 +1695,7 @@ function blankVisionTierHandoffRequiredDocumentSnippetsChirho(
   sourcePathChirho: string | null,
   packetPathChirho: string | null,
   cropPathChirho: string | null,
+  cropSha256Chirho: string | null,
   issueChirho: {
     volumeChirho: number;
     pageChirho: number;
@@ -1708,6 +1716,9 @@ function blankVisionTierHandoffRequiredDocumentSnippetsChirho(
   }
   if (cropPathChirho !== null) {
     snippetsChirho.push(`](${fileNameForPathChirho(cropPathChirho)})`);
+  }
+  if (cropSha256Chirho !== null) {
+    snippetsChirho.push(`- Crop SHA-256: \`${cropSha256Chirho}\``);
   }
   const geometrySnippetChirho = blankVisionTierHandoffGeometrySnippetChirho(issueChirho);
   snippetsChirho.push(geometrySnippetChirho ?? "live-blank-span-geometry-unavailable-chirho");
@@ -1757,6 +1768,7 @@ function blankVisionTierHandoffsChirho(
         syriacBlankTranscriptionHandoffPathChirho,
         syriacBlankTranscriptionHandoffCropPathChirho
       );
+      const handoffCropSha256Chirho = fileSha256Chirho(artifactPathsChirho.cropPathChirho);
       const expertReviewUrlResultChirho = expertReviewUrlChirho(scriptChirho ?? undefined, undefined, idChirho);
       const requiredDocumentSnippetsChirho = blankVisionTierHandoffRequiredDocumentSnippetsChirho(
         idChirho,
@@ -1765,6 +1777,7 @@ function blankVisionTierHandoffsChirho(
         manifestItemChirho?.sourcePathChirho ?? null,
         manifestItemChirho?.packetPathChirho ?? null,
         artifactPathsChirho.cropPathChirho,
+        handoffCropSha256Chirho,
         issueChirho
       );
       const missingDocumentSnippetsChirho = missingHandoffDocumentSnippetsChirho(
@@ -1797,6 +1810,7 @@ function blankVisionTierHandoffsChirho(
         handoffCropPathChirho: artifactPathsChirho.cropPathChirho,
         handoffCropExistsChirho:
           artifactPathsChirho.cropPathChirho !== null && existsSync(artifactPathsChirho.cropPathChirho),
+        handoffCropSha256Chirho,
         handoffDocumentMatchesCurrentChirho: missingDocumentSnippetsChirho.length === 0,
         handoffDocumentMissingSnippetsChirho: missingDocumentSnippetsChirho,
       };
@@ -4082,6 +4096,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
           `  - Markdown image path: \`${handoffChirho.markdownPathChirho ?? "missing-manifest-markdown-path-chirho"}\``,
           `  - Dedicated handoff document: \`${handoffChirho.handoffDocumentPathChirho === null ? "missing-dedicated-handoff-document-chirho" : relativeProjectPathChirho(handoffChirho.handoffDocumentPathChirho)}\` (present: ${handoffChirho.handoffDocumentExistsChirho})`,
           `  - Dedicated handoff crop: \`${handoffChirho.handoffCropPathChirho === null ? "missing-dedicated-handoff-crop-chirho" : relativeProjectPathChirho(handoffChirho.handoffCropPathChirho)}\` (present: ${handoffChirho.handoffCropExistsChirho})`,
+          `  - Dedicated handoff crop SHA-256: ${handoffChirho.handoffCropSha256Chirho ?? "missing-crop-hash-chirho"}`,
           `  - Dedicated handoff document matches current blank span: ${handoffChirho.handoffDocumentMatchesCurrentChirho}`,
           `  - Dedicated handoff missing snippet(s): ${handoffChirho.handoffDocumentMissingSnippetsChirho.length === 0 ? "none" : handoffChirho.handoffDocumentMissingSnippetsChirho.map(markdownInlineCodeChirho).join("; ")}`,
           `  - Manifest item fresh against live queue: ${handoffChirho.manifestItemFreshChirho}`,

@@ -21,6 +21,8 @@ The boxed region is the current Syriac span geometry: x `767..950` in the 1285px
 
 ![Boxed Syriac crop for v3-p0151-l010-s3](syriac-v3-p0151-l010-s3-context-crop-2026-06-04-chirho.png)
 
+- Crop SHA-256: `bb43be97ee2efea410e39109fcabb3083e1ab3215d9941665adb427631062bde`
+
 ## Current Live Line
 
 - Segment 0, French: `vise à traduire`
