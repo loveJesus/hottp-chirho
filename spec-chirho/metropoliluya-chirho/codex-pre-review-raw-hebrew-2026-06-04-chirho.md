@@ -162,6 +162,13 @@ span was surfaced.
   - Visual precheck: the Hebrew word is boxed between French `authenticité de` and `en 13`; no neighboring French appears swallowed by the target box. This repeats the same stored form as `vol 2 p151 L1 S1`, but the direct OCR read here `תקדלשת` is weaker around the yod/shin/final-vav region.
   - Human check still needed: exact tav/qof/dalet-yod-shin-vav sequence, dagesh, vowels, and shin-dot against this occurrence of the print; do not transfer a clean verdict automatically from the earlier `תַקְדִּישׁוּ`.
 
+- `vol 2 p151 L37 S3`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A37%3A3`
+  - Live text: `ערץ`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the Hebrew root is boxed after French `au hifil de`; no neighboring French appears swallowed by the target box. The same line also contains the earlier recovered vision-tier `קדש`, so do not let that repair substitute for reviewing this raw `ערץ` item.
+  - Human check still needed: exact ayin-resh-tsade letters and whether the visible terminal period after the Hebrew word should be included with this Hebrew span or recorded as adjacent punctuation before French `Or`.
+
 - `vol 5 p149 L28 S1`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A149%3A28%3A1`
   - Live text: `ליץ`
