@@ -132,6 +132,19 @@ async function stateItemChirho(portChirho: number): Promise<ExpertReviewStateIte
   return itemChirho;
 }
 
+async function blankStateItemChirho(portChirho: number): Promise<ExpertReviewStateItemChirho | null> {
+  const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/state-chirho`);
+  const dataChirho = (await responseChirho.json()) as ExpertReviewStateResponseChirho;
+  assertCheckChirho(responseChirho.ok, `blank-state request failed: ${responseChirho.status}`);
+  assertCheckChirho(dataChirho.okChirho === true, `blank-state request returned not-ok: ${String(dataChirho.errorChirho ?? "")}`);
+  return dataChirho.itemsChirho?.find(
+    (candidateChirho) =>
+      typeof candidateChirho.currentTextChirho === "string" &&
+      candidateChirho.currentTextChirho.trim().length === 0 &&
+      candidateChirho.textIsBlankChirho === true
+  ) ?? null;
+}
+
 function assertPlaceholderRejectedChirho(paramsChirho: {
   labelChirho: string;
   responseChirho: Response;
@@ -195,12 +208,30 @@ async function mainChirho(): Promise<void> {
   try {
     await waitForServerChirho(portChirho, processChirho);
     const itemChirho = await stateItemChirho(portChirho);
+    const blankItemChirho = await blankStateItemChirho(portChirho);
     const commonBodyChirho = {
       idChirho: itemChirho.idChirho,
       reviewerChirho: "dr-smith-human-reviewer-chirho",
       reviewerRoleChirho: itemChirho.reviewerChirho,
       ...displayGuardForItemChirho(itemChirho),
     };
+    if (blankItemChirho !== null) {
+      const blankConfirmResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
+        idChirho: blankItemChirho.idChirho,
+        reviewerChirho: "dr-smith-human-reviewer-chirho",
+        reviewerRoleChirho: blankItemChirho.reviewerChirho,
+        ...displayGuardForItemChirho(blankItemChirho),
+        rationaleChirho: "server guard check should reject confirming an intentionally blank expert item",
+        certifyExactChirho: true,
+      });
+      assertRejectedWithoutPolicyChirho({
+        labelChirho: "blank confirm",
+        responseChirho: blankConfirmResultChirho.responseChirho,
+        dataChirho: blankConfirmResultChirho.dataChirho,
+        policyPathChirho,
+        expectedErrorChirho: "blank currentTextChirho cannot be confirmed",
+      });
+    }
     const staleDisplayResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
       ...commonBodyChirho,
       expectedCurrentTextChirho: `${itemChirho.currentTextChirho} stale-display-guard-chirho`,
