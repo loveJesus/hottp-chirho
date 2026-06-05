@@ -39,6 +39,10 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Copy command",
   "Quickstart",
   "/quickstart-chirho",
+  "Recommended raw review order",
+  "Vols 3-5 unvalidated",
+  "Attribution cleanup",
+  "attention-chirho=multi-token-chirho",
 ];
 
 interface RawReviewQueueItemChirho {

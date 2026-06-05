@@ -1289,6 +1289,9 @@ function pageHtmlChirho(): string {
     .toolbar-chirho select, .toolbar-chirho button, .toolbar-link-chirho { border: 1px solid #aab1b9; background: #fff; min-height: 34px; padding: 5px 8px; box-sizing: border-box; }
     .toolbar-link-chirho { display: inline-flex; align-items: center; color: #1f2933; text-decoration: none; font-size: 13px; }
     .toolbar-link-chirho:hover { background: #edf1f4; }
+    .lane-shortcuts-chirho { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin-top: 10px; font-size: 12px; color: #59636f; }
+    .lane-shortcuts-chirho a { color: #1f2933; text-decoration: none; border: 1px solid #c8cdd3; background: #fff; padding: 4px 7px; }
+    .lane-shortcuts-chirho a:hover { background: #edf1f4; }
     .side-chirho { display: flex; flex-direction: column; gap: 12px; }
     .box-chirho { border: 1px solid #d6d9dd; background: #fff; padding: 12px; }
     .meta-grid-chirho { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 13px; }
@@ -1379,6 +1382,16 @@ function pageHtmlChirho(): string {
       <button type="button" id="next-chirho">Skip</button>
       <button type="button" id="copy-link-chirho">Copy link</button>
       <a class="toolbar-link-chirho" href="/quickstart-chirho" target="_blank" rel="noreferrer">Quickstart</a>
+    </div>
+    <div class="lane-shortcuts-chirho" aria-label="Recommended raw review order">
+      <span>Recommended raw review order</span>
+      <a href="/?validation-status-chirho=unvalidated-chirho&tier-chirho=${RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_3_5_CHIRHO}">Vols 3-5 unvalidated</a>
+      <a href="/?validation-status-chirho=unvalidated-chirho&tier-chirho=${RAW_HEBREW_REVIEW_TIER_PRIMARY_VOLS_1_2_CHIRHO}">Vols 1-2 unvalidated</a>
+      <a href="/?validation-status-chirho=partial-token-validated-chirho">Partial</a>
+      <a href="/?validation-status-chirho=all-token-validated-chirho&tier-chirho=${RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO}">Spot check</a>
+      <a href="/?attention-chirho=${RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO}">Low confidence</a>
+      <a href="/?attention-chirho=${RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO}">Multi-token</a>
+      <a href="/?review-state-chirho=attribution-blocked-chirho">Attribution cleanup</a>
     </div>
     <section class="main-chirho" id="app-chirho"></section>
   </main>
