@@ -4917,6 +4917,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "- Reattribution commands reject copied template placeholders; replace reviewer and rationale placeholders before running.",
     "- Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit human reviewer.",
     "- If an attribution-blocked row's live text has changed since the original review, prefer the Attribution re-review lane unless the reviewer has rechecked the current live text against the print.",
+    "- Reattribution commands intentionally omit `--allow-live-text-changed-chirho`; add `--allow-live-text-changed-chirho=<id>` only for a specific changed row after rechecking the current live text against the print.",
     ...genericReviewerBatchLinesChirho,
     ...genericReviewerDetailLinesChirho,
     "",

@@ -56,6 +56,7 @@ Use that lane only when you can honestly identify who made the existing review:
 - If the row is genuinely yours, enter your explicit reviewer id and a rationale, copy the dry-run reattribution command, run it, inspect the output, then copy/run the apply command.
 - If the row is not clearly attributable to you, do not reattribute it. Use the Attribution re-review lane to append a fresh explicit review that supersedes the generic row.
 - Reattribution does not change the reviewed text, verdict, issue flags, or correction status. It only replaces the generic reviewer id with an explicit human attribution.
+- If the current live text no longer matches the row's originally reviewed text, use Attribution re-review by default. Reattribution for such a row requires adding `--allow-live-text-changed-chirho=<id>` for that specific row after rechecking the current live text against the print.
 
 ## Competence Boundary
 

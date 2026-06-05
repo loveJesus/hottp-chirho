@@ -299,10 +299,21 @@ function assertSuccessfulApplyChirho(fixtureChirho: ReattributionFixtureChirho):
 
 function assertSuccessfulApplyWithRepairedLiveTextChirho(fixtureChirho: ReattributionFixtureChirho): void {
   const expectedStoredOriginalTextChirho = "stale-original-text-before-repair-chirho";
+  assertRejectedChirho(
+    fixtureChirho,
+    [
+      "--reviewer-chirho=hallelujah-chirho",
+      "--rationale-chirho=fixture confirms changed live text needs explicit allowance",
+      `--expected-live-text-chirho=${fixtureChirho.liveSpanChirho.textChirho}`,
+      "--apply-chirho",
+    ],
+    "live text no longer matches the original reviewed text"
+  );
   const argsChirho = reattributeArgsChirho(fixtureChirho, [
     "--reviewer-chirho=hallelujah-chirho",
-    "--rationale-chirho=fixture confirms current live text can guard a repaired row",
+    "--rationale-chirho=fixture confirms current live text was rechecked before repaired-row reattribution",
     `--expected-live-text-chirho=${fixtureChirho.liveSpanChirho.textChirho}`,
+    `--allow-live-text-changed-chirho=${fixtureChirho.validationIdsChirho[0]}`,
     "--apply-chirho",
   ]);
   const resultChirho = runCommandChirho(argsChirho);
@@ -321,6 +332,36 @@ function assertSuccessfulApplyWithRepairedLiveTextChirho(fixtureChirho: Reattrib
     "repaired-live-text reattribution left a generic current row"
   );
   assertCheckChirho(summaryChirho.reviewerChirho === "hallelujah-chirho", "repaired-live-text reattribution did not set reviewer");
+}
+
+function assertAllGenericChangedLiveTextRequiresAllowanceChirho(fixtureChirho: ReattributionFixtureChirho): void {
+  const changedIdChirho = fixtureChirho.validationIdsChirho[1]!;
+  const baseArgsChirho = [
+    "--expected-generic-row-count-chirho=2",
+    "--reviewer-chirho=hallelujah-chirho",
+    "--rationale-chirho=fixture confirms all-generic changed text guard",
+    ...expectedHashArgsChirho(fixtureChirho),
+    "--apply-chirho",
+  ];
+  assertRejectedCommandChirho(
+    fixtureChirho,
+    reattributeAllGenericArgsChirho(fixtureChirho, baseArgsChirho),
+    "live text no longer matches the original reviewed text"
+  );
+  const resultChirho = runCommandChirho(
+    reattributeAllGenericArgsChirho(fixtureChirho, [
+      ...baseArgsChirho,
+      `--allow-live-text-changed-chirho=${changedIdChirho}`,
+    ])
+  );
+  assertCheckChirho(
+    resultChirho.exitCodeChirho === 0,
+    `all-generic changed-live-text reattribution apply command failed:\n${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`
+  );
+  const summaryChirho = validationSummaryChirho(fixtureChirho.dbPathChirho);
+  assertCheckChirho(summaryChirho.rowCountChirho === 4, "all-generic changed-live-text reattribution did not append two rows");
+  assertCheckChirho(summaryChirho.currentCountChirho === 2, "all-generic changed-live-text reattribution left an invalid current-row count");
+  assertCheckChirho(summaryChirho.currentHumanReviewerCountChirho === 0, "all-generic changed-live-text reattribution left generic current rows");
 }
 
 function assertSuccessfulSelectedBatchApplyChirho(fixtureChirho: ReattributionFixtureChirho): void {
@@ -517,6 +558,16 @@ function mainChirho(): void {
     assertSuccessfulApplyWithRepairedLiveTextChirho(repairedLiveTextApplyFixtureChirho);
   } finally {
     rmSync(repairedLiveTextApplyFixtureChirho.dirChirho, { recursive: true, force: true });
+  }
+
+  const allGenericChangedLiveTextFixtureChirho = createFixtureChirho(
+    2,
+    new Map([[1, "stale-original-text-before-repair-chirho"]])
+  );
+  try {
+    assertAllGenericChangedLiveTextRequiresAllowanceChirho(allGenericChangedLiveTextFixtureChirho);
+  } finally {
+    rmSync(allGenericChangedLiveTextFixtureChirho.dirChirho, { recursive: true, force: true });
   }
 
   const selectedBatchApplyFixtureChirho = createFixtureChirho(2);

@@ -3172,6 +3172,11 @@ function assertPassCHumanReattributionHandoffChirho(
   );
   assertMarkdownContainsChirho(
     markdownChirho,
+    "Reattribution commands intentionally omit `--allow-live-text-changed-chirho`; add `--allow-live-text-changed-chirho=<id>` only for a specific changed row after rechecking the current live text against the print.",
+    "Pass-C changed-live-text override warning"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
     "- Attribution-blocked reviewer exact-ID batch groups:",
     "Pass-C reattribution batch groups heading"
   );

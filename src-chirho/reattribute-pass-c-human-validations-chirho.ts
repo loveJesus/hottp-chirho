@@ -76,8 +76,8 @@ interface ReattributionResultChirho {
 
 function usageChirho(): string {
   return [
-    `Usage: bun run ${MODULE_CHIRHO} -- --validation-id-chirho=<id> [--validation-id-chirho=<id> ...] --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--expected-live-text-chirho=<current-live-text> | --expected-live-text-hash-chirho=<id>:<sha256> ...] [--apply-chirho]`,
-    `       bun run ${MODULE_CHIRHO} -- --all-generic-chirho --expected-generic-row-count-chirho=<count> --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--apply-chirho]`,
+    `Usage: bun run ${MODULE_CHIRHO} -- --validation-id-chirho=<id> [--validation-id-chirho=<id> ...] --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--expected-live-text-chirho=<current-live-text> | --expected-live-text-hash-chirho=<id>:<sha256> ...] [--allow-live-text-changed-chirho=<id> ...] [--apply-chirho]`,
+    `       bun run ${MODULE_CHIRHO} -- --all-generic-chirho --expected-generic-row-count-chirho=<count> --reviewer-chirho=<reviewer-id> --rationale-chirho=<reason> [--allow-live-text-changed-chirho=<id> ...] [--apply-chirho]`,
     "",
     "Dry-run is the default. Applying writes append-only superseding rows and refreshes the Pass-C human validation backup.",
     "Only current schema-v2 rows with blank/generic/machine reviewer attribution can be reattributed.",
@@ -86,6 +86,7 @@ function usageChirho(): string {
     "Any --apply-chirho write requires a live-text drift guard: --expected-live-text-chirho for a single exact-ID row, or --expected-live-text-hash-chirho=<id>:<sha256> for every selected row.",
     "--expected-live-text-chirho is only supported for a single --validation-id-chirho row; it fails closed if the live span text has drifted since the status report was read.",
     "--expected-live-text-hash-chirho=<id>:<sha256> may be repeated; when present, every selected row must have a matching live text hash.",
+    "--allow-live-text-changed-chirho=<id> is required for any selected row whose current live span text no longer matches the original reviewed text; use it only after rechecking the current live text against the print.",
   ].join("\n");
 }
 
@@ -117,14 +118,23 @@ function requiredArgValueChirho(argsChirho: string[], nameChirho: string): strin
 
 function parseValidationIdsChirho(argsChirho: string[]): number[] {
   const idValuesChirho = parseArgValuesChirho(argsChirho, "validation-id-chirho");
-  const idsChirho = idValuesChirho.map((valueChirho) => {
+  return parseIntegerListValuesChirho(idValuesChirho, "validation-id-chirho");
+}
+
+function parseIntegerListValuesChirho(valuesChirho: string[], nameChirho: string): number[] {
+  const idsChirho = valuesChirho.map((valueChirho) => {
     const idChirho = Number.parseInt(valueChirho, 10);
     if (!Number.isInteger(idChirho) || String(idChirho) !== valueChirho.trim()) {
-      throw new Error(`invalid --validation-id-chirho=${valueChirho}`);
+      throw new Error(`invalid --${nameChirho}=${valueChirho}`);
     }
     return idChirho;
   });
   return [...new Set(idsChirho)];
+}
+
+function parseAllowLiveTextChangedIdsChirho(argsChirho: string[]): Set<number> {
+  const valuesChirho = parseArgValuesChirho(argsChirho, "allow-live-text-changed-chirho");
+  return new Set(parseIntegerListValuesChirho(valuesChirho, "allow-live-text-changed-chirho"));
 }
 
 function parseOptionalNonnegativeIntegerChirho(argsChirho: string[], nameChirho: string): number | undefined {
@@ -334,6 +344,28 @@ function assertExpectedLiveTextHashesChirho(
   }
 }
 
+function assertLiveTextChangeAllowancesChirho(
+  rowsChirho: PassCHumanValidationRowChirho[],
+  allowedChangedIdsChirho: Set<number>
+): void {
+  const selectedIdsChirho = new Set(rowsChirho.map((rowChirho) => rowChirho.id_chirho));
+  const extraAllowedIdsChirho = [...allowedChangedIdsChirho].filter((idChirho) => !selectedIdsChirho.has(idChirho));
+  if (extraAllowedIdsChirho.length > 0) {
+    throw new Error(
+      `live-text-changed allowance supplied for unselected validation id(s): ${extraAllowedIdsChirho.join(",")}`
+    );
+  }
+  for (const rowChirho of rowsChirho) {
+    const originalTextChirho = normalizeTextForStorageChirho(rowChirho.original_text_chirho);
+    const liveTextChirho = liveSpanTextForRowChirho(rowChirho);
+    if (liveTextChirho === originalTextChirho) continue;
+    if (allowedChangedIdsChirho.has(rowChirho.id_chirho)) continue;
+    throw new Error(
+      `validation id ${rowChirho.id_chirho} live text no longer matches the original reviewed text; use Attribution re-review, or rerun with --allow-live-text-changed-chirho=${rowChirho.id_chirho} only after rechecking the current live text against the print`
+    );
+  }
+}
+
 function assertExpectedGenericRowCountChirho(
   rowsChirho: PassCHumanValidationRowChirho[],
   allGenericChirho: boolean,
@@ -468,6 +500,7 @@ function mainChirho(): void {
   }
   const expectedLiveTextChirho = parseArgValueChirho(argsChirho, "expected-live-text-chirho");
   const expectedLiveTextHashesChirho = parseExpectedLiveTextHashesChirho(argsChirho);
+  const allowedChangedIdsChirho = parseAllowLiveTextChangedIdsChirho(argsChirho);
   const expectedGenericRowCountChirho = parseOptionalNonnegativeIntegerChirho(argsChirho, "expected-generic-row-count-chirho");
   const dbPathChirho = parseArgValueChirho(argsChirho, "db-chirho") ?? PROGRESS_DB_PATH_CHIRHO;
   const backupPathChirho =
@@ -482,6 +515,7 @@ function mainChirho(): void {
     assertExpectedGenericRowCountChirho(rowsChirho, allGenericChirho, applyChirho, expectedGenericRowCountChirho);
     assertExpectedLiveTextChirho(rowsChirho, expectedLiveTextChirho, allGenericChirho);
     assertExpectedLiveTextHashesChirho(rowsChirho, expectedLiveTextHashesChirho, allGenericChirho, applyChirho);
+    assertLiveTextChangeAllowancesChirho(rowsChirho, allowedChangedIdsChirho);
     assertApplyHasLiveTextGuardChirho(rowsChirho, applyChirho, expectedLiveTextChirho, expectedLiveTextHashesChirho);
     if (rowsChirho.length === 0) {
       console.log(`[${MODULE_CHIRHO}] no eligible row(s)`);
