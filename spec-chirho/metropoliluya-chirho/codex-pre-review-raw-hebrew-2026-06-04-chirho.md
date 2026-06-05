@@ -37,6 +37,7 @@ evidence, not certification.
   `http://localhost:8766/?validation-status-chirho=all-token-validated-chirho&tier-chirho=spot-check-chirho&volume-chirho=vol-1-chirho&item-chirho=1%3A152%3A4%3A4`
   - Live text: `למשפחות`
   - Current line text: `7,17A מִשְׁפַּחַת [D] MT // spont : m t plur / schem (assim 14) : G VS clav למשפחות`
+  - Attention reason: no direct CRNN crop read despite all-token spot-check status.
   - Visual precheck: the crop cleanly boxes the final Hebrew word after `clav`; the neighboring sigla and French/Latin apparatus text sit outside the target box, and no obvious clipping or swallowed text is visible.
   - Human check still needed: exact consonants and whether the bare consonantal spelling is what the print intends in this apparatus context.
 
@@ -83,14 +84,14 @@ was changed.
 - `vol 2 p148 L22 S1`:
   `http://localhost:8766/?attention-chirho=delimiter-notation-chirho&item-chirho=2%3A148%3A22%3A1`
   - Live text: `[מ̇ק̇[י`
-  - Attention reason: damaged-text brackets and supralinear dots.
+  - Attention reason: confident direct-read disagreement, multi-token Hebrew span, damaged-text brackets, and supralinear dots.
   - Visual precheck: the crop clearly shows damaged-text notation with brackets/dots; this is not ordinary continuous Hebrew and should be treated as DSS/Qumran notation, not rubber-stamped as a simple word.
   - Human check still needed: exact bracket order, dot codepoint convention, and whether this belongs with a DSS/Qumran-capable reviewer.
 
 - `vol 1 p149 L10 S1`:
   `http://localhost:8766/?attention-chirho=no-direct-read-chirho&item-chirho=1%3A149%3A10%3A1`
   - Live text: `נִכְרְתוּ מֵי הַיַּרְדֵּן`
-  - Attention reason: no direct CRNN crop read and partial token validation.
+  - Attention reason: multi-token Hebrew span with no direct CRNN crop read and partial token validation.
   - Visual precheck: the crop is a broad multi-word Hebrew phrase in an apparatus line; no obvious swallowed neighboring Latin/symbol span or clipped Hebrew word is visible. Treat this as a real human review target, not an automatic hidden-text repair.
   - Human check still needed: exact multi-word text, vowels/marks, and whether the shorter `מֵי` form is what the print says here.
 
@@ -178,7 +179,7 @@ was changed.
 - `vol 2 p150 L26 S3`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A26%3A3`
   - Live text: `תַקְדִּישׁוּ`
-  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane; the direct OCR read is weak and not usable as a certification witness.
+  - Attention reason: confident direct-read disagreement; all-token-validated but still in the current raw no-pre-review-note lane; the direct OCR read is weak and not usable as a certification witness.
   - Visual precheck: the target crop boxes the Hebrew verb after French `qui sont inauthentiques :` and before French `(au vs`; the nearby colon and following parenthesis remain outside the target box. The earlier `קדשׁ` root on the same line is a separate target and should not be conflated with this verb form.
   - Human check still needed: exact tav/dagesh, qof-dalet-shin sequence, final vav, all vowels and shin-dot marks, plus confirmation that the French colon and following parenthesis stay outside this Hebrew span.
 
@@ -199,14 +200,14 @@ was changed.
 - `vol 2 p150 L30 S1`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A30%3A1`
   - Live text: `וּלְמוֹקֵשׁ`
-  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane; the direct OCR read omits the leading vav/shuruk, so it should not be used alone for certification.
+  - Attention reason: confident direct-read disagreement; all-token-validated but still in the current raw no-pre-review-note lane; the direct OCR read omits the leading vav/shuruk, so it should not be used alone for certification.
   - Visual precheck: the target crop boxes the Hebrew word after French `c'est une fausse variante pour` and before French `Dans les premières`; the leading vav/shuruk is visible at the right edge of the boxed Hebrew. No French text appears swallowed by the Hebrew span.
   - Human check still needed: exact leading vav/shuruk, lamed-sheva, mem-holam, qof-tsere, shin-dot, and whether a sentence boundary or punctuation mark is intended between the Hebrew word and following `Dans`.
 
 - `vol 2 p150 L33 S1`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A33%3A1`
   - Live text: `וּלְמוֹקֵשׁ`
-  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane; as with L30, the direct OCR read omits the leading vav/shuruk, so it should not be used alone for certification.
+  - Attention reason: confident direct-read disagreement; all-token-validated but still in the current raw no-pre-review-note lane; as with L30, the direct OCR read omits the leading vav/shuruk, so it should not be used alone for certification.
   - Visual precheck: the target crop boxes the Hebrew word after French `plaçait par` and before French `qui se trouverait`; the Hebrew/French boundaries are clean, though the leading vav/shuruk sits tight against the right edge of the boxed word.
   - Human check still needed: exact leading vav/shuruk, lamed-sheva, mem-holam, qof-tsere, shin-dot, and confirmation that the following French `qui` remains outside the Hebrew span.
 
@@ -215,7 +216,7 @@ was changed.
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A37%3A3`
   - Item IDs: `v2-p0150-l037-s1`, `v2-p0150-l037-s3`
   - Live texts: `(לְמִקְדָּשׁ` and `מַקְשִׁר`
-  - Attention reason: S1 has delimiter notation; S3 is a current raw item in the no-pre-review-note lane.
+  - Attention reason: S1 has delimiter notation; S3 has confident direct-read disagreement on the direct OCR read and remains a current raw item for human review.
   - Visual precheck: S1 includes the opening parenthesis and the Hebrew word, while the following French `au vs 14)` is outside that Hebrew box. S3 is separately boxed after French `de lire` and before the French opening quote; no neighboring French appears swallowed by the S3 target box. The direct OCR read `מקשלר` is close to S3's consonants but still not a certification witness for exact marks.
   - Human check still needed: for S1, exact vowels/marks and whether the opening parenthesis belongs inside the Hebrew span or should be treated as adjacent punctuation; for S3, exact mem/qof-shin-resh sequence and all vowel/shin-dot marks.
 
@@ -295,14 +296,14 @@ was changed.
 - `vol 2 p151 L17 S1`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A17%3A1`
   - Live text: `וּלְמוֹקֵשׁ`
-  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Attention reason: confident direct-read disagreement on the direct OCR read; this remains a current raw item for human review.
   - Visual precheck: the Hebrew word is boxed between French `Vorlage` and `puisque`; no neighboring French appears swallowed by the target box. The direct OCR read `למוקש` is close on the base word but does not preserve the prefixed vav/shuruk or certify the vowel marks.
   - Human check still needed: exact prefixed vav/shuruk, lamed sheva, mem-vav-qof-shin sequence, tsere/holam placement, and shin-dot/final marks against the print.
 
 - `vol 2 p151 L18 S1`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A18%3A1`
   - Live text: `לְתַקְלָא`
-  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Attention reason: confident direct-read disagreement on the direct OCR read; this remains a current raw item for human review.
   - Visual precheck: this short line ends with the Hebrew target after French `loin en ce même vs, par`; the red box covers the target word to the line edge without a following neighboring span. The direct OCR read `להקלא` is weak at the tav/hey position and does not certify the printed vowels.
   - Human check still needed: exact lamed-sheva opening, tav vs he at the second letter, qof-lamed-alef sequence, qamats/patah/sheva marks, and whether any terminal dot-like ink is a Hebrew mark rather than punctuation.
 
@@ -323,7 +324,7 @@ was changed.
 - `vol 2 p151 L37 S3`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A37%3A3`
   - Live text: `ערץ`
-  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Attention reason: confident direct-read disagreement on the direct OCR read; this remains a current raw item for human review.
   - Visual precheck: the Hebrew root is boxed after French `au hifil de`; no neighboring French appears swallowed by the target box. The same line also contains the earlier recovered vision-tier `קדש`, so do not let that repair substitute for reviewing this raw `ערץ` item.
   - Human check still needed: exact ayin-resh-tsade letters and whether the visible terminal period after the Hebrew word should be included with this Hebrew span or recorded as adjacent punctuation before French `Or`.
 
@@ -439,7 +440,7 @@ another.
 - `vol 2 p151 L42 S1`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=2%3A151%3A42%3A1`
   - Live text: `הַזֶּה הָעָם`
-  - Attention reason: multi-token Hebrew span.
+  - Attention reason: multi-token Hebrew span plus confident direct-read disagreement on the direct OCR read.
   - Visual precheck: the target crop boxes the two Hebrew words near the right end of the French line after `sous`; no obvious swallowed neighboring French word is visible in the packet crop.
   - Human check still needed: exact word order, consonants, niqqud, and whether this two-word span should stay grouped in this apparatus sentence.
 
@@ -453,7 +454,7 @@ another.
 - `vol 5 p149 L1 S2`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A149%3A1%3A2`
   - Live text: `מְלִיצַי רֵעָי`
-  - Attention reason: multi-token Hebrew span.
+  - Attention reason: multi-token Hebrew span plus confident direct-read disagreement on the direct OCR read.
   - Visual precheck: the crop boxes the same two-word phrase in a different line after `au lieu de`; the comma and `[R]NEB` context sit outside the Hebrew target.
   - Human check still needed: exact letters, niqqud, and whether the print here matches the prior occurrence independently.
 
@@ -477,7 +478,7 @@ another.
 - `vol 5 p150 L9 S0`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A150%3A9%3A0`
   - Live text: `לִי`
-  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Attention reason: confident direct-read disagreement on the direct OCR read; this remains a current raw item for human review.
   - Visual precheck: the tiny continuation line contains only this Hebrew form and the following period. The enlarged scanline appears to show lamed with hiriq plus final yod, fitting Job 17:1 `קְבָרִים לִי`; however, the direct OCR read reports `לו`, so this should be checked by eye rather than accepted from the machine read.
   - Human check still needed: final letter yod vs vav, exact hiriq placement under the lamed, and whether the following period remains outside the Hebrew span.
 
@@ -510,7 +511,7 @@ another.
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A19%3A3`
   - Item IDs: `v5-p0151-l019-s1`, `v5-p0151-l019-s3`
   - Live texts: `לֹא תְרוֹמֵם` and `לֹא תְרוּמַם`
-  - Attention reason: multi-token Hebrew spans.
+  - Attention reason: multi-token Hebrew spans; S1 also has confident direct-read disagreement on the direct OCR read.
   - Visual precheck: the two crops sit on opposite sides of the French `J123 conjecture`; the line appears to contrast two near-identical forms, so the vowel distinction is the point rather than a reason to merge the targets.
   - Human check still needed: exact vowels/marks and whether the two forms are correctly distinguished.
 
@@ -519,14 +520,14 @@ another.
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A152%3A14%3A2`
   - Item IDs: `v5-p0152-l014-s0`, `v5-p0152-l014-s2`
   - Live texts: `תְּרוֹמֵם` and `תְּרוֹמֵם`
-  - Attention reason: none; these are current raw items in the no-pre-review-note lane.
+  - Attention reason: S2 has confident direct-read disagreement on the direct OCR read; both are current raw items for human review.
   - Visual precheck: S0 is the line-opening Hebrew word before the period; S2 is the comparison word after `Au lieu de`. Both red boxes bracket their own Hebrew word cleanly and leave the period/French outside the target boxes. The same-line repetition means the human should compare the two forms directly rather than rely on the direct OCR read, which is weak for S0 and stronger for S2.
   - Human check still needed: exact dagesh/sheva and holam-vav placement in both occurrences, plus whether the two printed forms are truly identical as stored.
 
 - `vol 5 p152 L15 S1`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A152%3A15%3A1`
   - Live text: `תִּתְרוֹרַם`
-  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Attention reason: confident direct-read disagreement on the direct OCR read; this remains a current raw item for human review.
   - Visual precheck: the compact line reads French `écrivent`, then one Hebrew word, then a period. The red box cleanly brackets the Hebrew word and does not include the period. The stored consonantal pattern with repeated tav/resh-like strokes is plausible at review resolution, but the direct OCR read is not reliable enough to certify it.
   - Human check still needed: exact first two letters, the middle resh/vav sequence, final mem, and all vowel/dagesh marks.
 
@@ -535,7 +536,7 @@ another.
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A152%3A17%3A3`
   - Item IDs: `v5-p0152-l017-s1`, `v5-p0152-l017-s3`
   - Live texts: `רוֹם` and `לֵב`
-  - Attention reason: none; these are current raw items in the no-pre-review-note lane.
+  - Attention reason: both S1 and S3 have confident direct-read disagreement on the direct OCR reads; both remain current raw items for human review.
   - Visual precheck: the line reads `Le qal de`, then `רוֹם`, then French `a comme sujet normal le substantif`, then `לֵב`, then the parenthesized reference. Both target boxes are centered on their Hebrew words and the surrounding French/reference text starts outside the boxes. The direct OCR read saw only `רו` for S1 and read S3 as `לכ`, so neither ending should be certified from OCR alone.
   - Human check still needed: S1 final mem and holam-vav placement; S3 final bet and tsere; and whether both boxes fully enclose their final letters without clipping.
 
@@ -565,7 +566,7 @@ another.
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A152%3A24%3A3`
   - Item IDs: `v5-p0152-l024-s1`, `v5-p0152-l024-s3`
   - Live texts: `תְּרְמָם` and `תִּרְמֵם`
-  - Attention reason: none; these are current raw items in the no-pre-review-note lane.
+  - Attention reason: both S1 and S3 have confident direct-read disagreement on the direct OCR reads; both remain current raw items for human review.
   - Visual precheck: the line says the versions would not have vocalized one form `ou` the other; both target boxes cleanly bracket their Hebrew words and leave the French separator/comma outside. This is a same-line vowel/pointing contrast, not a visible segmentation issue.
   - Human check still needed: exact tav-vowel/dagesh, resh sheva, qamats vs tsere on the mem, and whether the two printed forms are correctly distinguished.
 
@@ -574,7 +575,7 @@ another.
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A5`
   - Item IDs: `v5-p0152-l013-s3`, `v5-p0152-l013-s5`
   - Live texts: `אֲרוּם לְבְהוֹן אֲטֶשְׁתָּא מִסַּכְּלָתָנוּ` and `מָטוּל הֵיכְנָא לָא תְּרוֹמֵם`
-  - Attention reason: multi-token Hebrew-script spans.
+  - Attention reason: multi-token Hebrew-script spans; S3 also has confident direct-read disagreement on the direct OCR read.
   - Visual precheck: the two long Hebrew-script targets sit in a `𝔗 traduit` line and are separated by the printed slash; the packet crops show the intended phrase boundaries at review resolution.
   - Human check still needed: exact Targum/Aramaic wording, vowels, and word division by a competent reviewer. These should not be certified merely as ordinary Hebrew words.
 
@@ -595,6 +596,7 @@ word to another.
   `http://localhost:8766/?volume-chirho=vol-2-chirho&item-chirho=2%3A148%3A14%3A1`
   - Live text: `וְיַסִּירֵנִי`
   - Current line text: `lit ici וְיַסִּירֵנִי C'est inexact. Sa leçon est יוסרנו. Il est probable que la confusion yod/`
+  - Attention reason: confident direct-read disagreement on the direct OCR read; this remains a current raw item for human review.
   - Visual precheck: the crop is centered on the Hebrew word after `lit ici` and before `C'est`; no obvious clipping, swallowed neighboring text, or hidden-script overflow is visible in the packet crop.
   - Human check still needed: exact letters, niqqud, and marks against the print. Review this independently from the other `וְיַסִּירֵנִי` occurrence.
 
@@ -602,6 +604,7 @@ word to another.
   `http://localhost:8766/?volume-chirho=vol-2-chirho&item-chirho=2%3A148%3A37%3A1`
   - Live text: `וְיַסִּירֵנִי`
   - Current line text: `lon moi, וְיַסִּירֵנִי est un futur de יסר dont la première radicale a été insérée dans la`
+  - Attention reason: confident direct-read disagreement on the direct OCR read; this remains a current raw item for human review.
   - Visual precheck: the crop is centered between the preceding French comma/context and the following French explanation; no obvious geometry defect or missing neighboring Hebrew word is visible.
   - Human check still needed: exact letters, niqqud, and marks against the print. Do not auto-copy a verdict from `vol 2 p148 L14 S1`.
 
