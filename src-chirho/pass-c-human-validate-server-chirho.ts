@@ -1457,6 +1457,12 @@ function pageHtmlChirho(): string {
         <option value="${RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO}">Delimiter notation</option>
         <option value="${RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO}">No direct read</option>
       </select>
+      <label class="label-chirho" for="pre-review-note-filter-chirho">Pre-review</label>
+      <select id="pre-review-note-filter-chirho">
+        <option value="all-chirho">All</option>
+        <option value="with-note-chirho">Has note</option>
+        <option value="without-note-chirho">No note</option>
+      </select>
       <label class="label-chirho" for="volume-filter-chirho">Volume</label>
       <select id="volume-filter-chirho">
         <option value="all-chirho">All</option>
@@ -1479,6 +1485,7 @@ function pageHtmlChirho(): string {
       <a href="/?validation-status-chirho=all-token-validated-chirho&tier-chirho=${RAW_HEBREW_REVIEW_TIER_SPOT_CHECK_CHIRHO}">Spot check</a>
       <a href="/?attention-chirho=${RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO}">Low confidence</a>
       <a href="/?attention-chirho=${RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO}">Multi-token</a>
+      <a href="/?pre-review-note-chirho=with-note-chirho">With pre-review note</a>
       <a href="/?review-state-chirho=attribution-blocked-chirho">Attribution cleanup</a>
     </div>
     <section class="main-chirho" id="app-chirho"></section>
@@ -1610,6 +1617,11 @@ function pageHtmlChirho(): string {
       initialSearchParamsChirho.get("attention-chirho"),
       "all-chirho"
     );
+    let preReviewNoteFilterChirho = selectValueOrDefaultChirho(
+      "pre-review-note-filter-chirho",
+      initialSearchParamsChirho.get("pre-review-note-chirho"),
+      "all-chirho"
+    );
     let volumeFilterChirho = selectValueOrDefaultChirho(
       "volume-filter-chirho",
       initialSearchParamsChirho.get("volume-chirho"),
@@ -1620,6 +1632,7 @@ function pageHtmlChirho(): string {
       document.getElementById("validation-status-filter-chirho").value = validationStatusFilterChirho;
       document.getElementById("tier-filter-chirho").value = tierFilterChirho;
       document.getElementById("attention-filter-chirho").value = attentionFilterChirho;
+      document.getElementById("pre-review-note-filter-chirho").value = preReviewNoteFilterChirho;
       document.getElementById("volume-filter-chirho").value = volumeFilterChirho;
     }
     function volumeFilterNumberChirho() {
@@ -1633,6 +1646,7 @@ function pageHtmlChirho(): string {
       if (validationStatusFilterChirho !== "all-chirho") paramsChirho.set("validation-status-chirho", validationStatusFilterChirho);
       if (tierFilterChirho !== "all-chirho") paramsChirho.set("tier-chirho", tierFilterChirho);
       if (attentionFilterChirho !== "all-chirho") paramsChirho.set("attention-chirho", attentionFilterChirho);
+      if (preReviewNoteFilterChirho !== "all-chirho") paramsChirho.set("pre-review-note-chirho", preReviewNoteFilterChirho);
       if (volumeFilterChirho !== "all-chirho") paramsChirho.set("volume-chirho", volumeFilterChirho);
       const itemChirho = currentItemChirho();
       if (itemChirho) paramsChirho.set("item-chirho", itemChirho.keyChirho);
@@ -1734,6 +1748,9 @@ function pageHtmlChirho(): string {
         (validationStatusFilterChirho === "all-chirho" || itemChirho.validationStatusChirho === validationStatusFilterChirho) &&
         (tierFilterChirho === "all-chirho" || itemChirho.tierChirho === tierFilterChirho) &&
         (attentionFilterChirho === "all-chirho" || itemChirho.attentionKindsChirho.includes(attentionFilterChirho)) &&
+        (preReviewNoteFilterChirho === "all-chirho" ||
+          (preReviewNoteFilterChirho === "with-note-chirho" && typeof itemChirho.preReviewNoteChirho === "string" && itemChirho.preReviewNoteChirho.length > 0) ||
+          (preReviewNoteFilterChirho === "without-note-chirho" && !(typeof itemChirho.preReviewNoteChirho === "string" && itemChirho.preReviewNoteChirho.length > 0))) &&
         (volumeChirho === null || itemChirho.volumeChirho === volumeChirho)
       );
     }
@@ -1780,6 +1797,14 @@ function pageHtmlChirho(): string {
         }
         if (attentionFilterChirho !== "all-chirho" && !requestedItemChirho.attentionKindsChirho.includes(attentionFilterChirho)) {
           attentionFilterChirho = "all-chirho";
+          changedFiltersChirho = true;
+        }
+        if (preReviewNoteFilterChirho === "with-note-chirho" && !(typeof requestedItemChirho.preReviewNoteChirho === "string" && requestedItemChirho.preReviewNoteChirho.length > 0)) {
+          preReviewNoteFilterChirho = "all-chirho";
+          changedFiltersChirho = true;
+        }
+        if (preReviewNoteFilterChirho === "without-note-chirho" && typeof requestedItemChirho.preReviewNoteChirho === "string" && requestedItemChirho.preReviewNoteChirho.length > 0) {
+          preReviewNoteFilterChirho = "all-chirho";
           changedFiltersChirho = true;
         }
         if (volumeChirho !== null && requestedItemChirho.volumeChirho !== volumeChirho) {
@@ -2595,6 +2620,12 @@ function pageHtmlChirho(): string {
     });
     document.getElementById("attention-filter-chirho").addEventListener("change", (eventChirho) => {
       attentionFilterChirho = eventChirho.target.value;
+      requestedItemKeyChirho = null;
+      indexChirho = 0;
+      renderChirho();
+    });
+    document.getElementById("pre-review-note-filter-chirho").addEventListener("change", (eventChirho) => {
+      preReviewNoteFilterChirho = eventChirho.target.value;
       requestedItemKeyChirho = null;
       indexChirho = 0;
       renderChirho();
