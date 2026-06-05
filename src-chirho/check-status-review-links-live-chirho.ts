@@ -151,12 +151,47 @@ interface CertificationStatusChirho {
   };
   humanValidationDbChirho?: {
     genericReviewerRowsChirho?: number;
+    genericReviewerLiveTextMatchRowsChirho?: number;
+    genericReviewerLiveTextMismatchRowsChirho?: number;
+    genericReviewerLiveTextUnknownRowsChirho?: number;
+    genericReviewerRowDetailsChirho?: AttributionCleanupRowChirho[];
+    genericReviewerRowGroupsChirho?: AttributionCleanupGroupChirho[];
   };
   latinSymbolVisionChirho?: {
     repeatSummaryChirho?: {
       duplicateTextGroupCountChirho?: number;
     };
   };
+}
+
+interface AttributionCleanupRowChirho {
+  idChirho: number;
+  locationChirho: string;
+  reviewerChirho: string;
+  verdictChirho: string;
+  appliedAtChirho: string | null;
+  scriptVerdictChirho: string | null;
+  issueFlagsChirho: string[];
+  originalTextChirho: string;
+  correctedTextChirho: string | null;
+  liveSpanExistsChirho: boolean;
+  liveSpanReadErrorChirho: string | null;
+  liveTextChirho: string | null;
+  liveScriptChirho: string | null;
+  liveProvenanceChirho: string | null;
+  liveTextMatchesOriginalChirho: boolean | null;
+  liveSpanLinePathChirho: string;
+  liveScanlinePathChirho: string;
+  liveScanlineExistsChirho: boolean;
+}
+
+interface AttributionCleanupGroupChirho {
+  reviewerChirho: string;
+  appliedAtChirho: string | null;
+  liveTextMatchIdsChirho: number[];
+  liveTextMismatchIdsChirho: number[];
+  liveTextUnknownIdsChirho: number[];
+  liveTextMatchExpectedLiveTextHashArgsChirho: string[];
 }
 
 interface RawHebrewAttentionHandoffItemChirho {
@@ -373,8 +408,279 @@ function oneLineSnippetForCheckChirho(textChirho: string, maxLengthChirho: numbe
     : `${normalizedChirho.slice(0, Math.max(0, maxLengthChirho - 1))}…`;
 }
 
+function shellSingleQuoteForCheckChirho(valueChirho: string): string {
+  return `'${valueChirho.replace(/'/g, `'\\''`)}'`;
+}
+
+function relativeProjectPathForCheckChirho(pathChirho: string): string {
+  return pathChirho.startsWith(PROJECT_ROOT_CHIRHO)
+    ? pathChirho.slice(PROJECT_ROOT_CHIRHO.length + 1)
+    : pathChirho;
+}
+
+function rawHebrewReviewUrlForCheckChirho(reviewStateChirho: string, itemKeyChirho: string): string {
+  const paramsChirho = new URLSearchParams([
+    ["review-state-chirho", reviewStateChirho],
+    ["item-chirho", itemKeyChirho],
+  ]);
+  return `http://localhost:8766/?${paramsChirho.toString()}`;
+}
+
 function assertMarkdownIncludesChirho(markdownChirho: string, snippetChirho: string, contextChirho: string): void {
   assertGeneratedCheckChirho(markdownChirho.includes(snippetChirho), `raw Hebrew attention handoff missing ${contextChirho}: ${snippetChirho}`);
+}
+
+function assertAttributionMarkdownIncludesChirho(markdownChirho: string, snippetChirho: string, contextChirho: string): void {
+  assertGeneratedCheckChirho(markdownChirho.includes(snippetChirho), `attribution cleanup handoff missing ${contextChirho}: ${snippetChirho}`);
+}
+
+function numberArrayFieldChirho(valueChirho: unknown, pathChirho: string): number[] {
+  assertGeneratedCheckChirho(
+    Array.isArray(valueChirho) && valueChirho.every((entryChirho) => typeof entryChirho === "number"),
+    `status JSON missing ${pathChirho} number array`
+  );
+  return valueChirho;
+}
+
+function nullableStringFieldChirho(valueChirho: unknown, pathChirho: string): string | null {
+  assertGeneratedCheckChirho(valueChirho === null || typeof valueChirho === "string", `status JSON missing ${pathChirho} string/null`);
+  return valueChirho;
+}
+
+function nullableBooleanFieldChirho(valueChirho: unknown, pathChirho: string): boolean | null {
+  assertGeneratedCheckChirho(valueChirho === null || typeof valueChirho === "boolean", `status JSON missing ${pathChirho} boolean/null`);
+  return valueChirho;
+}
+
+function assertAttributionCleanupRowShapeChirho(rowChirho: AttributionCleanupRowChirho, indexChirho: number): void {
+  const rowPathChirho = `humanValidationDbChirho.genericReviewerRowDetailsChirho[${indexChirho}]`;
+  numberFieldChirho(rowChirho.idChirho, `${rowPathChirho}.idChirho`);
+  stringFieldChirho(rowChirho.locationChirho, `${rowPathChirho}.locationChirho`);
+  stringFieldChirho(rowChirho.reviewerChirho, `${rowPathChirho}.reviewerChirho`);
+  stringFieldChirho(rowChirho.verdictChirho, `${rowPathChirho}.verdictChirho`);
+  nullableStringFieldChirho(rowChirho.appliedAtChirho, `${rowPathChirho}.appliedAtChirho`);
+  nullableStringFieldChirho(rowChirho.scriptVerdictChirho, `${rowPathChirho}.scriptVerdictChirho`);
+  stringArrayFieldChirho(rowChirho.issueFlagsChirho, `${rowPathChirho}.issueFlagsChirho`);
+  stringFieldChirho(rowChirho.originalTextChirho, `${rowPathChirho}.originalTextChirho`);
+  nullableStringFieldChirho(rowChirho.correctedTextChirho, `${rowPathChirho}.correctedTextChirho`);
+  booleanFieldChirho(rowChirho.liveSpanExistsChirho, `${rowPathChirho}.liveSpanExistsChirho`);
+  nullableStringFieldChirho(rowChirho.liveSpanReadErrorChirho, `${rowPathChirho}.liveSpanReadErrorChirho`);
+  nullableStringFieldChirho(rowChirho.liveTextChirho, `${rowPathChirho}.liveTextChirho`);
+  nullableStringFieldChirho(rowChirho.liveScriptChirho, `${rowPathChirho}.liveScriptChirho`);
+  nullableStringFieldChirho(rowChirho.liveProvenanceChirho, `${rowPathChirho}.liveProvenanceChirho`);
+  nullableBooleanFieldChirho(rowChirho.liveTextMatchesOriginalChirho, `${rowPathChirho}.liveTextMatchesOriginalChirho`);
+  stringFieldChirho(rowChirho.liveSpanLinePathChirho, `${rowPathChirho}.liveSpanLinePathChirho`);
+  stringFieldChirho(rowChirho.liveScanlinePathChirho, `${rowPathChirho}.liveScanlinePathChirho`);
+  booleanFieldChirho(rowChirho.liveScanlineExistsChirho, `${rowPathChirho}.liveScanlineExistsChirho`);
+}
+
+function assertAttributionCleanupGroupShapeChirho(groupChirho: AttributionCleanupGroupChirho, indexChirho: number): void {
+  const groupPathChirho = `humanValidationDbChirho.genericReviewerRowGroupsChirho[${indexChirho}]`;
+  stringFieldChirho(groupChirho.reviewerChirho, `${groupPathChirho}.reviewerChirho`);
+  nullableStringFieldChirho(groupChirho.appliedAtChirho, `${groupPathChirho}.appliedAtChirho`);
+  numberArrayFieldChirho(groupChirho.liveTextMatchIdsChirho, `${groupPathChirho}.liveTextMatchIdsChirho`);
+  numberArrayFieldChirho(groupChirho.liveTextMismatchIdsChirho, `${groupPathChirho}.liveTextMismatchIdsChirho`);
+  numberArrayFieldChirho(groupChirho.liveTextUnknownIdsChirho, `${groupPathChirho}.liveTextUnknownIdsChirho`);
+  stringArrayFieldChirho(groupChirho.liveTextMatchExpectedLiveTextHashArgsChirho, `${groupPathChirho}.liveTextMatchExpectedLiveTextHashArgsChirho`);
+}
+
+function attributionCleanupBatchCommandForCheckChirho(
+  idsChirho: number[],
+  expectedLiveTextHashArgsChirho: string[]
+): { dryRunCommandChirho: string; applyCommandChirho: string } {
+  const baseCommandPartsChirho = [
+    "bun run reattribute-pass-c-human-validations-chirho --",
+    ...idsChirho.map((idChirho) => `--validation-id-chirho=${idChirho}`),
+    "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
+    "--rationale-chirho='<why every unchanged selected row is attributable to that reviewer>'",
+    ...expectedLiveTextHashArgsChirho,
+  ];
+  return {
+    dryRunCommandChirho: baseCommandPartsChirho.join(" "),
+    applyCommandChirho: [...baseCommandPartsChirho, "--apply-chirho"].join(" "),
+  };
+}
+
+function assertAttributionCleanupHandoffMatchesStatusChirho(statusChirho: CertificationStatusChirho, markdownChirho: string): void {
+  assertGeneratedCheckChirho(
+    statusChirho.humanValidationDbChirho !== undefined && typeof statusChirho.humanValidationDbChirho === "object",
+    "status JSON missing humanValidationDbChirho object"
+  );
+  const humanChirho = statusChirho.humanValidationDbChirho;
+  const genericReviewerRowsChirho = numberFieldChirho(humanChirho.genericReviewerRowsChirho, "humanValidationDbChirho.genericReviewerRowsChirho");
+  const genericReviewerLiveTextMatchRowsChirho = numberFieldChirho(
+    humanChirho.genericReviewerLiveTextMatchRowsChirho,
+    "humanValidationDbChirho.genericReviewerLiveTextMatchRowsChirho"
+  );
+  const genericReviewerLiveTextMismatchRowsChirho = numberFieldChirho(
+    humanChirho.genericReviewerLiveTextMismatchRowsChirho,
+    "humanValidationDbChirho.genericReviewerLiveTextMismatchRowsChirho"
+  );
+  const genericReviewerLiveTextUnknownRowsChirho = numberFieldChirho(
+    humanChirho.genericReviewerLiveTextUnknownRowsChirho,
+    "humanValidationDbChirho.genericReviewerLiveTextUnknownRowsChirho"
+  );
+  assertGeneratedCheckChirho(
+    Array.isArray(humanChirho.genericReviewerRowDetailsChirho),
+    "status JSON missing humanValidationDbChirho.genericReviewerRowDetailsChirho array"
+  );
+  assertGeneratedCheckChirho(
+    Array.isArray(humanChirho.genericReviewerRowGroupsChirho),
+    "status JSON missing humanValidationDbChirho.genericReviewerRowGroupsChirho array"
+  );
+  const rowsChirho = humanChirho.genericReviewerRowDetailsChirho;
+  const groupsChirho = humanChirho.genericReviewerRowGroupsChirho;
+  assertGeneratedCheckChirho(
+    rowsChirho.length === genericReviewerRowsChirho,
+    `status JSON genericReviewerRowDetailsChirho length ${rowsChirho.length} does not match genericReviewerRowsChirho ${genericReviewerRowsChirho}`
+  );
+
+  assertAttributionMarkdownIncludesChirho(markdownChirho, `- Attribution-blocked rows: ${genericReviewerRowsChirho}`, "blocked-row count");
+  assertAttributionMarkdownIncludesChirho(
+    markdownChirho,
+    `- Live text still matches original reviewed text: ${genericReviewerLiveTextMatchRowsChirho}`,
+    "unchanged live-text count"
+  );
+  assertAttributionMarkdownIncludesChirho(
+    markdownChirho,
+    `- Live text changed since original review: ${genericReviewerLiveTextMismatchRowsChirho}`,
+    "changed live-text count"
+  );
+  assertAttributionMarkdownIncludesChirho(
+    markdownChirho,
+    `- Live text could not be checked: ${genericReviewerLiveTextUnknownRowsChirho}`,
+    "unknown live-text count"
+  );
+
+  const renderedRowHeadingCountChirho = [...markdownChirho.matchAll(/^## id \d+ - [^\n]+$/gmu)].length;
+  assertGeneratedCheckChirho(
+    renderedRowHeadingCountChirho === rowsChirho.length,
+    `attribution cleanup handoff rendered ${renderedRowHeadingCountChirho} row heading(s), expected ${rowsChirho.length}`
+  );
+  if (rowsChirho.length === 0) {
+    assertAttributionMarkdownIncludesChirho(
+      markdownChirho,
+      "- No attribution-blocked Pass-C human validation rows are currently present.",
+      "empty attribution row notice"
+    );
+  }
+
+  for (const [indexChirho, groupChirho] of groupsChirho.entries()) {
+    assertAttributionCleanupGroupShapeChirho(groupChirho, indexChirho);
+  }
+  const batchGroupsChirho = groupsChirho.filter((groupChirho) => groupChirho.liveTextMatchIdsChirho.length > 1);
+  if (batchGroupsChirho.length === 0) {
+    assertAttributionMarkdownIncludesChirho(
+      markdownChirho,
+      "- No unchanged-live-text exact-ID batch groups currently have more than one row.",
+      "empty unchanged-live-text batch notice"
+    );
+  }
+  for (const groupChirho of batchGroupsChirho) {
+    const { dryRunCommandChirho, applyCommandChirho } = attributionCleanupBatchCommandForCheckChirho(
+      groupChirho.liveTextMatchIdsChirho,
+      groupChirho.liveTextMatchExpectedLiveTextHashArgsChirho
+    );
+    const groupLabelChirho = groupChirho.appliedAtChirho ?? "not-applied-chirho";
+    assertAttributionMarkdownIncludesChirho(
+      markdownChirho,
+      `- Applied ${groupLabelChirho}; current reviewer ${markdownCodeSpanForCheckChirho(groupChirho.reviewerChirho)}; unchanged ids ${groupChirho.liveTextMatchIdsChirho.join(", ")}; excluded changed ids ${groupChirho.liveTextMismatchIdsChirho.join(", ") || "none"}; excluded unchecked ids ${groupChirho.liveTextUnknownIdsChirho.join(", ") || "none"}`,
+      `batch group ${groupLabelChirho} summary`
+    );
+    assertAttributionMarkdownIncludesChirho(
+      markdownChirho,
+      `  - Unchanged batch dry-run: ${markdownCodeSpanForCheckChirho(dryRunCommandChirho)}`,
+      `batch group ${groupLabelChirho} dry-run command`
+    );
+    assertAttributionMarkdownIncludesChirho(
+      markdownChirho,
+      `  - Unchanged batch apply: ${markdownCodeSpanForCheckChirho(applyCommandChirho)}`,
+      `batch group ${groupLabelChirho} apply command`
+    );
+  }
+
+  for (const [indexChirho, rowChirho] of rowsChirho.entries()) {
+    assertAttributionCleanupRowShapeChirho(rowChirho, indexChirho);
+    const flagsChirho = rowChirho.issueFlagsChirho.length === 0 ? "none" : rowChirho.issueFlagsChirho.join(", ");
+    const correctedTextChirho = rowChirho.correctedTextChirho === null ? "none" : markdownCodeSpanForCheckChirho(rowChirho.correctedTextChirho);
+    const liveTextChirho = rowChirho.liveTextChirho === null ? "none" : markdownCodeSpanForCheckChirho(rowChirho.liveTextChirho);
+    const liveTextMatchesOriginalChirho = rowChirho.liveTextMatchesOriginalChirho === null ? "unknown" : String(rowChirho.liveTextMatchesOriginalChirho);
+    const liveSpanStatusChirho = rowChirho.liveSpanReadErrorChirho !== null
+      ? `read-error-chirho ${markdownCodeSpanForCheckChirho(rowChirho.liveSpanReadErrorChirho)}`
+      : rowChirho.liveSpanExistsChirho
+        ? "present-chirho"
+        : "missing-chirho";
+    const scanlineStatusChirho = rowChirho.liveScanlineExistsChirho ? "present-chirho" : "missing-chirho";
+    assertAttributionMarkdownIncludesChirho(markdownChirho, `## id ${rowChirho.idChirho} - ${rowChirho.locationChirho}`, `row ${rowChirho.idChirho} heading`);
+    assertAttributionMarkdownIncludesChirho(
+      markdownChirho,
+      `- Attribution-blocked read-only view: ${rawHebrewReviewUrlForCheckChirho("attribution-blocked-chirho", rowChirho.locationChirho)}`,
+      `row ${rowChirho.idChirho} blocked URL`
+    );
+    assertAttributionMarkdownIncludesChirho(
+      markdownChirho,
+      `- Attribution re-review view: ${rawHebrewReviewUrlForCheckChirho("attribution-rereview-chirho", rowChirho.locationChirho)}`,
+      `row ${rowChirho.idChirho} re-review URL`
+    );
+    assertAttributionMarkdownIncludesChirho(markdownChirho, `- Current reviewer value: ${markdownCodeSpanForCheckChirho(rowChirho.reviewerChirho)}`, `row ${rowChirho.idChirho} reviewer`);
+    assertAttributionMarkdownIncludesChirho(
+      markdownChirho,
+      `- Verdict: ${rowChirho.verdictChirho}; applied: ${rowChirho.appliedAtChirho ?? "not-applied-chirho"}; script verdict: ${rowChirho.scriptVerdictChirho ?? "none"}; issue flags: ${flagsChirho}`,
+      `row ${rowChirho.idChirho} verdict`
+    );
+    assertAttributionMarkdownIncludesChirho(
+      markdownChirho,
+      `- Original reviewed text: ${markdownCodeSpanForCheckChirho(rowChirho.originalTextChirho)}`,
+      `row ${rowChirho.idChirho} original text`
+    );
+    assertAttributionMarkdownIncludesChirho(markdownChirho, `- Corrected text: ${correctedTextChirho}`, `row ${rowChirho.idChirho} corrected text`);
+    assertAttributionMarkdownIncludesChirho(
+      markdownChirho,
+      `- Live span: ${liveSpanStatusChirho}; live text: ${liveTextChirho}; live script: ${rowChirho.liveScriptChirho ?? "none-chirho"}; live provenance: ${rowChirho.liveProvenanceChirho ?? "none-chirho"}; text matches original: ${liveTextMatchesOriginalChirho}`,
+      `row ${rowChirho.idChirho} live span`
+    );
+    assertAttributionMarkdownIncludesChirho(
+      markdownChirho,
+      `- Live span JSON: ${markdownCodeSpanForCheckChirho(relativeProjectPathForCheckChirho(rowChirho.liveSpanLinePathChirho))}`,
+      `row ${rowChirho.idChirho} live span path`
+    );
+    assertAttributionMarkdownIncludesChirho(
+      markdownChirho,
+      `- Source scanline: ${markdownCodeSpanForCheckChirho(relativeProjectPathForCheckChirho(rowChirho.liveScanlinePathChirho))} (${scanlineStatusChirho})`,
+      `row ${rowChirho.idChirho} scanline path`
+    );
+    if (rowChirho.liveTextMatchesOriginalChirho === true && rowChirho.liveTextChirho !== null) {
+      const baseCommandPartsChirho = [
+        "bun run reattribute-pass-c-human-validations-chirho --",
+        `--validation-id-chirho=${rowChirho.idChirho}`,
+        "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
+        "--rationale-chirho='<why this existing row is attributable to that reviewer>'",
+        `--expected-live-text-chirho=${shellSingleQuoteForCheckChirho(rowChirho.liveTextChirho)}`,
+      ];
+      assertAttributionMarkdownIncludesChirho(
+        markdownChirho,
+        `  - Guarded reattribute dry-run: ${markdownCodeSpanForCheckChirho(baseCommandPartsChirho.join(" "))}`,
+        `row ${rowChirho.idChirho} dry-run command`
+      );
+      assertAttributionMarkdownIncludesChirho(
+        markdownChirho,
+        `  - Guarded reattribute apply: ${markdownCodeSpanForCheckChirho([...baseCommandPartsChirho, "--apply-chirho"].join(" "))}`,
+        `row ${rowChirho.idChirho} apply command`
+      );
+    } else if (rowChirho.liveTextMatchesOriginalChirho === false) {
+      assertAttributionMarkdownIncludesChirho(
+        markdownChirho,
+        "  - Reattribute command omitted: live text changed since the original row. Use Attribution re-review unless the named human rechecks the current live text against the print.",
+        `row ${rowChirho.idChirho} changed-live-text omission`
+      );
+    } else {
+      assertAttributionMarkdownIncludesChirho(
+        markdownChirho,
+        "  - Reattribute command omitted: live text could not be checked.",
+        `row ${rowChirho.idChirho} unknown-live-text omission`
+      );
+    }
+  }
 }
 
 function assertRawHebrewAttentionItemShapeChirho(itemChirho: RawHebrewAttentionHandoffItemChirho, indexChirho: number): void {
@@ -771,6 +1077,7 @@ async function mainChirho(): Promise<void> {
       typeof statusChirho.latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextGroupCountChirho === "number",
     "status JSON missing latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextGroupCountChirho number"
   );
+  assertAttributionCleanupHandoffMatchesStatusChirho(statusChirho, attributionCleanupMarkdownChirho);
   assertRawHebrewAttentionHandoffMatchesStatusChirho(statusChirho, rawHebrewAttentionMarkdownChirho);
   const checkedLinksChirho = new Set<string>();
   let jsonCheckedCountChirho = 0;
