@@ -2146,6 +2146,7 @@ function summarizeRawHebrewReportLiveDriftChirho(driftChirho: RawHebrewReportLiv
 function liveLineTextForStatusChirho(lineChirho: SpanLineLikeChirho): string | null {
   if (!Array.isArray(lineChirho.spansChirho)) return null;
   const renderSpansChirho = [];
+  const lineWithOrderChirho = lineChirho as SpanLineLikeChirho & { lineTextOrderChirho?: unknown };
   for (const spanChirho of lineChirho.spansChirho) {
     if (
       typeof spanChirho.segmentIndexChirho !== "number" ||
@@ -2163,7 +2164,13 @@ function liveLineTextForStatusChirho(lineChirho: SpanLineLikeChirho): string | n
     });
   }
   return renderSpanLineTextChirho(
-    { lineIndexChirho: lineChirho.lineIndexChirho, spansChirho: renderSpansChirho },
+    {
+      lineIndexChirho: lineChirho.lineIndexChirho,
+      ...(typeof lineWithOrderChirho.lineTextOrderChirho === "string"
+        ? { lineTextOrderChirho: lineWithOrderChirho.lineTextOrderChirho }
+        : {}),
+      spansChirho: renderSpansChirho,
+    },
     { normalizeTextChirho: normalizeTextForStorageChirho }
   );
 }

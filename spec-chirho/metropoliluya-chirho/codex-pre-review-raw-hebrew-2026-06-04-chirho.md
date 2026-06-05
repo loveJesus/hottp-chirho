@@ -110,6 +110,13 @@ span was surfaced.
   - Visual precheck: the packet target crop cleanly boxes the single Hebrew word between French `de` and `quand`; no adjacent French text, punctuation, or hidden neighboring Hebrew appears swallowed into the red box at packet resolution.
   - Human check still needed: exact letters, niqqud, dagesh, and whether this short Job-related form is exactly what the print says here. The direct OCR read is only a weak aid and should not be used as certification.
 
+- `vol 5 p150 L6 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A150%3A6%3A1`
+  - Live text: `קְבָרִים`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the target crop boxes the Hebrew word after `17,1C`; the following `{B}` witness marker begins outside the red box, and the `𝔐 𝔗 // facil-styl...` apparatus text is outside the Hebrew span.
+  - Human check still needed: exact consonants, niqqud, dagesh/marks, and whether the `{B}` marker should remain outside the Hebrew span. The direct OCR read is not reliable enough for certification.
+
 - `vol 5 p148 L25 S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A148%3A25%3A5`
   - Live text: `מְלִיצַי רֵעָי`
@@ -207,14 +214,13 @@ another.
   - Visual precheck: the two target crops sit on either side of the printed slash in a `𝔗` line; each crop contains only its own Hebrew-script phrase, with the colon, slash, and final period outside the respective target boxes.
   - Human check still needed: exact letters, vowels, and word division. Because this is Targum/Aramaic-style Hebrew-script material, exact wording/vocalization should be checked by a competent Targum/Aramaic reviewer, not inferred from ordinary Hebrew familiarity.
 
-- `vol 5 p150 L8 S3/S5`:
-  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A150%3A8%3A3`
+- `vol 5 p150 L8 S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A150%3A8%3A5`
-  - Item IDs: `v5-p0150-l008-s3`, `v5-p0150-l008-s5`
-  - Live texts: `רוּחִי חֻבָּלָה` and `יָמַי נִזְעָכוּ`
+  - Item ID: `v5-p0150-l008-s5`
+  - Live text: `יָמַי נִזְעָכוּ`
   - Attention reason: multi-token Hebrew spans.
-  - Visual precheck: both crops sit in the slash-separated `Le 𝔐 porte pour ce verset` line; the boxes are centered on their respective phrases and do not appear to swallow the neighboring slash separators.
-  - Human check still needed: exact niqqud/marks and word spacing for each phrase independently.
+  - Visual precheck: the crop sits on the middle phrase in the slash-separated `Le 𝔐 porte pour ce verset` line; the neighboring slash separators sit outside the red box. Earlier S3/S7 crop review found a geometry/text assignment swap, so those two spans were moved out of raw Pass-C and into vision-tier expert review before this note was updated.
+  - Human check still needed: exact niqqud/marks and word spacing for this middle phrase independently.
 
 - `vol 5 p151 L1 S3/S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A1%3A3`

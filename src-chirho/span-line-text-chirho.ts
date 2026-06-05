@@ -2,6 +2,8 @@
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
 const RTL_SCRIPTS_CHIRHO = new Set(["hebrew-chirho", "arabic-chirho", "syriac-chirho"]);
+export const RTL_RUNS_LOGICAL_LINE_TEXT_ORDER_CHIRHO = "rtl-runs-logical-chirho";
+const NEUTRAL_RTL_RUN_DELIMITER_RE_CHIRHO = /^[\s/|\\.,;:!?()[\]{}<>]+$/u;
 
 export interface RenderSpanTextSpanChirho {
   segmentIndexChirho: number;
@@ -12,6 +14,7 @@ export interface RenderSpanTextSpanChirho {
 
 export interface RenderSpanTextLineChirho {
   lineIndexChirho?: number;
+  lineTextOrderChirho?: string;
   spansChirho: RenderSpanTextSpanChirho[];
 }
 
@@ -37,17 +40,62 @@ export function isRtlDominantSpanLineChirho(spansChirho: RenderSpanTextSpanChirh
 }
 
 export function orderedSpansForLineTextChirho<TSpanChirho extends RenderSpanTextSpanChirho>(
-  lineChirho: { spansChirho: TSpanChirho[] }
+  lineChirho: { lineTextOrderChirho?: string; spansChirho: TSpanChirho[] }
 ): TSpanChirho[] {
   const spansChirho = [...lineChirho.spansChirho].sort(
     (aChirho, bChirho) => aChirho.segmentIndexChirho - bChirho.segmentIndexChirho
   );
+  if (lineChirho.lineTextOrderChirho === RTL_RUNS_LOGICAL_LINE_TEXT_ORDER_CHIRHO) {
+    return orderedRtlRunsLogicallyChirho(spansChirho);
+  }
   if (!isRtlDominantSpanLineChirho(spansChirho)) return spansChirho;
   return [...spansChirho].sort((aChirho, bChirho) => {
     const aXMinChirho = aChirho.xMinPxChirho ?? aChirho.segmentIndexChirho;
     const bXMinChirho = bChirho.xMinPxChirho ?? bChirho.segmentIndexChirho;
     return bXMinChirho - aXMinChirho;
   });
+}
+
+function isRtlScriptSpanChirho(spanChirho: RenderSpanTextSpanChirho): boolean {
+  return RTL_SCRIPTS_CHIRHO.has(spanChirho.scriptChirho);
+}
+
+function isNeutralRtlRunDelimiterSpanChirho(spanChirho: RenderSpanTextSpanChirho): boolean {
+  return !isRtlScriptSpanChirho(spanChirho) && NEUTRAL_RTL_RUN_DELIMITER_RE_CHIRHO.test(spanChirho.utf8TextChirho.trim());
+}
+
+function orderedRtlRunsLogicallyChirho<TSpanChirho extends RenderSpanTextSpanChirho>(spansChirho: TSpanChirho[]): TSpanChirho[] {
+  const orderedChirho: TSpanChirho[] = [];
+  for (let indexChirho = 0; indexChirho < spansChirho.length; ) {
+    const spanChirho = spansChirho[indexChirho];
+    if (spanChirho === undefined || !isRtlScriptSpanChirho(spanChirho)) {
+      if (spanChirho !== undefined) orderedChirho.push(spanChirho);
+      indexChirho += 1;
+      continue;
+    }
+    const runChirho: TSpanChirho[] = [];
+    let rtlCountChirho = 0;
+    let runIndexChirho = indexChirho;
+    while (runIndexChirho < spansChirho.length) {
+      const candidateChirho = spansChirho[runIndexChirho];
+      if (candidateChirho === undefined) break;
+      if (isRtlScriptSpanChirho(candidateChirho)) {
+        runChirho.push(candidateChirho);
+        rtlCountChirho += 1;
+        runIndexChirho += 1;
+        continue;
+      }
+      if (isNeutralRtlRunDelimiterSpanChirho(candidateChirho)) {
+        runChirho.push(candidateChirho);
+        runIndexChirho += 1;
+        continue;
+      }
+      break;
+    }
+    orderedChirho.push(...(rtlCountChirho >= 2 ? [...runChirho].reverse() : runChirho));
+    indexChirho = runIndexChirho;
+  }
+  return orderedChirho;
 }
 
 export function renderSpanLineTextChirho(
