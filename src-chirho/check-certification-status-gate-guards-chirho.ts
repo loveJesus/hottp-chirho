@@ -228,8 +228,10 @@ function writeGenericExpertSuppliedBackupFixtureChirho(pathChirho: string): void
             rationaleChirho: "disposable status gate guard should reject generic expert-supplied reviewer attribution",
             appliedAtChirho: "2026-06-04T00:00:00.000Z",
             sourcePathChirho: "workspace-chirho/scanlines-chirho/vol-3-chirho/page-0151-chirho/line-010-chirho.png",
+            sourceSha256Chirho: "0da1fd552928d2a5b10fc9770edc72d2e9c48340c9c4292b8e125b51336ac742",
             packetPathChirho:
               "workspace-chirho/expert-confirm-pack-chirho/2026-05-31-chirho/images-chirho/vol-3-page-0151-line-010-chirho.png",
+            packetSha256Chirho: "0da1fd552928d2a5b10fc9770edc72d2e9c48340c9c4292b8e125b51336ac742",
             linePathChirho: "workspace-chirho/spans-chirho/vol-3-chirho/page-0151-chirho/line-010-chirho.json",
           },
         ],

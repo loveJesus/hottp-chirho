@@ -432,7 +432,9 @@ interface ExpertSuppliedVisionTextRecordChirho {
   rationaleChirho?: string;
   appliedAtChirho?: string;
   sourcePathChirho?: string;
+  sourceSha256Chirho?: string;
   packetPathChirho?: string;
+  packetSha256Chirho?: string;
   linePathChirho?: string;
 }
 
@@ -2089,7 +2091,9 @@ function expertSuppliedVisionTextRecordShapeErrorsChirho(
     "rationaleChirho",
     "appliedAtChirho",
     "sourcePathChirho",
+    "sourceSha256Chirho",
     "packetPathChirho",
+    "packetSha256Chirho",
     "linePathChirho",
   ] as const;
   const numberFieldsChirho = [
@@ -2110,6 +2114,12 @@ function expertSuppliedVisionTextRecordShapeErrorsChirho(
   if (recordChirho.suppliedTextChirho !== suppliedTextChirho) errorsChirho.push(`${prefixChirho}.suppliedTextChirho is not NFC-normalized`);
   if (recordChirho.suppliedTextHashChirho !== hashTextChirho(suppliedTextChirho)) {
     errorsChirho.push(`${prefixChirho}.suppliedTextHashChirho does not match suppliedTextChirho`);
+  }
+  if (!/^[a-f0-9]{64}$/.test(recordChirho.sourceSha256Chirho!)) {
+    errorsChirho.push(`${prefixChirho}.sourceSha256Chirho must be a lowercase sha256 hex digest`);
+  }
+  if (!/^[a-f0-9]{64}$/.test(recordChirho.packetSha256Chirho!)) {
+    errorsChirho.push(`${prefixChirho}.packetSha256Chirho must be a lowercase sha256 hex digest`);
   }
   const expectedItemIdChirho = expertItemIdForLocationChirho({
     volumeChirho: recordChirho.volumeChirho!,
@@ -2253,8 +2263,14 @@ function summarizeExpertSuppliedVisionTextBackupChirho(paramsChirho: {
     if (manifestItemChirho !== undefined && !pathMatchesCurrentChirho(recordChirho.sourcePathChirho, manifestItemChirho.sourcePathChirho)) {
       mismatchesChirho.push("manifest-source-path-mismatch-chirho");
     }
+    if (manifestItemChirho !== undefined && recordChirho.sourceSha256Chirho !== fileSha256Chirho(manifestItemChirho.sourcePathChirho)) {
+      mismatchesChirho.push("manifest-source-hash-mismatch-chirho");
+    }
     if (manifestItemChirho !== undefined && !pathMatchesCurrentChirho(recordChirho.packetPathChirho, manifestItemChirho.packetPathChirho)) {
       mismatchesChirho.push("manifest-packet-path-mismatch-chirho");
+    }
+    if (manifestItemChirho !== undefined && recordChirho.packetSha256Chirho !== fileSha256Chirho(manifestItemChirho.packetPathChirho)) {
+      mismatchesChirho.push("manifest-packet-hash-mismatch-chirho");
     }
     if (!pathMatchesCurrentChirho(recordChirho.linePathChirho, liveAppliedChirho.linePathChirho)) {
       mismatchesChirho.push("line-path-mismatch-chirho");
