@@ -36,6 +36,7 @@ const RAW_REVIEW_STATES_CHIRHO = new Set([
   "pending-chirho",
   "saved-issues-chirho",
   "attribution-blocked-chirho",
+  "attribution-rereview-chirho",
 ]);
 const RAW_VALIDATION_STATUSES_CHIRHO = new Set([
   "unvalidated-chirho",
@@ -272,7 +273,7 @@ function assertRawFiltersChirho(urlChirho: URL, itemChirho: RawHebrewQueueItemCh
     assertGeneratedCheckChirho(itemChirho.volumeChirho === volumeChirho, `${keyChirho} item ${itemChirho.keyChirho} does not match volume ${volumeChirho}`);
   }
   const reviewStateChirho = urlChirho.searchParams.get("review-state-chirho");
-  if (reviewStateChirho === "attribution-blocked-chirho") {
+  if (reviewStateChirho === "attribution-blocked-chirho" || reviewStateChirho === "attribution-rereview-chirho") {
     assertGeneratedCheckChirho(
       itemChirho.validationStatusChirho === "attribution-blocked-chirho",
       `${keyChirho} item ${itemChirho.keyChirho} is not attribution-blocked`

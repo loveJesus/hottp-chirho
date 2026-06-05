@@ -959,7 +959,7 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
   );
   assertMarkdownContainsChirho(
     markdownChirho,
-    `- Attribution cleanup: ${numberFieldChirho(humanDbChirho, "genericReviewerRowsChirho", "humanValidationDbChirho")} prior Pass-C human validation row(s) still need explicit reviewer attribution in http://localhost:8766/?review-state-chirho=attribution-blocked-chirho. Reattribute only rows genuinely attributable to the named human reviewer; otherwise re-review them.`,
+    `- Attribution cleanup: ${numberFieldChirho(humanDbChirho, "genericReviewerRowsChirho", "humanValidationDbChirho")} prior Pass-C human validation row(s) still need explicit reviewer attribution in http://localhost:8766/?review-state-chirho=attribution-blocked-chirho. Reattribute only rows genuinely attributable to the named human reviewer; otherwise use http://localhost:8766/?review-state-chirho=attribution-rereview-chirho to re-review them explicitly.`,
     "Pass-C attribution cleanup routing"
   );
   assertMarkdownContainsChirho(

@@ -4666,9 +4666,15 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   const rawHebrewAttributionBlockedFirstUrlChirho = rawHebrewAttributionBlockedFirstKeyChirho === null
     ? null
     : rawHebrewReviewUrlChirho(undefined, "attribution-blocked-chirho", undefined, rawHebrewAttributionBlockedFirstKeyChirho);
+  const rawHebrewAttributionRereviewFirstUrlChirho = rawHebrewAttributionBlockedFirstKeyChirho === null
+    ? null
+    : rawHebrewReviewUrlChirho(undefined, "attribution-rereview-chirho", undefined, rawHebrewAttributionBlockedFirstKeyChirho);
   const rawHebrewAttributionBlockedFirstTextChirho = rawHebrewAttributionBlockedFirstUrlChirho === null
     ? ""
     : `; first blocked: ${rawHebrewAttributionBlockedFirstUrlChirho}`;
+  const rawHebrewAttributionRereviewFirstTextChirho = rawHebrewAttributionRereviewFirstUrlChirho === null
+    ? ""
+    : `; first re-review: ${rawHebrewAttributionRereviewFirstUrlChirho}`;
   return [
     "<!-- For God so loved the world that he gave his only begotten Son,",
     "that whoever believes in him should not perish but have eternal life. John 3:16 -->",
@@ -4703,6 +4709,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     ...rawHebrewVolumeLaneLinesChirho,
     `- Raw Hebrew saved issue lane: ${rawHebrewReviewUrlChirho(undefined, "saved-issues-chirho")} (${statusChirho.humanValidationDbChirho.rawQueueIssueRowsChirho} read-only current issue row(s))`,
     `- Raw Hebrew attribution-blocked lane: ${rawHebrewReviewUrlChirho(undefined, "attribution-blocked-chirho")} (${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho} read-only current row(s) needing explicit reviewer attribution${rawHebrewAttributionBlockedFirstTextChirho})`,
+    `- Raw Hebrew attribution re-review lane: ${rawHebrewReviewUrlChirho(undefined, "attribution-rereview-chirho")} (${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho} writable current row(s) for fresh explicit review when reattribution is not justified${rawHebrewAttributionRereviewFirstTextChirho})`,
     "- Raw Hebrew pending counts match the live validator; report totals include already-saved rows.",
     `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Raw Hebrew human certification quickstart: \`${relativeProjectPathChirho(RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO)}\``,
@@ -4742,7 +4749,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "## Suggested Review Routing",
     "",
     `- Hallelujah starting lanes: pending raw Hebrew + Hebrew/WLC vision + Greek vision (${hallelujahReviewCountChirho} review target(s)). Start with raw Hebrew primary vols 3-5, then raw Hebrew vols 1-2 / partial, then Hebrew/WLC vision and Greek vision; flag or skip Hebrew-script Aramaic/Targum details outside your competence.`,
-    `- Attribution cleanup: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho} prior Pass-C human validation row(s) still need explicit reviewer attribution in ${rawHebrewReviewUrlChirho(undefined, "attribution-blocked-chirho")}. Reattribute only rows genuinely attributable to the named human reviewer; otherwise re-review them.`,
+    `- Attribution cleanup: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho} prior Pass-C human validation row(s) still need explicit reviewer attribution in ${rawHebrewReviewUrlChirho(undefined, "attribution-blocked-chirho")}. Reattribute only rows genuinely attributable to the named human reviewer; otherwise use ${rawHebrewReviewUrlChirho(undefined, "attribution-rereview-chirho")} to re-review them explicitly.`,
     `- External script-expert lanes: Syriac reader + Arabist (${externalExpertReviewCountChirho} item(s): ${externalExpertNonblankReviewCountChirho} with current text, ${externalExpertBlankReviewCountChirho} blank). A non-reader can flag crop or segmentation problems, but should not confirm exact letters, dots, vowels, or punctuation. Syriac readers can use the has-text lane first; the blank lane needs the supplied-text handoff before confirmation.`,
     "- Hebrew-script Aramaic/Targum: confirm consonants only when the print is clear; route exact Aramaic vocalization, dagesh/shin-dot details, and Targum wording to a Targum/Aramaic reviewer.",
     `- Latin/symbol proofing: ${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} item(s) remain. Use the symbol-risk lanes because witness sigla, references, and ornament guesses are not blanket-safe.`,

@@ -30,6 +30,7 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Hebrew letter alef",
   "Hebrew letter qof",
   "Attribution-blocked row shown read-only. Inspect the crop; reattribute only if this existing row is genuinely attributable to the named human reviewer.",
+  "Attribution re-review mode appends a fresh explicit human review that supersedes the generic row.",
   "Reviewer for command",
   "Rationale for command",
   "These helper fields only update the copied commands; they do not save, apply, or certify.",
@@ -315,6 +316,41 @@ async function mainChirho(): Promise<void> {
     assertCheckChirho(
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
       "attribution-blocked submit persisted a row"
+    );
+    const normalItemAttributionSupersedeResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: [],
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: true,
+        supersedeAttributionBlockedChirho: true,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const normalItemAttributionSupersedeDataChirho = (await normalItemAttributionSupersedeResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      normalItemAttributionSupersedeResponseChirho.status === 400,
+      `expected normal-item attribution supersede HTTP 400, got ${normalItemAttributionSupersedeResponseChirho.status}`
+    );
+    assertCheckChirho(
+      normalItemAttributionSupersedeDataChirho.okChirho === false,
+      "normal-item attribution supersede unexpectedly returned ok"
+    );
+    assertCheckChirho(
+      String(normalItemAttributionSupersedeDataChirho.errorChirho ?? "").includes("only allowed for attribution-blocked rows"),
+      `normal-item attribution supersede failed for the wrong reason: ${String(normalItemAttributionSupersedeDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "normal-item attribution supersede persisted a row"
     );
     const staleDisplayResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
@@ -754,6 +790,37 @@ async function mainChirho(): Promise<void> {
     assertCheckChirho(
       currentNonUndoValidationRowCountChirho(dbPathChirho) === currentNonUndoRowsBeforeChirho,
       "valid undo did not restore the current non-undo row count"
+    );
+    const validAttributionRereviewResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: attributionBlockedItemChirho.keyChirho,
+        issueFlagsChirho: [],
+        correctedTextChirho: attributionBlockedItemChirho.liveSpanTextChirho,
+        notesChirho: "",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: true,
+        supersedeAttributionBlockedChirho: true,
+        ...displayGuardForItemChirho(attributionBlockedItemChirho),
+      }),
+    });
+    const validAttributionRereviewDataChirho = (await validAttributionRereviewResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      validAttributionRereviewResponseChirho.ok,
+      `valid attribution re-review POST failed: ${validAttributionRereviewResponseChirho.status} ${String(validAttributionRereviewDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho + 4,
+      "valid attribution re-review POST did not append one row"
+    );
+    assertCheckChirho(
+      currentNonUndoValidationRowCountChirho(dbPathChirho) === currentNonUndoRowsBeforeChirho,
+      "valid attribution re-review changed the current non-undo row count"
     );
     assertCheckChirho(existsSync(backupPathChirho), "valid POSTs did not refresh disposable backup");
     JSON.parse(readFileSync(backupPathChirho, "utf8"));

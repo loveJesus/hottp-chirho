@@ -48,13 +48,13 @@ Flag segmentation when one of these is true:
 
 ## Attribution Cleanup
 
-The Attribution blocked review lane shows older saved rows whose reviewer id is generic, blank, or machine-like. Those rows are read-only in the validator and do not count for certification until they are reattributed or re-reviewed.
+The Attribution blocked review lane shows older saved rows whose reviewer id is generic, blank, or machine-like. Those rows do not count for certification until they are reattributed or re-reviewed.
 
 Use that lane only when you can honestly identify who made the existing review:
 
 - Inspect the crop and full line again.
 - If the row is genuinely yours, enter your explicit reviewer id and a rationale, copy the dry-run reattribution command, run it, inspect the output, then copy/run the apply command.
-- If the row is not clearly attributable to you, do not reattribute it. Re-review the item in the pending lane instead.
+- If the row is not clearly attributable to you, do not reattribute it. Use the Attribution re-review lane to append a fresh explicit review that supersedes the generic row.
 - Reattribution does not change the reviewed text, verdict, issue flags, or correction status. It only replaces the generic reviewer id with an explicit human attribution.
 
 ## Competence Boundary
