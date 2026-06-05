@@ -207,6 +207,22 @@ async function mainChirho(): Promise<void> {
       reviewerChirho: "dr-latin-symbol-server-guard-chirho",
       ...displayGuardForItemChirho(itemChirho),
     };
+    const staleDisplayResultChirho = await postReviewChirho(portChirho, {
+      ...commonBodyChirho,
+      issueFlagsChirho: [],
+      acceptCleanChirho: true,
+      expectedLineTextChirho: `${itemChirho.lineTextChirho} stale-display-guard-chirho`,
+    });
+    assertCheckChirho(
+      staleDisplayResultChirho.responseChirho.status === 409,
+      `stale display expected HTTP 409, got ${staleDisplayResultChirho.responseChirho.status}`
+    );
+    assertCheckChirho(staleDisplayResultChirho.dataChirho.okChirho === false, "stale display unexpectedly returned ok");
+    assertCheckChirho(
+      String(staleDisplayResultChirho.dataChirho.errorChirho ?? "").includes("Latin/symbol review item is stale"),
+      `stale display failed for wrong reason: ${String(staleDisplayResultChirho.dataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(reviewRowCountChirho(dbPathChirho) === 0, "stale display POST persisted a review row");
     const missingCleanAckResultChirho = await postReviewChirho(portChirho, {
       ...commonBodyChirho,
       issueFlagsChirho: [],
