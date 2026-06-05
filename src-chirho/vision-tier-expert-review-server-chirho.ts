@@ -680,6 +680,13 @@ function htmlChirho(): string {
         <option value="nonblank-chirho">Has text</option>
         <option value="blank-chirho">Blank</option>
       </select>
+      <label class="label-chirho" for="source-filter-chirho">Source</label>
+      <select id="source-filter-chirho">
+        <option value="all-chirho">All</option>
+        <option value="explicit-span-chirho">Explicit span</option>
+        <option value="pass-c-ocr-span-chirho">Pass-C OCR</option>
+        <option value="d1-derived-chirho">D1-derived</option>
+      </select>
       <button type="button" id="prev-chirho">Previous</button>
       <button type="button" id="next-chirho">Skip</button>
       <button type="button" id="copy-link-chirho">Copy link</button>
@@ -693,6 +700,7 @@ function htmlChirho(): string {
       <a href="/?script-chirho=greek-chirho">Greek</a>
       <a href="/?script-chirho=syriac-chirho&text-state-chirho=nonblank-chirho">Syriac has text</a>
       <a href="/?script-chirho=arabic-chirho">Arabic</a>
+      <a href="/?source-chirho=pass-c-ocr-span-chirho">Pass-C OCR</a>
       <a href="/?priority-chirho=priority-chirho">Priority</a>
     </div>
     <section class="main-chirho" id="app-chirho"></section>
@@ -716,6 +724,7 @@ function htmlChirho(): string {
     let priorityFilterChirho = queryChirho.get("priority-chirho") || "all-chirho";
     let volumeFilterChirho = queryChirho.get("volume-chirho") || "all-chirho";
     let textStateFilterChirho = queryChirho.get("text-state-chirho") || "all-chirho";
+    let sourceFilterChirho = queryChirho.get("source-chirho") || "all-chirho";
     let requestedItemIdChirho = queryChirho.get("item-chirho");
 
     function elChirho(tagChirho, attrsChirho = {}, childrenChirho = []) {
@@ -790,11 +799,13 @@ function htmlChirho(): string {
     if (!selectHasValueChirho("priority-filter-chirho", priorityFilterChirho)) priorityFilterChirho = "all-chirho";
     if (!selectHasValueChirho("volume-filter-chirho", volumeFilterChirho)) volumeFilterChirho = "all-chirho";
     if (!selectHasValueChirho("text-state-filter-chirho", textStateFilterChirho)) textStateFilterChirho = "all-chirho";
+    if (!selectHasValueChirho("source-filter-chirho", sourceFilterChirho)) sourceFilterChirho = "all-chirho";
     function syncFilterControlsChirho() {
       document.getElementById("script-filter-chirho").value = scriptFilterChirho;
       document.getElementById("priority-filter-chirho").value = priorityFilterChirho;
       document.getElementById("volume-filter-chirho").value = volumeFilterChirho;
       document.getElementById("text-state-filter-chirho").value = textStateFilterChirho;
+      document.getElementById("source-filter-chirho").value = sourceFilterChirho;
     }
     function volumeFilterNumberChirho() {
       if (volumeFilterChirho === "all-chirho") return null;
@@ -807,6 +818,7 @@ function htmlChirho(): string {
       if (priorityFilterChirho !== "all-chirho") paramsChirho.set("priority-chirho", priorityFilterChirho);
       if (volumeFilterChirho !== "all-chirho") paramsChirho.set("volume-chirho", volumeFilterChirho);
       if (textStateFilterChirho !== "all-chirho") paramsChirho.set("text-state-chirho", textStateFilterChirho);
+      if (sourceFilterChirho !== "all-chirho") paramsChirho.set("source-chirho", sourceFilterChirho);
       const itemChirho = currentItemChirho();
       if (itemChirho) paramsChirho.set("item-chirho", itemChirho.idChirho);
       const queryStringChirho = paramsChirho.toString();
@@ -826,6 +838,7 @@ function htmlChirho(): string {
           (priorityFilterChirho === "priority-chirho" && itemChirho.priorityMatchChirho) ||
           (priorityFilterChirho === "appendix-chirho" && !itemChirho.priorityMatchChirho)) &&
         (volumeChirho === null || itemChirho.volumeChirho === volumeChirho) &&
+        (sourceFilterChirho === "all-chirho" || itemChirho.visionSourceChirho === sourceFilterChirho) &&
         itemMatchesTextStateChirho(itemChirho)
       );
     }
@@ -859,6 +872,10 @@ function htmlChirho(): string {
         }
         if (textStateFilterChirho !== "all-chirho" && !itemMatchesTextStateChirho(requestedItemChirho)) {
           textStateFilterChirho = "all-chirho";
+          changedFiltersChirho = true;
+        }
+        if (sourceFilterChirho !== "all-chirho" && requestedItemChirho.visionSourceChirho !== sourceFilterChirho) {
+          sourceFilterChirho = "all-chirho";
           changedFiltersChirho = true;
         }
         if (changedFiltersChirho) syncFilterControlsChirho();
@@ -1568,6 +1585,12 @@ function htmlChirho(): string {
     });
     document.getElementById("text-state-filter-chirho").addEventListener("change", (eventChirho) => {
       textStateFilterChirho = eventChirho.target.value;
+      requestedItemIdChirho = null;
+      indexChirho = 0;
+      renderChirho();
+    });
+    document.getElementById("source-filter-chirho").addEventListener("change", (eventChirho) => {
+      sourceFilterChirho = eventChirho.target.value;
       requestedItemIdChirho = null;
       indexChirho = 0;
       renderChirho();

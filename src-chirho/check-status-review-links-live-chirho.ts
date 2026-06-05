@@ -82,6 +82,11 @@ const EXPERT_TEXT_STATES_CHIRHO = new Set([
   "blank-chirho",
   "nonblank-chirho",
 ]);
+const EXPERT_SOURCES_CHIRHO = new Set([
+  "explicit-span-chirho",
+  "pass-c-ocr-span-chirho",
+  "d1-derived-chirho",
+]);
 
 interface CertificationStatusChirho {
   reviewStartLinksChirho?: Record<string, string | null>;
@@ -106,6 +111,7 @@ interface LatinSymbolItemChirho {
 interface ExpertItemChirho {
   idChirho: string;
   scriptChirho: string;
+  visionSourceChirho: string;
   priorityMatchChirho: boolean;
   currentTextChirho: string;
   volumeChirho: number;
@@ -212,11 +218,12 @@ function assertExpertQueryValuesChirho(urlChirho: URL, keyChirho: string): void 
   assertKnownSearchParamsChirho(
     urlChirho,
     keyChirho,
-    new Set(["item-chirho", "script-chirho", "priority-chirho", "text-state-chirho", "volume-chirho"])
+    new Set(["item-chirho", "script-chirho", "priority-chirho", "text-state-chirho", "volume-chirho", "source-chirho"])
   );
   assertParamInSetChirho(urlChirho, keyChirho, "script-chirho", EXPERT_SCRIPTS_CHIRHO);
   assertParamInSetChirho(urlChirho, keyChirho, "priority-chirho", EXPERT_PRIORITIES_CHIRHO);
   assertParamInSetChirho(urlChirho, keyChirho, "text-state-chirho", EXPERT_TEXT_STATES_CHIRHO);
+  assertParamInSetChirho(urlChirho, keyChirho, "source-chirho", EXPERT_SOURCES_CHIRHO);
   parseVolumeFilterChirho(urlChirho);
 }
 
@@ -335,6 +342,10 @@ function assertExpertFiltersChirho(urlChirho: URL, itemChirho: ExpertItemChirho,
         (textStateChirho === "nonblank-chirho" && itemChirho.currentTextChirho.length > 0),
       `${keyChirho} item ${itemChirho.idChirho} does not match text-state-chirho=${textStateChirho}`
     );
+  }
+  const sourceChirho = urlChirho.searchParams.get("source-chirho");
+  if (sourceChirho !== null) {
+    assertGeneratedCheckChirho(itemChirho.visionSourceChirho === sourceChirho, `${keyChirho} item ${itemChirho.idChirho} does not match source-chirho=${sourceChirho}`);
   }
   const volumeChirho = parseVolumeFilterChirho(urlChirho);
   if (volumeChirho !== null) {

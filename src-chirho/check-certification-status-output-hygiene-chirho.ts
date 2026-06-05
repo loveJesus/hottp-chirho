@@ -583,6 +583,18 @@ function reviewStartLinkCountChecksChirho(statusChirho: CertificationStatusOutpu
       countChirho: numberFieldChirho(expertChirho, "pendingAppendixItemCountChirho", "visionTierChirho"),
     },
     {
+      keyChirho: "expertExplicitSpanSourceChirho",
+      countChirho: countMapValueChirho(expertChirho, "pendingVisionSourceCountsChirho", "explicit-span-chirho", "visionTierChirho"),
+    },
+    {
+      keyChirho: "expertPassCOcrSourceChirho",
+      countChirho: countMapValueChirho(expertChirho, "pendingVisionSourceCountsChirho", "pass-c-ocr-span-chirho", "visionTierChirho"),
+    },
+    {
+      keyChirho: "expertD1DerivedSourceChirho",
+      countChirho: countMapValueChirho(expertChirho, "pendingVisionSourceCountsChirho", "d1-derived-chirho", "visionTierChirho"),
+    },
+    {
       keyChirho: "expertHebrewChirho",
       countChirho: countMapValueChirho(expertChirho, "pendingVisionCountsChirho", "hebrew-chirho", "visionTierChirho"),
     },
@@ -699,6 +711,10 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     countMapValueChirho(expertChirho, "pendingNonblankTextCountsChirho", scriptChirho, "visionTierChirho");
   const expertPendingBlankScriptChirho = (scriptChirho: string): number =>
     countMapValueChirho(expertChirho, "pendingBlankTextCountsChirho", scriptChirho, "visionTierChirho");
+  const expertPendingSourceChirho = (sourceChirho: string): number =>
+    countMapValueChirho(expertChirho, "pendingVisionSourceCountsChirho", sourceChirho, "visionTierChirho");
+  const expertSourceTotalChirho = (sourceChirho: string): number =>
+    countMapValueChirho(expertChirho, "liveVisionSourceCountsChirho", sourceChirho, "visionTierChirho");
   const expertPriorityCountChirho = numberFieldChirho(expertChirho, "priorityItemCountChirho", "visionTierChirho");
   const expertAppendixCountChirho = Math.max(
     0,
@@ -897,6 +913,21 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     markdownChirho,
     `- Expert appendix lane: http://localhost:8771/?priority-chirho=appendix-chirho (${numberFieldChirho(expertChirho, "pendingAppendixItemCountChirho", "visionTierChirho")} pending of ${expertAppendixCountChirho} item(s)${reviewStartSuffixChirho(linksChirho, "expertAppendixChirho")})`,
     "expert appendix lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Expert explicit-span source lane: http://localhost:8771/?source-chirho=explicit-span-chirho (${expertPendingSourceChirho("explicit-span-chirho")} pending of ${expertSourceTotalChirho("explicit-span-chirho")} item(s)${reviewStartSuffixChirho(linksChirho, "expertExplicitSpanSourceChirho")})`,
+    "expert explicit-span source lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Expert Pass-C OCR source lane: http://localhost:8771/?source-chirho=pass-c-ocr-span-chirho (${expertPendingSourceChirho("pass-c-ocr-span-chirho")} pending of ${expertSourceTotalChirho("pass-c-ocr-span-chirho")} item(s)${reviewStartSuffixChirho(linksChirho, "expertPassCOcrSourceChirho")})`,
+    "expert Pass-C OCR source lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Expert D1-derived source lane: http://localhost:8771/?source-chirho=d1-derived-chirho (${expertPendingSourceChirho("d1-derived-chirho")} pending of ${expertSourceTotalChirho("d1-derived-chirho")} item(s)${reviewStartSuffixChirho(linksChirho, "expertD1DerivedSourceChirho")})`,
+    "expert D1-derived source lane"
   );
   assertMarkdownContainsChirho(
     markdownChirho,

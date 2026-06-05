@@ -1424,13 +1424,15 @@ function expertReviewUrlChirho(
   priorityChirho?: string,
   itemIdChirho?: string,
   volumeChirho?: number,
-  textStateChirho?: string
+  textStateChirho?: string,
+  sourceChirho?: string
 ): string {
   const entriesChirho: Array<[string, string]> = [];
   if (scriptChirho !== undefined) entriesChirho.push(["script-chirho", scriptChirho]);
   if (priorityChirho !== undefined) entriesChirho.push(["priority-chirho", priorityChirho]);
   if (volumeChirho !== undefined) entriesChirho.push(["volume-chirho", volumeFilterValueChirho(volumeChirho)]);
   if (textStateChirho !== undefined) entriesChirho.push(["text-state-chirho", textStateChirho]);
+  if (sourceChirho !== undefined) entriesChirho.push(["source-chirho", sourceChirho]);
   if (itemIdChirho !== undefined) entriesChirho.push(["item-chirho", itemIdChirho]);
   const queryChirho = urlQueryChirho(entriesChirho);
   return queryChirho.length === 0 ? "http://localhost:8771/" : `http://localhost:8771/?${queryChirho}`;
@@ -1640,7 +1642,8 @@ function firstExpertPendingItemIdChirho(
   scriptChirho?: string,
   priorityChirho?: string,
   volumeChirho?: number,
-  textStateChirho?: string
+  textStateChirho?: string,
+  sourceChirho?: string
 ): string | null {
   const itemChirho = itemsChirho.find((candidateChirho) =>
     (scriptChirho === undefined || candidateChirho.scriptChirho === scriptChirho) &&
@@ -1650,6 +1653,7 @@ function firstExpertPendingItemIdChirho(
       (priorityChirho === "appendix-chirho" && candidateChirho.priorityMatchChirho !== true)
     ) &&
     (volumeChirho === undefined || itemVolumeChirho(candidateChirho) === volumeChirho) &&
+    (sourceChirho === undefined || candidateChirho.visionSourceChirho === sourceChirho) &&
     (
       textStateChirho === undefined ||
       (textStateChirho === "blank-chirho" && candidateChirho.currentTextChirho.trim().length === 0) ||
@@ -1731,10 +1735,11 @@ function expertReviewStartUrlChirho(
   scriptChirho?: string,
   priorityChirho?: string,
   volumeChirho?: number,
-  textStateChirho?: string
+  textStateChirho?: string,
+  sourceChirho?: string
 ): string | null {
-  const itemIdChirho = firstExpertPendingItemIdChirho(itemsChirho, scriptChirho, priorityChirho, volumeChirho, textStateChirho);
-  return itemIdChirho === null ? null : expertReviewUrlChirho(scriptChirho, priorityChirho, itemIdChirho, volumeChirho, textStateChirho);
+  const itemIdChirho = firstExpertPendingItemIdChirho(itemsChirho, scriptChirho, priorityChirho, volumeChirho, textStateChirho, sourceChirho);
+  return itemIdChirho === null ? null : expertReviewUrlChirho(scriptChirho, priorityChirho, itemIdChirho, volumeChirho, textStateChirho, sourceChirho);
 }
 
 function withReviewStartTextChirho(urlChirho: string | null | undefined): string {
@@ -4443,6 +4448,30 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
       "blank-chirho"
     ),
     expertArabicChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, "arabic-chirho"),
+    expertExplicitSpanSourceChirho: expertReviewStartUrlChirho(
+      pendingExpertManifestItemsChirho,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      "explicit-span-chirho"
+    ),
+    expertPassCOcrSourceChirho: expertReviewStartUrlChirho(
+      pendingExpertManifestItemsChirho,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      "pass-c-ocr-span-chirho"
+    ),
+    expertD1DerivedSourceChirho: expertReviewStartUrlChirho(
+      pendingExpertManifestItemsChirho,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      "d1-derived-chirho"
+    ),
   };
   for (const volumeChirho of REVIEW_VOLUMES_CHIRHO) {
     reviewStartLinksChirho[volumeReviewStartLinkKeyChirho("rawHebrewChirho", volumeChirho)] =
@@ -4567,6 +4596,10 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     statusChirho.visionTierChirho.pendingNonblankTextCountsChirho[scriptChirho] ?? 0;
   const pendingExpertScriptBlankCountChirho = (scriptChirho: string): number =>
     statusChirho.visionTierChirho.pendingBlankTextCountsChirho[scriptChirho] ?? 0;
+  const pendingExpertSourceCountChirho = (sourceChirho: string): number =>
+    statusChirho.visionTierChirho.pendingVisionSourceCountsChirho[sourceChirho] ?? 0;
+  const expertSourceCountChirho = (sourceChirho: string): number =>
+    statusChirho.visionTierChirho.liveVisionSourceCountsChirho[sourceChirho] ?? 0;
   const expertPriorityCountChirho = statusChirho.visionTierChirho.priorityItemCountChirho;
   const expertAppendixCountChirho = Math.max(
     0,
@@ -4970,6 +5003,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Expert non-Latin blank-text lane: ${expertReviewUrlChirho(undefined, undefined, undefined, undefined, "blank-chirho")} (${statusChirho.visionTierChirho.pendingBlankTextItemCountChirho} pending blank item(s) requiring supplied text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertBlankChirho)})`,
     `- Expert priority lane: ${expertReviewUrlChirho(undefined, "priority-chirho")} (${statusChirho.visionTierChirho.pendingPriorityItemCountChirho} pending of ${expertPriorityCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertPriorityChirho)})`,
     `- Expert appendix lane: ${expertReviewUrlChirho(undefined, "appendix-chirho")} (${statusChirho.visionTierChirho.pendingAppendixItemCountChirho} pending of ${expertAppendixCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertAppendixChirho)})`,
+    `- Expert explicit-span source lane: ${expertReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, "explicit-span-chirho")} (${pendingExpertSourceCountChirho("explicit-span-chirho")} pending of ${expertSourceCountChirho("explicit-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertExplicitSpanSourceChirho)})`,
+    `- Expert Pass-C OCR source lane: ${expertReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, "pass-c-ocr-span-chirho")} (${pendingExpertSourceCountChirho("pass-c-ocr-span-chirho")} pending of ${expertSourceCountChirho("pass-c-ocr-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertPassCOcrSourceChirho)})`,
+    `- Expert D1-derived source lane: ${expertReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, "d1-derived-chirho")} (${pendingExpertSourceCountChirho("d1-derived-chirho")} pending of ${expertSourceCountChirho("d1-derived-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertD1DerivedSourceChirho)})`,
     `- Expert Hebrew/WLC lane: ${expertReviewUrlChirho("hebrew-chirho")} (${pendingExpertScriptCountChirho("hebrew-chirho")} pending of ${expertScriptCountChirho("hebrew-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertHebrewChirho)})`,
     `- Expert Greek lane: ${expertReviewUrlChirho("greek-chirho")} (${pendingExpertScriptCountChirho("greek-chirho")} pending of ${expertScriptCountChirho("greek-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertGreekChirho)})`,
     `- Expert Syriac reader lane: ${expertReviewUrlChirho("syriac-chirho")} (${pendingExpertScriptCountChirho("syriac-chirho")} pending of ${expertScriptCountChirho("syriac-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacChirho)})`,
