@@ -280,6 +280,21 @@ async function mainChirho(): Promise<void> {
       policyFileAfterIssueChirho.policiesChirho?.[0]?.decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_REVIEWED_ISSUES_CHIRHO,
       "valid issue POST did not supersede the earlier confirmation with an issue"
     );
+    const validReconfirmResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
+      ...commonBodyChirho,
+      rationaleChirho: "server guard check reconfirms after a disposable issue record is resolved",
+      certifyExactChirho: true,
+    });
+    assertCheckChirho(
+      validReconfirmResultChirho.responseChirho.ok,
+      `valid reconfirm POST failed: ${validReconfirmResultChirho.responseChirho.status} ${String(validReconfirmResultChirho.dataChirho.errorChirho ?? "")}`
+    );
+    const policyFileAfterReconfirmChirho = policyFileChirho(policyPathChirho);
+    assertCheckChirho(policyFileAfterReconfirmChirho.policiesChirho?.length === 1, "valid reconfirm POST wrote wrong policy count");
+    assertCheckChirho(
+      policyFileAfterReconfirmChirho.policiesChirho?.[0]?.decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO,
+      "valid reconfirm POST did not supersede the earlier issue with a confirmation"
+    );
   } catch (errorChirho) {
     processChirho.kill();
     await processChirho.exited.catch(() => undefined);
