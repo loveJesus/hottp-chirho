@@ -38,6 +38,7 @@ const REVIEW_SERVER_SOURCE_FILES_BY_KEY_CHIRHO: Record<ReviewServerKeyChirho, re
     "src-chirho/raw-hebrew-review-tier-chirho.ts",
     "src-chirho/raw-hebrew-review-triage-chirho.ts",
     "src-chirho/span-line-text-chirho.ts",
+    "src-chirho/template-placeholder-chirho.ts",
     "src-chirho/atomic-json-chirho.ts",
   ],
   "latin-symbol-chirho": [

@@ -181,6 +181,34 @@ function checkHumanIssueWithoutNotesRejectedChirho(liveItemChirho: LatinSymbolVi
   }
 }
 
+function checkHumanIssuePlaceholderNotesRejectedChirho(liveItemChirho: LatinSymbolVisionLiveItemChirho): void {
+  const tempChirho = tempDbPathChirho();
+  try {
+    const argsChirho = issueRecordArgsChirho(
+      tempChirho.dbPathChirho,
+      liveItemChirho,
+      "dr-latin-symbol-cli-guard-chirho",
+      "<why this issue is recorded>"
+    );
+    const resultChirho = runCommandChirho(argsChirho);
+    const combinedOutputChirho = `${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`;
+    assertCheckChirho(
+      resultChirho.exitCodeChirho !== 0,
+      `placeholder-notes reviewed-issues command unexpectedly succeeded: ${commandTextChirho(argsChirho)}`
+    );
+    assertCheckChirho(
+      combinedOutputChirho.includes("template placeholder"),
+      `placeholder-notes reviewed-issues command failed for the wrong reason: ${combinedOutputChirho}`
+    );
+    assertCheckChirho(
+      reviewRowCountChirho(tempChirho.dbPathChirho) === 0,
+      "placeholder-notes reviewed-issues command wrote review rows"
+    );
+  } finally {
+    rmSync(tempChirho.dirChirho, { force: true, recursive: true });
+  }
+}
+
 function checkHumanIssueWithNotesStillWritesChirho(liveItemChirho: LatinSymbolVisionLiveItemChirho): void {
   const tempChirho = tempDbPathChirho();
   try {
@@ -226,6 +254,7 @@ function mainChirho(): void {
   const liveItemChirho = firstLivePacketItemChirho();
   checkMachineAcceptedCleanRejectedChirho(liveItemChirho);
   checkHumanIssueWithoutNotesRejectedChirho(liveItemChirho);
+  checkHumanIssuePlaceholderNotesRejectedChirho(liveItemChirho);
   checkHumanIssueWithNotesStillWritesChirho(liveItemChirho);
   checkHumanAcceptedCleanStillWritesChirho(liveItemChirho);
   console.log(`[${MODULE_CHIRHO}] checked live item ${liveItemChirho.idChirho}`);

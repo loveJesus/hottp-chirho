@@ -51,6 +51,10 @@ import {
   REVIEWER_TEMPLATE_PLACEHOLDER_RE_SOURCE_CHIRHO,
 } from "./reviewer-attribution-chirho.ts";
 import { reviewServerStartupHealthChirho } from "./review-server-health-chirho.ts";
+import {
+  REVIEW_NOTES_PLACEHOLDER_VALUES_CHIRHO,
+  reviewNotesLookPlaceholderChirho,
+} from "./template-placeholder-chirho.ts";
 
 const MODULE_CHIRHO = "latin-symbol-vision-review-server-chirho";
 const SERVER_HEALTH_CHIRHO = reviewServerStartupHealthChirho("latin-symbol-chirho");
@@ -267,6 +271,7 @@ function htmlChirho(): string {
       ${scriptJsonChirho(REVIEWER_TEMPLATE_PLACEHOLDER_RE_SOURCE_CHIRHO)},
       ${scriptJsonChirho(REVIEWER_TEMPLATE_PLACEHOLDER_RE_FLAGS_CHIRHO)}
     );
+    const reviewNotesPlaceholderValuesChirho = new Set(${scriptJsonChirho([...REVIEW_NOTES_PLACEHOLDER_VALUES_CHIRHO])});
     let itemsChirho = [];
     let reviewsChirho = new Map();
     let acceptedPolicyIdsChirho = new Set();
@@ -322,6 +327,19 @@ function htmlChirho(): string {
       if (explicitErrorChirho !== null) return explicitErrorChirho;
       if (isMachineReviewerAttributionChirho(valueChirho)) {
         return "Reviewer must identify a human reviewer; machine reviewer " + String(valueChirho || "").trim() + " cannot certify.";
+      }
+      return null;
+    }
+    function valueLooksTemplatePlaceholderChirho(valueChirho, placeholderValuesChirho) {
+      const normalizedChirho = String(valueChirho || "").trim().toLowerCase().replace(/\\s+/g, " ");
+      const unwrappedChirho = normalizedChirho.replace(/^<(.+)>$/u, "$1").trim();
+      return placeholderValuesChirho.has(normalizedChirho) || placeholderValuesChirho.has(unwrappedChirho);
+    }
+    function reviewNotesErrorChirho(valueChirho) {
+      const trimmedChirho = String(valueChirho || "").trim();
+      if (trimmedChirho.length === 0) return "issue saves need an explanatory note";
+      if (valueLooksTemplatePlaceholderChirho(trimmedChirho, reviewNotesPlaceholderValuesChirho)) {
+        return "issue note must explain the issue, not a template placeholder";
       }
       return null;
     }
@@ -439,7 +457,7 @@ function htmlChirho(): string {
         : reviewerAttributionErrorChirho(currentReviewerChirho());
       return reviewerErrorChirho === null &&
         (!currentReviewWouldBeCleanChirho() || cleanAcceptAcknowledgedChirho()) &&
-        (currentReviewWouldBeCleanChirho() || currentNotesChirho().trim().length > 0);
+        (currentReviewWouldBeCleanChirho() || reviewNotesErrorChirho(currentNotesChirho()) === null);
     }
     function latinSymbolReviewActionMessagesChirho() {
       const messagesChirho = [];
@@ -450,8 +468,9 @@ function htmlChirho(): string {
       if (currentReviewWouldBeCleanChirho() && !cleanAcceptAcknowledgedChirho()) {
         messagesChirho.push("clean acceptance checkbox required");
       }
-      if (!currentReviewWouldBeCleanChirho() && currentNotesChirho().trim().length === 0) {
-        messagesChirho.push("issue saves need an explanatory note");
+      if (!currentReviewWouldBeCleanChirho()) {
+        const notesErrorChirho = reviewNotesErrorChirho(currentNotesChirho());
+        if (notesErrorChirho !== null) messagesChirho.push(notesErrorChirho);
       }
       return messagesChirho;
     }
@@ -627,9 +646,12 @@ function htmlChirho(): string {
         setStatusChirho("Check the clean acceptance box before accepting as clean.");
         return;
       }
-      if (flagsChirho.length > 0 && notesChirho.trim().length === 0) {
-        setStatusChirho("Write an explanatory note before saving an issue.");
-        return;
+      if (flagsChirho.length > 0) {
+        const notesErrorChirho = reviewNotesErrorChirho(notesChirho);
+        if (notesErrorChirho !== null) {
+          setStatusChirho(notesErrorChirho);
+          return;
+        }
       }
       reviewerChirho = reviewerValueChirho;
       persistReviewerChirho(reviewerChirho);
@@ -792,6 +814,12 @@ Bun.serve({
           : null;
         if (issueFlagsChirho.length > 0 && notesChirho === null) {
           return jsonResponseChirho({ okChirho: false, errorChirho: "notesChirho is required for reviewed-issues" }, 400);
+        }
+        if (issueFlagsChirho.length > 0 && notesChirho !== null && reviewNotesLookPlaceholderChirho(notesChirho)) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: "notesChirho must explain the issue, not a template placeholder",
+          }, 400);
         }
         const effectiveReviewerChirho = typeof bodyChirho.reviewerChirho === "string" && bodyChirho.reviewerChirho.trim().length > 0
           ? bodyChirho.reviewerChirho.trim()

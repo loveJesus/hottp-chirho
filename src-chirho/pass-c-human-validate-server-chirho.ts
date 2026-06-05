@@ -42,6 +42,10 @@ import {
 } from "./reviewer-attribution-chirho.ts";
 import { reviewServerStartupHealthChirho } from "./review-server-health-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
+import {
+  REVIEW_NOTES_PLACEHOLDER_VALUES_CHIRHO,
+  reviewNotesLookPlaceholderChirho,
+} from "./template-placeholder-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "pass-c-human-validate-server-chirho";
@@ -1317,6 +1321,7 @@ function pageHtmlChirho(): string {
       ${scriptJsonChirho(REVIEWER_TEMPLATE_PLACEHOLDER_RE_SOURCE_CHIRHO)},
       ${scriptJsonChirho(REVIEWER_TEMPLATE_PLACEHOLDER_RE_FLAGS_CHIRHO)}
     );
+    const reviewNotesPlaceholderValuesChirho = new Set(${scriptJsonChirho([...REVIEW_NOTES_PLACEHOLDER_VALUES_CHIRHO])});
     let validationRowsChirho = [];
     let validationsChirho = new Map();
     let indexChirho = 0;
@@ -1368,6 +1373,19 @@ function pageHtmlChirho(): string {
       if (explicitErrorChirho !== null) return explicitErrorChirho;
       if (isMachineReviewerAttributionChirho(valueChirho)) {
         return "Reviewer must identify a human reviewer; machine reviewer " + String(valueChirho || "").trim() + " cannot certify";
+      }
+      return null;
+    }
+    function valueLooksTemplatePlaceholderChirho(valueChirho, placeholderValuesChirho) {
+      const normalizedChirho = String(valueChirho || "").trim().toLowerCase().replace(/\\s+/g, " ");
+      const unwrappedChirho = normalizedChirho.replace(/^<(.+)>$/u, "$1").trim();
+      return placeholderValuesChirho.has(normalizedChirho) || placeholderValuesChirho.has(unwrappedChirho);
+    }
+    function reviewNotesErrorChirho(valueChirho) {
+      const trimmedChirho = String(valueChirho || "").trim();
+      if (trimmedChirho.length === 0) return "issue saves need an explanatory note";
+      if (valueLooksTemplatePlaceholderChirho(trimmedChirho, reviewNotesPlaceholderValuesChirho)) {
+        return "issue note must explain the issue, not a template placeholder";
       }
       return null;
     }
@@ -1605,8 +1623,9 @@ function pageHtmlChirho(): string {
       if (pendingReviewWouldBeCleanChirho(itemChirho) && !cleanReviewAcknowledgedChirho()) {
         messagesChirho.push("clean review needs the clean-certification checkbox");
       }
-      if (hasIssueFlagChirho && pendingReviewNotesChirho().trim().length === 0) {
-        messagesChirho.push("issue saves need an explanatory note");
+      if (hasIssueFlagChirho) {
+        const notesErrorChirho = reviewNotesErrorChirho(pendingReviewNotesChirho());
+        if (notesErrorChirho !== null) messagesChirho.push(notesErrorChirho);
       }
       if (pendingReviewHasEditedTextChirho(itemChirho) && !hasIssueFlagChirho) {
         messagesChirho.push("text changes need an issue box");
@@ -2022,9 +2041,12 @@ function pageHtmlChirho(): string {
         setStatusChirho("Check the clean certification box before accepting as clean");
         return;
       }
-      if (issueFlagsChirho.length > 0 && notesChirho.trim().length === 0) {
-        setStatusChirho("Write an explanatory note before saving an issue");
-        return;
+      if (issueFlagsChirho.length > 0) {
+        const notesErrorChirho = reviewNotesErrorChirho(notesChirho);
+        if (notesErrorChirho !== null) {
+          setStatusChirho(notesErrorChirho);
+          return;
+        }
       }
       reviewerChirho = reviewerValueChirho;
       persistReviewerChirho(reviewerChirho);
@@ -2243,6 +2265,12 @@ Bun.serve({
         return jsonResponseChirho({
           okChirho: false,
           errorChirho: "notesChirho is required for reviewed-issues",
+        }, 400);
+      }
+      if (issueFlagsChirho.length > 0 && reviewNotesLookPlaceholderChirho(notesChirho)) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: "notesChirho must explain the issue, not a template placeholder",
         }, 400);
       }
       const effectiveReviewerChirho = typeof bodyChirho.reviewerChirho === "string" && bodyChirho.reviewerChirho.trim().length > 0

@@ -218,6 +218,37 @@ async function mainChirho(): Promise<void> {
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
       "missing-notes issue POST persisted a row"
     );
+    const placeholderNotesResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: ["letters-chirho"],
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "<why this issue is recorded>",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: false,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const placeholderNotesDataChirho = (await placeholderNotesResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      placeholderNotesResponseChirho.status === 400,
+      `expected placeholder-notes HTTP 400, got ${placeholderNotesResponseChirho.status}`
+    );
+    assertCheckChirho(placeholderNotesDataChirho.okChirho === false, "placeholder-notes issue POST unexpectedly returned ok");
+    assertCheckChirho(
+      String(placeholderNotesDataChirho.errorChirho ?? "").includes("template placeholder"),
+      `placeholder-notes issue POST failed for the wrong reason: ${String(placeholderNotesDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "placeholder-notes issue POST persisted a row"
+    );
   } catch (errorChirho) {
     processChirho.kill();
     await processChirho.exited.catch(() => undefined);

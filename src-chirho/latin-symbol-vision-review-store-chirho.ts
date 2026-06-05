@@ -25,6 +25,7 @@ import {
   TARGET_LINE_MARKDOWN_PATH_PAIRS_CHIRHO,
   type PacketImageHashFieldsChirho,
 } from "./packet-image-fingerprint-chirho.ts";
+import { reviewNotesLookPlaceholderChirho } from "./template-placeholder-chirho.ts";
 
 export const LATIN_SYMBOL_PACK_DIR_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -439,6 +440,13 @@ export function saveLatinSymbolReviewChirho(paramsChirho: SaveLatinSymbolReviewP
       : null;
   if (paramsChirho.verdictChirho === "reviewed-issues-chirho" && notesChirho === null) {
     throw new Error("reviewed-issues-chirho requires notesChirho");
+  }
+  if (
+    paramsChirho.verdictChirho === "reviewed-issues-chirho" &&
+    notesChirho !== null &&
+    reviewNotesLookPlaceholderChirho(notesChirho)
+  ) {
+    throw new Error("reviewed-issues-chirho requires notesChirho to explain the issue, not a template placeholder");
   }
   const nowChirho = new Date().toISOString();
   const currentChirho = paramsChirho.dbChirho
