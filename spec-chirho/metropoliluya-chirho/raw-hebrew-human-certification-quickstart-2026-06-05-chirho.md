@@ -46,6 +46,17 @@ Flag segmentation when one of these is true:
 - The stored text has spaces where the print has maqqef, or maqqef where the print has a space.
 - The stored text collapses or splits words differently from the print.
 
+## Attribution Cleanup
+
+The Attribution blocked review lane shows older saved rows whose reviewer id is generic, blank, or machine-like. Those rows are read-only in the validator and do not count for certification until they are reattributed or re-reviewed.
+
+Use that lane only when you can honestly identify who made the existing review:
+
+- Inspect the crop and full line again.
+- If the row is genuinely yours, enter your explicit reviewer id and a rationale, copy the dry-run reattribution command, run it, inspect the output, then copy/run the apply command.
+- If the row is not clearly attributable to you, do not reattribute it. Re-review the item in the pending lane instead.
+- Reattribution does not change the reviewed text, verdict, issue flags, or correction status. It only replaces the generic reviewer id with an explicit human attribution.
+
 ## Competence Boundary
 
 Hebrew and Greek items can be certified by a reviewer competent in those scripts. Hebrew-script Aramaic/Targum can be checked for clear consonants, but exact Aramaic vocalization and Targum wording should be routed to a Targum/Aramaic reviewer. Syriac and Arabic should be flagged for crop or segmentation problems by non-readers, but exact letters, dots, vowels, and punctuation require the script expert.
