@@ -10,7 +10,7 @@
  */
 
 import { Database } from "bun:sqlite";
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -21,6 +21,7 @@ import {
   loadLatinSymbolPacketManifestChirho,
   saveLatinSymbolReviewChirho,
 } from "./latin-symbol-vision-review-store-chirho.ts";
+import { hashTextChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "check-certification-status-gate-guards-chirho";
 
@@ -33,6 +34,12 @@ interface CertificationStatusForGuardChirho {
   latinSymbolReviewDbChirho?: {
     genericReviewerRowsChirho?: number;
     staleRowsChirho?: number;
+  };
+  artifactsChirho?: {
+    expertSuppliedVisionTextBackupShapeOkChirho?: boolean;
+  };
+  expertSuppliedVisionTextBackupChirho?: {
+    shapeErrorsChirho?: string[];
   };
 }
 
@@ -150,7 +157,46 @@ function insertStaleLatinSymbolReviewChirho(dbPathChirho: string): string | null
   }
 }
 
-function runStatusChirho(dbPathChirho: string, outDirChirho: string): void {
+function writeGenericExpertSuppliedBackupFixtureChirho(pathChirho: string): void {
+  const suppliedTextChirho = "ܐ";
+  writeFileSync(
+    pathChirho,
+    `${JSON.stringify(
+      {
+        john316Chirho:
+          "For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16",
+        schemaVersionChirho: 1,
+        generatedAtChirho: "2026-06-04T00:00:00.000Z",
+        recordsChirho: [
+          {
+            itemIdChirho: "v3-p0151-l010-s3",
+            volumeChirho: 3,
+            pageChirho: 151,
+            lineIndexChirho: 10,
+            segmentIndexChirho: 3,
+            scriptChirho: "syriac-chirho",
+            previousTextChirho: "",
+            suppliedTextChirho,
+            suppliedTextHashChirho: hashTextChirho(suppliedTextChirho),
+            reviewerChirho: "human-chirho",
+            reviewerRoleChirho: "Syriac reader",
+            rationaleChirho: "disposable status gate guard should reject generic expert-supplied reviewer attribution",
+            appliedAtChirho: "2026-06-04T00:00:00.000Z",
+            sourcePathChirho: "workspace-chirho/scanlines-chirho/vol-3-chirho/page-0151-chirho/line-010-chirho.png",
+            packetPathChirho:
+              "workspace-chirho/expert-confirm-pack-chirho/2026-05-31-chirho/images-chirho/vol-3-page-0151-line-010-chirho.png",
+            linePathChirho: "workspace-chirho/spans-chirho/vol-3-chirho/page-0151-chirho/line-010-chirho.json",
+          },
+        ],
+      },
+      null,
+      2
+    )}\n`,
+    "utf8"
+  );
+}
+
+function runStatusChirho(dbPathChirho: string, outDirChirho: string, expertSuppliedBackupPathChirho: string): void {
   const argsChirho = [
     process.execPath,
     "run",
@@ -158,6 +204,7 @@ function runStatusChirho(dbPathChirho: string, outDirChirho: string): void {
     "--",
     `--db=${dbPathChirho}`,
     `--out-dir=${outDirChirho}`,
+    `--expert-supplied-backup-chirho=${expertSuppliedBackupPathChirho}`,
   ];
   const resultChirho = Bun.spawnSync(argsChirho, {
     cwd: PROJECT_ROOT_CHIRHO,
@@ -182,9 +229,11 @@ function mainChirho(): void {
   const tempDirChirho = mkdtempSync(join(tmpdir(), "certification-status-gate-guard-chirho-"));
   const dbPathChirho = join(tempDirChirho, "progress-chirho.sqlite");
   const outDirChirho = join(tempDirChirho, "status-output-chirho");
+  const expertSuppliedBackupPathChirho = join(tempDirChirho, "expert-supplied-backup-chirho.json");
   mkdirSync(outDirChirho, { recursive: true });
   try {
     copyProgressDbSnapshotChirho(dbPathChirho);
+    writeGenericExpertSuppliedBackupFixtureChirho(expertSuppliedBackupPathChirho);
     const rowIdChirho = forceSingleGenericPassCHumanReviewerChirho(dbPathChirho);
     const latinItemIdChirho = insertGenericLatinSymbolReviewChirho(dbPathChirho);
     const staleLatinItemIdChirho = insertStaleLatinSymbolReviewChirho(dbPathChirho);
@@ -192,7 +241,7 @@ function mainChirho(): void {
       console.log(`[${MODULE_CHIRHO}] no current schema-v2 Pass-C human validation row available; skipped generic reviewer status guard`);
       return;
     }
-    runStatusChirho(dbPathChirho, outDirChirho);
+    runStatusChirho(dbPathChirho, outDirChirho, expertSuppliedBackupPathChirho);
     const statusChirho = readStatusChirho(outDirChirho);
     assertCheckChirho(statusChirho.certificationCompleteChirho === false, "generic reviewer status unexpectedly completed certification");
     assertCheckChirho(
@@ -229,10 +278,27 @@ function mainChirho(): void {
         "stale Latin/symbol review status did not add the remaining-work blocker"
       );
     }
+    assertCheckChirho(
+      statusChirho.artifactsChirho?.expertSuppliedVisionTextBackupShapeOkChirho === false,
+      "generic expert-supplied backup status did not fail shape validation"
+    );
+    assertCheckChirho(
+      (statusChirho.expertSuppliedVisionTextBackupChirho?.shapeErrorsChirho ?? []).some((errorChirho) =>
+        errorChirho.includes("reviewerChirho must identify the explicit human reviewer")
+      ),
+      "generic expert-supplied backup status did not report the reviewer shape error"
+    );
+    assertCheckChirho(
+      (statusChirho.remainingWorkChirho ?? []).some((itemChirho) =>
+        itemChirho.includes("expert-supplied vision text backup is malformed")
+      ),
+      "generic expert-supplied backup status did not add the malformed-backup remaining-work blocker"
+    );
     console.log(
       `[${MODULE_CHIRHO}] generic reviewer status gate guard passed for disposable row ${rowIdChirho}` +
         (latinItemIdChirho === null ? "" : ` and Latin/symbol item ${latinItemIdChirho}`) +
-        (staleLatinItemIdChirho === null ? "" : `; stale Latin/symbol item ${staleLatinItemIdChirho}`)
+        (staleLatinItemIdChirho === null ? "" : `; stale Latin/symbol item ${staleLatinItemIdChirho}`) +
+        "; generic expert-supplied backup blocked"
     );
   } finally {
     rmSync(tempDirChirho, { recursive: true, force: true });
