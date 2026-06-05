@@ -863,6 +863,36 @@ function htmlChirho(): string {
         itemMatchesTextStateChirho(itemChirho)
       );
     }
+    function repeatClusterItemsChirho(itemChirho) {
+      return itemsChirho.filter((candidateChirho) =>
+        !candidateChirho.confirmedChirho &&
+        candidateChirho.currentTextChirho === itemChirho.currentTextChirho &&
+        candidateChirho.scriptChirho === itemChirho.scriptChirho
+      );
+    }
+    function exactTextClusterUrlChirho(itemChirho) {
+      const paramsChirho = new URLSearchParams();
+      paramsChirho.set("script-chirho", itemChirho.scriptChirho);
+      if (itemTextIsBlankChirho(itemChirho)) {
+        paramsChirho.set("text-state-chirho", "blank-chirho");
+      } else {
+        paramsChirho.set("exact-text-chirho", itemChirho.currentTextChirho);
+      }
+      paramsChirho.set("item-chirho", itemChirho.idChirho);
+      return window.location.pathname + "?" + paramsChirho.toString();
+    }
+    function repeatClusterTextChirho(itemChirho) {
+      const clusterCountChirho = repeatClusterItemsChirho(itemChirho).length;
+      if (itemTextIsBlankChirho(itemChirho)) {
+        return clusterCountChirho +
+          " pending blank item(s) share this script. Planning aid only; blank text still needs expert-supplied text before confirmation.";
+      }
+      if (clusterCountChirho <= 1) {
+        return "Singleton exact text for this script. Planning aid only; every item still needs exact print confirmation and a policy row.";
+      }
+      return clusterCountChirho +
+        " pending item(s) share this exact text/script. Planning aid only; every item still needs exact print confirmation and a policy row.";
+    }
     function activeIndexForItemIdChirho(itemIdChirho) {
       if (typeof itemIdChirho !== "string" || itemIdChirho.length === 0) return -1;
       return activeItemsChirho().findIndex((itemChirho) => itemChirho.idChirho === itemIdChirho);
@@ -1366,6 +1396,15 @@ function htmlChirho(): string {
       }
       metaChirho.appendChild(metaGridChirho);
       sideChirho.appendChild(metaChirho);
+      const repeatClusterChirho = elChirho("div", { classChirho: "box-chirho" });
+      repeatClusterChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Repeat cluster" }));
+      repeatClusterChirho.appendChild(elChirho("div", { textChirho: repeatClusterTextChirho(itemChirho) }));
+      repeatClusterChirho.appendChild(elChirho("a", {
+        classChirho: "toolbar-link-chirho",
+        href: exactTextClusterUrlChirho(itemChirho),
+        textChirho: itemTextIsBlankChirho(itemChirho) ? "Open blank-text lane" : "Open exact-text cluster"
+      }));
+      sideChirho.appendChild(repeatClusterChirho);
       if (itemChirho.openIssueChirho) {
         const issueBoxChirho = elChirho("div", { classChirho: "box-chirho" });
         issueBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Open issue" }));
