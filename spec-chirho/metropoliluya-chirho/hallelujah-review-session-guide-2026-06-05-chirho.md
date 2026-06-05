@@ -15,8 +15,8 @@ This is a live-review workflow aid, not a certification record. It does not decr
 ## Work You Can Do
 
 - Raw Hebrew: use `http://localhost:8766/`.
-- Hebrew/WLC vision-tier: use `http://localhost:8771/?script-chirho=hebrew-chirho`.
-- Greek vision-tier: use `http://localhost:8771/?script-chirho=greek-chirho`.
+- Hebrew/WLC expert lane: use `http://localhost:8771/?script-chirho=hebrew-chirho`.
+- Greek expert lane: use `http://localhost:8771/?script-chirho=greek-chirho`.
 - Attribution cleanup: use `http://localhost:8766/?review-state-chirho=attribution-blocked-chirho` only for rows you can honestly identify as yours. Otherwise use `http://localhost:8766/?review-state-chirho=attribution-rereview-chirho`.
 
 Do not confirm Syriac, Arabic, or exact Hebrew-script Aramaic/Targum vocalization unless you are competent for that script or tradition. You may still report crop, source, wrong-lane, or segmentation problems.
@@ -27,8 +27,8 @@ Do not confirm Syriac, Arabic, or exact Hebrew-script Aramaic/Targum vocalizatio
 2. Raw Hebrew vols 1-2 unvalidated: `http://localhost:8766/?validation-status-chirho=unvalidated-chirho&tier-chirho=primary-vol-2-chirho`.
 3. Raw Hebrew partial rows: `http://localhost:8766/?validation-status-chirho=partial-token-validated-chirho`.
 4. Raw Hebrew all-token spot checks: `http://localhost:8766/?validation-status-chirho=all-token-validated-chirho&tier-chirho=spot-check-chirho`.
-5. Hebrew/WLC vision-tier: `http://localhost:8771/?script-chirho=hebrew-chirho`.
-6. Greek vision-tier: `http://localhost:8771/?script-chirho=greek-chirho`.
+5. Hebrew/WLC expert lane: `http://localhost:8771/?script-chirho=hebrew-chirho`.
+6. Greek expert lane: `http://localhost:8771/?script-chirho=greek-chirho`.
 
 The attention lanes are useful when you want the riskiest raw Hebrew first: low confidence, multi-token, delimiter/damaged notation, and no-direct-read. They are triage signals, not verdicts.
 
@@ -66,7 +66,7 @@ Several words in one red box are acceptable when the box intentionally covers ex
 
 Flag `Segmentation` when the box or text has a wrong word boundary, even if the letters themselves are readable. If your suggested correction changes splits, spaces, maqqef, or punctuation attachment, record the issue with notes instead of clean-certifying the current span.
 
-For vision-tier expert items, `Confirm` means the current text already exactly matches the print. If the text is wrong, report an issue; do not confirm and hope a later correction fixes it.
+For expert-lane items, `Confirm` means the current text already exactly matches the print. If the text is wrong, report an issue; do not confirm and hope a later correction fixes it.
 
 ## Attribution Cleanup
 

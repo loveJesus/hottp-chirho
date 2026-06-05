@@ -3,7 +3,7 @@
 
 /**
  * Shared parser/summarizer for explicit expert confirmations of non-Latin
- * vision-tier items.
+ * expert-lane items.
  *
  * Confirmation is item-exact and live-hash anchored; stale or malformed
  * policies retire zero items and block completion.

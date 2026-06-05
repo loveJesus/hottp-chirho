@@ -238,7 +238,7 @@ function assertReviewPageHtmlChirho(keyChirho: string, urlChirho: URL, htmlChirh
   } else if (urlChirho.port === "8770") {
     assertGeneratedCheckChirho(htmlChirho.includes("Latin/Symbol Vision Review Chirho"), `${keyChirho} did not load the Latin/symbol reviewer page`);
   } else if (urlChirho.port === "8771") {
-    assertGeneratedCheckChirho(htmlChirho.includes("Vision-Tier Expert Review Chirho"), `${keyChirho} did not load the expert reviewer page`);
+    assertGeneratedCheckChirho(htmlChirho.includes("Expert Non-Latin Review Chirho"), `${keyChirho} did not load the expert reviewer page`);
   } else {
     throw new Error(`${keyChirho} targets unsupported review port ${urlChirho.port}`);
   }

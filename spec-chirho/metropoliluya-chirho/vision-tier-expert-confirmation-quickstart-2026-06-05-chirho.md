@@ -3,7 +3,7 @@ that whoever believes in him should not perish but have eternal life. John 3:16 
 
 # Vision-Tier Expert Confirmation Quickstart Chirho
 
-This is a reviewer aid for the non-Latin vision-tier expert lane. It is not a certification record and does not decrement any gate by itself.
+This is a reviewer aid for the non-Latin expert lane, including vision-tier spans and non-Hebrew Pass-C OCR spans. It is not a certification record and does not decrement any gate by itself.
 
 Use the live expert reviewer at http://localhost:8771/. Put an explicit human reviewer id in the Reviewer field and the exact lane role in Reviewer role.
 
@@ -35,7 +35,7 @@ Issues override confirmations. A flagged item remains pending until the issue is
 
 Blank items are known content holes. Do not confirm a blank item.
 
-If a qualified script reader supplies exact text, use the displayed expert-supplied text command path first as a dry run, then apply only after the dry run verifies the source and packet hashes. Applying supplied text fills the blank span but does not confirm it; the item remains vision-tier until separately confirmed.
+If a qualified script reader supplies exact text, use the displayed expert-supplied text command path first as a dry run, then apply only after the dry run verifies the source and packet hashes. Applying supplied text fills the blank span but does not confirm it; the item remains in the expert lane until separately confirmed.
 
 ## Competence Boundary
 

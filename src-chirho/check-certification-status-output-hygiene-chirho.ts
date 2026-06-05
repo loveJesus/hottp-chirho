@@ -1711,7 +1711,7 @@ function assertVisionTierExpertQueueMarkdownCoverageChirho(
     "artifactsChirho"
   );
 
-  assertMarkdownContainsChirho(markdownChirho, "## Vision-Tier Expert Queue", "expert queue heading");
+  assertMarkdownContainsChirho(markdownChirho, "## Expert Non-Latin Queue", "expert queue heading");
   assertMarkdownContainsChirho(markdownChirho, `- Expert manifest exists: ${expertManifestExistsChirho}`, "expert manifest existence");
   assertMarkdownContainsChirho(markdownChirho, `- Expert manifest shape OK: ${expertManifestShapeOkChirho}`, "expert manifest shape");
   assertMarkdownContainsChirho(
@@ -1726,7 +1726,7 @@ function assertVisionTierExpertQueueMarkdownCoverageChirho(
   );
   assertMarkdownContainsChirho(
     markdownChirho,
-    `- Complete vision-tier items: ${numberFieldChirho(expertChirho, "completeVisionItemCountChirho", "visionTierChirho")}`,
+    `- Complete expert items: ${numberFieldChirho(expertChirho, "completeVisionItemCountChirho", "visionTierChirho")}`,
     "expert complete item count"
   );
   assertMarkdownContainsChirho(
@@ -1736,13 +1736,23 @@ function assertVisionTierExpertQueueMarkdownCoverageChirho(
   );
   assertMarkdownContainsChirho(
     markdownChirho,
-    `- Live vision-tier items: ${numberFieldChirho(expertChirho, "liveVisionItemCountChirho", "visionTierChirho")}`,
+    `- Source counts: ${countMapDisplayChirho(countMapFieldChirho(expertChirho, "completeVisionSourceCountsChirho", "visionTierChirho"))}`,
+    "expert complete source counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live expert items: ${numberFieldChirho(expertChirho, "liveVisionItemCountChirho", "visionTierChirho")}`,
     "expert live item count"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
     `- Live counts: ${countMapDisplayChirho(countMapFieldChirho(expertChirho, "liveVisionCountsChirho", "visionTierChirho"))}`,
     "expert live counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live source counts: ${countMapDisplayChirho(countMapFieldChirho(expertChirho, "liveVisionSourceCountsChirho", "visionTierChirho"))}`,
+    "expert live source counts"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
@@ -1768,6 +1778,11 @@ function assertVisionTierExpertQueueMarkdownCoverageChirho(
     markdownChirho,
     `- Live pending counts: ${countMapDisplayChirho(countMapFieldChirho(expertChirho, "pendingVisionCountsChirho", "visionTierChirho"))}`,
     "expert pending counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live pending source counts: ${countMapDisplayChirho(countMapFieldChirho(expertChirho, "pendingVisionSourceCountsChirho", "visionTierChirho"))}`,
+    "expert pending source counts"
   );
   assertMarkdownContainsChirho(
     markdownChirho,

@@ -455,6 +455,15 @@ function countExpertPackItemsByScriptChirho(itemsChirho: ExpertPackVisionItemChi
   return countsChirho;
 }
 
+function countExpertItemsBySourceChirho(itemsChirho: Array<{ visionSourceChirho?: string }>): Record<string, number> {
+  const countsChirho: Record<string, number> = {};
+  for (const itemChirho of itemsChirho) {
+    const sourceChirho = itemChirho.visionSourceChirho ?? "missing-source-chirho";
+    countsChirho[sourceChirho] = (countsChirho[sourceChirho] ?? 0) + 1;
+  }
+  return countsChirho;
+}
+
 interface ExpertPackImageDriftChirho {
   idChirho: string;
   reasonChirho: string;
@@ -863,10 +872,13 @@ interface CertificationStatusChirho {
     priorityItemCountChirho: number;
     completeVisionItemCountChirho: number;
     completeVisionCountsChirho: Record<string, number>;
+    completeVisionSourceCountsChirho: Record<string, number>;
     liveVisionItemCountChirho: number;
     liveVisionCountsChirho: Record<string, number>;
+    liveVisionSourceCountsChirho: Record<string, number>;
     pendingVisionItemCountChirho: number;
     pendingVisionCountsChirho: Record<string, number>;
+    pendingVisionSourceCountsChirho: Record<string, number>;
     pendingVolumeCountsChirho: Record<string, number>;
     pendingPriorityItemCountChirho: number;
     pendingAppendixItemCountChirho: number;
@@ -3640,10 +3652,13 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     priorityItemCountChirho: expertManifestItemsChirho.filter((itemChirho) => itemChirho.priorityMatchChirho).length,
     completeVisionItemCountChirho: expertManifestItemsChirho.length,
     completeVisionCountsChirho: expertManifestChirho.completeVisionCountsChirho ?? {},
+    completeVisionSourceCountsChirho: countExpertItemsBySourceChirho(expertManifestItemsChirho),
     liveVisionItemCountChirho: visionTierLiveItemsChirho.length,
     liveVisionCountsChirho: countVisionTierExpertByScriptChirho(visionTierLiveItemsChirho),
+    liveVisionSourceCountsChirho: countExpertItemsBySourceChirho(visionTierLiveItemsChirho),
     pendingVisionItemCountChirho: pendingVisionTierLiveItemsChirho.length,
     pendingVisionCountsChirho: countVisionTierExpertByScriptChirho(pendingVisionTierLiveItemsChirho),
+    pendingVisionSourceCountsChirho: countExpertItemsBySourceChirho(pendingVisionTierLiveItemsChirho),
     pendingVolumeCountsChirho: countByVolumeChirho(pendingExpertManifestItemsChirho),
     pendingPriorityItemCountChirho: pendingExpertManifestItemsChirho.filter((itemChirho) => itemChirho.priorityMatchChirho).length,
     pendingAppendixItemCountChirho: pendingExpertManifestItemsChirho.filter((itemChirho) => !itemChirho.priorityMatchChirho).length,
@@ -4488,7 +4503,13 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   const visionCountsChirho = Object.entries(statusChirho.visionTierChirho.completeVisionCountsChirho)
     .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
     .join(", ");
+  const visionSourceCountsChirho = Object.entries(statusChirho.visionTierChirho.completeVisionSourceCountsChirho)
+    .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
+    .join(", ");
   const liveVisionCountsChirho = Object.entries(statusChirho.visionTierChirho.liveVisionCountsChirho)
+    .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
+    .join(", ");
+  const liveVisionSourceCountsChirho = Object.entries(statusChirho.visionTierChirho.liveVisionSourceCountsChirho)
     .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
     .join(", ");
   const sourceCountsChirho = Object.entries(statusChirho.rawHebrewChirho.sourceCountsChirho)
@@ -5124,21 +5145,24 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Backup rows: ${statusChirho.passCHumanValidationBackupChirho.backupRowsChirho}`,
     `- Local rows missing from backup: ${statusChirho.passCHumanValidationBackupChirho.localRowsMissingFromBackupChirho}`,
     "",
-    "## Vision-Tier Expert Queue",
+    "## Expert Non-Latin Queue",
     "",
     `- Expert manifest exists: ${statusChirho.artifactsChirho.expertPackManifestExistsChirho}`,
     `- Expert manifest shape OK: ${statusChirho.artifactsChirho.expertPackManifestShapeOkChirho}`,
     `- D1 scan error: ${statusChirho.visionTierChirho.d1ReadErrorChirho ?? "none"}`,
     `- Priority items: ${statusChirho.visionTierChirho.priorityItemCountChirho}`,
-    `- Complete vision-tier items: ${statusChirho.visionTierChirho.completeVisionItemCountChirho}`,
+    `- Complete expert items: ${statusChirho.visionTierChirho.completeVisionItemCountChirho}`,
     `- Counts: ${visionCountsChirho || "none"}`,
-    `- Live vision-tier items: ${statusChirho.visionTierChirho.liveVisionItemCountChirho}`,
+    `- Source counts: ${visionSourceCountsChirho || "none"}`,
+    `- Live expert items: ${statusChirho.visionTierChirho.liveVisionItemCountChirho}`,
     `- Live counts: ${liveVisionCountsChirho || "none"}`,
+    `- Live source counts: ${liveVisionSourceCountsChirho || "none"}`,
     `- Live pending items: ${statusChirho.visionTierChirho.pendingVisionItemCountChirho}`,
     `- Live pending text states: nonblank-chirho=${statusChirho.visionTierChirho.pendingNonblankTextItemCountChirho}, blank-chirho=${statusChirho.visionTierChirho.pendingBlankTextItemCountChirho}`,
     `- Live pending nonblank counts: ${Object.entries(statusChirho.visionTierChirho.pendingNonblankTextCountsChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
     `- Live pending blank counts: ${Object.entries(statusChirho.visionTierChirho.pendingBlankTextCountsChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
     `- Live pending counts: ${Object.entries(statusChirho.visionTierChirho.pendingVisionCountsChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
+    `- Live pending source counts: ${Object.entries(statusChirho.visionTierChirho.pendingVisionSourceCountsChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
     `- Manifest count matches current state: ${statusChirho.visionTierChirho.manifestCountMatchesCurrentChirho}`,
     `- Manifest IDs match current state: ${statusChirho.visionTierChirho.manifestIdsMatchCurrentChirho}`,
     `- Manifest text matches current state: ${statusChirho.visionTierChirho.manifestTextMatchesCurrentChirho}`,

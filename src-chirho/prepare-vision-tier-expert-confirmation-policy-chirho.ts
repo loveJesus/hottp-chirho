@@ -2,7 +2,7 @@
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
 /**
- * Prepare exact-item expert confirmations for non-Latin vision-tier items.
+ * Prepare exact-item expert confirmations for non-Latin expert-lane items.
  *
  * Default mode prints a draft JSON policy. Writing a confirmed policy requires
  * --write-chirho, --decision-chirho=confirmed-expert-chirho, reviewer, role,

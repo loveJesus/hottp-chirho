@@ -102,7 +102,7 @@ interface VisionSpanItemChirho {
   idChirho: string;
   reviewerChirho: string;
   scriptChirho: string;
-  visionSourceChirho: "explicit-span-chirho" | "d1-derived-chirho";
+  visionSourceChirho: "explicit-span-chirho" | "d1-derived-chirho" | "pass-c-ocr-span-chirho";
   volumeChirho: number;
   pageChirho: number;
   lineIndexChirho: number;
@@ -311,8 +311,16 @@ function visionSourceForSpanChirho(
   lineChirho: SpanLineChirho,
   spanChirho: SpanChirho,
   d1VisionSourcesChirho: Map<string, D1VisionSourcesChirho>
-): "explicit-span-chirho" | "d1-derived-chirho" | null {
+): VisionSpanItemChirho["visionSourceChirho"] | null {
   if (spanChirho.provenanceChirho === "vision-chirho") return "explicit-span-chirho";
+  if (
+    spanChirho.scriptChirho !== "hebrew-chirho" &&
+    REVIEW_SCRIPTS_CHIRHO.has(spanChirho.scriptChirho) &&
+    spanChirho.provenanceChirho !== "human-chirho" &&
+    spanChirho.provenanceChirho !== "canonical-chirho"
+  ) {
+    return "pass-c-ocr-span-chirho";
+  }
   if (spanChirho.scriptChirho !== "hebrew-chirho") return null;
   const sourceChirho = d1VisionSourcesChirho.get(targetKeyChirho(lineChirho.volumeChirho, lineChirho.pageChirho));
   if (!sourceChirho) return null;

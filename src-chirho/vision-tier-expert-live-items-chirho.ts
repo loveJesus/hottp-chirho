@@ -2,7 +2,7 @@
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
 /**
- * Live discovery for non-Latin vision-tier items that need expert/human
+ * Live discovery for non-Latin expert-lane items that need expert/human
  * confirmation before a flawless transcription claim.
  */
 
@@ -77,7 +77,7 @@ export interface VisionTierExpertLiveItemChirho {
   idChirho: string;
   reviewerChirho: string;
   scriptChirho: string;
-  visionSourceChirho: "explicit-span-chirho" | "d1-derived-chirho";
+  visionSourceChirho: "explicit-span-chirho" | "d1-derived-chirho" | "pass-c-ocr-span-chirho";
   volumeChirho: number;
   pageChirho: number;
   lineIndexChirho: number;
@@ -224,8 +224,16 @@ function visionSourceForSpanChirho(
   lineChirho: SpanLineChirho,
   spanChirho: SpanChirho,
   d1SourcesChirho: Map<string, D1VisionSourcesChirho>
-): "explicit-span-chirho" | "d1-derived-chirho" | null {
+): VisionTierExpertLiveItemChirho["visionSourceChirho"] | null {
   if (spanChirho.provenanceChirho === "vision-chirho") return "explicit-span-chirho";
+  if (
+    spanChirho.scriptChirho !== "hebrew-chirho" &&
+    VISION_TIER_EXPERT_SCRIPT_VALUES_CHIRHO.has(spanChirho.scriptChirho) &&
+    spanChirho.provenanceChirho !== "human-chirho" &&
+    spanChirho.provenanceChirho !== "canonical-chirho"
+  ) {
+    return "pass-c-ocr-span-chirho";
+  }
   if (spanChirho.scriptChirho !== "hebrew-chirho") return null;
   const sourceChirho = d1SourcesChirho.get(targetKeyChirho(lineChirho.volumeChirho, lineChirho.pageChirho));
   if (!sourceChirho) return null;

@@ -2,7 +2,7 @@
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
 /**
- * Browser reviewer for non-Latin vision-tier expert confirmations.
+ * Browser reviewer for non-Latin expert confirmations.
  *
  * Confirmations write the existing exact-item, hash-anchored expert policy
  * artifact. Wrong or uncertain items should be skipped rather than confirmed.
@@ -578,7 +578,7 @@ function htmlChirho(): string {
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Vision-Tier Expert Review Chirho</title>
+  <title>Expert Non-Latin Review Chirho</title>
   <style>
     :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
     body { margin: 0; background: #f6f5ef; color: #1f2933; }
@@ -648,7 +648,7 @@ function htmlChirho(): string {
   <main class="shell-chirho">
     <div class="top-chirho">
       <div>
-        <div class="title-chirho">Vision-Tier Expert Review</div>
+        <div class="title-chirho">Expert Non-Latin Review</div>
         <div class="summary-chirho" id="summary-chirho"></div>
       </div>
       <div class="status-chirho" id="status-chirho"></div>

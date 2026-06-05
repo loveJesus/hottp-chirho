@@ -8,7 +8,7 @@ This guide keeps the certification boundary honest: use primers to orient your e
 ## Current Review Lanes
 
 - Current counts move as reviews land; trust `workspace-chirho/certification-status-chirho/status-chirho.md` for live totals and pending counts.
-- Hebrew/WLC and Greek: Hallelujah can work these first. Use `http://localhost:8766/` for raw Hebrew spans and `http://localhost:8771/` filtered to `hebrew-chirho` or `greek-chirho` for vision-tier expert confirmations.
+- Hebrew/WLC and Greek: Hallelujah can work these first. Use `http://localhost:8766/` for raw Hebrew spans and `http://localhost:8771/` filtered to `hebrew-chirho` or `greek-chirho` for non-Latin expert confirmations.
 - Hebrew-script Aramaic/Targum: do not treat this as ordinary Hebrew. Confirm consonants if clear, but route exact Aramaic vocalization, dagesh/shin-dot details, and Targum wording to a Targum/Aramaic reviewer.
 - Syriac: route to a Syriac reader. A non-reader can spot obvious crop/context problems, but should not certify letters, vowel points, or Peshitta punctuation.
 - Arabic: route to an Arabist. A non-reader can spot segmentation/crop problems, but should not certify letters, dots, vowels, or lexical choices.
@@ -19,8 +19,8 @@ This guide keeps the certification boundary honest: use primers to orient your e
 - Raw Hebrew validator: `bun run pass-c-human-validate-chirho` then open `http://localhost:8766/`.
 - Latin/symbol reviewer: `bun run latin-symbol-vision-review-chirho` then open `http://localhost:8770/`.
 - Non-Latin expert reviewer: `bun run vision-tier-expert-review-chirho` then open `http://localhost:8771/`.
-- Hallelujah’s Hebrew vision lane: `http://localhost:8771/?script-chirho=hebrew-chirho`.
-- Hallelujah’s Greek vision lane: `http://localhost:8771/?script-chirho=greek-chirho`.
+- Hallelujah’s Hebrew expert lane: `http://localhost:8771/?script-chirho=hebrew-chirho`.
+- Hallelujah’s Greek expert lane: `http://localhost:8771/?script-chirho=greek-chirho`.
 - Syriac expert lane: `http://localhost:8771/?script-chirho=syriac-chirho`.
 - Arabist lane: `http://localhost:8771/?script-chirho=arabic-chirho`.
 - Static raw Hebrew packet: `workspace-chirho/pass-c-hebrew-human-pack-chirho/2026-05-31-chirho/index-chirho.md`.
@@ -60,4 +60,4 @@ For the current blank Syriac blocker, use `spec-chirho/metropoliluya-chirho/syri
 
 ## Confirmation Rule
 
-Confirm only when the printed line and stored text agree at the level the queue is asking for. For non-Latin vision-tier items, that means the expert confirms the exact letters and relevant marks against the print, not merely that the word is plausible from a standard text.
+Confirm only when the printed line and stored text agree at the level the queue is asking for. For non-Latin expert-lane items, that means the expert confirms the exact letters and relevant marks against the print, not merely that the word is plausible from a standard text.
