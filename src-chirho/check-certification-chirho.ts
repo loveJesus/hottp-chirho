@@ -57,6 +57,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
     argsChirho: [process.execPath, "run", "check-pass-c-human-review-server-guards-chirho"],
   },
   {
+    labelChirho: "policy preparation CLI guards",
+    argsChirho: [process.execPath, "run", "check-policy-preparation-cli-guards-chirho"],
+  },
+  {
     labelChirho: "vision-tier expert review server guards",
     argsChirho: [process.execPath, "run", "check-vision-tier-expert-review-server-guards-chirho"],
   },
