@@ -38,6 +38,7 @@ interface CertificationStatusOutputChirho {
   rawHebrewChirho?: unknown;
   latinSymbolVisionChirho?: unknown;
   visionTierChirho?: unknown;
+  humanValidationDbChirho?: unknown;
 }
 
 interface ReviewStartLinkCountCheckChirho {
@@ -108,6 +109,48 @@ function numberFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho:
   return fieldChirho;
 }
 
+function stringFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): string {
+  const objectChirho = objectRecordChirho(valueChirho, labelChirho);
+  const fieldChirho = objectChirho[keyChirho];
+  assertGeneratedCheckChirho(typeof fieldChirho === "string", `${labelChirho}.${keyChirho} must be a string`);
+  return fieldChirho;
+}
+
+function nullableStringFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): string | null {
+  const objectChirho = objectRecordChirho(valueChirho, labelChirho);
+  const fieldChirho = objectChirho[keyChirho];
+  assertGeneratedCheckChirho(
+    fieldChirho === null || typeof fieldChirho === "string",
+    `${labelChirho}.${keyChirho} must be a string or null`
+  );
+  return fieldChirho;
+}
+
+function arrayFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): unknown[] {
+  const objectChirho = objectRecordChirho(valueChirho, labelChirho);
+  const fieldChirho = objectChirho[keyChirho];
+  assertGeneratedCheckChirho(Array.isArray(fieldChirho), `${labelChirho}.${keyChirho} must be an array`);
+  return fieldChirho;
+}
+
+function numberArrayFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): number[] {
+  const fieldChirho = arrayFieldChirho(valueChirho, keyChirho, labelChirho);
+  assertGeneratedCheckChirho(
+    fieldChirho.every((itemChirho) => typeof itemChirho === "number"),
+    `${labelChirho}.${keyChirho} must contain only numbers`
+  );
+  return fieldChirho as number[];
+}
+
+function stringArrayFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): string[] {
+  const fieldChirho = arrayFieldChirho(valueChirho, keyChirho, labelChirho);
+  assertGeneratedCheckChirho(
+    fieldChirho.every((itemChirho) => typeof itemChirho === "string"),
+    `${labelChirho}.${keyChirho} must contain only strings`
+  );
+  return fieldChirho as string[];
+}
+
 function countMapFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): Record<string, number> {
   const objectChirho = objectRecordChirho(valueChirho, labelChirho);
   const fieldChirho = objectRecordChirho(objectChirho[keyChirho], `${labelChirho}.${keyChirho}`);
@@ -124,6 +167,14 @@ function countMapFieldChirho(valueChirho: unknown, keyChirho: string, labelChirh
 
 function countMapValueChirho(valueChirho: unknown, keyChirho: string, itemKeyChirho: string, labelChirho: string): number {
   return countMapFieldChirho(valueChirho, keyChirho, labelChirho)[itemKeyChirho] ?? 0;
+}
+
+function shellSingleQuoteChirho(valueChirho: string): string {
+  return `'${valueChirho.normalize("NFC").replace(/'/g, "'\"'\"'")}'`;
+}
+
+function assertMarkdownContainsChirho(markdownChirho: string, expectedChirho: string, labelChirho: string): void {
+  assertGeneratedCheckChirho(markdownChirho.includes(expectedChirho), `status Markdown missing ${labelChirho}: ${expectedChirho}`);
 }
 
 function volumeLinkCountChecksChirho(
@@ -347,6 +398,155 @@ function assertReviewStartLinkCoverageChirho(statusChirho: CertificationStatusOu
   }
 }
 
+function reattributeSingleCommandChirho(rowChirho: unknown, applyChirho: boolean): string {
+  const labelChirho = "humanValidationDbChirho.genericReviewerRowDetailsChirho[]";
+  const idChirho = numberFieldChirho(rowChirho, "idChirho", labelChirho);
+  const liveTextChirho = nullableStringFieldChirho(rowChirho, "liveTextChirho", labelChirho);
+  const commandPartsChirho = [
+    "bun run reattribute-pass-c-human-validations-chirho --",
+    `--validation-id-chirho=${idChirho}`,
+    "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
+    "--rationale-chirho='<why this existing row is attributable to that reviewer>'",
+    ...(liveTextChirho === null ? [] : [`--expected-live-text-chirho=${shellSingleQuoteChirho(liveTextChirho)}`]),
+    ...(applyChirho ? ["--apply-chirho"] : []),
+  ];
+  return commandPartsChirho.join(" ");
+}
+
+function reattributeBatchCommandChirho(groupChirho: unknown, applyChirho: boolean): string {
+  const labelChirho = "humanValidationDbChirho.genericReviewerRowGroupsChirho[]";
+  const idsChirho = numberArrayFieldChirho(groupChirho, "idsChirho", labelChirho);
+  const expectedHashArgsChirho = stringArrayFieldChirho(groupChirho, "expectedLiveTextHashArgsChirho", labelChirho);
+  const commandPartsChirho = [
+    "bun run reattribute-pass-c-human-validations-chirho --",
+    ...idsChirho.map((idChirho) => `--validation-id-chirho=${idChirho}`),
+    "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
+    "--rationale-chirho='<why every selected row is attributable to that reviewer>'",
+    ...expectedHashArgsChirho,
+    ...(applyChirho ? ["--apply-chirho"] : []),
+  ];
+  return commandPartsChirho.join(" ");
+}
+
+function assertPassCHumanReattributionHandoffChirho(
+  markdownChirho: string,
+  statusChirho: CertificationStatusOutputChirho,
+  remainingWorkChirho: string[]
+): void {
+  const humanDbChirho = statusChirho.humanValidationDbChirho;
+  const genericRowCountChirho = numberFieldChirho(humanDbChirho, "genericReviewerRowsChirho", "humanValidationDbChirho");
+  const genericRowsChirho = arrayFieldChirho(
+    humanDbChirho,
+    "genericReviewerRowDetailsChirho",
+    "humanValidationDbChirho"
+  );
+  const genericGroupsChirho = arrayFieldChirho(
+    humanDbChirho,
+    "genericReviewerRowGroupsChirho",
+    "humanValidationDbChirho"
+  );
+  assertGeneratedCheckChirho(
+    genericRowsChirho.length === genericRowCountChirho,
+    "humanValidationDbChirho.genericReviewerRowsChirho must match row details length"
+  );
+  const blockerChirho = `${genericRowCountChirho} current Pass-C human validation row(s) use blank/generic/machine reviewer attribution; re-review or reattribute explicitly before certification`;
+  const passCAttributionBlockersChirho = remainingWorkChirho.filter((itemChirho) =>
+    itemChirho.includes("current Pass-C human validation row(s) use blank/generic/machine reviewer attribution")
+  );
+  if (genericRowCountChirho === 0) {
+    assertGeneratedCheckChirho(
+      passCAttributionBlockersChirho.length === 0,
+      "remainingWorkChirho must not include a Pass-C generic reviewer blocker when none remain"
+    );
+  } else {
+    assertGeneratedCheckChirho(
+      passCAttributionBlockersChirho.includes(blockerChirho),
+      "remainingWorkChirho missing exact Pass-C generic reviewer blocker"
+    );
+  }
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Attribution-blocked reviewer rows: ${genericRowCountChirho}`,
+    "Pass-C reattribution row count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "Reattribution commands reject copied template placeholders",
+    "Pass-C reattribution placeholder warning"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit human reviewer.",
+    "Pass-C reattribution bulk warning"
+  );
+
+  const genericIdsChirho = genericRowsChirho.map((rowChirho) =>
+    numberFieldChirho(rowChirho, "idChirho", "humanValidationDbChirho.genericReviewerRowDetailsChirho[]")
+  );
+  for (const rowChirho of genericRowsChirho) {
+    const idChirho = numberFieldChirho(rowChirho, "idChirho", "humanValidationDbChirho.genericReviewerRowDetailsChirho[]");
+    const locationChirho = stringFieldChirho(
+      rowChirho,
+      "locationChirho",
+      "humanValidationDbChirho.genericReviewerRowDetailsChirho[]"
+    );
+    assertMarkdownContainsChirho(markdownChirho, `  - id ${idChirho} (${locationChirho};`, `Pass-C row ${idChirho} detail`);
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `Reattribute dry-run command: \`${reattributeSingleCommandChirho(rowChirho, false)}\``,
+      `Pass-C row ${idChirho} dry-run command`
+    );
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `Reattribute apply command: \`${reattributeSingleCommandChirho(rowChirho, true)}\``,
+      `Pass-C row ${idChirho} apply command`
+    );
+  }
+
+  const groupedIdsChirho = genericGroupsChirho.flatMap((groupChirho) =>
+    numberArrayFieldChirho(groupChirho, "idsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]")
+  );
+  assertGeneratedCheckChirho(
+    genericIdsChirho.slice().sort((aChirho, bChirho) => aChirho - bChirho).join(",") ===
+      groupedIdsChirho.slice().sort((aChirho, bChirho) => aChirho - bChirho).join(","),
+    "humanValidationDbChirho generic reviewer groups must cover the same IDs as row details"
+  );
+  const bulkExpectedHashArgsChirho = genericRowsChirho.flatMap((rowChirho) => {
+    const idChirho = numberFieldChirho(rowChirho, "idChirho", "humanValidationDbChirho.genericReviewerRowDetailsChirho[]");
+    const hashChirho = nullableStringFieldChirho(
+      rowChirho,
+      "liveTextHashChirho",
+      "humanValidationDbChirho.genericReviewerRowDetailsChirho[]"
+    );
+    return hashChirho === null ? [] : [`--expected-live-text-hash-chirho=${idChirho}:${hashChirho}`];
+  });
+  const bulkBaseCommandChirho = [
+    "bun run reattribute-pass-c-human-validations-chirho --",
+    `--all-generic-chirho --expected-generic-row-count-chirho=${genericRowCountChirho}`,
+    ...bulkExpectedHashArgsChirho,
+    "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
+    "--rationale-chirho='<why every current attribution-blocked row is attributable to that reviewer>'",
+  ].join(" ");
+  assertMarkdownContainsChirho(markdownChirho, `${bulkBaseCommandChirho}\``, "Pass-C bulk dry-run command");
+  assertMarkdownContainsChirho(markdownChirho, `${bulkBaseCommandChirho} --apply-chirho\``, "Pass-C bulk apply command");
+
+  for (const groupChirho of genericGroupsChirho) {
+    const rowCountChirho = numberFieldChirho(groupChirho, "rowCountChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    if (rowCountChirho <= 1) continue;
+    const idsChirho = numberArrayFieldChirho(groupChirho, "idsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `Batch dry-run command: \`${reattributeBatchCommandChirho(groupChirho, false)}\``,
+      `Pass-C batch ${idsChirho.join(",")} dry-run command`
+    );
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `Batch apply command: \`${reattributeBatchCommandChirho(groupChirho, true)}\``,
+      `Pass-C batch ${idsChirho.join(",")} apply command`
+    );
+  }
+}
+
 function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const outDirChirho = parseArgValueChirho(argsChirho, "out-dir") ?? DEFAULT_STATUS_OUT_DIR_CHIRHO;
@@ -376,15 +576,17 @@ function mainChirho(): void {
     remainingWorkChirho.every((itemChirho) => typeof itemChirho === "string" && itemChirho.trim().length > 0),
     "status JSON remainingWorkChirho must contain only non-empty strings"
   );
+  const remainingWorkStringsChirho = remainingWorkChirho as string[];
   if (!statusChirho.certificationCompleteChirho) {
     assertGeneratedCheckChirho(remainingWorkChirho.length > 0, "incomplete status JSON has no remainingWorkChirho blockers");
   }
-  for (const itemChirho of remainingWorkChirho as string[]) {
+  for (const itemChirho of remainingWorkStringsChirho) {
     assertGeneratedCheckChirho(
       markdownChirho.includes(itemChirho),
       `status Markdown does not display remaining-work blocker: ${itemChirho}`
     );
   }
+  assertPassCHumanReattributionHandoffChirho(markdownChirho, statusChirho, remainingWorkStringsChirho);
   assertGeneratedCheckChirho(
     markdownChirho.includes(`Generated: ${statusChirho.generatedAtChirho}`),
     "status Markdown Generated line does not match status JSON generatedAtChirho"
