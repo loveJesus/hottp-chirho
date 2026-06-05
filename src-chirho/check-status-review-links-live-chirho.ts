@@ -102,6 +102,9 @@ const EXPERT_SOURCES_CHIRHO = new Set([
 
 interface CertificationStatusChirho {
   reviewStartLinksChirho?: Record<string, string | null>;
+  humanValidationDbChirho?: {
+    genericReviewerRowsChirho?: number;
+  };
 }
 
 interface RawHebrewQueueItemChirho {
@@ -455,6 +458,12 @@ async function mainChirho(): Promise<void> {
     statusChirho.reviewStartLinksChirho !== undefined && typeof statusChirho.reviewStartLinksChirho === "object",
     "status JSON missing reviewStartLinksChirho object"
   );
+  assertGeneratedCheckChirho(
+    statusChirho.humanValidationDbChirho !== undefined &&
+      typeof statusChirho.humanValidationDbChirho === "object" &&
+      typeof statusChirho.humanValidationDbChirho.genericReviewerRowsChirho === "number",
+    "status JSON missing humanValidationDbChirho.genericReviewerRowsChirho number"
+  );
   const checkedLinksChirho = new Set<string>();
   let jsonCheckedCountChirho = 0;
   for (const [keyChirho, linkChirho] of Object.entries(statusChirho.reviewStartLinksChirho)) {
@@ -492,25 +501,36 @@ async function mainChirho(): Promise<void> {
     expertRepeatCheckedCountChirho += 1;
   }
   assertGeneratedCheckChirho(expertRepeatCheckedCountChirho > 0, "expert repeat-cluster Markdown contains no additional live review URLs to check");
+  const attributionCleanupLinksChirho = markdownReviewLinksChirho(attributionCleanupMarkdownChirho);
   let attributionCleanupCheckedCountChirho = 0;
-  for (const linkChirho of markdownReviewLinksChirho(attributionCleanupMarkdownChirho)) {
+  let attributionCleanupTotalCountChirho = 0;
+  for (const linkChirho of attributionCleanupLinksChirho) {
+    attributionCleanupTotalCountChirho += 1;
     const urlChirho = new URL(linkChirho);
-    assertBaseReviewUrlChirho(urlChirho, `Attribution cleanup URL ${attributionCleanupCheckedCountChirho + 1}`);
+    assertBaseReviewUrlChirho(urlChirho, `Attribution cleanup URL ${attributionCleanupTotalCountChirho}`);
     const canonicalLinkChirho = urlChirho.toString();
     if (checkedLinksChirho.has(canonicalLinkChirho)) continue;
-    await checkReviewItemUrlChirho(`Attribution cleanup URL ${attributionCleanupCheckedCountChirho + 1}`, urlChirho);
+    await checkReviewItemUrlChirho(`Attribution cleanup URL ${attributionCleanupTotalCountChirho}`, urlChirho);
     checkedLinksChirho.add(canonicalLinkChirho);
     attributionCleanupCheckedCountChirho += 1;
   }
-  assertGeneratedCheckChirho(
-    attributionCleanupCheckedCountChirho > 0,
-    "attribution cleanup handoff Markdown contains no additional live review URLs to check"
-  );
+  const attributionBlockedRowsChirho = statusChirho.humanValidationDbChirho.genericReviewerRowsChirho;
+  if (attributionBlockedRowsChirho > 0) {
+    assertGeneratedCheckChirho(
+      attributionCleanupTotalCountChirho > 0,
+      "attribution cleanup handoff Markdown contains no live review URLs while attribution-blocked rows remain"
+    );
+  } else {
+    assertGeneratedCheckChirho(
+      attributionCleanupTotalCountChirho === 0,
+      "attribution cleanup handoff Markdown still contains review URLs after attribution-blocked rows reached zero"
+    );
+  }
   console.log(
     `[${MODULE_CHIRHO}] live status review links passed for ${jsonCheckedCountChirho} JSON link(s), ` +
       `${markdownCheckedCountChirho} additional Markdown URL(s), and ` +
       `${expertRepeatCheckedCountChirho} expert repeat-cluster URL(s), and ` +
-      `${attributionCleanupCheckedCountChirho} attribution cleanup URL(s)`
+      `${attributionCleanupCheckedCountChirho}/${attributionCleanupTotalCountChirho} attribution cleanup URL(s)`
   );
 }
 
