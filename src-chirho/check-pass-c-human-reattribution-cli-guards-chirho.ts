@@ -34,11 +34,14 @@ interface ReattributionFixtureChirho {
   dbPathChirho: string;
   backupPathChirho: string;
   liveSpanChirho: LiveSpanFixtureChirho;
+  liveSpansChirho: LiveSpanFixtureChirho[];
+  validationIdsChirho: number[];
 }
 
 interface ValidationSummaryRowChirho {
   rowCountChirho: number;
   currentCountChirho: number;
+  currentHumanReviewerCountChirho: number;
   reviewerChirho: string | null;
   supersedesIdChirho: number | null;
 }
@@ -68,7 +71,8 @@ function assertCheckChirho(conditionChirho: boolean, messageChirho: string): voi
   if (!conditionChirho) throw new Error(messageChirho);
 }
 
-function findLiveSpanFixtureChirho(): LiveSpanFixtureChirho {
+function findLiveSpanFixturesChirho(countChirho: number): LiveSpanFixtureChirho[] {
+  const fixturesChirho: LiveSpanFixtureChirho[] = [];
   for (const pathChirho of scanSpanLinePathsChirho()) {
     const lineChirho = JSON.parse(readFileSync(pathChirho, "utf8")) as SpanLineLikeChirho;
     if (
@@ -84,24 +88,26 @@ function findLiveSpanFixtureChirho(): LiveSpanFixtureChirho {
       if (typeof candidateChirho.utf8TextChirho !== "string") continue;
       const textChirho = normalizeTextForStorageChirho(candidateChirho.utf8TextChirho);
       if (textChirho.trim().length === 0) continue;
-      return {
+      fixturesChirho.push({
         volumeChirho: lineChirho.volumeChirho,
         pageChirho: lineChirho.pageChirho,
         lineIndexChirho: lineChirho.lineIndexChirho,
         segmentIndexChirho: candidateChirho.segmentIndexChirho,
         textChirho,
-      };
+      });
+      if (fixturesChirho.length >= countChirho) return fixturesChirho;
     }
   }
-  throw new Error("could not find a non-empty live span fixture");
+  throw new Error(`could not find ${countChirho} non-empty live span fixture(s)`);
 }
 
-function createFixtureChirho(): ReattributionFixtureChirho {
+function createFixtureChirho(rowCountChirho = 1): ReattributionFixtureChirho {
   const dirChirho = mkdtempSync(join(tmpdir(), "pass-c-human-reattribution-cli-guard-chirho-"));
   const dbPathChirho = join(dirChirho, "progress-chirho.sqlite");
   const backupPathChirho = join(dirChirho, "pass-c-human-validations-backup-chirho.json");
-  const liveSpanChirho = findLiveSpanFixtureChirho();
+  const liveSpansChirho = findLiveSpanFixturesChirho(rowCountChirho);
   const dbChirho = new Database(dbPathChirho);
+  const validationIdsChirho: number[] = [];
   try {
     dbChirho.run(`
       CREATE TABLE pass_c_human_validations_chirho (
@@ -132,9 +138,8 @@ function createFixtureChirho(): ReattributionFixtureChirho {
         schema_version_chirho INTEGER NOT NULL
       )`
     );
-    dbChirho
-      .prepare(
-        `INSERT INTO pass_c_human_validations_chirho
+    const insertStmtChirho = dbChirho.prepare(
+      `INSERT INTO pass_c_human_validations_chirho
           (volume_chirho, page_chirho, line_index_chirho, segment_index_chirho,
            original_text_chirho, original_text_hash_chirho, line_text_chirho, verdict_chirho, certify_clean_chirho,
            corrected_text_chirho, corrected_skeleton_chirho, script_verdict_chirho, issue_flags_chirho, notes_chirho,
@@ -144,8 +149,9 @@ function createFixtureChirho(): ReattributionFixtureChirho {
            NULL, NULL, NULL, NULL, 'generic reviewer fixture', NULL, '2026-06-04T00:00:00.000Z',
            'human-chirho', '2026-06-04T00:00:00.000Z', '2026-06-04T00:00:00.000Z',
            NULL, 1, NULL, NULL, 2)`
-      )
-      .run(
+    );
+    for (const liveSpanChirho of liveSpansChirho) {
+      const resultChirho = insertStmtChirho.run(
         liveSpanChirho.volumeChirho,
         liveSpanChirho.pageChirho,
         liveSpanChirho.lineIndexChirho,
@@ -153,10 +159,12 @@ function createFixtureChirho(): ReattributionFixtureChirho {
         liveSpanChirho.textChirho,
         hashTextChirho(liveSpanChirho.textChirho)
       );
+      validationIdsChirho.push(Number(resultChirho.lastInsertRowid));
+    }
   } finally {
     dbChirho.close();
   }
-  return { dirChirho, dbPathChirho, backupPathChirho, liveSpanChirho };
+  return { dirChirho, dbPathChirho, backupPathChirho, liveSpanChirho: liveSpansChirho[0]!, liveSpansChirho, validationIdsChirho };
 }
 
 function validationSummaryChirho(dbPathChirho: string): ValidationSummaryRowChirho {
@@ -167,6 +175,7 @@ function validationSummaryChirho(dbPathChirho: string): ValidationSummaryRowChir
         `SELECT
            COUNT(*) AS rowCountChirho,
            SUM(CASE WHEN is_current_chirho = 1 THEN 1 ELSE 0 END) AS currentCountChirho,
+           SUM(CASE WHEN is_current_chirho = 1 AND reviewer_chirho = 'human-chirho' THEN 1 ELSE 0 END) AS currentHumanReviewerCountChirho,
            MAX(CASE WHEN is_current_chirho = 1 THEN reviewer_chirho ELSE NULL END) AS reviewerChirho,
            MAX(CASE WHEN is_current_chirho = 1 THEN supersedes_id_chirho ELSE NULL END) AS supersedesIdChirho
          FROM pass_c_human_validations_chirho`
@@ -186,9 +195,49 @@ function reattributeArgsChirho(fixtureChirho: ReattributionFixtureChirho, extraA
     "--",
     `--db-chirho=${fixtureChirho.dbPathChirho}`,
     `--backup-chirho=${fixtureChirho.backupPathChirho}`,
-    "--validation-id-chirho=1",
+    `--validation-id-chirho=${fixtureChirho.validationIdsChirho[0]}`,
     ...extraArgsChirho,
   ];
+}
+
+function reattributeSelectedArgsChirho(
+  fixtureChirho: ReattributionFixtureChirho,
+  idsChirho: number[],
+  extraArgsChirho: string[]
+): string[] {
+  return [
+    process.execPath,
+    "run",
+    REATTRIBUTION_SCRIPT_CHIRHO,
+    "--",
+    `--db-chirho=${fixtureChirho.dbPathChirho}`,
+    `--backup-chirho=${fixtureChirho.backupPathChirho}`,
+    ...idsChirho.map((idChirho) => `--validation-id-chirho=${idChirho}`),
+    ...extraArgsChirho,
+  ];
+}
+
+function reattributeAllGenericArgsChirho(
+  fixtureChirho: ReattributionFixtureChirho,
+  extraArgsChirho: string[]
+): string[] {
+  return [
+    process.execPath,
+    "run",
+    REATTRIBUTION_SCRIPT_CHIRHO,
+    "--",
+    `--db-chirho=${fixtureChirho.dbPathChirho}`,
+    `--backup-chirho=${fixtureChirho.backupPathChirho}`,
+    "--all-generic-chirho",
+    ...extraArgsChirho,
+  ];
+}
+
+function expectedHashArgsChirho(fixtureChirho: ReattributionFixtureChirho): string[] {
+  return fixtureChirho.validationIdsChirho.map((idChirho, indexChirho) => {
+    const liveSpanChirho = fixtureChirho.liveSpansChirho[indexChirho]!;
+    return `--expected-live-text-hash-chirho=${idChirho}:${hashTextChirho(liveSpanChirho.textChirho)}`;
+  });
 }
 
 function assertRejectedChirho(
@@ -196,8 +245,16 @@ function assertRejectedChirho(
   extraArgsChirho: string[],
   expectedMessageChirho: string
 ): void {
-  const beforeChirho = validationSummaryChirho(fixtureChirho.dbPathChirho);
   const argsChirho = reattributeArgsChirho(fixtureChirho, extraArgsChirho);
+  assertRejectedCommandChirho(fixtureChirho, argsChirho, expectedMessageChirho);
+}
+
+function assertRejectedCommandChirho(
+  fixtureChirho: ReattributionFixtureChirho,
+  argsChirho: string[],
+  expectedMessageChirho: string
+): void {
+  const beforeChirho = validationSummaryChirho(fixtureChirho.dbPathChirho);
   const resultChirho = runCommandChirho(argsChirho);
   const combinedOutputChirho = `${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`;
   assertCheckChirho(
@@ -228,9 +285,53 @@ function assertSuccessfulApplyChirho(fixtureChirho: ReattributionFixtureChirho):
   const summaryChirho = validationSummaryChirho(fixtureChirho.dbPathChirho);
   assertCheckChirho(summaryChirho.rowCountChirho === 2, "successful reattribution did not append one row");
   assertCheckChirho(summaryChirho.currentCountChirho === 1, "successful reattribution left an invalid current-row count");
+  assertCheckChirho(summaryChirho.currentHumanReviewerCountChirho === 0, "successful reattribution left generic current rows");
   assertCheckChirho(summaryChirho.reviewerChirho === "hallelujah-chirho", "successful reattribution did not set reviewer");
   assertCheckChirho(summaryChirho.supersedesIdChirho === 1, "successful reattribution did not supersede the old row");
   assertCheckChirho(existsSync(fixtureChirho.backupPathChirho), "successful reattribution did not refresh backup");
+}
+
+function assertSuccessfulSelectedBatchApplyChirho(fixtureChirho: ReattributionFixtureChirho): void {
+  const argsChirho = reattributeSelectedArgsChirho(fixtureChirho, fixtureChirho.validationIdsChirho, [
+    "--reviewer-chirho=hallelujah-chirho",
+    "--rationale-chirho=fixture confirms selected batch append-only reattribution guard",
+    ...expectedHashArgsChirho(fixtureChirho),
+    "--apply-chirho",
+  ]);
+  const resultChirho = runCommandChirho(argsChirho);
+  assertCheckChirho(
+    resultChirho.exitCodeChirho === 0,
+    `selected batch reattribution apply command failed: ${commandTextChirho(argsChirho)}\n${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`
+  );
+  const summaryChirho = validationSummaryChirho(fixtureChirho.dbPathChirho);
+  assertCheckChirho(summaryChirho.rowCountChirho === 4, "selected batch reattribution did not append two rows");
+  assertCheckChirho(summaryChirho.currentCountChirho === 2, "selected batch reattribution left an invalid current-row count");
+  assertCheckChirho(summaryChirho.currentHumanReviewerCountChirho === 0, "selected batch reattribution left generic current rows");
+  assertCheckChirho(summaryChirho.reviewerChirho === "hallelujah-chirho", "selected batch reattribution did not set reviewer");
+  assertCheckChirho(summaryChirho.supersedesIdChirho === 2, "selected batch reattribution did not supersede the old rows");
+  assertCheckChirho(existsSync(fixtureChirho.backupPathChirho), "selected batch reattribution did not refresh backup");
+}
+
+function assertSuccessfulAllGenericApplyChirho(fixtureChirho: ReattributionFixtureChirho): void {
+  const argsChirho = reattributeAllGenericArgsChirho(fixtureChirho, [
+    "--expected-generic-row-count-chirho=2",
+    "--reviewer-chirho=hallelujah-chirho",
+    "--rationale-chirho=fixture confirms all generic append-only reattribution guard",
+    ...expectedHashArgsChirho(fixtureChirho),
+    "--apply-chirho",
+  ]);
+  const resultChirho = runCommandChirho(argsChirho);
+  assertCheckChirho(
+    resultChirho.exitCodeChirho === 0,
+    `all-generic reattribution apply command failed: ${commandTextChirho(argsChirho)}\n${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`
+  );
+  const summaryChirho = validationSummaryChirho(fixtureChirho.dbPathChirho);
+  assertCheckChirho(summaryChirho.rowCountChirho === 4, "all-generic reattribution did not append two rows");
+  assertCheckChirho(summaryChirho.currentCountChirho === 2, "all-generic reattribution left an invalid current-row count");
+  assertCheckChirho(summaryChirho.currentHumanReviewerCountChirho === 0, "all-generic reattribution left generic current rows");
+  assertCheckChirho(summaryChirho.reviewerChirho === "hallelujah-chirho", "all-generic reattribution did not set reviewer");
+  assertCheckChirho(summaryChirho.supersedesIdChirho === 2, "all-generic reattribution did not supersede the old rows");
+  assertCheckChirho(existsSync(fixtureChirho.backupPathChirho), "all-generic reattribution did not refresh backup");
 }
 
 function mainChirho(): void {
@@ -304,11 +405,90 @@ function mainChirho(): void {
     rmSync(staleGuardFixtureChirho.dirChirho, { recursive: true, force: true });
   }
 
+  const selectedMissingHashFixtureChirho = createFixtureChirho(2);
+  try {
+    assertRejectedCommandChirho(
+      selectedMissingHashFixtureChirho,
+      reattributeSelectedArgsChirho(selectedMissingHashFixtureChirho, selectedMissingHashFixtureChirho.validationIdsChirho, [
+        "--reviewer-chirho=hallelujah-chirho",
+        "--rationale-chirho=selected batch missing hash should fail",
+        expectedHashArgsChirho(selectedMissingHashFixtureChirho)[0]!,
+        "--apply-chirho",
+      ]),
+      "missing expected live text hash for selected validation id(s)"
+    );
+  } finally {
+    rmSync(selectedMissingHashFixtureChirho.dirChirho, { recursive: true, force: true });
+  }
+
+  const allGenericMissingCountFixtureChirho = createFixtureChirho(2);
+  try {
+    assertRejectedCommandChirho(
+      allGenericMissingCountFixtureChirho,
+      reattributeAllGenericArgsChirho(allGenericMissingCountFixtureChirho, [
+        "--reviewer-chirho=hallelujah-chirho",
+        "--rationale-chirho=all generic missing count should fail",
+        ...expectedHashArgsChirho(allGenericMissingCountFixtureChirho),
+        "--apply-chirho",
+      ]),
+      "--expected-generic-row-count-chirho is required when applying --all-generic-chirho"
+    );
+  } finally {
+    rmSync(allGenericMissingCountFixtureChirho.dirChirho, { recursive: true, force: true });
+  }
+
+  const allGenericMissingHashFixtureChirho = createFixtureChirho(2);
+  try {
+    assertRejectedCommandChirho(
+      allGenericMissingHashFixtureChirho,
+      reattributeAllGenericArgsChirho(allGenericMissingHashFixtureChirho, [
+        "--expected-generic-row-count-chirho=2",
+        "--reviewer-chirho=hallelujah-chirho",
+        "--rationale-chirho=all generic missing hashes should fail",
+        "--apply-chirho",
+      ]),
+      "--expected-live-text-hash-chirho is required for every row when applying --all-generic-chirho"
+    );
+  } finally {
+    rmSync(allGenericMissingHashFixtureChirho.dirChirho, { recursive: true, force: true });
+  }
+
+  const allGenericWrongCountFixtureChirho = createFixtureChirho(2);
+  try {
+    assertRejectedCommandChirho(
+      allGenericWrongCountFixtureChirho,
+      reattributeAllGenericArgsChirho(allGenericWrongCountFixtureChirho, [
+        "--expected-generic-row-count-chirho=3",
+        "--reviewer-chirho=hallelujah-chirho",
+        "--rationale-chirho=all generic wrong count should fail",
+        ...expectedHashArgsChirho(allGenericWrongCountFixtureChirho),
+        "--apply-chirho",
+      ]),
+      "generic row count drifted; expected 3, current 2"
+    );
+  } finally {
+    rmSync(allGenericWrongCountFixtureChirho.dirChirho, { recursive: true, force: true });
+  }
+
   const applyFixtureChirho = createFixtureChirho();
   try {
     assertSuccessfulApplyChirho(applyFixtureChirho);
   } finally {
     rmSync(applyFixtureChirho.dirChirho, { recursive: true, force: true });
+  }
+
+  const selectedBatchApplyFixtureChirho = createFixtureChirho(2);
+  try {
+    assertSuccessfulSelectedBatchApplyChirho(selectedBatchApplyFixtureChirho);
+  } finally {
+    rmSync(selectedBatchApplyFixtureChirho.dirChirho, { recursive: true, force: true });
+  }
+
+  const allGenericApplyFixtureChirho = createFixtureChirho(2);
+  try {
+    assertSuccessfulAllGenericApplyChirho(allGenericApplyFixtureChirho);
+  } finally {
+    rmSync(allGenericApplyFixtureChirho.dirChirho, { recursive: true, force: true });
   }
 
   console.log(`[${MODULE_CHIRHO}] Pass-C human reattribution CLI guards passed`);

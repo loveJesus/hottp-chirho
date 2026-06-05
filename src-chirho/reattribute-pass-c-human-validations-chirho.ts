@@ -480,9 +480,9 @@ function mainChirho(): void {
       : loadRowsByIdChirho(dbChirho, validationIdsChirho);
     assertRowsEligibleChirho(rowsChirho, validationIdsChirho);
     assertExpectedGenericRowCountChirho(rowsChirho, allGenericChirho, applyChirho, expectedGenericRowCountChirho);
-    assertApplyHasLiveTextGuardChirho(rowsChirho, applyChirho, expectedLiveTextChirho, expectedLiveTextHashesChirho);
     assertExpectedLiveTextChirho(rowsChirho, expectedLiveTextChirho, allGenericChirho);
     assertExpectedLiveTextHashesChirho(rowsChirho, expectedLiveTextHashesChirho, allGenericChirho, applyChirho);
+    assertApplyHasLiveTextGuardChirho(rowsChirho, applyChirho, expectedLiveTextChirho, expectedLiveTextHashesChirho);
     if (rowsChirho.length === 0) {
       console.log(`[${MODULE_CHIRHO}] no eligible row(s)`);
       return;
