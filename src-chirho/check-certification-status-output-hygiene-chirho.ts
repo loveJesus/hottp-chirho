@@ -33,6 +33,8 @@ const STATUS_BACKTICK_RE_CHIRHO = /`([^`\n]+)`/g;
 const STATUS_BUN_RUN_COMMAND_RE_CHIRHO = /\bbun run\s+([^\s`]+)/g;
 const REVIEW_SERVER_PORTS_CHIRHO = new Set([8766, 8770, 8771]);
 const REVIEW_VOLUMES_CHIRHO = [1, 2, 3, 4, 5] as const;
+const RAW_HEBREW_CLEAN_CERTIFICATION_STATUS_LINE_CHIRHO =
+  "- Raw Hebrew clean certification: leave issue boxes unchecked only when letters, vowels/marks, accents/meteg, punctuation, spacing, maqqef, word boundaries, script, and the red box all match the print, then check the clean-certification acknowledgement before saving as clean.";
 
 interface CertificationStatusOutputChirho {
   generatedAtChirho?: string;
@@ -773,6 +775,11 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     rawVolumeCountsChirho,
     "rawHebrewChirho",
     "report span(s)"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    RAW_HEBREW_CLEAN_CERTIFICATION_STATUS_LINE_CHIRHO,
+    "raw Hebrew clean-certification guidance"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
