@@ -40,6 +40,8 @@ const RAW_HEBREW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Several Hebrew words in one span are acceptable only when the box intentionally covers exactly those words",
   "Flag segmentation when one of these is true:",
   "The stored text collapses or splits words differently from the print.",
+  "If the row is not clearly attributable to you, do not reattribute it.",
+  "If the current live text no longer matches the row's originally reviewed text, use Attribution re-review by default.",
   "When uncertain, skip or save an issue. Do not use a clean review to express \"probably right.\"",
 ] as const;
 const HALLELUJAH_SESSION_GUIDE_SNIPPETS_CHIRHO = [
@@ -47,6 +49,9 @@ const HALLELUJAH_SESSION_GUIDE_SNIPPETS_CHIRHO = [
   "A dot inside a Hebrew letter is usually dagesh or mappiq; inside vav for `וּ` it is shuruk.",
   "Flag `Segmentation` when the box or text has a wrong word boundary",
   "If the text is wrong, report an issue; do not confirm and hope a later correction fixes it.",
+  "Attribution cleanup is not a shortcut around review.",
+  "If the status report says live text changed, prefer re-review.",
+  "If you are not sure who made the original decision, re-review instead of reattributing.",
   "Stop or skip when the crop is unclear, the script is outside your competence, the exact marks are uncertain",
 ] as const;
 
