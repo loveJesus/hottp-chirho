@@ -12,11 +12,12 @@
  * as expected.
  */
 
-import { mkdtempSync, rmSync, writeFileSync } from "fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { fileSha256Chirho } from "./packet-image-fingerprint-chirho.ts";
 import {
   expectedVisionTierReviewerRoleChirho,
 } from "./vision-tier-expert-confirmation-policy-chirho.ts";
@@ -27,6 +28,23 @@ import {
 
 const MODULE_CHIRHO = "check-expert-supplied-text-guards-chirho";
 const APPLY_SCRIPT_CHIRHO = "apply-expert-supplied-vision-text-chirho";
+const EXPERT_PACK_MANIFEST_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "expert-confirm-pack-chirho",
+  "2026-05-31-chirho",
+  "manifest-chirho.json"
+);
+
+interface ExpertPackGuardItemChirho {
+  idChirho: string;
+  sourcePathChirho: string;
+  packetPathChirho: string;
+}
+
+interface ExpertPackGuardManifestChirho {
+  completeVisionItemsChirho?: ExpertPackGuardItemChirho[];
+}
 
 function textForScriptChirho(scriptChirho: string): string {
   if (scriptChirho === "syriac-chirho") return "ܐ";
@@ -231,6 +249,21 @@ function blankLiveItemChirho(): VisionTierExpertLiveItemChirho | null {
   );
 }
 
+function expertPackItemForLiveItemChirho(itemChirho: VisionTierExpertLiveItemChirho): ExpertPackGuardItemChirho {
+  const manifestChirho = JSON.parse(readFileSync(EXPERT_PACK_MANIFEST_PATH_CHIRHO, "utf8")) as ExpertPackGuardManifestChirho;
+  if (!Array.isArray(manifestChirho.completeVisionItemsChirho)) {
+    throw new Error("expert pack manifest malformed: completeVisionItemsChirho missing");
+  }
+  const packItemChirho = manifestChirho.completeVisionItemsChirho.find(
+    (candidateChirho) => candidateChirho.idChirho === itemChirho.idChirho
+  );
+  if (packItemChirho === undefined) throw new Error(`expert pack item missing: ${itemChirho.idChirho}`);
+  if (typeof packItemChirho.sourcePathChirho !== "string" || typeof packItemChirho.packetPathChirho !== "string") {
+    throw new Error(`expert pack item image paths missing: ${itemChirho.idChirho}`);
+  }
+  return packItemChirho;
+}
+
 function nonblankLiveItemChirho(): VisionTierExpertLiveItemChirho | null {
   return (
     visionTierExpertLiveItemsChirho().find((itemChirho) => {
@@ -283,6 +316,32 @@ function checkBlankLiveItemDryRunChirho(itemChirho: VisionTierExpertLiveItemChir
       resultChirho.stdoutChirho.includes('"statusChirho": "planned-chirho"') &&
       resultChirho.stdoutChirho.includes(`"itemIdChirho": "${itemChirho.idChirho}"`),
     `blank item dry-run did not report planned dry-run status: ${resultChirho.stdoutChirho}`
+  );
+}
+
+function checkBlankLiveItemDryRunWithCorrectHashesChirho(itemChirho: VisionTierExpertLiveItemChirho): void {
+  const expectedRoleChirho = expectedVisionTierReviewerRoleChirho(itemChirho.scriptChirho);
+  if (expectedRoleChirho === null) throw new Error(`${itemChirho.idChirho} has no expected reviewer role`);
+  const packItemChirho = expertPackItemForLiveItemChirho(itemChirho);
+  const argsChirho = applyArgsChirho([
+    `--id-chirho=${itemChirho.idChirho}`,
+    `--supplied-text-chirho=${textForScriptChirho(itemChirho.scriptChirho)}`,
+    "--reviewer-chirho=dr-expert-supplied-guard-check-chirho",
+    `--reviewer-role-chirho=${expectedRoleChirho}`,
+    "--rationale-chirho=certification guard correct image hash dry-run check only",
+    `--expected-source-sha256-chirho=${fileSha256Chirho(packItemChirho.sourcePathChirho)}`,
+    `--expected-packet-sha256-chirho=${fileSha256Chirho(packItemChirho.packetPathChirho)}`,
+  ]);
+  const resultChirho = runCommandChirho(argsChirho);
+  assertCommandChirho(
+    resultChirho.exitCodeChirho === 0,
+    `blank item dry-run with current image hashes failed: ${commandTextChirho(argsChirho)}\n${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`
+  );
+  assertCommandChirho(
+    resultChirho.stdoutChirho.includes('"modeChirho": "dry-run-chirho"') &&
+      resultChirho.stdoutChirho.includes('"statusChirho": "planned-chirho"') &&
+      resultChirho.stdoutChirho.includes(`"itemIdChirho": "${itemChirho.idChirho}"`),
+    `blank item dry-run with current image hashes did not report planned status: ${resultChirho.stdoutChirho}`
   );
 }
 
@@ -374,6 +433,7 @@ function mainChirho(): void {
     console.log(`[${MODULE_CHIRHO}] no blank explicit-span vision-tier item is currently live; skipped live blank dry-run checks`);
   } else {
     checkBlankLiveItemDryRunChirho(blankItemChirho);
+    checkBlankLiveItemDryRunWithCorrectHashesChirho(blankItemChirho);
     checkBlankLiveItemWrongRoleChirho(blankItemChirho);
     checkBlankLiveItemWrongSourceHashChirho(blankItemChirho);
     checkBlankLiveItemWrongPacketHashChirho(blankItemChirho);
