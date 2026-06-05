@@ -28,11 +28,13 @@ const STATUS_LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
   "app-chirho/",
 ];
 const STATUS_BACKTICK_RE_CHIRHO = /`([^`\n]+)`/g;
+const REVIEW_SERVER_PORTS_CHIRHO = new Set([8766, 8770, 8771]);
 
 interface CertificationStatusOutputChirho {
   generatedAtChirho?: string;
   certificationCompleteChirho?: boolean;
   remainingWorkChirho?: unknown;
+  reviewStartLinksChirho?: unknown;
 }
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
@@ -58,6 +60,31 @@ function assertStatusLocalArtifactLinksChirho(markdownChirho: string): void {
   }
 }
 
+function assertReviewStartLinksRenderedChirho(markdownChirho: string, valueChirho: unknown): void {
+  assertGeneratedCheckChirho(
+    valueChirho !== null && typeof valueChirho === "object" && !Array.isArray(valueChirho),
+    "status JSON missing reviewStartLinksChirho object"
+  );
+  for (const [keyChirho, linkChirho] of Object.entries(valueChirho)) {
+    if (linkChirho === null) continue;
+    assertGeneratedCheckChirho(
+      typeof linkChirho === "string" && linkChirho.length > 0,
+      `reviewStartLinksChirho.${keyChirho} must be a URL string or null`
+    );
+    const urlChirho = new URL(linkChirho);
+    assertGeneratedCheckChirho(urlChirho.protocol === "http:", `reviewStartLinksChirho.${keyChirho} must use http`);
+    assertGeneratedCheckChirho(urlChirho.hostname === "localhost", `reviewStartLinksChirho.${keyChirho} must target localhost`);
+    assertGeneratedCheckChirho(
+      REVIEW_SERVER_PORTS_CHIRHO.has(Number(urlChirho.port)),
+      `reviewStartLinksChirho.${keyChirho} targets unexpected port ${urlChirho.port}`
+    );
+    assertGeneratedCheckChirho(
+      markdownChirho.includes(linkChirho),
+      `status Markdown does not display review start link ${keyChirho}: ${linkChirho}`
+    );
+  }
+}
+
 function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const outDirChirho = parseArgValueChirho(argsChirho, "out-dir") ?? DEFAULT_STATUS_OUT_DIR_CHIRHO;
@@ -79,6 +106,7 @@ function mainChirho(): void {
     typeof statusChirho.certificationCompleteChirho === "boolean",
     "status JSON missing certificationCompleteChirho boolean"
   );
+  assertReviewStartLinksRenderedChirho(markdownChirho, statusChirho.reviewStartLinksChirho);
   assertGeneratedCheckChirho(Array.isArray(statusChirho.remainingWorkChirho), "status JSON missing remainingWorkChirho array");
   const remainingWorkChirho = statusChirho.remainingWorkChirho;
   assertGeneratedCheckChirho(
