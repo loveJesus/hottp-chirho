@@ -1628,6 +1628,8 @@ function withReviewStartTextChirho(urlChirho: string | null | undefined): string
 function blankVisionTierSuppliedTextCommandTemplateChirho(
   idChirho: string,
   expectedReviewerRoleChirho: string | null,
+  expectedSourceSha256Chirho: string | null,
+  expectedPacketSha256Chirho: string | null,
   applyChirho: boolean
 ): string {
   const commandPartsChirho = [
@@ -1638,6 +1640,12 @@ function blankVisionTierSuppliedTextCommandTemplateChirho(
     `--reviewer-role-chirho=${shellSingleQuoteChirho(expectedReviewerRoleChirho ?? "<expected-script-role-chirho>")}`,
     "--rationale-chirho='<why this exact text is supplied>'",
   ];
+  if (expectedSourceSha256Chirho !== null) {
+    commandPartsChirho.push(`--expected-source-sha256-chirho=${expectedSourceSha256Chirho}`);
+  }
+  if (expectedPacketSha256Chirho !== null) {
+    commandPartsChirho.push(`--expected-packet-sha256-chirho=${expectedPacketSha256Chirho}`);
+  }
   if (applyChirho) commandPartsChirho.push("--apply");
   return commandPartsChirho.join(" ");
 }
@@ -1815,11 +1823,15 @@ function blankVisionTierHandoffsChirho(
         dryRunCommandTemplateChirho: blankVisionTierSuppliedTextCommandTemplateChirho(
           idChirho,
           expectedReviewerRoleChirho,
+          sourceSha256Chirho,
+          packetSha256Chirho,
           false
         ),
         applyCommandTemplateChirho: blankVisionTierSuppliedTextCommandTemplateChirho(
           idChirho,
           expectedReviewerRoleChirho,
+          sourceSha256Chirho,
+          packetSha256Chirho,
           true
         ),
         sourcePathChirho: manifestItemChirho?.sourcePathChirho ?? null,

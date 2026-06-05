@@ -21,6 +21,7 @@ import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
   EXPERT_MARKDOWN_PATH_PAIRS_CHIRHO,
+  fileSha256Chirho,
   packetMarkdownPathDriftsChirho,
   summarizePacketMarkdownPathDriftChirho,
 } from "./packet-image-fingerprint-chirho.ts";
@@ -154,6 +155,8 @@ interface ApplyOptionsChirho {
   reviewerRoleChirho: string;
   rationaleChirho: string;
   backupPathChirho: string;
+  expectedSourceSha256Chirho: string | null;
+  expectedPacketSha256Chirho: string | null;
 }
 
 interface ApplyReportChirho {
@@ -183,6 +186,15 @@ function nonEmptyArgChirho(argsChirho: string[], nameChirho: string): string {
     throw new Error(`--${nameChirho} is required`);
   }
   return valueChirho.trim();
+}
+
+function optionalSha256ArgChirho(argsChirho: string[], nameChirho: string): string | null {
+  const valueChirho = parseArgValueChirho(argsChirho, nameChirho)?.trim();
+  if (valueChirho === undefined || valueChirho.length === 0) return null;
+  if (!/^[a-f0-9]{64}$/.test(valueChirho)) {
+    throw new Error(`--${nameChirho} must be a lowercase sha256 hex digest`);
+  }
+  return valueChirho;
 }
 
 function parsedItemIdChirho(itemIdChirho: string): ParsedItemIdChirho {
@@ -292,6 +304,8 @@ function parseOptionsChirho(): ApplyOptionsChirho {
     reviewerRoleChirho: nonEmptyArgChirho(argsChirho, "reviewer-role-chirho"),
     rationaleChirho,
     backupPathChirho: parseArgValueChirho(argsChirho, "backup-chirho") ?? DEFAULT_BACKUP_PATH_CHIRHO,
+    expectedSourceSha256Chirho: optionalSha256ArgChirho(argsChirho, "expected-source-sha256-chirho"),
+    expectedPacketSha256Chirho: optionalSha256ArgChirho(argsChirho, "expected-packet-sha256-chirho"),
   };
 }
 
@@ -429,6 +443,29 @@ function backupRecordChirho(paramsChirho: {
   };
 }
 
+function assertExpectedImageHashesChirho(
+  itemIdChirho: string,
+  packItemChirho: ExpertPackItemChirho,
+  optionsChirho: ApplyOptionsChirho
+): void {
+  if (optionsChirho.expectedSourceSha256Chirho !== null) {
+    const actualSourceSha256Chirho = fileSha256Chirho(packItemChirho.sourcePathChirho);
+    if (actualSourceSha256Chirho !== optionsChirho.expectedSourceSha256Chirho) {
+      throw new Error(
+        `${itemIdChirho} source image hash mismatch; expected ${optionsChirho.expectedSourceSha256Chirho}, current ${actualSourceSha256Chirho}`
+      );
+    }
+  }
+  if (optionsChirho.expectedPacketSha256Chirho !== null) {
+    const actualPacketSha256Chirho = fileSha256Chirho(packItemChirho.packetPathChirho);
+    if (actualPacketSha256Chirho !== optionsChirho.expectedPacketSha256Chirho) {
+      throw new Error(
+        `${itemIdChirho} packet image hash mismatch; expected ${optionsChirho.expectedPacketSha256Chirho}, current ${actualPacketSha256Chirho}`
+      );
+    }
+  }
+}
+
 function reportChirho(paramsChirho: {
   optionsChirho: ApplyOptionsChirho;
   statusChirho: ApplyReportChirho["statusChirho"];
@@ -494,6 +531,7 @@ function mainChirho(): void {
     );
   }
   const packItemChirho = loadFreshExpertPackItemChirho(optionsChirho.itemIdChirho, liveItemPresentChirho);
+  assertExpectedImageHashesChirho(optionsChirho.itemIdChirho, packItemChirho, optionsChirho);
   if (currentStateChirho === "already-applied-chirho") {
     const metadataChirho = appliedMetadataChirho(spanChirho, optionsChirho);
     if (optionsChirho.applyChirho) {
