@@ -63,6 +63,7 @@ import {
   RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO,
   RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO,
   RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO,
+  RAW_HEBREW_PRE_REVIEW_REASON_MISSING_CURRENT_CHIRHO,
   bestRawHebrewDirectConfidenceChirho,
   rawHebrewAttentionKindLabelChirho,
   rawHebrewAttentionKindsChirho,
@@ -1441,7 +1442,8 @@ function rawHebrewReviewUrlChirho(
   volumeChirho?: number,
   attentionChirho?: string,
   preReviewNoteChirho?: string,
-  attributionTextChirho?: string
+  attributionTextChirho?: string,
+  preReviewReasonChirho?: string
 ): string {
   const entriesChirho: Array<[string, string]> = [];
   if (validationStatusChirho !== undefined) entriesChirho.push(["validation-status-chirho", validationStatusChirho]);
@@ -1450,6 +1452,7 @@ function rawHebrewReviewUrlChirho(
   if (volumeChirho !== undefined) entriesChirho.push(["volume-chirho", volumeFilterValueChirho(volumeChirho)]);
   if (attentionChirho !== undefined) entriesChirho.push(["attention-chirho", attentionChirho]);
   if (preReviewNoteChirho !== undefined) entriesChirho.push(["pre-review-note-chirho", preReviewNoteChirho]);
+  if (preReviewReasonChirho !== undefined) entriesChirho.push(["pre-review-reason-chirho", preReviewReasonChirho]);
   if (attributionTextChirho !== undefined) entriesChirho.push(["attribution-text-chirho", attributionTextChirho]);
   if (itemKeyChirho !== undefined) entriesChirho.push(["item-chirho", itemKeyChirho]);
   const queryChirho = urlQueryChirho(entriesChirho);
@@ -2054,6 +2057,41 @@ function rawHebrewPreReviewNoteReviewStartUrlChirho(
   return itemChirho === null || itemKeyChirho === null
     ? null
     : rawHebrewReviewUrlChirho(undefined, undefined, undefined, itemKeyChirho, undefined, undefined, preReviewNoteFilterChirho);
+}
+
+function firstRawHebrewPreReviewReasonGapItemChirho(
+  itemsChirho: RawHebrewPackItemChirho[],
+  preReviewNotesChirho: Map<string, string> | null
+): RawHebrewPackItemChirho | null {
+  return [...itemsChirho]
+    .filter((itemChirho) =>
+      rawHebrewPreReviewMissingAttentionKindsChirho(
+        itemChirho,
+        rawHebrewPreReviewNoteForItemChirho(itemChirho, preReviewNotesChirho)
+      ).length !== 0
+    )
+    .sort(compareRawHebrewPackQueueOrderChirho)[0] ?? null;
+}
+
+function rawHebrewPreReviewReasonGapReviewStartUrlChirho(
+  itemsChirho: RawHebrewPackItemChirho[],
+  preReviewNotesChirho: Map<string, string> | null
+): string | null {
+  const itemChirho = firstRawHebrewPreReviewReasonGapItemChirho(itemsChirho, preReviewNotesChirho);
+  const itemKeyChirho = itemChirho === null ? null : rawHebrewPackItemKeyChirho(itemChirho);
+  return itemChirho === null || itemKeyChirho === null
+    ? null
+    : rawHebrewReviewUrlChirho(
+        undefined,
+        undefined,
+        undefined,
+        itemKeyChirho,
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        RAW_HEBREW_PRE_REVIEW_REASON_MISSING_CURRENT_CHIRHO
+      );
 }
 
 function latinSymbolReviewStartUrlChirho(
@@ -4783,6 +4821,10 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
       rawHebrewPreReviewNotesChirho,
       "without-note-chirho"
     ),
+    rawHebrewPreReviewReasonGapChirho: rawHebrewPreReviewReasonGapReviewStartUrlChirho(
+      livePendingRawHebrewPackItemsChirho,
+      rawHebrewPreReviewNotesChirho
+    ),
     rawHebrewAttributionBlockedChirho: rawHebrewAttributionBlockedStartUrlChirho,
     rawHebrewAttributionRereviewChirho: rawHebrewAttributionRereviewStartUrlChirho,
     rawHebrewAttributionBlockedUnchangedChirho: rawHebrewAttributionUnchangedStartUrlChirho,
@@ -5041,6 +5083,7 @@ function rawHebrewAttentionHandoffMarkdownChirho(statusChirho: CertificationStat
     `- No-direct-read lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO)}`,
     `- Pre-review-note lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, undefined, "with-note-chirho")}`,
     `- Without-pre-review-note lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, undefined, "without-note-chirho")}`,
+    `- Pre-review reason-gap lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_PRE_REVIEW_REASON_MISSING_CURRENT_CHIRHO)}`,
     "",
     "## Items",
     "",
@@ -5258,6 +5301,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw Hebrew no-direct-read lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO)} (${statusChirho.rawHebrewChirho.triageChirho.noDirectReadItemCountChirho} pending attention span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewNoDirectReadChirho)})`,
     `- Raw Hebrew pre-review-note lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, undefined, "with-note-chirho")} (${statusChirho.rawHebrewChirho.triageChirho.preReviewNoteItemCountChirho} pending span(s) with non-certifying pre-review notes${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewPreReviewNoteChirho)})`,
     `- Raw Hebrew without-pre-review-note lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, undefined, "without-note-chirho")} (${statusChirho.rawHebrewChirho.triageChirho.withoutPreReviewNoteItemCountChirho} pending span(s) without non-certifying pre-review notes${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewWithoutPreReviewNoteChirho)})`,
+    `- Raw Hebrew pre-review reason-gap lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_PRE_REVIEW_REASON_MISSING_CURRENT_CHIRHO)} (${statusChirho.rawHebrewChirho.triageChirho.preReviewReasonGapAttentionItemCountChirho} pending attention span(s) whose existing note misses current reason(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewPreReviewReasonGapChirho)})`,
     `- Raw Hebrew attention handoff: \`${RAW_HEBREW_ATTENTION_HANDOFF_RELATIVE_PATH_CHIRHO}\` (${statusChirho.rawHebrewChirho.triageChirho.attentionItemCountChirho} current attention item(s); display-only, non-certifying)`,
   ];
   const latinSymbolVolumeLaneLinesChirho = volumeLaneLinesChirho(

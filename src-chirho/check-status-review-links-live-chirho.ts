@@ -83,6 +83,9 @@ const RAW_PRE_REVIEW_NOTE_FILTERS_CHIRHO = new Set([
   "with-note-chirho",
   "without-note-chirho",
 ]);
+const RAW_PRE_REVIEW_REASON_FILTERS_CHIRHO = new Set([
+  "missing-current-reason-chirho",
+]);
 const RAW_ATTRIBUTION_TEXT_FILTERS_CHIRHO = new Set([
   "unchanged-chirho",
   "changed-chirho",
@@ -140,6 +143,7 @@ interface RawHebrewQueueItemChirho {
   tierChirho: string;
   attentionKindsChirho: string[];
   preReviewNoteChirho?: string | null;
+  preReviewMissingAttentionKindsChirho?: string[];
   attributionTextStateChirho?: string;
   volumeChirho: number;
 }
@@ -235,6 +239,7 @@ function assertRawQueryValuesChirho(urlChirho: URL, keyChirho: string): void {
       "tier-chirho",
       "attention-chirho",
       "pre-review-note-chirho",
+      "pre-review-reason-chirho",
       "attribution-text-chirho",
       "volume-chirho",
       "review-state-chirho",
@@ -245,6 +250,7 @@ function assertRawQueryValuesChirho(urlChirho: URL, keyChirho: string): void {
   assertParamInSetChirho(urlChirho, keyChirho, "tier-chirho", RAW_REVIEW_TIERS_CHIRHO);
   assertParamInSetChirho(urlChirho, keyChirho, "attention-chirho", RAW_ATTENTION_KINDS_CHIRHO);
   assertParamInSetChirho(urlChirho, keyChirho, "pre-review-note-chirho", RAW_PRE_REVIEW_NOTE_FILTERS_CHIRHO);
+  assertParamInSetChirho(urlChirho, keyChirho, "pre-review-reason-chirho", RAW_PRE_REVIEW_REASON_FILTERS_CHIRHO);
   assertParamInSetChirho(urlChirho, keyChirho, "attribution-text-chirho", RAW_ATTRIBUTION_TEXT_FILTERS_CHIRHO);
   parseVolumeFilterChirho(urlChirho);
 }
@@ -335,6 +341,15 @@ function assertRawFiltersChirho(urlChirho: URL, itemChirho: RawHebrewQueueItemCh
       (preReviewNoteChirho === "with-note-chirho" && hasPreReviewNoteChirho) ||
         (preReviewNoteChirho === "without-note-chirho" && !hasPreReviewNoteChirho),
       `${keyChirho} item ${itemChirho.keyChirho} does not match pre-review-note-chirho=${preReviewNoteChirho}`
+    );
+  }
+  const preReviewReasonChirho = urlChirho.searchParams.get("pre-review-reason-chirho");
+  if (preReviewReasonChirho !== null) {
+    assertGeneratedCheckChirho(
+      preReviewReasonChirho === "missing-current-reason-chirho" &&
+        Array.isArray(itemChirho.preReviewMissingAttentionKindsChirho) &&
+        itemChirho.preReviewMissingAttentionKindsChirho.length > 0,
+      `${keyChirho} item ${itemChirho.keyChirho} does not match pre-review-reason-chirho=${preReviewReasonChirho}`
     );
   }
   const volumeChirho = parseVolumeFilterChirho(urlChirho);

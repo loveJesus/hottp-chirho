@@ -631,6 +631,14 @@ function reviewStartLinkCountChecksChirho(statusChirho: CertificationStatusOutpu
       ),
     },
     {
+      keyChirho: "rawHebrewPreReviewReasonGapChirho",
+      countChirho: numberFieldChirho(
+        objectRecordChirho(rawChirho, "rawHebrewChirho").triageChirho,
+        "preReviewReasonGapAttentionItemCountChirho",
+        "rawHebrewChirho.triageChirho"
+      ),
+    },
+    {
       keyChirho: "rawHebrewAttributionBlockedChirho",
       countChirho: liveAttributionBlockedRowCountChirho,
     },
@@ -1037,6 +1045,11 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     markdownChirho,
     `- Raw Hebrew without-pre-review-note lane: http://localhost:8766/?pre-review-note-chirho=without-note-chirho (${numberFieldChirho(rawTriageChirho, "withoutPreReviewNoteItemCountChirho", "rawHebrewChirho.triageChirho")} pending span(s) without non-certifying pre-review notes${reviewStartSuffixChirho(linksChirho, "rawHebrewWithoutPreReviewNoteChirho")})`,
     "raw Hebrew without-pre-review-note lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Raw Hebrew pre-review reason-gap lane: http://localhost:8766/?pre-review-reason-chirho=missing-current-reason-chirho (${numberFieldChirho(rawTriageChirho, "preReviewReasonGapAttentionItemCountChirho", "rawHebrewChirho.triageChirho")} pending attention span(s) whose existing note misses current reason(s)${reviewStartSuffixChirho(linksChirho, "rawHebrewPreReviewReasonGapChirho")})`,
+    "raw Hebrew pre-review reason-gap lane"
   );
   assertVolumeLaneMarkdownCoverageChirho(
     markdownChirho,
