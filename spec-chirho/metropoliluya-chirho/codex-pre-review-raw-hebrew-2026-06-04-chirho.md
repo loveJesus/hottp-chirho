@@ -236,14 +236,13 @@ another.
   - Visual precheck: the tiny continuation line contains only this Hebrew form and the following period. The enlarged scanline appears to show lamed with hiriq plus final yod, fitting Job 17:1 `קְבָרִים לִי`; however, the direct OCR read reports `לו`, so this should be checked by eye rather than accepted from the machine read.
   - Human check still needed: final letter yod vs vav, exact hiriq placement under the lamed, and whether the following period remains outside the Hebrew span.
 
-- `vol 5 p151 L1 S3/S5`:
-  `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A1%3A3`
+- `vol 5 p151 L1 S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A1%3A5`
-  - Item IDs: `v5-p0151-l001-s3`, `v5-p0151-l001-s5`
-  - Live texts: `רוּחִ֣י חֻ֭בָּלָה` and `יָמַ֣י נִזְעָ֑כוּ`
-  - Attention reason: multi-token Hebrew spans.
-  - Visual precheck: the target crops are aligned with the same two phrase positions as the prior `𝔐` line, but this line includes accent marks; no obvious crop clipping is visible in the packet.
-  - Human check still needed: exact accents/marks in addition to consonants and vowels. Do not infer the accented form from the nearby unaccented line.
+  - Item ID: `v5-p0151-l001-s5`
+  - Live text: `יָמַ֣י נִזְעָ֑כוּ`
+  - Attention reason: multi-token Hebrew span.
+  - Visual precheck: the target crop is the middle phrase in the slash-separated accented `Quant au 𝔐` line. The neighboring slash separators sit outside the red box. Earlier S3/S7 crop review found the same RTL physical/logical assignment issue as the unaccented line, so those two spans were moved out of raw Pass-C and into vision-tier expert review before this note was updated.
+  - Human check still needed: exact accents/marks in addition to consonants and vowels for this middle phrase. Do not infer the accented form from the nearby unaccented line.
 
 - `vol 5 p151 L18 S3/S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A151%3A18%3A3`

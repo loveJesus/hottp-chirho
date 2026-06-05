@@ -1,9 +1,9 @@
 {
   "john316Chirho": "For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16",
   "schemaVersionChirho": 1,
-  "generatedAtChirho": "2026-06-05T10:26:03.429Z",
+  "generatedAtChirho": "2026-06-05T10:50:08.345Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 880,
+  "countChirho": 882,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8805,6 +8805,26 @@
       "scriptChirho": "hebrew-chirho",
       "utf8TextChirho": "רוּחִי חֻבָּלָה",
       "notesChirho": "Corrected vol 5 p150 line 8 S7 after packet crop inspection: the S7 target box is on the rightmost Hebrew phrase `רוּחִי חֻבָּלָה`, not the previously stored `קְבָרִים`. The line carries lineTextOrderChirho=rtl-runs-logical-chirho so exported Markdown keeps the logical Hebrew run order while span text matches the boxed geometry. Stored as vision-chirho pending Hebrew/WLC expert confirmation."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 151,
+      "lineIndexChirho": 1,
+      "segmentIndexChirho": 3,
+      "garbleTextChirho": "previously assigned `רוּחִ֣י חֻ֭בָּלָה` to the S3 box",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "קְבָרִ֣ים",
+      "notesChirho": "Corrected vol 5 p151 line 1 S3 after packet crop inspection: the S3 target box is on the leftmost Hebrew word `קְבָרִ֣ים`, not the previously stored accented phrase `רוּחִ֣י חֻ֭בָּלָה`. Stored as vision-chirho because this is a machine-witnessed geometry/text reassignment; exact letters, accents, niqqud, and the slash-separated RTL run remain Hebrew/WLC expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 5,
+      "pageChirho": 151,
+      "lineIndexChirho": 1,
+      "segmentIndexChirho": 7,
+      "garbleTextChirho": "previously assigned `קְבָרִ֣ים` to the S7 box",
+      "scriptChirho": "hebrew-chirho",
+      "utf8TextChirho": "רוּחִ֣י חֻ֭בָּלָה",
+      "notesChirho": "Corrected vol 5 p151 line 1 S7 after packet crop inspection: the S7 target box is on the rightmost accented phrase `רוּחִ֣י חֻ֭בָּלָה`, not the previously stored `קְבָרִ֣ים`. The line carries lineTextOrderChirho=rtl-runs-logical-chirho so exported Markdown keeps the logical Hebrew run order while span text matches the boxed geometry. Stored as vision-chirho pending Hebrew/WLC expert confirmation."
     }
   ]
 }
