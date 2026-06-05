@@ -1399,6 +1399,12 @@ function htmlChirho(): string {
           placeholder: "exact printed text"
         });
         blankCommandBoxChirho.appendChild(suppliedTextCommandInputChirho);
+        blankCommandBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Supplied text codepoints" }));
+        const suppliedTextCodepointsChirho = elChirho("div", {
+          classChirho: "text-box-chirho mono-chirho codepoints-chirho",
+          textChirho: codepointTextChirho("")
+        });
+        blankCommandBoxChirho.appendChild(suppliedTextCodepointsChirho);
         blankCommandBoxChirho.appendChild(elChirho("div", {
           classChirho: "command-helper-note-chirho",
           textChirho: "This helper field only updates the copied command; it does not save, apply, confirm, or certify."
@@ -1407,7 +1413,10 @@ function htmlChirho(): string {
         blankCommandBoxChirho.appendChild(commandRowChirho(() => expertSuppliedTextCommandChirho(itemChirho, false)));
         blankCommandBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Apply after dry-run verification" }));
         blankCommandBoxChirho.appendChild(commandRowChirho(() => expertSuppliedTextCommandChirho(itemChirho, true)));
-        suppliedTextCommandInputChirho.addEventListener("input", () => refreshCommandRowsChirho(blankCommandBoxChirho));
+        suppliedTextCommandInputChirho.addEventListener("input", () => {
+          suppliedTextCodepointsChirho.textContent = codepointTextChirho(suppliedTextCommandInputChirho.value);
+          refreshCommandRowsChirho(blankCommandBoxChirho);
+        });
         sideChirho.appendChild(blankCommandBoxChirho);
       }
 
