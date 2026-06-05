@@ -232,6 +232,7 @@ function writeGenericExpertSuppliedBackupFixtureChirho(pathChirho: string): void
             packetPathChirho:
               "workspace-chirho/expert-confirm-pack-chirho/2026-05-31-chirho/images-chirho/vol-3-page-0151-line-010-chirho.png",
             packetSha256Chirho: "0da1fd552928d2a5b10fc9770edc72d2e9c48340c9c4292b8e125b51336ac742",
+            markdownPathChirho: "images-chirho/vol-3-page-0151-line-010-chirho.png",
             linePathChirho: "workspace-chirho/spans-chirho/vol-3-chirho/page-0151-chirho/line-010-chirho.json",
           },
         ],

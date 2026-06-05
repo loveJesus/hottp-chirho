@@ -435,6 +435,7 @@ interface ExpertSuppliedVisionTextRecordChirho {
   sourceSha256Chirho?: string;
   packetPathChirho?: string;
   packetSha256Chirho?: string;
+  markdownPathChirho?: string;
   linePathChirho?: string;
 }
 
@@ -2094,6 +2095,7 @@ function expertSuppliedVisionTextRecordShapeErrorsChirho(
     "sourceSha256Chirho",
     "packetPathChirho",
     "packetSha256Chirho",
+    "markdownPathChirho",
     "linePathChirho",
   ] as const;
   const numberFieldsChirho = [
@@ -2271,6 +2273,9 @@ function summarizeExpertSuppliedVisionTextBackupChirho(paramsChirho: {
     }
     if (manifestItemChirho !== undefined && recordChirho.packetSha256Chirho !== fileSha256Chirho(manifestItemChirho.packetPathChirho)) {
       mismatchesChirho.push("manifest-packet-hash-mismatch-chirho");
+    }
+    if (manifestItemChirho !== undefined && recordChirho.markdownPathChirho !== manifestItemChirho.markdownPathChirho) {
+      mismatchesChirho.push("manifest-markdown-path-mismatch-chirho");
     }
     if (!pathMatchesCurrentChirho(recordChirho.linePathChirho, liveAppliedChirho.linePathChirho)) {
       mismatchesChirho.push("line-path-mismatch-chirho");

@@ -131,6 +131,7 @@ interface ExpertSuppliedTranscriptionRecordChirho {
   sourceSha256Chirho: string;
   packetPathChirho: string;
   packetSha256Chirho: string;
+  markdownPathChirho: string;
   linePathChirho: string;
 }
 
@@ -472,6 +473,7 @@ function backupRecordChirho(paramsChirho: {
     sourceSha256Chirho: fileSha256Chirho(paramsChirho.packItemChirho.sourcePathChirho),
     packetPathChirho: paramsChirho.packItemChirho.packetPathChirho,
     packetSha256Chirho: fileSha256Chirho(paramsChirho.packItemChirho.packetPathChirho),
+    markdownPathChirho: paramsChirho.packItemChirho.markdownPathChirho,
     linePathChirho: paramsChirho.linePathChirho,
   };
 }
