@@ -40,6 +40,7 @@ interface CertificationStatusOutputChirho {
   visionTierChirho?: unknown;
   humanValidationDbChirho?: unknown;
   structuralChirho?: unknown;
+  normalizationChirho?: unknown;
 }
 
 interface ReviewStartLinkCountCheckChirho {
@@ -183,6 +184,23 @@ function shellSingleQuoteChirho(valueChirho: string): string {
 
 function assertMarkdownContainsChirho(markdownChirho: string, expectedChirho: string, labelChirho: string): void {
   assertGeneratedCheckChirho(markdownChirho.includes(expectedChirho), `status Markdown missing ${labelChirho}: ${expectedChirho}`);
+}
+
+function assertRemainingWorkToggleChirho(
+  remainingWorkChirho: string[],
+  shouldExistChirho: boolean,
+  exactBlockerChirho: string,
+  uniqueSnippetChirho: string
+): void {
+  const exactExistsChirho = remainingWorkChirho.includes(exactBlockerChirho);
+  if (shouldExistChirho) {
+    assertGeneratedCheckChirho(exactExistsChirho, `remainingWorkChirho missing blocker: ${exactBlockerChirho}`);
+    return;
+  }
+  assertGeneratedCheckChirho(
+    !remainingWorkChirho.some((itemChirho) => itemChirho.includes(uniqueSnippetChirho)),
+    `remainingWorkChirho has stale blocker matching ${uniqueSnippetChirho}`
+  );
 }
 
 function relativeProjectPathForStatusChirho(pathChirho: string): string {
@@ -640,6 +658,119 @@ function assertBlankExpertHandoffCoverageChirho(markdownChirho: string, statusCh
   }
 }
 
+function assertCoreRemainingWorkCoverageChirho(
+  statusChirho: CertificationStatusOutputChirho,
+  remainingWorkChirho: string[]
+): void {
+  const structuralChirho = statusChirho.structuralChirho;
+  const strictPassedChirho = booleanFieldChirho(structuralChirho, "strictPassedChirho", "structuralChirho");
+  const issueCountChirho = numberFieldChirho(structuralChirho, "issueCountChirho", "structuralChirho");
+  const unknownSpanCountChirho = numberFieldChirho(structuralChirho, "unknownSpanCountChirho", "structuralChirho");
+  const nonNfcSpanCountChirho = numberFieldChirho(structuralChirho, "nonNfcSpanCountChirho", "structuralChirho");
+  const d1GapPageCountChirho = numberFieldChirho(structuralChirho, "d1GapPageCountChirho", "structuralChirho");
+  const passCOcrHebrewSpanCountChirho = numberFieldChirho(
+    structuralChirho,
+    "passCOcrHebrewSpanCountChirho",
+    "structuralChirho"
+  );
+  const liveNonNfcSpanTextFieldCountChirho = numberFieldChirho(
+    statusChirho.normalizationChirho,
+    "liveNonNfcSpanTextFieldCountChirho",
+    "normalizationChirho"
+  );
+  const visionRemainingChirho = numberFieldChirho(
+    statusChirho.visionTierChirho,
+    "remainingConfirmationCountChirho",
+    "visionTierChirho"
+  );
+  const latinRemainingChirho = numberFieldChirho(
+    statusChirho.latinSymbolVisionChirho,
+    "remainingDecisionCountChirho",
+    "latinSymbolVisionChirho"
+  );
+
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    !strictPassedChirho || issueCountChirho !== 0,
+    "structural export strict gate is not clean",
+    "structural export strict gate is not clean"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    unknownSpanCountChirho !== 0,
+    `${unknownSpanCountChirho} unknown span(s) remain`,
+    "unknown span(s) remain"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    nonNfcSpanCountChirho !== 0,
+    `${nonNfcSpanCountChirho} non-NFC span(s) remain in the latest export report`,
+    "non-NFC span(s) remain in the latest export report"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    liveNonNfcSpanTextFieldCountChirho !== 0,
+    `${liveNonNfcSpanTextFieldCountChirho} live span text field(s) are not NFC-normalized`,
+    "live span text field(s) are not NFC-normalized"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    d1GapPageCountChirho !== 0,
+    `${d1GapPageCountChirho} D1 page gap(s) remain`,
+    "D1 page gap(s) remain"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    passCOcrHebrewSpanCountChirho !== 0,
+    `${passCOcrHebrewSpanCountChirho} raw Pass-C Hebrew span(s) still need human certification`,
+    "raw Pass-C Hebrew span(s) still need human certification"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    visionRemainingChirho !== 0,
+    `${visionRemainingChirho} vision-tier non-Latin span(s) still need expert/human confirmation`,
+    "vision-tier non-Latin span(s) still need expert/human confirmation"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    latinRemainingChirho !== 0,
+    `${latinRemainingChirho} Latin/symbol vision-tier span/word decision(s) still need accepted-clean review or explicit acceptance policy`,
+    "Latin/symbol vision-tier span/word decision(s) still need accepted-clean review or explicit acceptance policy"
+  );
+
+  const handoffsChirho = arrayFieldChirho(structuralChirho, "blankVisionTierHandoffsChirho", "structuralChirho");
+  const missingDocumentCountChirho = handoffsChirho.filter((handoffChirho) =>
+    nullableStringFieldChirho(handoffChirho, "handoffDocumentPathChirho", "structuralChirho.blankVisionTierHandoffsChirho[]") === null ||
+    !booleanFieldChirho(handoffChirho, "handoffDocumentExistsChirho", "structuralChirho.blankVisionTierHandoffsChirho[]")
+  ).length;
+  const missingCropCountChirho = handoffsChirho.filter((handoffChirho) =>
+    nullableStringFieldChirho(handoffChirho, "handoffCropPathChirho", "structuralChirho.blankVisionTierHandoffsChirho[]") === null ||
+    !booleanFieldChirho(handoffChirho, "handoffCropExistsChirho", "structuralChirho.blankVisionTierHandoffsChirho[]")
+  ).length;
+  const staleDocumentCountChirho = handoffsChirho.filter((handoffChirho) =>
+    booleanFieldChirho(handoffChirho, "handoffDocumentExistsChirho", "structuralChirho.blankVisionTierHandoffsChirho[]") &&
+    !booleanFieldChirho(handoffChirho, "handoffDocumentMatchesCurrentChirho", "structuralChirho.blankVisionTierHandoffsChirho[]")
+  ).length;
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    missingDocumentCountChirho !== 0,
+    `${missingDocumentCountChirho} blank expert transcription handoff document(s) are missing`,
+    "blank expert transcription handoff document(s) are missing"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    missingCropCountChirho !== 0,
+    `${missingCropCountChirho} blank expert transcription handoff crop image(s) are missing`,
+    "blank expert transcription handoff crop image(s) are missing"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    staleDocumentCountChirho !== 0,
+    `${staleDocumentCountChirho} blank expert transcription handoff document(s) do not match current blank span state`,
+    "blank expert transcription handoff document(s) do not match current blank span state"
+  );
+}
+
 function assertPassCHumanReattributionHandoffChirho(
   markdownChirho: string,
   statusChirho: CertificationStatusOutputChirho,
@@ -789,6 +920,10 @@ function mainChirho(): void {
     "status JSON remainingWorkChirho must contain only non-empty strings"
   );
   const remainingWorkStringsChirho = remainingWorkChirho as string[];
+  assertGeneratedCheckChirho(
+    statusChirho.certificationCompleteChirho === (remainingWorkStringsChirho.length === 0),
+    "certificationCompleteChirho must match remainingWorkChirho emptiness"
+  );
   if (!statusChirho.certificationCompleteChirho) {
     assertGeneratedCheckChirho(remainingWorkChirho.length > 0, "incomplete status JSON has no remainingWorkChirho blockers");
   }
@@ -798,6 +933,7 @@ function mainChirho(): void {
       `status Markdown does not display remaining-work blocker: ${itemChirho}`
     );
   }
+  assertCoreRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
   assertBlankExpertHandoffCoverageChirho(markdownChirho, statusChirho);
   assertPassCHumanReattributionHandoffChirho(markdownChirho, statusChirho, remainingWorkStringsChirho);
   assertGeneratedCheckChirho(
