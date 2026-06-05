@@ -2922,6 +2922,21 @@ function assertPassCHumanReattributionHandoffChirho(
   remainingWorkChirho: string[]
 ): void {
   const humanDbChirho = statusChirho.humanValidationDbChirho;
+  assertMarkdownContainsChirho(markdownChirho, "## Human Validation DB", "Human Validation DB heading");
+  for (const [fieldChirho, labelChirho] of [
+    ["currentSchema2RowsChirho", "Current schema-v2 rows"],
+    ["rawQueueCurrentRowsChirho", "Raw queue rows"],
+    ["rawQueueCleanRowsChirho", "Raw queue clean rows"],
+    ["rawQueueIssueRowsChirho", "Raw queue issue rows"],
+    ["rawQueueAppliedRowsChirho", "Raw queue applied rows"],
+    ["legacyCurrentRowsChirho", "Legacy current rows ignored by apply/certification"],
+  ] as const) {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `- ${labelChirho}: ${numberFieldChirho(humanDbChirho, fieldChirho, "humanValidationDbChirho")}`,
+      `Human Validation DB ${labelChirho}`
+    );
+  }
   const genericRowCountChirho = numberFieldChirho(humanDbChirho, "genericReviewerRowsChirho", "humanValidationDbChirho");
   const genericRowsChirho = arrayFieldChirho(
     humanDbChirho,
@@ -2959,6 +2974,16 @@ function assertPassCHumanReattributionHandoffChirho(
   );
   assertMarkdownContainsChirho(
     markdownChirho,
+    "- Attribution-blocked reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>'`",
+    "Pass-C reattribution single-row dry-run template"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "- Attribution-blocked reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>' --apply-chirho`",
+    "Pass-C reattribution single-row apply template"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
     "Reattribution commands reject copied template placeholders",
     "Pass-C reattribution placeholder warning"
   );
@@ -2966,6 +2991,26 @@ function assertPassCHumanReattributionHandoffChirho(
     markdownChirho,
     "Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit human reviewer.",
     "Pass-C reattribution bulk warning"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "- Attribution-blocked reviewer exact-ID batch groups:",
+    "Pass-C reattribution batch groups heading"
+  );
+  const hasBatchGroupsChirho = genericGroupsChirho.some(
+    (groupChirho) => numberFieldChirho(groupChirho, "rowCountChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]") > 1
+  );
+  if (hasBatchGroupsChirho) {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      "- Use a batch command only when every row in that timestamp group is genuinely attributable to the same explicit human reviewer.",
+      "Pass-C reattribution batch warning"
+    );
+  }
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "- Attribution-blocked reviewer row details:",
+    "Pass-C reattribution row details heading"
   );
 
   const genericIdsChirho = genericRowsChirho.map((rowChirho) =>
