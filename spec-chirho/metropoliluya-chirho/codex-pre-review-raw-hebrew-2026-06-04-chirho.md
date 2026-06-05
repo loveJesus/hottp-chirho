@@ -100,12 +100,14 @@ span was surfaced.
   - Visual precheck: the Hebrew word is cleanly boxed between French `corruption de` and `qu'il comprend`; no neighboring French appears swallowed by the Hebrew target box. The direct OCR read `מקשלרה` is weak and should not be used for certification.
   - Human check still needed: exact tav/dagesh, qof-shin-resh sequence, final vav, and all vowels/shin-dot marks.
 
-- `vol 2 p150 L37 S1`:
+- `vol 2 p150 L37 S1/S3`:
   `http://localhost:8766/?attention-chirho=delimiter-notation-chirho&item-chirho=2%3A150%3A37%3A1`
-  - Live text: `(לְמִקְדָּשׁ`
-  - Attention reason: delimiter notation.
-  - Visual precheck: the crop includes the opening parenthesis and the Hebrew word; the following French `au vs 14)` is outside the Hebrew box, so the closing parenthesis is not part of this span's target crop.
-  - Human check still needed: exact vowels/marks and whether the opening parenthesis belongs inside the Hebrew span or should be treated as adjacent punctuation.
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A37%3A3`
+  - Item IDs: `v2-p0150-l037-s1`, `v2-p0150-l037-s3`
+  - Live texts: `(לְמִקְדָּשׁ` and `מַקְשִׁר`
+  - Attention reason: S1 has delimiter notation; S3 is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: S1 includes the opening parenthesis and the Hebrew word, while the following French `au vs 14)` is outside that Hebrew box. S3 is separately boxed after French `de lire` and before the French opening quote; no neighboring French appears swallowed by the S3 target box. The direct OCR read `מקשלר` is close to S3's consonants but still not a certification witness for exact marks.
+  - Human check still needed: for S1, exact vowels/marks and whether the opening parenthesis belongs inside the Hebrew span or should be treated as adjacent punctuation; for S3, exact mem/qof-shin-resh sequence and all vowel/shin-dot marks.
 
 - `vol 2 p150 L39 S1`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=2%3A150%3A39%3A1`
