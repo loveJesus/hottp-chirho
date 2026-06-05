@@ -245,6 +245,34 @@ function mainChirho(): void {
     rmSync(machineFixtureChirho.dirChirho, { recursive: true, force: true });
   }
 
+  const placeholderReviewerFixtureChirho = createFixtureChirho();
+  try {
+    assertRejectedChirho(
+      placeholderReviewerFixtureChirho,
+      [
+        "--reviewer-chirho=<explicit-human-reviewer-id-chirho>",
+        "--rationale-chirho=placeholder reviewer should fail",
+      ],
+      "--reviewer-chirho must identify the explicit reviewer, not template placeholder <explicit-human-reviewer-id-chirho>"
+    );
+  } finally {
+    rmSync(placeholderReviewerFixtureChirho.dirChirho, { recursive: true, force: true });
+  }
+
+  const placeholderRationaleFixtureChirho = createFixtureChirho();
+  try {
+    assertRejectedChirho(
+      placeholderRationaleFixtureChirho,
+      [
+        "--reviewer-chirho=hallelujah-chirho",
+        "--rationale-chirho=<why this existing row is attributable to that reviewer>",
+      ],
+      "--rationale-chirho must explain the explicit attribution, not a template placeholder"
+    );
+  } finally {
+    rmSync(placeholderRationaleFixtureChirho.dirChirho, { recursive: true, force: true });
+  }
+
   const missingGuardFixtureChirho = createFixtureChirho();
   try {
     assertRejectedChirho(

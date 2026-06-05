@@ -25,6 +25,16 @@ import { spanLinePathChirho, type SpanLineLikeChirho, type SpanLikeChirho } from
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 const MODULE_CHIRHO = "reattribute-pass-c-human-validations-chirho";
+const RATIONALE_PLACEHOLDER_VALUES_CHIRHO = new Set([
+  "why this existing row is attributable to that reviewer",
+  "why every current attribution-blocked row is attributable to that reviewer",
+  "why every selected row is attributable to that reviewer",
+  "rationale",
+  "reason",
+  "placeholder",
+  "todo",
+  "tbd",
+]);
 
 interface PassCHumanValidationRowChirho {
   id_chirho: number;
@@ -102,6 +112,18 @@ function requiredArgValueChirho(argsChirho: string[], nameChirho: string): strin
   const valueChirho = parseArgValueChirho(argsChirho, nameChirho)?.trim();
   if (valueChirho === undefined || valueChirho.length === 0) throw new Error(`--${nameChirho} is required`);
   return valueChirho;
+}
+
+function valueLooksPlaceholderChirho(valueChirho: string, placeholderValuesChirho: Set<string>): boolean {
+  const normalizedChirho = valueChirho
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+  const unwrappedChirho = normalizedChirho.replace(/^<(.+)>$/u, "$1").trim();
+  return (
+    placeholderValuesChirho.has(normalizedChirho) ||
+    placeholderValuesChirho.has(unwrappedChirho)
+  );
 }
 
 function parseValidationIdsChirho(argsChirho: string[]): number[] {
@@ -452,6 +474,9 @@ function mainChirho(): void {
   const reviewerChirho = requiredArgValueChirho(argsChirho, "reviewer-chirho");
   assertCertifyingReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
   const rationaleChirho = requiredArgValueChirho(argsChirho, "rationale-chirho");
+  if (valueLooksPlaceholderChirho(rationaleChirho, RATIONALE_PLACEHOLDER_VALUES_CHIRHO)) {
+    throw new Error("--rationale-chirho must explain the explicit attribution, not a template placeholder");
+  }
   const expectedLiveTextChirho = parseArgValueChirho(argsChirho, "expected-live-text-chirho");
   const expectedLiveTextHashesChirho = parseExpectedLiveTextHashesChirho(argsChirho);
   const expectedGenericRowCountChirho = parseOptionalNonnegativeIntegerChirho(argsChirho, "expected-generic-row-count-chirho");
