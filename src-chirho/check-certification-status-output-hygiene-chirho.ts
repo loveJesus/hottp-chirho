@@ -369,6 +369,16 @@ function assertPublicationReadinessMarkdownCoverageChirho(
   );
   assertMarkdownContainsChirho(
     markdownChirho,
+    "- Review app publication preflight: `bun run check-app-publication-readiness-chirho` (runs app check/build plus the transcription certification bundle).",
+    "publication readiness app preflight"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "- Certified Markdown publication release gate: `bun run check-certified-markdown-publication-chirho` (same preflight, but exits nonzero until the content certification gate is green).",
+    "publication readiness strict preflight"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
     `- Current blockers: strict export clean=${booleanFieldChirho(structuralChirho, "strictPassedChirho", "structuralChirho")}; raw Hebrew certifications=${numberFieldChirho(structuralChirho, "passCOcrHebrewSpanCountChirho", "structuralChirho")}; non-Latin expert confirmations=${numberFieldChirho(expertChirho, "remainingConfirmationCountChirho", "visionTierChirho")}; Latin/symbol decisions=${numberFieldChirho(latinChirho, "remainingDecisionCountChirho", "latinSymbolVisionChirho")}; attribution-blocked human rows=${numberFieldChirho(humanDbChirho, "genericReviewerRowsChirho", "humanValidationDbChirho")}.`,
     "publication readiness blocker counts"
   );
