@@ -39,6 +39,8 @@ interface CertificationStatusOutputChirho {
   rawHebrewChirho?: unknown;
   latinSymbolVisionChirho?: unknown;
   visionTierChirho?: unknown;
+  expertSuppliedVisionTextBackupChirho?: unknown;
+  visionTierExpertConfirmationPolicyChirho?: unknown;
   humanValidationDbChirho?: unknown;
   passCHumanValidationBackupChirho?: unknown;
   structuralChirho?: unknown;
@@ -1077,6 +1079,416 @@ function assertRawHebrewQueueRemainingWorkCoverageChirho(
   );
 }
 
+function assertVisionTierExpertQueueMarkdownCoverageChirho(
+  markdownChirho: string,
+  statusChirho: CertificationStatusOutputChirho
+): void {
+  const expertChirho = statusChirho.visionTierChirho;
+  const artifactsChirho = statusChirho.artifactsChirho;
+  const suppliedBackupChirho = statusChirho.expertSuppliedVisionTextBackupChirho;
+  const confirmationPolicyChirho = statusChirho.visionTierExpertConfirmationPolicyChirho;
+  const expertManifestExistsChirho = booleanFieldChirho(artifactsChirho, "expertPackManifestExistsChirho", "artifactsChirho");
+  const expertManifestShapeOkChirho = booleanFieldChirho(artifactsChirho, "expertPackManifestShapeOkChirho", "artifactsChirho");
+  const suppliedBackupExistsChirho = booleanFieldChirho(
+    artifactsChirho,
+    "expertSuppliedVisionTextBackupExistsChirho",
+    "artifactsChirho"
+  );
+  const suppliedBackupShapeOkChirho = booleanFieldChirho(
+    artifactsChirho,
+    "expertSuppliedVisionTextBackupShapeOkChirho",
+    "artifactsChirho"
+  );
+
+  assertMarkdownContainsChirho(markdownChirho, "## Vision-Tier Expert Queue", "expert queue heading");
+  assertMarkdownContainsChirho(markdownChirho, `- Expert manifest exists: ${expertManifestExistsChirho}`, "expert manifest existence");
+  assertMarkdownContainsChirho(markdownChirho, `- Expert manifest shape OK: ${expertManifestShapeOkChirho}`, "expert manifest shape");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- D1 scan error: ${nullableStringFieldChirho(expertChirho, "d1ReadErrorChirho", "visionTierChirho") ?? "none"}`,
+    "expert queue D1 scan error"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Priority items: ${numberFieldChirho(expertChirho, "priorityItemCountChirho", "visionTierChirho")}`,
+    "expert priority count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Complete vision-tier items: ${numberFieldChirho(expertChirho, "completeVisionItemCountChirho", "visionTierChirho")}`,
+    "expert complete item count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Counts: ${countMapDisplayChirho(countMapFieldChirho(expertChirho, "completeVisionCountsChirho", "visionTierChirho"))}`,
+    "expert complete counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live vision-tier items: ${numberFieldChirho(expertChirho, "liveVisionItemCountChirho", "visionTierChirho")}`,
+    "expert live item count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live counts: ${countMapDisplayChirho(countMapFieldChirho(expertChirho, "liveVisionCountsChirho", "visionTierChirho"))}`,
+    "expert live counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live pending items: ${numberFieldChirho(expertChirho, "pendingVisionItemCountChirho", "visionTierChirho")}`,
+    "expert pending item count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live pending text states: nonblank-chirho=${numberFieldChirho(expertChirho, "pendingNonblankTextItemCountChirho", "visionTierChirho")}, blank-chirho=${numberFieldChirho(expertChirho, "pendingBlankTextItemCountChirho", "visionTierChirho")}`,
+    "expert pending text states"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live pending nonblank counts: ${countMapDisplayChirho(countMapFieldChirho(expertChirho, "pendingNonblankTextCountsChirho", "visionTierChirho"))}`,
+    "expert pending nonblank counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live pending blank counts: ${countMapDisplayChirho(countMapFieldChirho(expertChirho, "pendingBlankTextCountsChirho", "visionTierChirho"))}`,
+    "expert pending blank counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live pending counts: ${countMapDisplayChirho(countMapFieldChirho(expertChirho, "pendingVisionCountsChirho", "visionTierChirho"))}`,
+    "expert pending counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Manifest count matches current state: ${booleanFieldChirho(expertChirho, "manifestCountMatchesCurrentChirho", "visionTierChirho")}`,
+    "expert manifest count freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Manifest IDs match current state: ${booleanFieldChirho(expertChirho, "manifestIdsMatchCurrentChirho", "visionTierChirho")}`,
+    "expert manifest ID freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Manifest text matches current state: ${booleanFieldChirho(expertChirho, "manifestTextMatchesCurrentChirho", "visionTierChirho")}`,
+    "expert manifest text freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Manifest images match source scanlines: ${booleanFieldChirho(expertChirho, "manifestImagesMatchCurrentChirho", "visionTierChirho")}`,
+    "expert manifest image freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Manifest image drift items: ${numberFieldChirho(expertChirho, "manifestImageDriftCountChirho", "visionTierChirho")}`,
+    "expert manifest image drift count"
+  );
+  for (const sampleChirho of stringArrayFieldChirho(expertChirho, "manifestImageDriftSamplesChirho", "visionTierChirho")) {
+    assertMarkdownContainsChirho(markdownChirho, `  - ${sampleChirho}`, `expert manifest image drift sample ${sampleChirho}`);
+  }
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Manifest markdown image paths match packet files: ${booleanFieldChirho(expertChirho, "manifestMarkdownPathsMatchCurrentChirho", "visionTierChirho")}`,
+    "expert manifest markdown path freshness"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Manifest markdown image path drift items: ${numberFieldChirho(expertChirho, "manifestMarkdownPathDriftCountChirho", "visionTierChirho")}`,
+    "expert manifest markdown path drift count"
+  );
+  for (const sampleChirho of stringArrayFieldChirho(expertChirho, "manifestMarkdownPathDriftSamplesChirho", "visionTierChirho")) {
+    assertMarkdownContainsChirho(markdownChirho, `  - ${sampleChirho}`, `expert manifest markdown path drift sample ${sampleChirho}`);
+  }
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Confirmed by explicit policy: ${numberFieldChirho(expertChirho, "confirmedByPolicyCountChirho", "visionTierChirho")}`,
+    "expert confirmed policy count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Reviewed issues by explicit policy: ${numberFieldChirho(expertChirho, "reviewedIssueByPolicyCountChirho", "visionTierChirho")}`,
+    "expert reviewed-issue policy count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Remaining confirmations: ${numberFieldChirho(expertChirho, "remainingConfirmationCountChirho", "visionTierChirho")}`,
+    "expert remaining confirmations"
+  );
+
+  assertMarkdownContainsChirho(markdownChirho, "## Expert-Supplied Vision Text Backup", "expert-supplied backup heading");
+  assertMarkdownContainsChirho(markdownChirho, `- Backup exists: ${suppliedBackupExistsChirho}`, "expert-supplied backup existence");
+  assertMarkdownContainsChirho(markdownChirho, `- Backup shape OK: ${suppliedBackupShapeOkChirho}`, "expert-supplied backup shape");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Backup records: ${numberFieldChirho(suppliedBackupChirho, "backupRecordsChirho", "expertSuppliedVisionTextBackupChirho")}`,
+    "expert-supplied backup record count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live supplied-text spans: ${numberFieldChirho(suppliedBackupChirho, "liveAppliedSpansChirho", "expertSuppliedVisionTextBackupChirho")}`,
+    "expert-supplied live applied count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Duplicate backup records: ${numberFieldChirho(suppliedBackupChirho, "duplicateBackupRecordCountChirho", "expertSuppliedVisionTextBackupChirho")}`,
+    "expert-supplied duplicate count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Backup records missing live span: ${numberFieldChirho(suppliedBackupChirho, "backupRecordsMissingLiveSpanChirho", "expertSuppliedVisionTextBackupChirho")}`,
+    "expert-supplied backup missing live count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live supplied-text spans missing backup: ${numberFieldChirho(suppliedBackupChirho, "liveAppliedSpansMissingBackupChirho", "expertSuppliedVisionTextBackupChirho")}`,
+    "expert-supplied live missing backup count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Stale backup records: ${numberFieldChirho(suppliedBackupChirho, "staleBackupRecordCountChirho", "expertSuppliedVisionTextBackupChirho")}`,
+    "expert-supplied stale count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Attribution-blocked reviewer records: ${numberFieldChirho(suppliedBackupChirho, "genericReviewerRecordCountChirho", "expertSuppliedVisionTextBackupChirho")}`,
+    "expert-supplied generic reviewer count"
+  );
+  const suppliedShapeErrorsChirho = stringArrayFieldChirho(
+    suppliedBackupChirho,
+    "shapeErrorsChirho",
+    "expertSuppliedVisionTextBackupChirho"
+  );
+  const suppliedDriftSamplesChirho = stringArrayFieldChirho(
+    suppliedBackupChirho,
+    "driftSamplesChirho",
+    "expertSuppliedVisionTextBackupChirho"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Shape errors: ${suppliedShapeErrorsChirho.length === 0 ? "none" : suppliedShapeErrorsChirho.join("; ")}`,
+    "expert-supplied shape errors"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Drift samples: ${suppliedDriftSamplesChirho.length === 0 ? "none" : suppliedDriftSamplesChirho.join("; ")}`,
+    "expert-supplied drift samples"
+  );
+
+  assertMarkdownContainsChirho(markdownChirho, "## Vision-Tier Expert Confirmation Policy", "expert confirmation policy heading");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Policy exists: ${booleanFieldChirho(confirmationPolicyChirho, "policyFileExistsChirho", "visionTierExpertConfirmationPolicyChirho")}`,
+    "expert confirmation policy existence"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Policy shape OK: ${booleanFieldChirho(confirmationPolicyChirho, "policyFileShapeOkChirho", "visionTierExpertConfirmationPolicyChirho")}`,
+    "expert confirmation policy shape"
+  );
+  for (const [fieldChirho, labelChirho] of [
+    ["confirmedPolicyCountChirho", "Confirmed policies"],
+    ["confirmedPolicyItemCountChirho", "Confirmed policy items"],
+    ["validConfirmedPolicyItemCountChirho", "Valid confirmed policy items"],
+    ["staleConfirmedPolicyItemCountChirho", "Stale confirmed policy items"],
+    ["duplicateConfirmedPolicyItemCountChirho", "Duplicate confirmed policy items"],
+    ["issueOverriddenConfirmedPolicyItemCountChirho", "Confirmed policy items overridden by open issues"],
+    ["reviewedIssuePolicyCountChirho", "Reviewed-issue policies"],
+    ["reviewedIssuePolicyItemCountChirho", "Reviewed-issue policy items"],
+    ["validReviewedIssuePolicyItemCountChirho", "Valid reviewed-issue policy items"],
+    ["staleReviewedIssuePolicyItemCountChirho", "Stale reviewed-issue policy items"],
+    ["duplicateReviewedIssuePolicyItemCountChirho", "Duplicate reviewed-issue policy items"],
+  ] as const) {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `- ${labelChirho}: ${numberFieldChirho(confirmationPolicyChirho, fieldChirho, "visionTierExpertConfirmationPolicyChirho")}`,
+      `expert confirmation policy ${fieldChirho}`
+    );
+  }
+  const policyShapeErrorsChirho = stringArrayFieldChirho(
+    confirmationPolicyChirho,
+    "shapeErrorsChirho",
+    "visionTierExpertConfirmationPolicyChirho"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Shape errors: ${policyShapeErrorsChirho.length === 0 ? "none" : policyShapeErrorsChirho.join("; ")}`,
+    "expert confirmation policy shape errors"
+  );
+}
+
+function assertVisionTierExpertQueueRemainingWorkCoverageChirho(
+  statusChirho: CertificationStatusOutputChirho,
+  remainingWorkChirho: string[]
+): void {
+  const expertChirho = statusChirho.visionTierChirho;
+  const artifactsChirho = statusChirho.artifactsChirho;
+  const suppliedBackupChirho = statusChirho.expertSuppliedVisionTextBackupChirho;
+  const confirmationPolicyChirho = statusChirho.visionTierExpertConfirmationPolicyChirho;
+  const expertManifestExistsChirho = booleanFieldChirho(artifactsChirho, "expertPackManifestExistsChirho", "artifactsChirho");
+  const expertManifestShapeOkChirho = booleanFieldChirho(artifactsChirho, "expertPackManifestShapeOkChirho", "artifactsChirho");
+  const suppliedBackupExistsChirho = booleanFieldChirho(
+    artifactsChirho,
+    "expertSuppliedVisionTextBackupExistsChirho",
+    "artifactsChirho"
+  );
+  const suppliedBackupShapeOkChirho = booleanFieldChirho(
+    artifactsChirho,
+    "expertSuppliedVisionTextBackupShapeOkChirho",
+    "artifactsChirho"
+  );
+  const confirmationPolicyExistsChirho = booleanFieldChirho(
+    confirmationPolicyChirho,
+    "policyFileExistsChirho",
+    "visionTierExpertConfirmationPolicyChirho"
+  );
+  const confirmationPolicyShapeOkChirho = booleanFieldChirho(
+    confirmationPolicyChirho,
+    "policyFileShapeOkChirho",
+    "visionTierExpertConfirmationPolicyChirho"
+  );
+  const d1ReadErrorChirho = nullableStringFieldChirho(expertChirho, "d1ReadErrorChirho", "visionTierChirho");
+  const manifestCountMatchesChirho = booleanFieldChirho(expertChirho, "manifestCountMatchesCurrentChirho", "visionTierChirho");
+  const manifestIdsMatchChirho = booleanFieldChirho(expertChirho, "manifestIdsMatchCurrentChirho", "visionTierChirho");
+
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    !expertManifestExistsChirho,
+    "expert confirmation manifest is missing; run make-expert-confirm-pack-chirho",
+    "expert confirmation manifest is missing"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    expertManifestExistsChirho && !expertManifestShapeOkChirho,
+    "expert confirmation manifest is malformed; regenerate make-expert-confirm-pack-chirho",
+    "expert confirmation manifest is malformed"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    suppliedBackupExistsChirho && !suppliedBackupShapeOkChirho,
+    "expert-supplied vision text backup is malformed; fix or rerun apply-expert-supplied-vision-text-chirho for the affected item",
+    "expert-supplied vision text backup is malformed"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    confirmationPolicyExistsChirho && !confirmationPolicyShapeOkChirho,
+    "vision-tier expert confirmation policy is malformed; fix or regenerate prepare-vision-tier-expert-confirmation-policy-chirho",
+    "vision-tier expert confirmation policy is malformed"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    d1ReadErrorChirho !== null,
+    `D1-derived vision-tier expert item scan failed: ${d1ReadErrorChirho}`,
+    "D1-derived vision-tier expert item scan failed"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    d1ReadErrorChirho === null && expertManifestExistsChirho && expertManifestShapeOkChirho && !manifestCountMatchesChirho,
+    "expert confirmation manifest count does not match current vision-tier span/D1 state; regenerate make-expert-confirm-pack-chirho",
+    "expert confirmation manifest count does not match current vision-tier span/D1 state"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    d1ReadErrorChirho === null &&
+      expertManifestExistsChirho &&
+      expertManifestShapeOkChirho &&
+      manifestCountMatchesChirho &&
+      !manifestIdsMatchChirho,
+    "expert confirmation manifest item IDs do not match current vision-tier span/D1 state; regenerate make-expert-confirm-pack-chirho",
+    "expert confirmation manifest item IDs do not match current vision-tier span/D1 state"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    d1ReadErrorChirho === null &&
+      expertManifestExistsChirho &&
+      expertManifestShapeOkChirho &&
+      manifestIdsMatchChirho &&
+      !booleanFieldChirho(expertChirho, "manifestTextMatchesCurrentChirho", "visionTierChirho"),
+    "expert confirmation manifest text does not match current live vision-tier span text; regenerate make-expert-confirm-pack-chirho",
+    "expert confirmation manifest text does not match current live vision-tier span text"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    expertManifestExistsChirho &&
+      expertManifestShapeOkChirho &&
+      numberFieldChirho(expertChirho, "manifestImageDriftCountChirho", "visionTierChirho") !== 0,
+    `${numberFieldChirho(expertChirho, "manifestImageDriftCountChirho", "visionTierChirho")} expert confirmation packet image(s) do not match source scanline images; regenerate make-expert-confirm-pack-chirho`,
+    "expert confirmation packet image(s) do not match source scanline images"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    expertManifestExistsChirho &&
+      expertManifestShapeOkChirho &&
+      numberFieldChirho(expertChirho, "manifestMarkdownPathDriftCountChirho", "visionTierChirho") !== 0,
+    `${numberFieldChirho(expertChirho, "manifestMarkdownPathDriftCountChirho", "visionTierChirho")} expert confirmation packet markdown image path drift(s); regenerate make-expert-confirm-pack-chirho`,
+    "expert confirmation packet markdown image path drift(s)"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(suppliedBackupChirho, "liveAppliedSpansChirho", "expertSuppliedVisionTextBackupChirho") !== 0 &&
+      !suppliedBackupExistsChirho,
+    "expert-supplied vision text backup is missing for live supplied-text span(s); rerun apply-expert-supplied-vision-text-chirho or restore the backup",
+    "expert-supplied vision text backup is missing for live supplied-text span(s)"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    suppliedBackupShapeOkChirho &&
+      numberFieldChirho(suppliedBackupChirho, "duplicateBackupRecordCountChirho", "expertSuppliedVisionTextBackupChirho") !== 0,
+    `${numberFieldChirho(suppliedBackupChirho, "duplicateBackupRecordCountChirho", "expertSuppliedVisionTextBackupChirho")} duplicate expert-supplied vision text backup record(s) need cleanup`,
+    "duplicate expert-supplied vision text backup record(s) need cleanup"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    suppliedBackupShapeOkChirho &&
+      numberFieldChirho(suppliedBackupChirho, "backupRecordsMissingLiveSpanChirho", "expertSuppliedVisionTextBackupChirho") !== 0,
+    `${numberFieldChirho(suppliedBackupChirho, "backupRecordsMissingLiveSpanChirho", "expertSuppliedVisionTextBackupChirho")} expert-supplied vision text backup record(s) no longer match a live supplied-text span`,
+    "expert-supplied vision text backup record(s) no longer match a live supplied-text span"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    suppliedBackupShapeOkChirho &&
+      numberFieldChirho(suppliedBackupChirho, "liveAppliedSpansMissingBackupChirho", "expertSuppliedVisionTextBackupChirho") !== 0,
+    `${numberFieldChirho(suppliedBackupChirho, "liveAppliedSpansMissingBackupChirho", "expertSuppliedVisionTextBackupChirho")} live expert-supplied vision text span(s) are missing from the backup`,
+    "live expert-supplied vision text span(s) are missing from the backup"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    suppliedBackupShapeOkChirho &&
+      numberFieldChirho(suppliedBackupChirho, "staleBackupRecordCountChirho", "expertSuppliedVisionTextBackupChirho") !== 0,
+    `${numberFieldChirho(suppliedBackupChirho, "staleBackupRecordCountChirho", "expertSuppliedVisionTextBackupChirho")} expert-supplied vision text backup record(s) are stale against live span/manifest state`,
+    "expert-supplied vision text backup record(s) are stale against live span/manifest state"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(confirmationPolicyChirho, "staleConfirmedPolicyItemCountChirho", "visionTierExpertConfirmationPolicyChirho") !== 0,
+    `${numberFieldChirho(confirmationPolicyChirho, "staleConfirmedPolicyItemCountChirho", "visionTierExpertConfirmationPolicyChirho")} vision-tier expert confirmation item(s) are stale against current live span text`,
+    "vision-tier expert confirmation item(s) are stale against current live span text"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(confirmationPolicyChirho, "duplicateConfirmedPolicyItemCountChirho", "visionTierExpertConfirmationPolicyChirho") !== 0,
+    `${numberFieldChirho(confirmationPolicyChirho, "duplicateConfirmedPolicyItemCountChirho", "visionTierExpertConfirmationPolicyChirho")} duplicate vision-tier expert confirmation item(s) need cleanup`,
+    "duplicate vision-tier expert confirmation item(s) need cleanup"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(confirmationPolicyChirho, "issueOverriddenConfirmedPolicyItemCountChirho", "visionTierExpertConfirmationPolicyChirho") !== 0,
+    `${numberFieldChirho(confirmationPolicyChirho, "issueOverriddenConfirmedPolicyItemCountChirho", "visionTierExpertConfirmationPolicyChirho")} vision-tier expert confirmation item(s) are overridden by open expert issue record(s)`,
+    "vision-tier expert confirmation item(s) are overridden by open expert issue record(s)"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(confirmationPolicyChirho, "staleReviewedIssuePolicyItemCountChirho", "visionTierExpertConfirmationPolicyChirho") !== 0,
+    `${numberFieldChirho(confirmationPolicyChirho, "staleReviewedIssuePolicyItemCountChirho", "visionTierExpertConfirmationPolicyChirho")} vision-tier expert issue record item(s) are stale against current live span text`,
+    "vision-tier expert issue record item(s) are stale against current live span text"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    numberFieldChirho(confirmationPolicyChirho, "duplicateReviewedIssuePolicyItemCountChirho", "visionTierExpertConfirmationPolicyChirho") !== 0,
+    `${numberFieldChirho(confirmationPolicyChirho, "duplicateReviewedIssuePolicyItemCountChirho", "visionTierExpertConfirmationPolicyChirho")} duplicate vision-tier expert issue record item(s) need cleanup`,
+    "duplicate vision-tier expert issue record item(s) need cleanup"
+  );
+}
+
 function assertCoreRemainingWorkCoverageChirho(
   statusChirho: CertificationStatusOutputChirho,
   remainingWorkChirho: string[]
@@ -1721,6 +2133,8 @@ function mainChirho(): void {
   assertCoreRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
   assertRawHebrewQueueMarkdownCoverageChirho(markdownChirho, statusChirho);
   assertRawHebrewQueueRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
+  assertVisionTierExpertQueueMarkdownCoverageChirho(markdownChirho, statusChirho);
+  assertVisionTierExpertQueueRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
   assertStrictBlindScanCoverageChirho(markdownChirho, statusChirho, remainingWorkStringsChirho);
   assertBlankExpertHandoffCoverageChirho(markdownChirho, statusChirho);
   assertPassCHumanReattributionHandoffChirho(markdownChirho, statusChirho, remainingWorkStringsChirho);
