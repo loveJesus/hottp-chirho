@@ -157,9 +157,8 @@ interface CertificationStatusChirho {
     genericReviewerRowGroupsChirho?: AttributionCleanupGroupChirho[];
   };
   latinSymbolVisionChirho?: {
-    repeatSummaryChirho?: {
-      duplicateTextGroupCountChirho?: number;
-    };
+    pendingDecisionCountChirho?: number;
+    repeatSummaryChirho?: LatinSymbolRepeatSummaryChirho;
   };
 }
 
@@ -227,6 +226,33 @@ interface RawHebrewRepeatSummaryChirho {
   duplicateTextGroupCountsByValidationStatusChirho?: Record<string, number>;
   duplicateTextItemCountsByValidationStatusChirho?: Record<string, number>;
   groupsChirho?: RawHebrewRepeatGroupChirho[];
+}
+
+interface LatinSymbolRepeatItemChirho {
+  idChirho: string;
+  volumeChirho: number;
+  itemKindChirho: string;
+  reviewUrlChirho: string;
+}
+
+interface LatinSymbolRepeatGroupChirho {
+  scriptChirho: string;
+  symbolRiskChirho: string;
+  textChirho: string;
+  countChirho: number;
+  firstItemIdChirho: string;
+  reviewUrlChirho: string;
+  itemsChirho: LatinSymbolRepeatItemChirho[];
+}
+
+interface LatinSymbolRepeatSummaryChirho {
+  textGroupCountChirho?: number;
+  duplicateTextGroupCountChirho?: number;
+  duplicateTextItemCountChirho?: number;
+  singletonTextGroupCountChirho?: number;
+  duplicateTextGroupCountsByScriptChirho?: Record<string, number>;
+  duplicateTextItemCountsByScriptChirho?: Record<string, number>;
+  groupsChirho?: LatinSymbolRepeatGroupChirho[];
 }
 
 interface RawHebrewQueueItemChirho {
@@ -462,6 +488,10 @@ function assertRawHebrewRepeatMarkdownIncludesChirho(markdownChirho: string, sni
   assertGeneratedCheckChirho(markdownChirho.includes(snippetChirho), `raw Hebrew repeat-cluster handoff missing ${contextChirho}: ${snippetChirho}`);
 }
 
+function assertLatinSymbolRepeatMarkdownIncludesChirho(markdownChirho: string, snippetChirho: string, contextChirho: string): void {
+  assertGeneratedCheckChirho(markdownChirho.includes(snippetChirho), `Latin/symbol repeat-cluster handoff missing ${contextChirho}: ${snippetChirho}`);
+}
+
 function numberArrayFieldChirho(valueChirho: unknown, pathChirho: string): number[] {
   assertGeneratedCheckChirho(
     Array.isArray(valueChirho) && valueChirho.every((entryChirho) => typeof entryChirho === "number"),
@@ -569,6 +599,31 @@ function assertRawHebrewRepeatGroupShapeChirho(groupChirho: RawHebrewRepeatGroup
   );
 }
 
+function assertLatinSymbolRepeatItemShapeChirho(itemChirho: LatinSymbolRepeatItemChirho, pathChirho: string): void {
+  stringFieldChirho(itemChirho.idChirho, `${pathChirho}.idChirho`);
+  numberFieldChirho(itemChirho.volumeChirho, `${pathChirho}.volumeChirho`);
+  stringFieldChirho(itemChirho.itemKindChirho, `${pathChirho}.itemKindChirho`);
+  stringFieldChirho(itemChirho.reviewUrlChirho, `${pathChirho}.reviewUrlChirho`);
+}
+
+function assertLatinSymbolRepeatGroupShapeChirho(groupChirho: LatinSymbolRepeatGroupChirho, indexChirho: number): void {
+  const groupPathChirho = `latinSymbolVisionChirho.repeatSummaryChirho.groupsChirho[${indexChirho}]`;
+  stringFieldChirho(groupChirho.scriptChirho, `${groupPathChirho}.scriptChirho`);
+  stringFieldChirho(groupChirho.symbolRiskChirho, `${groupPathChirho}.symbolRiskChirho`);
+  stringFieldChirho(groupChirho.textChirho, `${groupPathChirho}.textChirho`);
+  numberFieldChirho(groupChirho.countChirho, `${groupPathChirho}.countChirho`);
+  stringFieldChirho(groupChirho.firstItemIdChirho, `${groupPathChirho}.firstItemIdChirho`);
+  stringFieldChirho(groupChirho.reviewUrlChirho, `${groupPathChirho}.reviewUrlChirho`);
+  assertGeneratedCheckChirho(Array.isArray(groupChirho.itemsChirho), `status JSON missing ${groupPathChirho}.itemsChirho array`);
+  assertGeneratedCheckChirho(
+    groupChirho.itemsChirho.length === groupChirho.countChirho,
+    `status JSON ${groupPathChirho}.itemsChirho length ${groupChirho.itemsChirho.length} does not match countChirho ${groupChirho.countChirho}`
+  );
+  groupChirho.itemsChirho.forEach((itemChirho, itemIndexChirho) =>
+    assertLatinSymbolRepeatItemShapeChirho(itemChirho, `${groupPathChirho}.itemsChirho[${itemIndexChirho}]`)
+  );
+}
+
 function assertRawHebrewRepeatHandoffMatchesStatusChirho(statusChirho: CertificationStatusChirho, markdownChirho: string): void {
   assertGeneratedCheckChirho(
     statusChirho.rawHebrewChirho !== undefined &&
@@ -662,6 +717,98 @@ function assertRawHebrewRepeatHandoffMatchesStatusChirho(statusChirho: Certifica
         markdownChirho,
         `  - ${itemChirho.itemKeyChirho} (${volumeTextChirho}; ${itemChirho.validationStatusChirho}): ${itemChirho.reviewUrlChirho}`,
         `group ${groupNumberChirho} item ${itemChirho.itemKeyChirho}`
+      );
+    }
+  });
+}
+
+function assertLatinSymbolRepeatHandoffMatchesStatusChirho(statusChirho: CertificationStatusChirho, markdownChirho: string): void {
+  assertGeneratedCheckChirho(
+    statusChirho.latinSymbolVisionChirho !== undefined &&
+      typeof statusChirho.latinSymbolVisionChirho === "object" &&
+      statusChirho.latinSymbolVisionChirho.repeatSummaryChirho !== undefined &&
+      typeof statusChirho.latinSymbolVisionChirho.repeatSummaryChirho === "object",
+    "status JSON missing latinSymbolVisionChirho.repeatSummaryChirho object"
+  );
+  const latinSymbolChirho = statusChirho.latinSymbolVisionChirho;
+  const summaryChirho = latinSymbolChirho.repeatSummaryChirho!;
+  const pendingCountChirho = numberFieldChirho(latinSymbolChirho.pendingDecisionCountChirho, "latinSymbolVisionChirho.pendingDecisionCountChirho");
+  const textGroupCountChirho = numberFieldChirho(summaryChirho.textGroupCountChirho, "latinSymbolVisionChirho.repeatSummaryChirho.textGroupCountChirho");
+  const duplicateTextGroupCountChirho = numberFieldChirho(
+    summaryChirho.duplicateTextGroupCountChirho,
+    "latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextGroupCountChirho"
+  );
+  const duplicateTextItemCountChirho = numberFieldChirho(
+    summaryChirho.duplicateTextItemCountChirho,
+    "latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextItemCountChirho"
+  );
+  const singletonTextGroupCountChirho = numberFieldChirho(
+    summaryChirho.singletonTextGroupCountChirho,
+    "latinSymbolVisionChirho.repeatSummaryChirho.singletonTextGroupCountChirho"
+  );
+  const duplicateGroupCountsByScriptChirho = numberRecordFieldChirho(
+    summaryChirho.duplicateTextGroupCountsByScriptChirho,
+    "latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextGroupCountsByScriptChirho"
+  );
+  const duplicateItemCountsByScriptChirho = numberRecordFieldChirho(
+    summaryChirho.duplicateTextItemCountsByScriptChirho,
+    "latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextItemCountsByScriptChirho"
+  );
+  assertGeneratedCheckChirho(Array.isArray(summaryChirho.groupsChirho), "status JSON missing latinSymbolVisionChirho.repeatSummaryChirho.groupsChirho array");
+  const groupsChirho = summaryChirho.groupsChirho;
+  assertGeneratedCheckChirho(
+    groupsChirho.length === duplicateTextGroupCountChirho,
+    `Latin/symbol repeat status has ${groupsChirho.length} rendered duplicate group(s), expected ${duplicateTextGroupCountChirho}`
+  );
+
+  assertLatinSymbolRepeatMarkdownIncludesChirho(markdownChirho, `- Pending Latin/symbol decisions: ${pendingCountChirho}`, "pending Latin/symbol count");
+  assertLatinSymbolRepeatMarkdownIncludesChirho(markdownChirho, `- Text groups: ${textGroupCountChirho}`, "text group count");
+  assertLatinSymbolRepeatMarkdownIncludesChirho(markdownChirho, `- Duplicate groups: ${duplicateTextGroupCountChirho}`, "duplicate group count");
+  assertLatinSymbolRepeatMarkdownIncludesChirho(markdownChirho, `- Duplicate items: ${duplicateTextItemCountChirho}`, "duplicate item count");
+  assertLatinSymbolRepeatMarkdownIncludesChirho(markdownChirho, `- Singleton groups: ${singletonTextGroupCountChirho}`, "singleton group count");
+  assertLatinSymbolRepeatMarkdownIncludesChirho(
+    markdownChirho,
+    `- Duplicate groups by script: ${countEntriesForCheckChirho(duplicateGroupCountsByScriptChirho)}`,
+    "duplicate groups by script"
+  );
+  assertLatinSymbolRepeatMarkdownIncludesChirho(
+    markdownChirho,
+    `- Duplicate items by script: ${countEntriesForCheckChirho(duplicateItemCountsByScriptChirho)}`,
+    "duplicate items by script"
+  );
+
+  const renderedGroupHeadingCountChirho = [...markdownChirho.matchAll(/^## \d+\. .+ x\d+ /gmu)].length;
+  assertGeneratedCheckChirho(
+    renderedGroupHeadingCountChirho === groupsChirho.length,
+    `Latin/symbol repeat handoff rendered ${renderedGroupHeadingCountChirho} group heading(s), expected ${groupsChirho.length}`
+  );
+  if (groupsChirho.length === 0) {
+    assertLatinSymbolRepeatMarkdownIncludesChirho(markdownChirho, "- No duplicate Latin/symbol text groups are currently pending.", "empty duplicate group notice");
+    return;
+  }
+
+  groupsChirho.forEach((groupChirho, indexChirho) => {
+    assertLatinSymbolRepeatGroupShapeChirho(groupChirho, indexChirho);
+    const groupNumberChirho = indexChirho + 1;
+    const textDisplayChirho = groupChirho.textChirho.trim().length === 0
+      ? "(blank text)"
+      : markdownCodeSpanForCheckChirho(groupChirho.textChirho);
+    assertLatinSymbolRepeatMarkdownIncludesChirho(
+      markdownChirho,
+      `## ${groupNumberChirho}. ${groupChirho.scriptChirho}/${groupChirho.symbolRiskChirho} x${groupChirho.countChirho} ${textDisplayChirho}`,
+      `group ${groupNumberChirho} heading`
+    );
+    assertLatinSymbolRepeatMarkdownIncludesChirho(markdownChirho, `- First pending exact-text view: ${groupChirho.reviewUrlChirho}`, `group ${groupNumberChirho} first URL`);
+    assertLatinSymbolRepeatMarkdownIncludesChirho(
+      markdownChirho,
+      `- Item IDs: ${groupChirho.itemsChirho.map((itemChirho) => itemChirho.idChirho).join(", ")}`,
+      `group ${groupNumberChirho} item IDs`
+    );
+    for (const itemChirho of groupChirho.itemsChirho) {
+      assertLatinSymbolRepeatMarkdownIncludesChirho(
+        markdownChirho,
+        `  - ${itemChirho.idChirho} (vol ${itemChirho.volumeChirho}; ${itemChirho.itemKindChirho}): ${itemChirho.reviewUrlChirho}`,
+        `group ${groupNumberChirho} item ${itemChirho.idChirho}`
       );
     }
   });
@@ -1246,6 +1393,7 @@ async function mainChirho(): Promise<void> {
   assertAttributionCleanupHandoffMatchesStatusChirho(statusChirho, attributionCleanupMarkdownChirho);
   assertRawHebrewAttentionHandoffMatchesStatusChirho(statusChirho, rawHebrewAttentionMarkdownChirho);
   assertRawHebrewRepeatHandoffMatchesStatusChirho(statusChirho, rawHebrewRepeatMarkdownChirho);
+  assertLatinSymbolRepeatHandoffMatchesStatusChirho(statusChirho, latinSymbolRepeatMarkdownChirho);
   const checkedLinksChirho = new Set<string>();
   let jsonCheckedCountChirho = 0;
   for (const [keyChirho, linkChirho] of Object.entries(statusChirho.reviewStartLinksChirho)) {
