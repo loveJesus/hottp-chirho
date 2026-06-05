@@ -23,11 +23,19 @@ const STATUS_MARKDOWN_PATH_CHIRHO = join(
   "certification-status-chirho",
   "status-chirho.md"
 );
+const STATUS_JSON_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "certification-status-chirho",
+  "status-chirho.json"
+);
 const STATUS_SPEC_DOC_RE_CHIRHO = /`(spec-chirho\/metropoliluya-chirho\/[^`\n]+\.md)`/g;
 const MARKDOWN_IMAGE_RE_CHIRHO = /!\[[^\]\n]*\]\(([^)\n]+)\)/g;
 const BACKTICK_RE_CHIRHO = /`([^`\n]+)`/g;
 const RAW_HEBREW_QUICKSTART_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/raw-hebrew-human-certification-quickstart-2026-06-05-chirho.md";
 const HALLELUJAH_SESSION_GUIDE_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/hallelujah-review-session-guide-2026-06-05-chirho.md";
+const TRANSCRIPTION_STATUS_PRODUCTION_PATH_DOC_CHIRHO =
+  "spec-chirho/metropoliluya-chirho/transcription-status-and-production-path-2026-06-03-chirho.md";
 const LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
   "workspace-chirho/",
   "spec-chirho/",
@@ -54,6 +62,13 @@ const HALLELUJAH_SESSION_GUIDE_SNIPPETS_CHIRHO = [
   "If you are not sure who made the original decision, re-review instead of reattributing.",
   "Stop or skip when the crop is unclear, the script is outside your competence, the exact marks are uncertain",
 ] as const;
+
+interface StatusLinkedSpecDocsStatusChirho {
+  structuralChirho?: unknown;
+  visionTierChirho?: unknown;
+  latinSymbolVisionChirho?: unknown;
+  humanValidationDbChirho?: unknown;
+}
 
 function isLocalArtifactPathChirho(valueChirho: string): boolean {
   return LOCAL_ARTIFACT_PREFIXES_CHIRHO.some((prefixChirho) => valueChirho.startsWith(prefixChirho));
@@ -97,7 +112,61 @@ function assertDocContainsSnippetsChirho(docPathChirho: string, textChirho: stri
   }
 }
 
-function checkSpecDocChirho(docPathChirho: string): void {
+function recordFieldChirho(valueChirho: unknown, labelChirho: string): Record<string, unknown> {
+  assertGeneratedCheckChirho(
+    valueChirho !== null && typeof valueChirho === "object" && !Array.isArray(valueChirho),
+    `${labelChirho} must be an object`
+  );
+  return valueChirho as Record<string, unknown>;
+}
+
+function numberFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): number {
+  const recordChirho = recordFieldChirho(valueChirho, labelChirho);
+  const fieldChirho = recordChirho[keyChirho];
+  assertGeneratedCheckChirho(typeof fieldChirho === "number", `${labelChirho}.${keyChirho} must be a number`);
+  return fieldChirho;
+}
+
+function countMapValueChirho(valueChirho: unknown, keyChirho: string, itemKeyChirho: string, labelChirho: string): number {
+  const recordChirho = recordFieldChirho(valueChirho, labelChirho);
+  const fieldChirho = recordFieldChirho(recordChirho[keyChirho], `${labelChirho}.${keyChirho}`);
+  const countChirho = fieldChirho[itemKeyChirho];
+  assertGeneratedCheckChirho(
+    typeof countChirho === "number" || countChirho === undefined,
+    `${labelChirho}.${keyChirho}.${itemKeyChirho} must be a number when present`
+  );
+  return countChirho ?? 0;
+}
+
+function assertProductionPathCountsChirho(
+  docPathChirho: string,
+  textChirho: string,
+  statusChirho: StatusLinkedSpecDocsStatusChirho
+): void {
+  const structuralChirho = statusChirho.structuralChirho;
+  const visionTierChirho = statusChirho.visionTierChirho;
+  const latinSymbolChirho = statusChirho.latinSymbolVisionChirho;
+  const humanValidationDbChirho = statusChirho.humanValidationDbChirho;
+  const rawHebrewCountChirho = numberFieldChirho(structuralChirho, "passCOcrHebrewSpanCountChirho", "structuralChirho");
+  const expertCountChirho = numberFieldChirho(visionTierChirho, "remainingConfirmationCountChirho", "visionTierChirho");
+  const latinSymbolCountChirho = numberFieldChirho(latinSymbolChirho, "remainingDecisionCountChirho", "latinSymbolVisionChirho");
+  const attributionBlockedCountChirho = numberFieldChirho(humanValidationDbChirho, "genericReviewerRowsChirho", "humanValidationDbChirho");
+  const expertHebrewCountChirho = countMapValueChirho(visionTierChirho, "pendingVisionCountsChirho", "hebrew-chirho", "visionTierChirho");
+  const expertGreekCountChirho = countMapValueChirho(visionTierChirho, "pendingVisionCountsChirho", "greek-chirho", "visionTierChirho");
+  const expertSyriacCountChirho = countMapValueChirho(visionTierChirho, "pendingVisionCountsChirho", "syriac-chirho", "visionTierChirho");
+  const expertArabicCountChirho = countMapValueChirho(visionTierChirho, "pendingVisionCountsChirho", "arabic-chirho", "visionTierChirho");
+  assertDocContainsSnippetsChirho(docPathChirho, textChirho, [
+    `raw Hebrew (${rawHebrewCountChirho} spans)`,
+    `Latin/symbol (${latinSymbolCountChirho} remaining decisions)`,
+    `non-Latin expert (${expertCountChirho}: Hebrew ${expertHebrewCountChirho}, Greek ${expertGreekCountChirho}, Syriac ${expertSyriacCountChirho}, Arabic ${expertArabicCountChirho})`,
+    `| Raw Pass-C Hebrew spans | **${rawHebrewCountChirho}** |`,
+    `| Non-Latin expert items | **${expertCountChirho}** (Hebrew ${expertHebrewCountChirho} · Greek ${expertGreekCountChirho} · Syriac ${expertSyriacCountChirho} · Arabic ${expertArabicCountChirho}) |`,
+    `| Latin/symbol vision decisions | **${latinSymbolCountChirho} remaining**`,
+    `${attributionBlockedCountChirho} current Pass-C human validation rows use the generic reviewer id \`human-chirho\``,
+  ]);
+}
+
+function checkSpecDocChirho(docPathChirho: string, statusChirho: StatusLinkedSpecDocsStatusChirho): void {
   assertProjectRelativePathExistsChirho(docPathChirho, "status-linked spec document");
   const absolutePathChirho = join(PROJECT_ROOT_CHIRHO, docPathChirho);
   const textChirho = readFileSync(absolutePathChirho, "utf8");
@@ -124,15 +193,20 @@ function checkSpecDocChirho(docPathChirho: string): void {
   if (docPathChirho === HALLELUJAH_SESSION_GUIDE_DOC_CHIRHO) {
     assertDocContainsSnippetsChirho(docPathChirho, textChirho, HALLELUJAH_SESSION_GUIDE_SNIPPETS_CHIRHO);
   }
+  if (docPathChirho === TRANSCRIPTION_STATUS_PRODUCTION_PATH_DOC_CHIRHO) {
+    assertProductionPathCountsChirho(docPathChirho, textChirho, statusChirho);
+  }
 }
 
 function mainChirho(): void {
   assertGeneratedCheckChirho(existsSync(STATUS_MARKDOWN_PATH_CHIRHO), `missing status Markdown: ${STATUS_MARKDOWN_PATH_CHIRHO}`);
+  assertGeneratedCheckChirho(existsSync(STATUS_JSON_PATH_CHIRHO), `missing status JSON: ${STATUS_JSON_PATH_CHIRHO}`);
   const statusMarkdownChirho = readFileSync(STATUS_MARKDOWN_PATH_CHIRHO, "utf8");
+  const statusChirho = JSON.parse(readFileSync(STATUS_JSON_PATH_CHIRHO, "utf8")) as StatusLinkedSpecDocsStatusChirho;
   const docsChirho = linkedSpecDocPathsChirho(statusMarkdownChirho);
   assertGeneratedCheckChirho(docsChirho.length > 0, "status Markdown does not link any spec/handoff documents");
   for (const docPathChirho of docsChirho) {
-    checkSpecDocChirho(docPathChirho);
+    checkSpecDocChirho(docPathChirho, statusChirho);
   }
   console.log(`[${MODULE_CHIRHO}] status-linked spec document hygiene passed for ${docsChirho.length} document(s)`);
 }
