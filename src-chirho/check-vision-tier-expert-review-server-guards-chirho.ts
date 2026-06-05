@@ -42,6 +42,7 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Blank Syriac handoff",
   "script-chirho=hebrew-chirho",
   "text-state-chirho=nonblank-chirho",
+  "Target span",
 ];
 const EXPERT_QUICKSTART_SNIPPETS_CHIRHO = [
   "Vision-Tier Expert Confirmation Quickstart Chirho",

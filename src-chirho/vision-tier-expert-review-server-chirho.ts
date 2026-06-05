@@ -593,7 +593,8 @@ function htmlChirho(): string {
     .image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: auto; margin-bottom: 12px; }
     .line-image-frame-chirho { position: relative; width: 100%; }
     .line-image-chirho { display: block; width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
-    .span-marker-chirho { position: absolute; top: 0; bottom: 0; border: 2px solid #d23f31; background: rgba(210, 63, 49, 0.16); box-sizing: border-box; pointer-events: none; }
+    .span-marker-chirho { position: absolute; top: 0; bottom: 0; border: 3px solid #c9251f; background: repeating-linear-gradient(135deg, rgba(201, 37, 31, 0.24) 0, rgba(201, 37, 31, 0.24) 8px, rgba(255, 255, 255, 0.02) 8px, rgba(255, 255, 255, 0.02) 16px); box-sizing: border-box; pointer-events: none; }
+    .span-marker-label-chirho { position: absolute; top: 0; right: 0; background: #c9251f; color: white; font-size: 10px; font-weight: 800; line-height: 1; padding: 3px 4px; text-transform: uppercase; }
     .text-box-chirho { background: white; border: 1px solid #d6d9dd; padding: 10px; line-height: 1.45; overflow-wrap: anywhere; }
     .current-text-chirho { font-size: 24px; direction: auto; }
     .side-chirho { display: flex; flex-direction: column; gap: 12px; }
@@ -1104,7 +1105,9 @@ function htmlChirho(): string {
       const imageWrapChirho = elChirho("div", { classChirho: "image-wrap-chirho" });
       const imageFrameChirho = elChirho("div", { classChirho: "line-image-frame-chirho" });
       imageFrameChirho.appendChild(elChirho("img", { classChirho: "line-image-chirho", src: imageSrcChirho(itemChirho.markdownPathChirho), alt: "" }));
-      imageFrameChirho.appendChild(elChirho("div", { classChirho: "span-marker-chirho", style: markerStyleChirho(itemChirho) }));
+      imageFrameChirho.appendChild(elChirho("div", { classChirho: "span-marker-chirho", style: markerStyleChirho(itemChirho) }, [
+        elChirho("span", { classChirho: "span-marker-label-chirho", textChirho: "Target span" })
+      ]));
       imageWrapChirho.appendChild(imageFrameChirho);
       leftChirho.appendChild(imageWrapChirho);
       leftChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Current text" }));
