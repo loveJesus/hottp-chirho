@@ -35,6 +35,12 @@ const EXPERT_REPEAT_CLUSTER_MARKDOWN_PATH_CHIRHO = join(
   "certification-status-chirho",
   "expert-repeat-clusters-chirho.md"
 );
+const LATIN_SYMBOL_REPEAT_CLUSTER_MARKDOWN_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "certification-status-chirho",
+  "latin-symbol-repeat-clusters-chirho.md"
+);
 const ATTRIBUTION_CLEANUP_HANDOFF_MARKDOWN_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "workspace-chirho",
@@ -105,6 +111,11 @@ interface CertificationStatusChirho {
   humanValidationDbChirho?: {
     genericReviewerRowsChirho?: number;
   };
+  latinSymbolVisionChirho?: {
+    repeatSummaryChirho?: {
+      duplicateTextGroupCountChirho?: number;
+    };
+  };
 }
 
 interface RawHebrewQueueItemChirho {
@@ -120,6 +131,7 @@ interface LatinSymbolItemChirho {
   idChirho: string;
   scriptChirho: string;
   symbolRiskChirho?: string;
+  textChirho: string;
   volumeChirho: number;
 }
 
@@ -222,7 +234,7 @@ function assertLatinQueryValuesChirho(urlChirho: URL, keyChirho: string): void {
   assertKnownSearchParamsChirho(
     urlChirho,
     keyChirho,
-    new Set(["item-chirho", "script-chirho", "symbol-risk-chirho", "volume-chirho"])
+    new Set(["item-chirho", "script-chirho", "symbol-risk-chirho", "volume-chirho", "exact-text-chirho"])
   );
   assertParamInSetChirho(urlChirho, keyChirho, "script-chirho", LATIN_SYMBOL_SCRIPTS_CHIRHO);
   assertParamInSetChirho(urlChirho, keyChirho, "symbol-risk-chirho", LATIN_SYMBOL_RISKS_CHIRHO);
@@ -334,6 +346,10 @@ function assertLatinFiltersChirho(urlChirho: URL, itemChirho: LatinSymbolItemChi
   const volumeChirho = parseVolumeFilterChirho(urlChirho);
   if (volumeChirho !== null) {
     assertGeneratedCheckChirho(itemChirho.volumeChirho === volumeChirho, `${keyChirho} item ${itemChirho.idChirho} does not match volume ${volumeChirho}`);
+  }
+  const exactTextChirho = urlChirho.searchParams.get("exact-text-chirho");
+  if (exactTextChirho !== null) {
+    assertGeneratedCheckChirho(itemChirho.textChirho === exactTextChirho, `${keyChirho} item ${itemChirho.idChirho} does not match exact-text-chirho`);
   }
 }
 
@@ -447,12 +463,17 @@ async function mainChirho(): Promise<void> {
     `missing expert repeat-cluster Markdown: ${EXPERT_REPEAT_CLUSTER_MARKDOWN_PATH_CHIRHO}`
   );
   assertGeneratedCheckChirho(
+    existsSync(LATIN_SYMBOL_REPEAT_CLUSTER_MARKDOWN_PATH_CHIRHO),
+    `missing Latin/symbol repeat-cluster Markdown: ${LATIN_SYMBOL_REPEAT_CLUSTER_MARKDOWN_PATH_CHIRHO}`
+  );
+  assertGeneratedCheckChirho(
     existsSync(ATTRIBUTION_CLEANUP_HANDOFF_MARKDOWN_PATH_CHIRHO),
     `missing attribution cleanup handoff Markdown: ${ATTRIBUTION_CLEANUP_HANDOFF_MARKDOWN_PATH_CHIRHO}`
   );
   const statusChirho = JSON.parse(readFileSync(STATUS_JSON_PATH_CHIRHO, "utf8")) as CertificationStatusChirho;
   const markdownChirho = readFileSync(STATUS_MARKDOWN_PATH_CHIRHO, "utf8");
   const expertRepeatMarkdownChirho = readFileSync(EXPERT_REPEAT_CLUSTER_MARKDOWN_PATH_CHIRHO, "utf8");
+  const latinSymbolRepeatMarkdownChirho = readFileSync(LATIN_SYMBOL_REPEAT_CLUSTER_MARKDOWN_PATH_CHIRHO, "utf8");
   const attributionCleanupMarkdownChirho = readFileSync(ATTRIBUTION_CLEANUP_HANDOFF_MARKDOWN_PATH_CHIRHO, "utf8");
   assertGeneratedCheckChirho(
     statusChirho.reviewStartLinksChirho !== undefined && typeof statusChirho.reviewStartLinksChirho === "object",
@@ -463,6 +484,14 @@ async function mainChirho(): Promise<void> {
       typeof statusChirho.humanValidationDbChirho === "object" &&
       typeof statusChirho.humanValidationDbChirho.genericReviewerRowsChirho === "number",
     "status JSON missing humanValidationDbChirho.genericReviewerRowsChirho number"
+  );
+  assertGeneratedCheckChirho(
+    statusChirho.latinSymbolVisionChirho !== undefined &&
+      typeof statusChirho.latinSymbolVisionChirho === "object" &&
+      statusChirho.latinSymbolVisionChirho.repeatSummaryChirho !== undefined &&
+      typeof statusChirho.latinSymbolVisionChirho.repeatSummaryChirho === "object" &&
+      typeof statusChirho.latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextGroupCountChirho === "number",
+    "status JSON missing latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextGroupCountChirho number"
   );
   const checkedLinksChirho = new Set<string>();
   let jsonCheckedCountChirho = 0;
@@ -501,6 +530,31 @@ async function mainChirho(): Promise<void> {
     expertRepeatCheckedCountChirho += 1;
   }
   assertGeneratedCheckChirho(expertRepeatCheckedCountChirho > 0, "expert repeat-cluster Markdown contains no additional live review URLs to check");
+  const latinSymbolRepeatLinksChirho = markdownReviewLinksChirho(latinSymbolRepeatMarkdownChirho);
+  let latinSymbolRepeatCheckedCountChirho = 0;
+  let latinSymbolRepeatTotalCountChirho = 0;
+  for (const linkChirho of latinSymbolRepeatLinksChirho) {
+    latinSymbolRepeatTotalCountChirho += 1;
+    const urlChirho = new URL(linkChirho);
+    assertBaseReviewUrlChirho(urlChirho, `Latin/symbol repeat-cluster URL ${latinSymbolRepeatTotalCountChirho}`);
+    const canonicalLinkChirho = urlChirho.toString();
+    if (checkedLinksChirho.has(canonicalLinkChirho)) continue;
+    await checkReviewItemUrlChirho(`Latin/symbol repeat-cluster URL ${latinSymbolRepeatTotalCountChirho}`, urlChirho);
+    checkedLinksChirho.add(canonicalLinkChirho);
+    latinSymbolRepeatCheckedCountChirho += 1;
+  }
+  const latinSymbolRepeatGroupCountChirho = statusChirho.latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextGroupCountChirho;
+  if (latinSymbolRepeatGroupCountChirho > 0) {
+    assertGeneratedCheckChirho(
+      latinSymbolRepeatTotalCountChirho > 0,
+      "Latin/symbol repeat-cluster Markdown contains no live review URLs while duplicate groups remain"
+    );
+  } else {
+    assertGeneratedCheckChirho(
+      latinSymbolRepeatTotalCountChirho === 0,
+      "Latin/symbol repeat-cluster Markdown still contains review URLs after duplicate groups reached zero"
+    );
+  }
   const attributionCleanupLinksChirho = markdownReviewLinksChirho(attributionCleanupMarkdownChirho);
   let attributionCleanupCheckedCountChirho = 0;
   let attributionCleanupTotalCountChirho = 0;
@@ -529,7 +583,8 @@ async function mainChirho(): Promise<void> {
   console.log(
     `[${MODULE_CHIRHO}] live status review links passed for ${jsonCheckedCountChirho} JSON link(s), ` +
       `${markdownCheckedCountChirho} additional Markdown URL(s), and ` +
-      `${expertRepeatCheckedCountChirho} expert repeat-cluster URL(s), and ` +
+      `${expertRepeatCheckedCountChirho} expert repeat-cluster URL(s), ` +
+      `${latinSymbolRepeatCheckedCountChirho}/${latinSymbolRepeatTotalCountChirho} Latin/symbol repeat-cluster URL(s), and ` +
       `${attributionCleanupCheckedCountChirho}/${attributionCleanupTotalCountChirho} attribution cleanup URL(s)`
   );
 }

@@ -252,6 +252,8 @@ const HEBREW_DELIMITER_ORDER_SCANNER_PATH_CHIRHO = join(
 const OUT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "certification-status-chirho");
 const EXPERT_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO = "expert-repeat-clusters-chirho.md";
 const EXPERT_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO = `workspace-chirho/certification-status-chirho/${EXPERT_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO}`;
+const LATIN_SYMBOL_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO = "latin-symbol-repeat-clusters-chirho.md";
+const LATIN_SYMBOL_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO = `workspace-chirho/certification-status-chirho/${LATIN_SYMBOL_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO}`;
 const ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO = "attribution-cleanup-handoff-chirho.md";
 const ATTRIBUTION_CLEANUP_HANDOFF_RELATIVE_PATH_CHIRHO = `workspace-chirho/certification-status-chirho/${ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO}`;
 const ALLOWED_WLC_CORRECTION_FLAGS_CHIRHO = new Set([
@@ -482,6 +484,37 @@ interface ExpertTextRepeatSummaryChirho {
   duplicateTextItemCountsByScriptChirho: Record<string, number>;
   groupsChirho: ExpertTextRepeatGroupChirho[];
   samplesChirho: ExpertTextRepeatSampleChirho[];
+}
+
+interface LatinSymbolTextRepeatSampleChirho {
+  scriptChirho: string;
+  symbolRiskChirho: string;
+  textChirho: string;
+  countChirho: number;
+  firstItemIdChirho: string;
+  reviewUrlChirho: string;
+}
+
+interface LatinSymbolTextRepeatItemChirho {
+  idChirho: string;
+  volumeChirho: number;
+  itemKindChirho: string;
+  reviewUrlChirho: string;
+}
+
+interface LatinSymbolTextRepeatGroupChirho extends LatinSymbolTextRepeatSampleChirho {
+  itemsChirho: LatinSymbolTextRepeatItemChirho[];
+}
+
+interface LatinSymbolTextRepeatSummaryChirho {
+  textGroupCountChirho: number;
+  duplicateTextGroupCountChirho: number;
+  duplicateTextItemCountChirho: number;
+  singletonTextGroupCountChirho: number;
+  duplicateTextGroupCountsByScriptChirho: Record<string, number>;
+  duplicateTextItemCountsByScriptChirho: Record<string, number>;
+  groupsChirho: LatinSymbolTextRepeatGroupChirho[];
+  samplesChirho: LatinSymbolTextRepeatSampleChirho[];
 }
 
 function countExpertPackItemsByScriptChirho(itemsChirho: ExpertPackVisionItemChirho[]): Record<string, number> {
@@ -982,6 +1015,7 @@ interface CertificationStatusChirho {
     pendingTrivialPunctuationSymbolItemCountChirho: number;
     pendingMixedScriptSymbolItemCountChirho: number;
     pendingNontrivialSymbolItemCountChirho: number;
+    repeatSummaryChirho: LatinSymbolTextRepeatSummaryChirho;
     remainingDecisionCountChirho: number;
     includedInCompletionGateChirho: boolean;
   };
@@ -1370,12 +1404,14 @@ function latinSymbolReviewUrlChirho(
   scriptChirho?: string,
   symbolRiskChirho?: string,
   itemIdChirho?: string,
-  volumeChirho?: number
+  volumeChirho?: number,
+  exactTextChirho?: string
 ): string {
   const entriesChirho: Array<[string, string]> = [];
   if (scriptChirho !== undefined) entriesChirho.push(["script-chirho", scriptChirho]);
   if (symbolRiskChirho !== undefined) entriesChirho.push(["symbol-risk-chirho", symbolRiskChirho]);
   if (volumeChirho !== undefined) entriesChirho.push(["volume-chirho", volumeFilterValueChirho(volumeChirho)]);
+  if (exactTextChirho !== undefined) entriesChirho.push(["exact-text-chirho", exactTextChirho]);
   if (itemIdChirho !== undefined) entriesChirho.push(["item-chirho", itemIdChirho]);
   const queryChirho = urlQueryChirho(entriesChirho);
   return queryChirho.length === 0 ? "http://localhost:8770/" : `http://localhost:8770/?${queryChirho}`;
@@ -1569,6 +1605,91 @@ function expertTextRepeatSummaryChirho(
     samplesChirho: groupSummariesChirho.slice(0, sampleLimitChirho).map((groupChirho) => ({
       scriptChirho: groupChirho.scriptChirho,
       currentTextChirho: groupChirho.currentTextChirho,
+      countChirho: groupChirho.countChirho,
+      firstItemIdChirho: groupChirho.firstItemIdChirho,
+      reviewUrlChirho: groupChirho.reviewUrlChirho,
+    })),
+  };
+}
+
+function latinSymbolTextRepeatSummaryChirho(
+  itemsChirho: LatinSymbolVisionLiveItemChirho[],
+  sampleLimitChirho = 12
+): LatinSymbolTextRepeatSummaryChirho {
+  const groupsChirho = new Map<string, LatinSymbolVisionLiveItemChirho[]>();
+  for (const itemChirho of itemsChirho) {
+    const symbolRiskChirho = symbolRiskForItemChirho(itemChirho);
+    const keyChirho = `${itemChirho.scriptChirho}\u0000${symbolRiskChirho}\u0000${itemChirho.textChirho}`;
+    const groupChirho = groupsChirho.get(keyChirho) ?? [];
+    groupChirho.push(itemChirho);
+    groupsChirho.set(keyChirho, groupChirho);
+  }
+  const duplicateGroupsChirho = [...groupsChirho.values()]
+    .filter((groupChirho) => groupChirho.length > 1)
+    .sort((aChirho, bChirho) => {
+      const firstAChirho = aChirho[0]!;
+      const firstBChirho = bChirho[0]!;
+      return bChirho.length - aChirho.length ||
+        firstAChirho.scriptChirho.localeCompare(firstBChirho.scriptChirho) ||
+        symbolRiskForItemChirho(firstAChirho).localeCompare(symbolRiskForItemChirho(firstBChirho)) ||
+        firstAChirho.textChirho.localeCompare(firstBChirho.textChirho) ||
+        firstAChirho.idChirho.localeCompare(firstBChirho.idChirho);
+    });
+  const duplicateTextGroupCountsByScriptChirho: Record<string, number> = {};
+  const duplicateTextItemCountsByScriptChirho: Record<string, number> = {};
+  for (const groupChirho of duplicateGroupsChirho) {
+    const scriptChirho = groupChirho[0]!.scriptChirho;
+    duplicateTextGroupCountsByScriptChirho[scriptChirho] =
+      (duplicateTextGroupCountsByScriptChirho[scriptChirho] ?? 0) + 1;
+    duplicateTextItemCountsByScriptChirho[scriptChirho] =
+      (duplicateTextItemCountsByScriptChirho[scriptChirho] ?? 0) + groupChirho.length;
+  }
+  const groupSummariesChirho = duplicateGroupsChirho.map((groupChirho): LatinSymbolTextRepeatGroupChirho => {
+    const firstItemChirho = groupChirho[0]!;
+    const exactTextChirho = firstItemChirho.textChirho;
+    const symbolRiskChirho = symbolRiskForItemChirho(firstItemChirho);
+    return {
+      scriptChirho: firstItemChirho.scriptChirho,
+      symbolRiskChirho,
+      textChirho: exactTextChirho,
+      countChirho: groupChirho.length,
+      firstItemIdChirho: firstItemChirho.idChirho,
+      reviewUrlChirho: latinSymbolReviewUrlChirho(
+        firstItemChirho.scriptChirho,
+        symbolRiskChirho === "not-symbol-chirho" ? undefined : symbolRiskChirho,
+        firstItemChirho.idChirho,
+        undefined,
+        exactTextChirho
+      ),
+      itemsChirho: groupChirho.map((itemChirho) => ({
+        idChirho: itemChirho.idChirho,
+        volumeChirho: itemChirho.volumeChirho,
+        itemKindChirho: itemChirho.itemKindChirho,
+        reviewUrlChirho: latinSymbolReviewUrlChirho(
+          itemChirho.scriptChirho,
+          symbolRiskChirho === "not-symbol-chirho" ? undefined : symbolRiskChirho,
+          itemChirho.idChirho,
+          itemChirho.volumeChirho,
+          exactTextChirho
+        ),
+      })),
+    };
+  });
+  return {
+    textGroupCountChirho: groupsChirho.size,
+    duplicateTextGroupCountChirho: duplicateGroupsChirho.length,
+    duplicateTextItemCountChirho: duplicateGroupsChirho.reduce(
+      (countChirho, groupChirho) => countChirho + groupChirho.length,
+      0
+    ),
+    singletonTextGroupCountChirho: [...groupsChirho.values()].filter((groupChirho) => groupChirho.length === 1).length,
+    duplicateTextGroupCountsByScriptChirho,
+    duplicateTextItemCountsByScriptChirho,
+    groupsChirho: groupSummariesChirho,
+    samplesChirho: groupSummariesChirho.slice(0, sampleLimitChirho).map((groupChirho) => ({
+      scriptChirho: groupChirho.scriptChirho,
+      symbolRiskChirho: groupChirho.symbolRiskChirho,
+      textChirho: groupChirho.textChirho,
       countChirho: groupChirho.countChirho,
       firstItemIdChirho: groupChirho.firstItemIdChirho,
       reviewUrlChirho: groupChirho.reviewUrlChirho,
@@ -3904,6 +4025,7 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
   );
   const pendingLatinSymbolRiskSummaryChirho = summarizeSymbolRiskChirho(pendingLatinSymbolLiveItemsChirho);
   const pendingLatinSymbolVolumeCountsChirho = countByVolumeChirho(pendingLatinSymbolLiveItemsChirho);
+  const latinSymbolRepeatSummaryChirho = latinSymbolTextRepeatSummaryChirho(pendingLatinSymbolLiveItemsChirho);
   const latinSymbolPolicySummaryForStatusChirho = {
     policyFileExistsChirho: latinSymbolPolicySummaryChirho.policyFileExistsChirho,
     policyFileShapeOkChirho: latinSymbolPolicySummaryChirho.policyFileShapeOkChirho,
@@ -3996,6 +4118,7 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     pendingNontrivialSymbolItemCountChirho:
       pendingLatinSymbolRiskSummaryChirho.nontrivialSymbolItemsChirho -
       pendingLatinSymbolRiskSummaryChirho.mixedScriptSymbolItemsChirho,
+    repeatSummaryChirho: latinSymbolRepeatSummaryChirho,
     remainingDecisionCountChirho: latinSymbolRemainingDecisionCountChirho,
     includedInCompletionGateChirho: true,
   };
@@ -4770,6 +4893,10 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     sampleChirho.currentTextChirho.trim().length === 0
       ? "(blank text)"
       : markdownCodeSpanChirho(sampleChirho.currentTextChirho);
+  const latinSymbolRepeatSampleTextChirho = (sampleChirho: LatinSymbolTextRepeatSampleChirho): string =>
+    sampleChirho.textChirho.trim().length === 0
+      ? "(blank text)"
+      : markdownCodeSpanChirho(sampleChirho.textChirho);
   const visionCountsChirho = Object.entries(statusChirho.visionTierChirho.completeVisionCountsChirho)
     .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
     .join(", ");
@@ -5245,6 +5372,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "- Latin/symbol pending counts subtract accepted-clean reviews and accepted explicit policies; open issue reviews keep items pending.",
     `- Latin/symbol image packet: \`${relativeProjectPathChirho(LATIN_SYMBOL_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Latin/symbol human review quickstart: \`${relativeProjectPathChirho(LATIN_SYMBOL_HUMAN_REVIEW_QUICKSTART_PATH_CHIRHO)}\``,
+    `- Latin/symbol repeat-cluster handoff: \`${LATIN_SYMBOL_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO}\``,
     `- Expert non-Latin live reviewer: http://localhost:8771/ (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s); command: \`bun run vision-tier-expert-review-chirho\`${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertAllChirho)})`,
     `- Expert non-Latin has-text lane: ${expertReviewUrlChirho(undefined, undefined, undefined, undefined, "nonblank-chirho")} (${statusChirho.visionTierChirho.pendingNonblankTextItemCountChirho} pending confirmation(s) with current text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertNonblankChirho)})`,
     `- Expert non-Latin blank-text lane: ${expertReviewUrlChirho(undefined, undefined, undefined, undefined, "blank-chirho")} (${statusChirho.visionTierChirho.pendingBlankTextItemCountChirho} pending blank item(s) requiring supplied text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertBlankChirho)})`,
@@ -5555,6 +5683,17 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Stale review rows: ${statusChirho.latinSymbolVisionChirho.staleReviewCountChirho}`,
     `- Live pending decisions: ${statusChirho.latinSymbolVisionChirho.pendingDecisionCountChirho}`,
     `- Live pending counts: ${Object.entries(statusChirho.latinSymbolVisionChirho.pendingDecisionCountsChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
+    `- Repeat text groups among pending Latin/symbol items: ${statusChirho.latinSymbolVisionChirho.repeatSummaryChirho.textGroupCountChirho}`,
+    `- Repeat duplicate groups/items: ${statusChirho.latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextGroupCountChirho} group(s), ${statusChirho.latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextItemCountChirho} item(s)`,
+    `- Repeat singleton groups: ${statusChirho.latinSymbolVisionChirho.repeatSummaryChirho.singletonTextGroupCountChirho}`,
+    `- Repeat duplicate groups by script: ${countEntriesChirho(statusChirho.latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextGroupCountsByScriptChirho)}`,
+    `- Repeat duplicate items by script: ${countEntriesChirho(statusChirho.latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextItemCountsByScriptChirho)}`,
+    "- Latin/symbol repeat clusters are planning aids only; every item still needs its own exact print review or explicit policy row.",
+    `- Latin/symbol repeat-cluster handoff: \`${LATIN_SYMBOL_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO}\``,
+    ...statusChirho.latinSymbolVisionChirho.repeatSummaryChirho.samplesChirho.map(
+      (sampleChirho) =>
+        `  - ${sampleChirho.scriptChirho}/${sampleChirho.symbolRiskChirho} x${sampleChirho.countChirho} ${latinSymbolRepeatSampleTextChirho(sampleChirho)}; first pending: ${sampleChirho.reviewUrlChirho}`
+    ),
     `- Remaining decisions: ${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho}`,
     "",
     "## Latin/Symbol Review Store",
@@ -5690,6 +5829,46 @@ function attributionCleanupHandoffMarkdownChirho(statusChirho: CertificationStat
   ].join("\n");
 }
 
+function latinSymbolRepeatClusterMarkdownChirho(statusChirho: CertificationStatusChirho): string {
+  const summaryChirho = statusChirho.latinSymbolVisionChirho.repeatSummaryChirho;
+  const groupLinesChirho = summaryChirho.groupsChirho.length === 0
+    ? ["- No duplicate Latin/symbol text groups are currently pending."]
+    : summaryChirho.groupsChirho.flatMap((groupChirho, indexChirho) => {
+        const textDisplayChirho = groupChirho.textChirho.trim().length === 0
+          ? "(blank text)"
+          : markdownCodeSpanChirho(groupChirho.textChirho);
+        return [
+          `## ${indexChirho + 1}. ${groupChirho.scriptChirho}/${groupChirho.symbolRiskChirho} x${groupChirho.countChirho} ${textDisplayChirho}`,
+          "",
+          `- First pending exact-text view: ${groupChirho.reviewUrlChirho}`,
+          `- Item IDs: ${groupChirho.itemsChirho.map((itemChirho) => itemChirho.idChirho).join(", ")}`,
+          "- Items:",
+          ...groupChirho.itemsChirho.map((itemChirho) =>
+            `  - ${itemChirho.idChirho} (vol ${itemChirho.volumeChirho}; ${itemChirho.itemKindChirho}): ${itemChirho.reviewUrlChirho}`
+          ),
+          "",
+        ];
+      });
+  return [
+    "<!-- For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16 -->",
+    "# Latin Symbol Repeat Cluster Handoff Chirho",
+    "",
+    `Generated: ${statusChirho.generatedAtChirho}`,
+    "",
+    "This is a non-certifying planning aid. Repeated text can make review faster, but every listed item still needs its own exact print review or explicit policy row. Do not use this file to decrement the certification gate.",
+    "",
+    `- Pending Latin/symbol decisions: ${statusChirho.latinSymbolVisionChirho.pendingDecisionCountChirho}`,
+    `- Text groups: ${summaryChirho.textGroupCountChirho}`,
+    `- Duplicate groups: ${summaryChirho.duplicateTextGroupCountChirho}`,
+    `- Duplicate items: ${summaryChirho.duplicateTextItemCountChirho}`,
+    `- Singleton groups: ${summaryChirho.singletonTextGroupCountChirho}`,
+    `- Duplicate groups by script: ${Object.entries(summaryChirho.duplicateTextGroupCountsByScriptChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
+    `- Duplicate items by script: ${Object.entries(summaryChirho.duplicateTextItemCountsByScriptChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
+    "",
+    ...groupLinesChirho,
+  ].join("\n");
+}
+
 function expertRepeatClusterMarkdownChirho(statusChirho: CertificationStatusChirho): string {
   const summaryChirho = statusChirho.visionTierChirho.repeatSummaryChirho;
   const groupLinesChirho = summaryChirho.groupsChirho.length === 0
@@ -5774,6 +5953,10 @@ function mainChirho(): void {
   writeTextAtomicChirho(
     join(outDirChirho, EXPERT_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO),
     expertRepeatClusterMarkdownChirho(statusChirho)
+  );
+  writeTextAtomicChirho(
+    join(outDirChirho, LATIN_SYMBOL_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO),
+    latinSymbolRepeatClusterMarkdownChirho(statusChirho)
   );
   writeTextAtomicChirho(
     join(outDirChirho, ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO),
