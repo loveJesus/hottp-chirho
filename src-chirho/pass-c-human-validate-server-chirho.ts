@@ -1363,6 +1363,7 @@ function pageHtmlChirho(): string {
     .line-image-frame-chirho { position: relative; }
     .line-image-chirho { display: block; width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
     .span-marker-chirho { position: absolute; border: 2px solid #d23f31; background: rgba(210, 63, 49, 0.16); box-sizing: border-box; pointer-events: none; }
+    .target-boundary-note-chirho { margin: -4px 0 12px; border: 1px solid #d6d9dd; border-top: 0; background: #fff; color: #3d4650; font-size: 12px; line-height: 1.35; padding: 8px 10px; }
     .target-row-chirho { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 14px; }
     .label-chirho { color: #59636f; font-size: 13px; font-weight: 650; }
     .hebrew-chirho { direction: rtl; unicode-bidi: plaintext; font-size: 32px; line-height: 1.35; background: white; border: 1px solid #d6d9dd; padding: 12px; min-height: 56px; }
@@ -2099,6 +2100,15 @@ function pageHtmlChirho(): string {
       }
       return wrapChirho;
     }
+    function targetBoundaryTextChirho(itemChirho) {
+      const spanStartChirho = Number(itemChirho.spanXMinPxChirho);
+      const spanWidthChirho = Number(itemChirho.spanWidthPxChirho);
+      const lineWidthChirho = Number(itemChirho.lineWidthPxChirho);
+      const spanEndChirho = spanStartChirho + spanWidthChirho;
+      return "Target span: x" + spanStartChirho + ".." + spanEndChirho + " of " + lineWidthChirho +
+        "px; segment " + itemChirho.segmentIndexChirho +
+        "; clean certification covers exactly the red-boxed printed content, spacing, maqqef, punctuation, and word boundaries.";
+    }
     function renderChirho() {
       syncUrlChirho();
       const appChirho = document.getElementById("app-chirho");
@@ -2127,6 +2137,7 @@ function pageHtmlChirho(): string {
       targetFrameChirho.appendChild(targetMarkerChirho);
       targetWrapChirho.appendChild(targetFrameChirho);
       leftChirho.appendChild(targetWrapChirho);
+      leftChirho.appendChild(elChirho("div", { classChirho: "target-boundary-note-chirho", textChirho: targetBoundaryTextChirho(itemChirho) }));
 
       leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Full line" }));
       const imageWrapChirho = elChirho("div", { classChirho: "line-image-wrap-chirho" });
