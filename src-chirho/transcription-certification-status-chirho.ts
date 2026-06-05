@@ -464,6 +464,19 @@ function countExpertItemsBySourceChirho(itemsChirho: Array<{ visionSourceChirho?
   return countsChirho;
 }
 
+function countExpertItemsByScriptSourceChirho(
+  itemsChirho: Array<{ scriptChirho?: string; visionSourceChirho?: string }>
+): Record<string, Record<string, number>> {
+  const countsChirho: Record<string, Record<string, number>> = {};
+  for (const itemChirho of itemsChirho) {
+    const scriptChirho = itemChirho.scriptChirho ?? "missing-script-chirho";
+    const sourceChirho = itemChirho.visionSourceChirho ?? "missing-source-chirho";
+    countsChirho[scriptChirho] ??= {};
+    countsChirho[scriptChirho][sourceChirho] = (countsChirho[scriptChirho][sourceChirho] ?? 0) + 1;
+  }
+  return countsChirho;
+}
+
 interface ExpertPackImageDriftChirho {
   idChirho: string;
   reasonChirho: string;
@@ -876,9 +889,11 @@ interface CertificationStatusChirho {
     liveVisionItemCountChirho: number;
     liveVisionCountsChirho: Record<string, number>;
     liveVisionSourceCountsChirho: Record<string, number>;
+    liveVisionScriptSourceCountsChirho: Record<string, Record<string, number>>;
     pendingVisionItemCountChirho: number;
     pendingVisionCountsChirho: Record<string, number>;
     pendingVisionSourceCountsChirho: Record<string, number>;
+    pendingVisionScriptSourceCountsChirho: Record<string, Record<string, number>>;
     pendingVolumeCountsChirho: Record<string, number>;
     pendingPriorityItemCountChirho: number;
     pendingAppendixItemCountChirho: number;
@@ -3661,9 +3676,11 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     liveVisionItemCountChirho: visionTierLiveItemsChirho.length,
     liveVisionCountsChirho: countVisionTierExpertByScriptChirho(visionTierLiveItemsChirho),
     liveVisionSourceCountsChirho: countExpertItemsBySourceChirho(visionTierLiveItemsChirho),
+    liveVisionScriptSourceCountsChirho: countExpertItemsByScriptSourceChirho(visionTierLiveItemsChirho),
     pendingVisionItemCountChirho: pendingVisionTierLiveItemsChirho.length,
     pendingVisionCountsChirho: countVisionTierExpertByScriptChirho(pendingVisionTierLiveItemsChirho),
     pendingVisionSourceCountsChirho: countExpertItemsBySourceChirho(pendingVisionTierLiveItemsChirho),
+    pendingVisionScriptSourceCountsChirho: countExpertItemsByScriptSourceChirho(pendingVisionTierLiveItemsChirho),
     pendingVolumeCountsChirho: countByVolumeChirho(pendingExpertManifestItemsChirho),
     pendingPriorityItemCountChirho: pendingExpertManifestItemsChirho.filter((itemChirho) => itemChirho.priorityMatchChirho).length,
     pendingAppendixItemCountChirho: pendingExpertManifestItemsChirho.filter((itemChirho) => !itemChirho.priorityMatchChirho).length,
@@ -4432,6 +4449,46 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     expertAppendixChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, undefined, "appendix-chirho"),
     expertHebrewChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, "hebrew-chirho"),
     expertGreekChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, "greek-chirho"),
+    expertHebrewExplicitSpanSourceChirho: expertReviewStartUrlChirho(
+      pendingExpertManifestItemsChirho,
+      "hebrew-chirho",
+      undefined,
+      undefined,
+      undefined,
+      "explicit-span-chirho"
+    ),
+    expertHebrewPassCOcrSourceChirho: expertReviewStartUrlChirho(
+      pendingExpertManifestItemsChirho,
+      "hebrew-chirho",
+      undefined,
+      undefined,
+      undefined,
+      "pass-c-ocr-span-chirho"
+    ),
+    expertHebrewD1DerivedSourceChirho: expertReviewStartUrlChirho(
+      pendingExpertManifestItemsChirho,
+      "hebrew-chirho",
+      undefined,
+      undefined,
+      undefined,
+      "d1-derived-chirho"
+    ),
+    expertGreekExplicitSpanSourceChirho: expertReviewStartUrlChirho(
+      pendingExpertManifestItemsChirho,
+      "greek-chirho",
+      undefined,
+      undefined,
+      undefined,
+      "explicit-span-chirho"
+    ),
+    expertGreekPassCOcrSourceChirho: expertReviewStartUrlChirho(
+      pendingExpertManifestItemsChirho,
+      "greek-chirho",
+      undefined,
+      undefined,
+      undefined,
+      "pass-c-ocr-span-chirho"
+    ),
     expertSyriacChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, "syriac-chirho"),
     expertSyriacNonblankChirho: expertReviewStartUrlChirho(
       pendingExpertManifestItemsChirho,
@@ -4600,6 +4657,10 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     statusChirho.visionTierChirho.pendingVisionSourceCountsChirho[sourceChirho] ?? 0;
   const expertSourceCountChirho = (sourceChirho: string): number =>
     statusChirho.visionTierChirho.liveVisionSourceCountsChirho[sourceChirho] ?? 0;
+  const pendingExpertScriptSourceCountChirho = (scriptChirho: string, sourceChirho: string): number =>
+    statusChirho.visionTierChirho.pendingVisionScriptSourceCountsChirho[scriptChirho]?.[sourceChirho] ?? 0;
+  const expertScriptSourceCountChirho = (scriptChirho: string, sourceChirho: string): number =>
+    statusChirho.visionTierChirho.liveVisionScriptSourceCountsChirho[scriptChirho]?.[sourceChirho] ?? 0;
   const expertPriorityCountChirho = statusChirho.visionTierChirho.priorityItemCountChirho;
   const expertAppendixCountChirho = Math.max(
     0,
@@ -5007,7 +5068,12 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Expert Pass-C OCR source lane: ${expertReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, "pass-c-ocr-span-chirho")} (${pendingExpertSourceCountChirho("pass-c-ocr-span-chirho")} pending of ${expertSourceCountChirho("pass-c-ocr-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertPassCOcrSourceChirho)})`,
     `- Expert D1-derived source lane: ${expertReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, "d1-derived-chirho")} (${pendingExpertSourceCountChirho("d1-derived-chirho")} pending of ${expertSourceCountChirho("d1-derived-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertD1DerivedSourceChirho)})`,
     `- Expert Hebrew/WLC lane: ${expertReviewUrlChirho("hebrew-chirho")} (${pendingExpertScriptCountChirho("hebrew-chirho")} pending of ${expertScriptCountChirho("hebrew-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertHebrewChirho)})`,
+    `- Expert Hebrew/WLC explicit-span lane: ${expertReviewUrlChirho("hebrew-chirho", undefined, undefined, undefined, undefined, "explicit-span-chirho")} (${pendingExpertScriptSourceCountChirho("hebrew-chirho", "explicit-span-chirho")} pending of ${expertScriptSourceCountChirho("hebrew-chirho", "explicit-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertHebrewExplicitSpanSourceChirho)})`,
+    `- Expert Hebrew/WLC Pass-C OCR lane: ${expertReviewUrlChirho("hebrew-chirho", undefined, undefined, undefined, undefined, "pass-c-ocr-span-chirho")} (${pendingExpertScriptSourceCountChirho("hebrew-chirho", "pass-c-ocr-span-chirho")} pending of ${expertScriptSourceCountChirho("hebrew-chirho", "pass-c-ocr-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertHebrewPassCOcrSourceChirho)})`,
+    `- Expert Hebrew/WLC D1-derived lane: ${expertReviewUrlChirho("hebrew-chirho", undefined, undefined, undefined, undefined, "d1-derived-chirho")} (${pendingExpertScriptSourceCountChirho("hebrew-chirho", "d1-derived-chirho")} pending of ${expertScriptSourceCountChirho("hebrew-chirho", "d1-derived-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertHebrewD1DerivedSourceChirho)})`,
     `- Expert Greek lane: ${expertReviewUrlChirho("greek-chirho")} (${pendingExpertScriptCountChirho("greek-chirho")} pending of ${expertScriptCountChirho("greek-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertGreekChirho)})`,
+    `- Expert Greek explicit-span lane: ${expertReviewUrlChirho("greek-chirho", undefined, undefined, undefined, undefined, "explicit-span-chirho")} (${pendingExpertScriptSourceCountChirho("greek-chirho", "explicit-span-chirho")} pending of ${expertScriptSourceCountChirho("greek-chirho", "explicit-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertGreekExplicitSpanSourceChirho)})`,
+    `- Expert Greek Pass-C OCR lane: ${expertReviewUrlChirho("greek-chirho", undefined, undefined, undefined, undefined, "pass-c-ocr-span-chirho")} (${pendingExpertScriptSourceCountChirho("greek-chirho", "pass-c-ocr-span-chirho")} pending of ${expertScriptSourceCountChirho("greek-chirho", "pass-c-ocr-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertGreekPassCOcrSourceChirho)})`,
     `- Expert Syriac reader lane: ${expertReviewUrlChirho("syriac-chirho")} (${pendingExpertScriptCountChirho("syriac-chirho")} pending of ${expertScriptCountChirho("syriac-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacChirho)})`,
     `- Expert Syriac reader has-text lane: ${expertReviewUrlChirho("syriac-chirho", undefined, undefined, undefined, "nonblank-chirho")} (${pendingExpertScriptNonblankCountChirho("syriac-chirho")} pending confirmation(s) with current text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacNonblankChirho)})`,
     `- Expert Syriac reader blank-text handoff lane: ${expertReviewUrlChirho("syriac-chirho", undefined, undefined, undefined, "blank-chirho")} (${pendingExpertScriptBlankCountChirho("syriac-chirho")} pending blank item(s) requiring supplied text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacBlankChirho)})`,
@@ -5026,6 +5092,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "## Suggested Review Routing",
     "",
     `- Hallelujah starting lanes: pending raw Hebrew + Hebrew/WLC expert lane + Greek expert lane (${hallelujahReviewCountChirho} review target(s)). Start with raw Hebrew primary vols 3-5, then raw Hebrew vols 1-2 / partial, then Hebrew/WLC and Greek expert lanes; flag or skip Hebrew-script Aramaic/Targum details outside your competence.`,
+    `- Hallelujah expert source order: Hebrew/WLC explicit-span ${pendingExpertScriptSourceCountChirho("hebrew-chirho", "explicit-span-chirho")} item(s), Hebrew/WLC D1-derived ${pendingExpertScriptSourceCountChirho("hebrew-chirho", "d1-derived-chirho")} item(s), Greek Pass-C OCR ${pendingExpertScriptSourceCountChirho("greek-chirho", "pass-c-ocr-span-chirho")} item(s), then Greek explicit-span ${pendingExpertScriptSourceCountChirho("greek-chirho", "explicit-span-chirho")} item(s). Hebrew/WLC Pass-C OCR currently has ${pendingExpertScriptSourceCountChirho("hebrew-chirho", "pass-c-ocr-span-chirho")} item(s).`,
     `- Attribution cleanup: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho} prior Pass-C human validation row(s) still need explicit reviewer attribution in ${rawHebrewReviewUrlChirho(undefined, "attribution-blocked-chirho")}. Reattribute only rows genuinely attributable to the named human reviewer; otherwise use ${rawHebrewReviewUrlChirho(undefined, "attribution-rereview-chirho")} to re-review them explicitly.`,
     `- External script-expert lanes: Syriac reader + Arabist (${externalExpertReviewCountChirho} item(s): ${externalExpertNonblankReviewCountChirho} with current text, ${externalExpertBlankReviewCountChirho} blank). A non-reader can flag crop or segmentation problems, but should not confirm exact letters, dots, vowels, or punctuation. Syriac readers can use the has-text lane first; the blank lane needs the supplied-text handoff before confirmation.`,
     "- Hebrew-script Aramaic/Targum: confirm consonants only when the print is clear; route exact Aramaic vocalization, dagesh/shin-dot details, and Targum wording to a Targum/Aramaic reviewer.",
