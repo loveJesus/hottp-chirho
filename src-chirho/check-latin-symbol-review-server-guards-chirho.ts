@@ -37,6 +37,10 @@ const LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "clean acceptance checkbox required",
   "issue review cannot carry the clean-acceptance checkbox",
   "clean acceptance covers only this target crop and current text, with exact letters/digits/sigla, punctuation, spacing, and segmentation checked against the full line.",
+  "Repeat cluster",
+  "Planning aid only; every item still needs exact print review or an explicit policy row.",
+  "Open exact-text cluster",
+  "exact-text-chirho",
 ];
 const LATIN_SYMBOL_QUICKSTART_SNIPPETS_CHIRHO = [
   "Latin/Symbol Human Review Quickstart Chirho",

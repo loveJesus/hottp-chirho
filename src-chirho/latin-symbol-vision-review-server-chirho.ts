@@ -673,6 +673,31 @@ function htmlChirho(): string {
         "; risk " + symbolRiskLabelChirho(itemChirho.symbolRiskChirho) +
         "; clean acceptance covers only this target crop and current text, with exact letters/digits/sigla, punctuation, spacing, and segmentation checked against the full line.";
     }
+    function repeatClusterItemsChirho(itemChirho) {
+      const acceptedChirho = acceptedDecisionIdsChirho();
+      return itemsChirho.filter((candidateChirho) =>
+        !acceptedChirho.has(candidateChirho.idChirho) &&
+        candidateChirho.textChirho === itemChirho.textChirho &&
+        candidateChirho.scriptChirho === itemChirho.scriptChirho &&
+        candidateChirho.symbolRiskChirho === itemChirho.symbolRiskChirho
+      );
+    }
+    function exactTextClusterUrlChirho(itemChirho) {
+      const paramsChirho = new URLSearchParams();
+      paramsChirho.set("script-chirho", itemChirho.scriptChirho);
+      paramsChirho.set("symbol-risk-chirho", itemChirho.symbolRiskChirho);
+      paramsChirho.set("exact-text-chirho", itemChirho.textChirho);
+      paramsChirho.set("item-chirho", itemChirho.idChirho);
+      return window.location.pathname + "?" + paramsChirho.toString();
+    }
+    function repeatClusterTextChirho(itemChirho) {
+      const clusterCountChirho = repeatClusterItemsChirho(itemChirho).length;
+      if (clusterCountChirho <= 1) {
+        return "Singleton exact text for this script/risk. Planning aid only; every item still needs exact print review or an explicit policy row.";
+      }
+      return clusterCountChirho +
+        " pending item(s) share this exact text/script/risk. Planning aid only; every item still needs exact print review or an explicit policy row.";
+    }
     async function loadStateChirho() {
       const responseChirho = await fetch("/api-chirho/state-chirho");
       const dataChirho = await responseChirho.json();
@@ -738,6 +763,15 @@ function htmlChirho(): string {
       }
       metaChirho.appendChild(metaGridChirho);
       sideChirho.appendChild(metaChirho);
+      const repeatClusterChirho = elChirho("div", { classChirho: "box-chirho" });
+      repeatClusterChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Repeat cluster" }));
+      repeatClusterChirho.appendChild(elChirho("div", { textChirho: repeatClusterTextChirho(itemChirho) }));
+      repeatClusterChirho.appendChild(elChirho("a", {
+        classChirho: "toolbar-link-chirho",
+        href: exactTextClusterUrlChirho(itemChirho),
+        textChirho: "Open exact-text cluster"
+      }));
+      sideChirho.appendChild(repeatClusterChirho);
       if (reviewChirho?.verdictChirho === "reviewed-issues-chirho") {
         sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "This item has issue flags and remains pending until accepted clean." }));
       }
