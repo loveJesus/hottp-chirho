@@ -21,6 +21,7 @@ import {
 
 const MODULE_CHIRHO = "check-certification-status-output-hygiene-chirho";
 const DEFAULT_STATUS_OUT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "certification-status-chirho");
+const ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO = "attribution-cleanup-handoff-chirho.md";
 const PACKAGE_JSON_PATH_CHIRHO = join(PROJECT_ROOT_CHIRHO, "package.json");
 const CERTIFICATION_TSCONFIG_PATH_CHIRHO = join(PROJECT_ROOT_CHIRHO, "tsconfig-certification-chirho.json");
 const STATUS_LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
@@ -35,6 +36,8 @@ const REVIEW_SERVER_PORTS_CHIRHO = new Set([8766, 8770, 8771]);
 const REVIEW_VOLUMES_CHIRHO = [1, 2, 3, 4, 5] as const;
 const RAW_HEBREW_CLEAN_CERTIFICATION_STATUS_LINE_CHIRHO =
   "- Raw Hebrew clean certification: leave issue boxes unchecked only when letters, vowels/marks, accents/meteg, punctuation, spacing, maqqef, word boundaries, script, and the red box all match the print, then check the clean-certification acknowledgement before saving as clean.";
+const ATTRIBUTION_HANDOFF_MARKDOWN_HEADER_CHIRHO =
+  "<!-- For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16 -->";
 
 interface CertificationStatusOutputChirho {
   generatedAtChirho?: string;
@@ -3840,21 +3843,147 @@ function assertPassCHumanReattributionHandoffChirho(
   }
 }
 
+function assertAttributionCleanupHandoffArtifactChirho(
+  handoffMarkdownChirho: string,
+  statusChirho: CertificationStatusOutputChirho
+): void {
+  assertMarkdownHeaderChirho(
+    ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO,
+    handoffMarkdownChirho,
+    ATTRIBUTION_HANDOFF_MARKDOWN_HEADER_CHIRHO
+  );
+  assertGeneratedCheckChirho(
+    typeof statusChirho.generatedAtChirho === "string" &&
+      handoffMarkdownChirho.includes(`Generated: ${statusChirho.generatedAtChirho}`),
+    "attribution cleanup handoff Generated line does not match status JSON generatedAtChirho"
+  );
+  assertMarkdownContainsChirho(
+    handoffMarkdownChirho,
+    "This is a non-certifying handoff",
+    "attribution handoff non-certifying disclaimer"
+  );
+  assertMarkdownContainsChirho(
+    handoffMarkdownChirho,
+    "## Unchanged-Live-Text Batch Commands",
+    "attribution handoff unchanged batch heading"
+  );
+  assertMarkdownContainsChirho(
+    handoffMarkdownChirho,
+    "- Changed-live-text rows should be re-reviewed in the Attribution re-review lane. The generated commands intentionally omit `--allow-live-text-changed-chirho`.",
+    "attribution handoff changed-text warning"
+  );
+  assertGeneratedCheckChirho(
+    [...handoffMarkdownChirho.matchAll(/--allow-live-text-changed-chirho/g)].length === 1,
+    "attribution cleanup handoff should mention --allow-live-text-changed-chirho only in the warning, not in generated commands"
+  );
+
+  const humanDbChirho = statusChirho.humanValidationDbChirho;
+  const genericRowsChirho = arrayFieldChirho(
+    humanDbChirho,
+    "genericReviewerRowDetailsChirho",
+    "humanValidationDbChirho"
+  );
+  const genericGroupsChirho = arrayFieldChirho(
+    humanDbChirho,
+    "genericReviewerRowGroupsChirho",
+    "humanValidationDbChirho"
+  );
+  assertMarkdownContainsChirho(
+    handoffMarkdownChirho,
+    `- Attribution-blocked rows: ${numberFieldChirho(humanDbChirho, "genericReviewerRowsChirho", "humanValidationDbChirho")}`,
+    "attribution handoff blocked row count"
+  );
+  assertMarkdownContainsChirho(
+    handoffMarkdownChirho,
+    `- Live text still matches original reviewed text: ${numberFieldChirho(humanDbChirho, "genericReviewerLiveTextMatchRowsChirho", "humanValidationDbChirho")}`,
+    "attribution handoff unchanged row count"
+  );
+  assertMarkdownContainsChirho(
+    handoffMarkdownChirho,
+    `- Live text changed since original review: ${numberFieldChirho(humanDbChirho, "genericReviewerLiveTextMismatchRowsChirho", "humanValidationDbChirho")}`,
+    "attribution handoff changed row count"
+  );
+
+  for (const rowChirho of genericRowsChirho) {
+    const idChirho = numberFieldChirho(rowChirho, "idChirho", "humanValidationDbChirho.genericReviewerRowDetailsChirho[]");
+    const locationChirho = stringFieldChirho(
+      rowChirho,
+      "locationChirho",
+      "humanValidationDbChirho.genericReviewerRowDetailsChirho[]"
+    );
+    assertMarkdownContainsChirho(handoffMarkdownChirho, `## id ${idChirho} - ${locationChirho}`, `attribution handoff row ${idChirho}`);
+    const liveTextMatchesOriginalChirho = nullableBooleanFieldChirho(
+      rowChirho,
+      "liveTextMatchesOriginalChirho",
+      "humanValidationDbChirho.genericReviewerRowDetailsChirho[]"
+    );
+    if (liveTextMatchesOriginalChirho === false) {
+      assertMarkdownContainsChirho(
+        handoffMarkdownChirho,
+        "Reattribute command omitted: live text changed since the original row.",
+        `attribution handoff changed row ${idChirho} command omission`
+      );
+    }
+  }
+
+  const unchangedBatchGroupsChirho = genericGroupsChirho.filter(
+    (groupChirho) =>
+      numberArrayFieldChirho(groupChirho, "liveTextMatchIdsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]").length > 1
+  );
+  if (unchangedBatchGroupsChirho.length === 0) {
+    assertMarkdownContainsChirho(
+      handoffMarkdownChirho,
+      "- No unchanged-live-text exact-ID batch groups currently have more than one row.",
+      "attribution handoff no unchanged batches"
+    );
+  }
+  for (const groupChirho of unchangedBatchGroupsChirho) {
+    const matchIdsChirho = numberArrayFieldChirho(groupChirho, "liveTextMatchIdsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    const mismatchIdsChirho = numberArrayFieldChirho(groupChirho, "liveTextMismatchIdsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    const unknownIdsChirho = numberArrayFieldChirho(groupChirho, "liveTextUnknownIdsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    const matchHashArgsChirho = stringArrayFieldChirho(groupChirho, "liveTextMatchExpectedLiveTextHashArgsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    assertMarkdownContainsChirho(
+      handoffMarkdownChirho,
+      `unchanged ids ${matchIdsChirho.join(", ")}; excluded changed ids ${mismatchIdsChirho.join(", ") || "none"}; excluded unchecked ids ${unknownIdsChirho.join(", ") || "none"}`,
+      `attribution handoff unchanged batch ${matchIdsChirho.join(",")} summary`
+    );
+    assertMarkdownContainsChirho(
+      handoffMarkdownChirho,
+      `Unchanged batch dry-run: \`${reattributeBatchCommandFromFieldsChirho(matchIdsChirho, matchHashArgsChirho, "<why every unchanged selected row is attributable to that reviewer>", false)}\``,
+      `attribution handoff unchanged batch ${matchIdsChirho.join(",")} dry-run`
+    );
+    assertMarkdownContainsChirho(
+      handoffMarkdownChirho,
+      `Unchanged batch apply: \`${reattributeBatchCommandFromFieldsChirho(matchIdsChirho, matchHashArgsChirho, "<why every unchanged selected row is attributable to that reviewer>", true)}\``,
+      `attribution handoff unchanged batch ${matchIdsChirho.join(",")} apply`
+    );
+  }
+}
+
 function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const outDirChirho = parseArgValueChirho(argsChirho, "out-dir") ?? DEFAULT_STATUS_OUT_DIR_CHIRHO;
   const markdownPathChirho = join(outDirChirho, "status-chirho.md");
   const jsonPathChirho = join(outDirChirho, "status-chirho.json");
+  const attributionHandoffPathChirho = join(outDirChirho, ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO);
   assertGeneratedCheckChirho(existsSync(markdownPathChirho), `missing generated status Markdown: ${markdownPathChirho}`);
   assertGeneratedCheckChirho(existsSync(jsonPathChirho), `missing generated status JSON: ${jsonPathChirho}`);
+  assertGeneratedCheckChirho(
+    existsSync(attributionHandoffPathChirho),
+    `missing generated attribution cleanup handoff: ${attributionHandoffPathChirho}`
+  );
 
   const markdownChirho = readFileSync(markdownPathChirho, "utf8");
   const jsonTextChirho = readFileSync(jsonPathChirho, "utf8");
+  const attributionHandoffMarkdownChirho = readFileSync(attributionHandoffPathChirho, "utf8");
   assertGeneratedTextHygieneChirho(markdownPathChirho, markdownChirho);
   assertGeneratedTextHygieneChirho(jsonPathChirho, jsonTextChirho);
+  assertGeneratedTextHygieneChirho(attributionHandoffPathChirho, attributionHandoffMarkdownChirho);
   assertMarkdownHeaderChirho(markdownPathChirho, markdownChirho, JOHN_316_INLINE_MARKDOWN_HEADER_CHIRHO);
   assertStatusLocalArtifactLinksChirho(markdownChirho);
+  assertStatusLocalArtifactLinksChirho(attributionHandoffMarkdownChirho);
   assertStatusBunRunCommandReferencesChirho(markdownChirho);
+  assertStatusBunRunCommandReferencesChirho(attributionHandoffMarkdownChirho);
 
   const statusChirho = JSON.parse(jsonTextChirho) as CertificationStatusOutputChirho;
   assertGeneratedCheckChirho(typeof statusChirho.generatedAtChirho === "string", "status JSON missing generatedAtChirho");
@@ -3893,6 +4022,7 @@ function mainChirho(): void {
   assertStrictBlindScanCoverageChirho(markdownChirho, statusChirho, remainingWorkStringsChirho);
   assertBlankExpertHandoffCoverageChirho(markdownChirho, statusChirho);
   assertPassCHumanReattributionHandoffChirho(markdownChirho, statusChirho, remainingWorkStringsChirho);
+  assertAttributionCleanupHandoffArtifactChirho(attributionHandoffMarkdownChirho, statusChirho);
   assertGeneratedCheckChirho(
     markdownChirho.includes(`Generated: ${statusChirho.generatedAtChirho}`),
     "status Markdown Generated line does not match status JSON generatedAtChirho"
