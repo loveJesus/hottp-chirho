@@ -11,6 +11,7 @@ import {
   mkdirSync,
   readFileSync,
   readdirSync,
+  rmSync,
   statSync,
 } from "fs";
 import { join, relative } from "path";
@@ -526,6 +527,7 @@ function markdownChirho(itemsChirho: ReviewItemChirho[], countsChirho: Record<st
 }
 
 function generatePackChirho(): void {
+  rmSync(OUT_DIR_CHIRHO, { recursive: true, force: true });
   mkdirSync(IMAGE_DIR_CHIRHO, { recursive: true });
   const explicitItemsChirho = discoverExplicitSpanItemsChirho();
   const d1ItemsChirho = discoverD1WordItemsChirho();

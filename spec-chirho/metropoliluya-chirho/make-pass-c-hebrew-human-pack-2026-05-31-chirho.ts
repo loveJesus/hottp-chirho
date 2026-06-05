@@ -9,6 +9,7 @@ import {
   existsSync,
   mkdirSync,
   readFileSync,
+  rmSync,
 } from "fs";
 import { join, relative } from "path";
 
@@ -392,6 +393,7 @@ function generatePackChirho(): void {
   if (!existsSync(REPORT_PATH_CHIRHO)) {
     throw new Error(`Validation report missing; run validate-pass-c-hebrew-chirho first: ${REPORT_PATH_CHIRHO}`);
   }
+  rmSync(OUT_DIR_CHIRHO, { recursive: true, force: true });
   mkdirSync(IMAGE_DIR_CHIRHO, { recursive: true });
   const reportChirho = JSON.parse(readFileSync(REPORT_PATH_CHIRHO, "utf8")) as ValidationReportChirho;
   const itemsChirho = sortSpansChirho(reportChirho.spansChirho).map((spanChirho) => {

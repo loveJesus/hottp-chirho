@@ -15,6 +15,7 @@ import {
   readFileSync,
   readdirSync,
   renameSync,
+  rmSync,
   statSync,
 } from "fs";
 import { dirname, join, relative } from "path";
@@ -390,7 +391,7 @@ function priorityMarkdownChirho(itemsChirho: PriorityManifestItemChirho[]): stri
     "",
     `- Reviewer: ${itemChirho.reviewerChirho}`,
     `- Location: vol ${itemChirho.volumeChirho}, p${itemChirho.pageChirho}, ${itemChirho.spanRefsChirho.join(", ")}`,
-    `- Current text: ${itemChirho.currentTextChirho}`,
+    `- Current text: ${displayCurrentTextChirho(itemChirho.currentTextChirho)}`,
     `- Question: ${itemChirho.questionChirho}`,
     ...(itemChirho.sourceNoteChirho ? [`- Source note: ${itemChirho.sourceNoteChirho}`] : []),
     "",
@@ -399,6 +400,10 @@ function priorityMarkdownChirho(itemsChirho: PriorityManifestItemChirho[]): stri
       "",
     ]),
   ]);
+}
+
+function displayCurrentTextChirho(textChirho: string): string {
+  return textChirho.length === 0 ? "[blank-current-text-chirho]" : textChirho;
 }
 
 function completeVisionMarkdownChirho(itemsChirho: VisionSpanItemChirho[]): string[] {
@@ -420,7 +425,7 @@ function completeVisionMarkdownChirho(itemsChirho: VisionSpanItemChirho[]): stri
         `- Location: vol ${itemChirho.volumeChirho}, p${itemChirho.pageChirho}, L${itemChirho.lineIndexChirho} S${itemChirho.segmentIndexChirho}`,
         `- Priority section: ${itemChirho.priorityMatchChirho ? "yes" : "no"}`,
         `- Vision source: ${itemChirho.visionSourceChirho}`,
-        `- Current text: ${itemChirho.currentTextChirho}`,
+        `- Current text: ${displayCurrentTextChirho(itemChirho.currentTextChirho)}`,
         "",
         `![${itemChirho.idChirho}](${itemChirho.markdownPathChirho})`,
         ""
@@ -591,6 +596,7 @@ const PRIORITY_ITEMS_CHIRHO: PriorityItemChirho[] = [
 ];
 
 function generatePacketChirho(): void {
+  rmSync(OUT_DIR_CHIRHO, { recursive: true, force: true });
   mkdirSync(IMAGE_DIR_CHIRHO, { recursive: true });
 
   const priorityItemsChirho: PriorityManifestItemChirho[] = PRIORITY_ITEMS_CHIRHO.map((itemChirho) => ({

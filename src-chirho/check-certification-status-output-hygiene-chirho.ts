@@ -12,13 +12,15 @@ import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import {
+  JOHN_316_INLINE_MARKDOWN_HEADER_CHIRHO,
+  assertGeneratedCheckChirho,
+  assertGeneratedTextHygieneChirho,
+  assertMarkdownHeaderChirho,
+} from "./generated-output-hygiene-chirho.ts";
 
 const MODULE_CHIRHO = "check-certification-status-output-hygiene-chirho";
 const DEFAULT_STATUS_OUT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "certification-status-chirho");
-const JOHN_316_MARKDOWN_HEADER_CHIRHO = [
-  "<!-- For God so loved the world that he gave his only begotten Son,",
-  "that whoever believes in him should not perish but have eternal life. John 3:16 -->",
-].join("\n");
 
 interface CertificationStatusOutputChirho {
   generatedAtChirho?: string;
@@ -31,70 +33,46 @@ function parseArgValueChirho(argsChirho: string[], nameChirho: string): string |
   return argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho))?.slice(prefixChirho.length);
 }
 
-function assertCheckChirho(conditionChirho: boolean, messageChirho: string): void {
-  if (!conditionChirho) throw new Error(messageChirho);
-}
-
-function assertNoTrailingWhitespaceChirho(pathChirho: string, textChirho: string): void {
-  const linesChirho = textChirho.split(/\n/);
-  linesChirho.forEach((lineChirho, indexChirho) => {
-    assertCheckChirho(
-      !/[ \t]$/.test(lineChirho),
-      `${pathChirho}:${indexChirho + 1} has trailing whitespace`
-    );
-  });
-}
-
-function assertNoRenderedSentinelLeakChirho(pathChirho: string, textChirho: string): void {
-  for (const sentinelChirho of ["undefined", "NaN", "[object Object]"]) {
-    assertCheckChirho(!textChirho.includes(sentinelChirho), `${pathChirho} contains rendered sentinel ${sentinelChirho}`);
-  }
-}
-
 function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const outDirChirho = parseArgValueChirho(argsChirho, "out-dir") ?? DEFAULT_STATUS_OUT_DIR_CHIRHO;
   const markdownPathChirho = join(outDirChirho, "status-chirho.md");
   const jsonPathChirho = join(outDirChirho, "status-chirho.json");
-  assertCheckChirho(existsSync(markdownPathChirho), `missing generated status Markdown: ${markdownPathChirho}`);
-  assertCheckChirho(existsSync(jsonPathChirho), `missing generated status JSON: ${jsonPathChirho}`);
+  assertGeneratedCheckChirho(existsSync(markdownPathChirho), `missing generated status Markdown: ${markdownPathChirho}`);
+  assertGeneratedCheckChirho(existsSync(jsonPathChirho), `missing generated status JSON: ${jsonPathChirho}`);
 
   const markdownChirho = readFileSync(markdownPathChirho, "utf8");
   const jsonTextChirho = readFileSync(jsonPathChirho, "utf8");
-  assertNoTrailingWhitespaceChirho(markdownPathChirho, markdownChirho);
-  assertNoTrailingWhitespaceChirho(jsonPathChirho, jsonTextChirho);
-  assertNoRenderedSentinelLeakChirho(markdownPathChirho, markdownChirho);
-  assertCheckChirho(
-    markdownChirho.startsWith(JOHN_316_MARKDOWN_HEADER_CHIRHO),
-    "status Markdown is missing the John 3:16 header"
-  );
+  assertGeneratedTextHygieneChirho(markdownPathChirho, markdownChirho);
+  assertGeneratedTextHygieneChirho(jsonPathChirho, jsonTextChirho);
+  assertMarkdownHeaderChirho(markdownPathChirho, markdownChirho, JOHN_316_INLINE_MARKDOWN_HEADER_CHIRHO);
 
   const statusChirho = JSON.parse(jsonTextChirho) as CertificationStatusOutputChirho;
-  assertCheckChirho(typeof statusChirho.generatedAtChirho === "string", "status JSON missing generatedAtChirho");
-  assertCheckChirho(
+  assertGeneratedCheckChirho(typeof statusChirho.generatedAtChirho === "string", "status JSON missing generatedAtChirho");
+  assertGeneratedCheckChirho(
     typeof statusChirho.certificationCompleteChirho === "boolean",
     "status JSON missing certificationCompleteChirho boolean"
   );
-  assertCheckChirho(Array.isArray(statusChirho.remainingWorkChirho), "status JSON missing remainingWorkChirho array");
+  assertGeneratedCheckChirho(Array.isArray(statusChirho.remainingWorkChirho), "status JSON missing remainingWorkChirho array");
   const remainingWorkChirho = statusChirho.remainingWorkChirho;
-  assertCheckChirho(
+  assertGeneratedCheckChirho(
     remainingWorkChirho.every((itemChirho) => typeof itemChirho === "string" && itemChirho.trim().length > 0),
     "status JSON remainingWorkChirho must contain only non-empty strings"
   );
   if (!statusChirho.certificationCompleteChirho) {
-    assertCheckChirho(remainingWorkChirho.length > 0, "incomplete status JSON has no remainingWorkChirho blockers");
+    assertGeneratedCheckChirho(remainingWorkChirho.length > 0, "incomplete status JSON has no remainingWorkChirho blockers");
   }
   for (const itemChirho of remainingWorkChirho as string[]) {
-    assertCheckChirho(
+    assertGeneratedCheckChirho(
       markdownChirho.includes(itemChirho),
       `status Markdown does not display remaining-work blocker: ${itemChirho}`
     );
   }
-  assertCheckChirho(
+  assertGeneratedCheckChirho(
     markdownChirho.includes(`Generated: ${statusChirho.generatedAtChirho}`),
     "status Markdown Generated line does not match status JSON generatedAtChirho"
   );
-  assertCheckChirho(
+  assertGeneratedCheckChirho(
     markdownChirho.includes(`Certification complete: ${statusChirho.certificationCompleteChirho ? "yes" : "no"}`),
     "status Markdown certification-complete line does not match status JSON"
   );

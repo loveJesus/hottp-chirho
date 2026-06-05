@@ -13,16 +13,17 @@ import { existsSync, readdirSync, readFileSync, statSync } from "fs";
 import { join, relative, resolve, sep } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import {
+  JOHN_316_BLOCK_MARKDOWN_HEADER_CHIRHO,
+  assertGeneratedCheckChirho,
+  assertGeneratedTextHygieneChirho,
+  assertMarkdownHeaderChirho,
+  countOccurrencesChirho,
+} from "./generated-output-hygiene-chirho.ts";
 
 const MODULE_CHIRHO = "check-export-markdown-output-hygiene-chirho";
 const MARKDOWN_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "markdown-chirho");
 const EXPORT_REPORT_PATH_CHIRHO = join(MARKDOWN_DIR_CHIRHO, "export-report-chirho.json");
-const JOHN_316_MARKDOWN_HEADER_CHIRHO = [
-  "<!--",
-  "For God so loved the world that he gave his only begotten Son,",
-  "that whoever believes in him should not perish but have eternal life. John 3:16",
-  "-->",
-].join("\n");
 
 interface ExportPageReportChirho {
   volumeChirho?: number;
@@ -46,10 +47,6 @@ interface ExportReportChirho {
   issuesChirho?: ExportIssueChirho[];
 }
 
-function assertCheckChirho(conditionChirho: boolean, messageChirho: string): void {
-  if (!conditionChirho) throw new Error(messageChirho);
-}
-
 function normalizedPathChirho(pathChirho: string): string {
   return resolve(pathChirho);
 }
@@ -57,7 +54,7 @@ function normalizedPathChirho(pathChirho: string): string {
 function assertInsideMarkdownDirChirho(pathChirho: string): void {
   const resolvedChirho = normalizedPathChirho(pathChirho);
   const rootChirho = normalizedPathChirho(MARKDOWN_DIR_CHIRHO);
-  assertCheckChirho(
+  assertGeneratedCheckChirho(
     resolvedChirho === rootChirho || resolvedChirho.startsWith(`${rootChirho}${sep}`),
     `export Markdown path escapes markdown directory: ${pathChirho}`
   );
@@ -77,55 +74,22 @@ function collectMarkdownFilesChirho(dirChirho: string): string[] {
   return filesChirho.sort();
 }
 
-function assertNoTrailingWhitespaceChirho(pathChirho: string, textChirho: string): void {
-  const linesChirho = textChirho.split(/\n/);
-  linesChirho.forEach((lineChirho, indexChirho) => {
-    assertCheckChirho(
-      !/[ \t]$/.test(lineChirho),
-      `${pathChirho}:${indexChirho + 1} has trailing whitespace`
-    );
-  });
-}
-
-function assertNoRenderedSentinelLeakChirho(pathChirho: string, textChirho: string): void {
-  for (const sentinelChirho of ["undefined", "NaN", "[object Object]", "\uFFFD"]) {
-    assertCheckChirho(!textChirho.includes(sentinelChirho), `${pathChirho} contains rendered sentinel ${sentinelChirho}`);
-  }
-}
-
-function assertTextHygieneChirho(pathChirho: string, textChirho: string): void {
-  assertNoTrailingWhitespaceChirho(pathChirho, textChirho);
-  assertNoRenderedSentinelLeakChirho(pathChirho, textChirho);
-  assertCheckChirho(textChirho.normalize("NFC") === textChirho, `${pathChirho} is not NFC-normalized`);
-}
-
 function emptySpanMarkerChirho(issueChirho: ExportIssueChirho): string {
   return `[EMPTY-SPAN-CHIRHO line=${issueChirho.lineIndexChirho} segment=${issueChirho.segmentIndexChirho}]`;
 }
 
-function countOccurrencesChirho(textChirho: string, needleChirho: string): number {
-  let countChirho = 0;
-  let offsetChirho = 0;
-  while (true) {
-    const nextChirho = textChirho.indexOf(needleChirho, offsetChirho);
-    if (nextChirho === -1) return countChirho;
-    countChirho += 1;
-    offsetChirho = nextChirho + needleChirho.length;
-  }
-}
-
 function mainChirho(): void {
-  assertCheckChirho(existsSync(EXPORT_REPORT_PATH_CHIRHO), `missing export report: ${EXPORT_REPORT_PATH_CHIRHO}`);
+  assertGeneratedCheckChirho(existsSync(EXPORT_REPORT_PATH_CHIRHO), `missing export report: ${EXPORT_REPORT_PATH_CHIRHO}`);
   const reportTextChirho = readFileSync(EXPORT_REPORT_PATH_CHIRHO, "utf8");
-  assertTextHygieneChirho(EXPORT_REPORT_PATH_CHIRHO, reportTextChirho);
+  assertGeneratedTextHygieneChirho(EXPORT_REPORT_PATH_CHIRHO, reportTextChirho);
   const reportChirho = JSON.parse(reportTextChirho) as ExportReportChirho;
-  assertCheckChirho(Array.isArray(reportChirho.pagesChirho), "export report pagesChirho must be an array");
-  assertCheckChirho(Array.isArray(reportChirho.issuesChirho), "export report issuesChirho must be an array");
-  assertCheckChirho(
+  assertGeneratedCheckChirho(Array.isArray(reportChirho.pagesChirho), "export report pagesChirho must be an array");
+  assertGeneratedCheckChirho(Array.isArray(reportChirho.issuesChirho), "export report issuesChirho must be an array");
+  assertGeneratedCheckChirho(
     reportChirho.pageCountChirho === reportChirho.pagesChirho.length,
     "export report pageCountChirho does not match pagesChirho.length"
   );
-  assertCheckChirho(
+  assertGeneratedCheckChirho(
     reportChirho.issueCountChirho === reportChirho.issuesChirho.length,
     "export report issueCountChirho does not match issuesChirho.length"
   );
@@ -134,18 +98,21 @@ function mainChirho(): void {
   const pagesByKeyChirho = new Map<string, ExportPageReportChirho>();
   const volumesChirho = new Set<number>();
   for (const pageChirho of reportChirho.pagesChirho) {
-    assertCheckChirho(Number.isInteger(pageChirho.volumeChirho), "export page volumeChirho must be an integer");
-    assertCheckChirho(Number.isInteger(pageChirho.pageChirho), "export page pageChirho must be an integer");
-    assertCheckChirho(typeof pageChirho.markdownPathChirho === "string", "export page markdownPathChirho must be a string");
+    assertGeneratedCheckChirho(Number.isInteger(pageChirho.volumeChirho), "export page volumeChirho must be an integer");
+    assertGeneratedCheckChirho(Number.isInteger(pageChirho.pageChirho), "export page pageChirho must be an integer");
+    assertGeneratedCheckChirho(
+      typeof pageChirho.markdownPathChirho === "string",
+      "export page markdownPathChirho must be a string"
+    );
     assertInsideMarkdownDirChirho(pageChirho.markdownPathChirho);
     const markdownPathChirho = normalizedPathChirho(pageChirho.markdownPathChirho);
     const keyChirho = `${pageChirho.volumeChirho}:${pageChirho.pageChirho}`;
-    assertCheckChirho(!pagesByKeyChirho.has(keyChirho), `duplicate export page report key ${keyChirho}`);
+    assertGeneratedCheckChirho(!pagesByKeyChirho.has(keyChirho), `duplicate export page report key ${keyChirho}`);
     pagesByKeyChirho.set(keyChirho, pageChirho);
     expectedMarkdownPathsChirho.add(markdownPathChirho);
     volumesChirho.add(pageChirho.volumeChirho!);
   }
-  assertCheckChirho(
+  assertGeneratedCheckChirho(
     reportChirho.volumeCountChirho === undefined || reportChirho.volumeCountChirho === volumesChirho.size,
     "export report volumeCountChirho does not match page volumes"
   );
@@ -157,10 +124,10 @@ function mainChirho(): void {
 
   const actualMarkdownPathsChirho = new Set(collectMarkdownFilesChirho(MARKDOWN_DIR_CHIRHO));
   for (const expectedPathChirho of expectedMarkdownPathsChirho) {
-    assertCheckChirho(existsSync(expectedPathChirho), `expected exported Markdown file missing: ${expectedPathChirho}`);
+    assertGeneratedCheckChirho(existsSync(expectedPathChirho), `expected exported Markdown file missing: ${expectedPathChirho}`);
   }
   for (const actualPathChirho of actualMarkdownPathsChirho) {
-    assertCheckChirho(
+    assertGeneratedCheckChirho(
       expectedMarkdownPathsChirho.has(actualPathChirho),
       `unexpected stale exported Markdown file: ${relative(PROJECT_ROOT_CHIRHO, actualPathChirho)}`
     );
@@ -169,11 +136,8 @@ function mainChirho(): void {
   const markdownTextByPathChirho = new Map<string, string>();
   for (const markdownPathChirho of actualMarkdownPathsChirho) {
     const textChirho = readFileSync(markdownPathChirho, "utf8");
-    assertTextHygieneChirho(markdownPathChirho, textChirho);
-    assertCheckChirho(
-      textChirho.startsWith(JOHN_316_MARKDOWN_HEADER_CHIRHO),
-      `${markdownPathChirho} is missing the John 3:16 header`
-    );
+    assertGeneratedTextHygieneChirho(markdownPathChirho, textChirho);
+    assertMarkdownHeaderChirho(markdownPathChirho, textChirho, JOHN_316_BLOCK_MARKDOWN_HEADER_CHIRHO);
     markdownTextByPathChirho.set(markdownPathChirho, textChirho);
   }
 
@@ -182,17 +146,20 @@ function mainChirho(): void {
   for (const issueChirho of blankIssuesChirho) {
     const pageKeyChirho = `${issueChirho.volumeChirho}:${issueChirho.pageChirho}`;
     const pageChirho = pagesByKeyChirho.get(pageKeyChirho);
-    assertCheckChirho(pageChirho !== undefined, `blank-span issue does not resolve to an exported page: ${pageKeyChirho}`);
+    assertGeneratedCheckChirho(
+      pageChirho !== undefined,
+      `blank-span issue does not resolve to an exported page: ${pageKeyChirho}`
+    );
     const markerChirho = emptySpanMarkerChirho(issueChirho);
     const pagePathChirho = normalizedPathChirho(pageChirho.markdownPathChirho!);
     const volumePathChirho = normalizedPathChirho(
       join(MARKDOWN_DIR_CHIRHO, `vol-${issueChirho.volumeChirho}-chirho`, `volume-${issueChirho.volumeChirho}-chirho.md`)
     );
-    assertCheckChirho(
+    assertGeneratedCheckChirho(
       countOccurrencesChirho(markdownTextByPathChirho.get(pagePathChirho) ?? "", markerChirho) === 1,
       `blank-span marker ${markerChirho} is not rendered exactly once in page Markdown`
     );
-    assertCheckChirho(
+    assertGeneratedCheckChirho(
       countOccurrencesChirho(markdownTextByPathChirho.get(volumePathChirho) ?? "", markerChirho) === 1,
       `blank-span marker ${markerChirho} is not rendered exactly once in volume Markdown`
     );
@@ -202,7 +169,7 @@ function mainChirho(): void {
   for (const textChirho of markdownTextByPathChirho.values()) {
     actualEmptyMarkerTotalChirho += countOccurrencesChirho(textChirho, "[EMPTY-SPAN-CHIRHO ");
   }
-  assertCheckChirho(
+  assertGeneratedCheckChirho(
     actualEmptyMarkerTotalChirho === expectedEmptyMarkerTotalChirho,
     `exported Markdown EMPTY-SPAN marker count ${actualEmptyMarkerTotalChirho} does not match report count ${expectedEmptyMarkerTotalChirho}`
   );
