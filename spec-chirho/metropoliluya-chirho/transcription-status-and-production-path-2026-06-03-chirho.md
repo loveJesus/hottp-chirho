@@ -1,7 +1,7 @@
 <!-- For God so loved the world that he gave his only begotten Son,
 that whoever believes in him should not perish but have eternal life. John 3:16 -->
 
-# HOTTP Transcription — Status & Path to Production (updated 2026-06-04)
+# HOTTP Transcription — Status & Path to Production (updated 2026-06-05)
 
 ## TL;DR (share-sized)
 
@@ -20,7 +20,7 @@ Two distinct things are sometimes both called "production":
 
 This report is mostly about (2), because that is where the remaining work is.
 
-## 2. What we have today (verified 2026-06-04)
+## 2. What we have today (verified 2026-06-05)
 
 **Transcription corpus (current working set):**
 - 5 volumes · 46 pages · 1,789 span-line files · **4,511 spans**
@@ -36,7 +36,9 @@ This report is mostly about (2), because that is where the remaining work is.
 | Non-Latin vision-tier items | **446** (Hebrew 329 · Greek 87 · Syriac 17 · Arabic 13) | expert reviewer `:8771` |
 | Latin/symbol vision decisions | **560 remaining** (564 total, 4 trivial punctuation accepted by explicit policy) | reviewer `:8770` |
 
-**Review progress so far:** 10 schema-v2 human validation rows exist, including the applied `וְגַם־חֲמָ֖ת` correction; 4 trivial Latin/symbol punctuation items have been accepted by explicit policy; and there are 0 expert confirmations / 0 expert issue records. Large portions of the apparent count movement came from strict-blind repairs and re-routing recovered text into vision-tier queues, not from expert certification. So review has effectively just begun — **~0% certified** — which is exactly why the gate is red.
+**Additional attribution blocker:** 10 current Pass-C human validation rows use the generic reviewer id `human-chirho`. They remain gate-blocking until they are re-reviewed or append-only reattributed to the explicit human reviewer with the live-text/hash guards emitted by the status report. Do not bulk reattribute them unless every selected row is genuinely attributable to the same named human reviewer.
+
+**Review progress so far:** 10 schema-v2 human validation rows exist, including the applied `וְגַם־חֲמָ֖ת` correction, but all 10 currently need explicit reviewer attribution before they can help certification; 4 trivial Latin/symbol punctuation items have been accepted by explicit policy; and there are 0 expert confirmations / 0 expert issue records. Large portions of the apparent count movement came from strict-blind repairs and re-routing recovered text into vision-tier queues, not from expert certification. So review has effectively just begun — **~0% certified** — which is exactly why the gate is red.
 
 **Strict export is intentionally red:** the prior vol 3 p148 line 59 issue was resolved after print confirmation (`וְגַם־חֲמָ֖ת`), but the export now has one honest structural blocker: vol 3 p151 line 10 segment 3 is a boxed Syriac span with no supplied UTF-8 text. It is visible in markdown as an empty-span marker and routed to the Syriac reader with an expert-supplied-text apply path. Applying supplied text removes only the structural blank; formal expert confirmation still remains separate.
 
@@ -69,8 +71,9 @@ All of this was built and cross-audited via the two-witness ("metropoliluya") di
    - **You:** 97 raw Hebrew (`:8766`) + Hebrew/Greek vision lanes (`:8771?script-chirho=hebrew-chirho` / `=greek-chirho`, 329 + 87).
    - **Experts:** Syriac (17, including the blank span), Arabic (13), and exact Aramaic/Targum vocalization.
    - **Latin/symbol (560 remaining):** mostly real proofreading — only 4 items have been accepted as trivial punctuation; the witness sigla, references, ornament-guesses, French, and proper nouns each need a look.
-2. **Gate goes green.** When all three categories are certified, `transcription-certification-status-chirho` reports **complete = true**.
-3. **Ship.** The certified markdown is the production artifact — the published, citable, flawless digital edition. (Scaling beyond the current 46-page set reuses the exact same pipeline + gate.)
+2. **Attribution cleanup.** Re-review or append-only reattribute the 10 generic `human-chirho` Pass-C rows to the actual human reviewer, using the status report's guarded commands and a real rationale.
+3. **Gate goes green.** When all three categories are certified and attribution is explicit, `transcription-certification-status-chirho` reports **complete = true**.
+4. **Ship.** The certified markdown is the production artifact — the published, citable, flawless digital edition. (Scaling beyond the current 46-page set reuses the exact same pipeline + gate.)
 
 ## 6. Current review entry points
 
