@@ -248,6 +248,15 @@ span was surfaced.
   - Visual precheck: the Hebrew word is boxed after French `traduit en 12(bis) par` and before French `(comme en 2 R 11,14bis),`. The following opening parenthesis is outside the red Hebrew target and belongs to the next span.
   - Human check still needed: exact mem-resh-dalet-alef letters, whether the word is intentionally consonantal here, and confirmation that the following parenthesis remains adjacent French punctuation rather than part of the Hebrew span.
 
+- `vol 2 p151 L14 S1/S3`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A14%3A1`
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A14%3A3`
+  - Item IDs: `v2-p0151-l014-s1`, `v2-p0151-l014-s3`
+  - Live texts: `קדשו` and `למקדשא`
+  - Attention reason: both are all-token-validated but still in the current raw no-pre-review-note lane; S3's direct witness is marked WLC-absent.
+  - Visual precheck: the line reads `en 13 par` + S1 + `et en 14 par` + S3. The French connector between the two Hebrew words is outside both target boxes. The S3 crop visibly includes a period-shaped terminal mark after `למקדשא`, while the stored live text is bare `למקדשא`.
+  - Human check still needed: for S1, exact qof-dalet-shin-vav letters and whether the bare consonantal form is intended; for S3, exact lamed-mem-qof-dalet-shin-alef letters, whether the final visible period should be included with the Hebrew span or split as adjacent punctuation, and whether the WLC-absent direct witness should remain a clean source for this Aramaic/Targum form.
+
 - `vol 2 p151 L16 S1/S3`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A16%3A1`
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A16%3A3`
