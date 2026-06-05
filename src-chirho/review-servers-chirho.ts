@@ -11,6 +11,7 @@
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
+  reviewServerHeadersHaveNoStoreChirho,
   reviewServerSourceFingerprintChirho,
   type ReviewServerHealthChirho,
   type ReviewServerKeyChirho,
@@ -19,7 +20,6 @@ import {
 const MODULE_CHIRHO = "review-servers-chirho";
 const CHECK_TIMEOUT_MS_CHIRHO = 3000;
 const START_TIMEOUT_MS_CHIRHO = 8000;
-const NO_STORE_CACHE_CONTROL_RE_CHIRHO = /\bno-store\b/i;
 
 interface ReviewServerChirho {
   keyChirho: ReviewServerKeyChirho;
@@ -88,10 +88,6 @@ function serverProbeUrlChirho(serviceChirho: ReviewServerChirho, probePathChirho
   return new URL(probePathChirho, serverUrlChirho(serviceChirho)).toString();
 }
 
-function responseHasNoStoreChirho(responseChirho: Response): boolean {
-  return NO_STORE_CACHE_CONTROL_RE_CHIRHO.test(responseChirho.headers.get("cache-control") ?? "");
-}
-
 async function fetchServerHealthChirho(
   serviceChirho: ReviewServerChirho,
   timeoutMsChirho: number
@@ -105,7 +101,7 @@ async function fetchServerHealthChirho(
     if (!responseChirho.ok) throw new Error(`HTTP ${responseChirho.status}`);
     return {
       healthChirho: (await responseChirho.json()) as ReviewServerHealthChirho,
-      noStoreChirho: responseHasNoStoreChirho(responseChirho),
+      noStoreChirho: reviewServerHeadersHaveNoStoreChirho(responseChirho.headers),
     };
   } finally {
     clearTimeout(timeoutChirho);
@@ -137,7 +133,7 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
           expectedSourceFingerprintChirho: null,
         };
       }
-      if (!responseHasNoStoreChirho(responseChirho)) {
+      if (!reviewServerHeadersHaveNoStoreChirho(responseChirho.headers)) {
         noStoreErrorChirho ??= `${probePathChirho} missing no-store cache control`;
       }
     } catch (errorChirho) {

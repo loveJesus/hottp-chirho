@@ -15,6 +15,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { reviewServerHeadersHaveNoStoreChirho } from "./review-server-health-chirho.ts";
 
 const MODULE_CHIRHO = "check-latin-symbol-review-server-guards-chirho";
 const LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
@@ -76,6 +77,13 @@ interface LatinSymbolReviewPostResponseChirho {
 
 function assertCheckChirho(conditionChirho: boolean, messageChirho: string): void {
   if (!conditionChirho) throw new Error(messageChirho);
+}
+
+function assertNoStoreResponseChirho(responseChirho: Response, labelChirho: string): void {
+  assertCheckChirho(
+    reviewServerHeadersHaveNoStoreChirho(responseChirho.headers),
+    `${labelChirho} is missing no-store cache control`
+  );
 }
 
 function freePortChirho(): Promise<number> {
@@ -142,6 +150,7 @@ async function stateItemChirho(portChirho: number): Promise<LatinSymbolReviewSta
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/state-chirho`);
   const dataChirho = (await responseChirho.json()) as LatinSymbolReviewStateResponseChirho;
   assertCheckChirho(responseChirho.ok, `state request failed: ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, "Latin/symbol state endpoint");
   assertCheckChirho(dataChirho.okChirho === true, `state request returned not-ok: ${String(dataChirho.errorChirho ?? "")}`);
   const itemChirho = dataChirho.itemsChirho?.find((candidateChirho) =>
     [
@@ -166,6 +175,7 @@ async function assertLatinSymbolReviewGuidanceHtmlChirho(portChirho: number): Pr
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/`);
   const htmlChirho = await responseChirho.text();
   assertCheckChirho(responseChirho.ok, `Latin/symbol page request failed: ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, "Latin/symbol page");
   for (const snippetChirho of LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO) {
     assertCheckChirho(
       htmlChirho.includes(snippetChirho),
@@ -178,11 +188,26 @@ async function assertLatinSymbolQuickstartEndpointChirho(portChirho: number): Pr
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/quickstart-chirho`);
   const markdownChirho = await responseChirho.text();
   assertCheckChirho(responseChirho.ok, `Latin/symbol quickstart request failed: ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, "Latin/symbol quickstart");
   for (const snippetChirho of LATIN_SYMBOL_QUICKSTART_SNIPPETS_CHIRHO) {
     assertCheckChirho(
       markdownChirho.includes(snippetChirho),
       `Latin/symbol quickstart is missing snippet: ${snippetChirho}`
     );
+  }
+}
+
+async function assertLatinSymbolAssetEndpointsNoStoreChirho(portChirho: number, itemChirho: LatinSymbolReviewStateItemChirho): Promise<void> {
+  for (const [labelChirho, markdownPathChirho] of [
+    ["Latin/symbol target image", itemChirho.targetMarkdownPathChirho],
+    ["Latin/symbol line image", itemChirho.lineMarkdownPathChirho],
+  ] as const) {
+    const responseChirho = await fetch(
+      `http://127.0.0.1:${portChirho}/asset-chirho?path=${encodeURIComponent(markdownPathChirho)}`
+    );
+    assertCheckChirho(responseChirho.ok, `${labelChirho} endpoint failed: HTTP ${responseChirho.status}`);
+    assertNoStoreResponseChirho(responseChirho, `${labelChirho} endpoint`);
+    await responseChirho.arrayBuffer();
   }
 }
 
@@ -259,6 +284,7 @@ async function mainChirho(): Promise<void> {
     await assertLatinSymbolReviewGuidanceHtmlChirho(portChirho);
     await assertLatinSymbolQuickstartEndpointChirho(portChirho);
     const itemChirho = await stateItemChirho(portChirho);
+    await assertLatinSymbolAssetEndpointsNoStoreChirho(portChirho, itemChirho);
     const commonBodyChirho = {
       idChirho: itemChirho.idChirho,
       reviewerChirho: "dr-latin-symbol-server-guard-chirho",

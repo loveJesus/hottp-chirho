@@ -15,6 +15,7 @@ import { join } from "path";
 import { createServer as createNetServerChirho } from "net";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { reviewServerHeadersHaveNoStoreChirho } from "./review-server-health-chirho.ts";
 
 const MODULE_CHIRHO = "check-pass-c-human-review-server-guards-chirho";
 const SOURCE_PROGRESS_DB_PATH_CHIRHO = join(PROJECT_ROOT_CHIRHO, "spec-chirho", "progress-chirho.sqlite");
@@ -113,6 +114,13 @@ function assertCheckChirho(conditionChirho: boolean, messageChirho: string): voi
   if (!conditionChirho) throw new Error(messageChirho);
 }
 
+function assertNoStoreResponseChirho(responseChirho: Response, labelChirho: string): void {
+  assertCheckChirho(
+    reviewServerHeadersHaveNoStoreChirho(responseChirho.headers),
+    `${labelChirho} is missing no-store cache control`
+  );
+}
+
 function freePortChirho(): Promise<number> {
   return new Promise((resolveChirho, rejectChirho) => {
     const serverChirho = createNetServerChirho();
@@ -173,6 +181,7 @@ async function assertQuickstartEndpointChirho(portChirho: number): Promise<void>
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/quickstart-chirho`);
   const textChirho = await responseChirho.text();
   assertCheckChirho(responseChirho.ok, `quickstart endpoint failed: HTTP ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, "quickstart endpoint");
   for (const snippetChirho of [
     "Raw Hebrew Human Certification Quickstart Chirho",
     "A dot inside a letter belongs here.",
@@ -182,6 +191,18 @@ async function assertQuickstartEndpointChirho(portChirho: number): Promise<void>
       textChirho.includes(snippetChirho),
       `quickstart endpoint is missing expected snippet: ${snippetChirho}`
     );
+  }
+}
+
+async function assertRawReviewImageEndpointsNoStoreChirho(portChirho: number, itemChirho: RawReviewQueueItemChirho): Promise<void> {
+  for (const [labelChirho, pathChirho] of [
+    ["line image", `/line-image-chirho/${encodeURIComponent(itemChirho.keyChirho)}`],
+    ["span image", `/span-image-chirho/${encodeURIComponent(itemChirho.keyChirho)}`],
+  ] as const) {
+    const responseChirho = await fetch(`http://127.0.0.1:${portChirho}${pathChirho}`);
+    assertCheckChirho(responseChirho.ok, `${labelChirho} endpoint failed: HTTP ${responseChirho.status}`);
+    assertNoStoreResponseChirho(responseChirho, `${labelChirho} endpoint`);
+    await responseChirho.arrayBuffer();
   }
 }
 
@@ -326,13 +347,15 @@ async function mainChirho(): Promise<void> {
 
   try {
     await waitForServerChirho(portChirho, processChirho);
-    const pageHtmlChirho = await fetch(`http://127.0.0.1:${portChirho}/`).then((responseChirho) =>
-      responseChirho.text()
-    );
+    const pageResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/`);
+    const pageHtmlChirho = await pageResponseChirho.text();
+    assertCheckChirho(pageResponseChirho.ok, `raw review page failed: HTTP ${pageResponseChirho.status}`);
+    assertNoStoreResponseChirho(pageResponseChirho, "raw review page");
     assertRawReviewGuidanceHtmlChirho(pageHtmlChirho);
     assertPreReviewNotesLoadedChirho(pageHtmlChirho);
     await assertQuickstartEndpointChirho(portChirho);
     const itemChirho = firstQueueItemFromHtmlChirho(pageHtmlChirho);
+    await assertRawReviewImageEndpointsNoStoreChirho(portChirho, itemChirho);
     const attributionBlockedItemChirho = firstAttributionBlockedQueueItemFromHtmlChirho(pageHtmlChirho);
     const attributionBlockedSubmitResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",

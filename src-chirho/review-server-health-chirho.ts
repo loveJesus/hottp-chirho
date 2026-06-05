@@ -23,6 +23,8 @@ export interface ReviewServerHealthChirho extends ReviewServerSourceFingerprintC
   startedAtChirho: string;
 }
 
+const REVIEW_SERVER_NO_STORE_CACHE_CONTROL_RE_CHIRHO = /\bno-store\b/i;
+
 export function reviewServerNoStoreHeadersChirho(contentTypeChirho?: string): Record<string, string> {
   return {
     ...(contentTypeChirho === undefined ? {} : { "Content-Type": contentTypeChirho }),
@@ -30,6 +32,10 @@ export function reviewServerNoStoreHeadersChirho(contentTypeChirho?: string): Re
     Pragma: "no-cache",
     Expires: "0",
   };
+}
+
+export function reviewServerHeadersHaveNoStoreChirho(headersChirho: Pick<Headers, "get">): boolean {
+  return REVIEW_SERVER_NO_STORE_CACHE_CONTROL_RE_CHIRHO.test(headersChirho.get("cache-control") ?? "");
 }
 
 const COMMON_REVIEW_SERVER_SOURCE_FILES_CHIRHO = [

@@ -14,6 +14,7 @@ import { join } from "path";
 import { createServer as createNetServerChirho } from "net";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { reviewServerHeadersHaveNoStoreChirho } from "./review-server-health-chirho.ts";
 import {
   VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO,
   VISION_TIER_EXPERT_CONFIRMATION_REVIEWED_ISSUES_CHIRHO,
@@ -111,6 +112,13 @@ function assertCheckChirho(conditionChirho: boolean, messageChirho: string): voi
   if (!conditionChirho) throw new Error(messageChirho);
 }
 
+function assertNoStoreResponseChirho(responseChirho: Response, labelChirho: string): void {
+  assertCheckChirho(
+    reviewServerHeadersHaveNoStoreChirho(responseChirho.headers),
+    `${labelChirho} is missing no-store cache control`
+  );
+}
+
 function freePortChirho(): Promise<number> {
   return new Promise((resolveChirho, rejectChirho) => {
     const serverChirho = createNetServerChirho();
@@ -202,6 +210,7 @@ async function stateItemChirho(portChirho: number): Promise<ExpertReviewStateIte
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/state-chirho`);
   const dataChirho = (await responseChirho.json()) as ExpertReviewStateResponseChirho;
   assertCheckChirho(responseChirho.ok, `state request failed: ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, "expert state endpoint");
   assertCheckChirho(dataChirho.okChirho === true, `state request returned not-ok: ${String(dataChirho.errorChirho ?? "")}`);
   const itemChirho = dataChirho.itemsChirho?.find(
     (candidateChirho) =>
@@ -218,6 +227,7 @@ async function assertExpertReviewGuidanceHtmlChirho(portChirho: number): Promise
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/`);
   const htmlChirho = await responseChirho.text();
   assertCheckChirho(responseChirho.ok, `expert page request failed: ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, "expert page");
   for (const snippetChirho of EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO) {
     assertCheckChirho(
       htmlChirho.includes(snippetChirho),
@@ -230,6 +240,7 @@ async function assertExpertQuickstartEndpointChirho(portChirho: number): Promise
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/quickstart-chirho`);
   const markdownChirho = await responseChirho.text();
   assertCheckChirho(responseChirho.ok, `expert quickstart request failed: ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, "expert quickstart");
   for (const snippetChirho of EXPERT_QUICKSTART_SNIPPETS_CHIRHO) {
     assertCheckChirho(
       markdownChirho.includes(snippetChirho),
@@ -242,6 +253,7 @@ async function blankStateItemChirho(portChirho: number): Promise<ExpertReviewSta
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/state-chirho`);
   const dataChirho = (await responseChirho.json()) as ExpertReviewStateResponseChirho;
   assertCheckChirho(responseChirho.ok, `blank-state request failed: ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, "expert blank-state endpoint");
   assertCheckChirho(dataChirho.okChirho === true, `blank-state request returned not-ok: ${String(dataChirho.errorChirho ?? "")}`);
   return dataChirho.itemsChirho?.find(
     (candidateChirho) =>
@@ -249,6 +261,15 @@ async function blankStateItemChirho(portChirho: number): Promise<ExpertReviewSta
       candidateChirho.currentTextChirho.trim().length === 0 &&
       candidateChirho.textIsBlankChirho === true
   ) ?? null;
+}
+
+async function assertExpertAssetEndpointNoStoreChirho(portChirho: number, itemChirho: ExpertReviewStateItemChirho): Promise<void> {
+  const responseChirho = await fetch(
+    `http://127.0.0.1:${portChirho}/asset-chirho?path=${encodeURIComponent(itemChirho.markdownPathChirho)}`
+  );
+  assertCheckChirho(responseChirho.ok, `expert asset endpoint failed: HTTP ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, `expert asset endpoint for ${itemChirho.idChirho}`);
+  await responseChirho.arrayBuffer();
 }
 
 function assertPlaceholderRejectedChirho(paramsChirho: {
@@ -316,7 +337,11 @@ async function mainChirho(): Promise<void> {
     await assertExpertReviewGuidanceHtmlChirho(portChirho);
     await assertExpertQuickstartEndpointChirho(portChirho);
     const itemChirho = await stateItemChirho(portChirho);
+    await assertExpertAssetEndpointNoStoreChirho(portChirho, itemChirho);
     const blankItemChirho = await blankStateItemChirho(portChirho);
+    if (blankItemChirho !== null) {
+      await assertExpertAssetEndpointNoStoreChirho(portChirho, blankItemChirho);
+    }
     const commonBodyChirho = {
       idChirho: itemChirho.idChirho,
       reviewerChirho: "dr-smith-human-reviewer-chirho",
