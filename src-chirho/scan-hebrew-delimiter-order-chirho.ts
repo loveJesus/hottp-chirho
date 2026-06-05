@@ -29,6 +29,7 @@ const DEFAULT_REPORT_PATH_CHIRHO = join(
   "hebrew-delimiter-order-audit-2026-06-04-chirho.md"
 );
 const DELIMITER_RE_CHIRHO = /[()[\]{}]/;
+const DAMAGED_TEXT_NOTATION_RE_CHIRHO = /[\u0307\u05C4]|\.\.\.|…/;
 
 interface SpanChirho {
   segmentIndexChirho: number;
@@ -138,6 +139,12 @@ function statusForFindingChirho(lineChirho: SpanLineChirho, spanChirho: SpanChir
     return {
       statusChirho: "balanced-in-span-chirho",
       notesChirho: ["all delimiter pairs balance within the Hebrew span"],
+    };
+  }
+  if (notesChirho.includes("square-chirho") && DAMAGED_TEXT_NOTATION_RE_CHIRHO.test(textChirho)) {
+    return {
+      statusChirho: "damaged-notation-expert-review-chirho",
+      notesChirho: ["square-bracket imbalance appears to be damaged-text notation; exact lacuna and dot convention remain expert review"],
     };
   }
   const neighborBalancedNotesChirho = notesChirho.filter((noteChirho) => neighborBalancesDelimiterChirho(lineChirho, spanChirho, noteChirho));
