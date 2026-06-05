@@ -451,6 +451,24 @@ interface ExpertPackVisionItemChirho {
   priorityMatchChirho?: boolean;
 }
 
+interface ExpertTextRepeatSampleChirho {
+  scriptChirho: string;
+  currentTextChirho: string;
+  countChirho: number;
+  firstItemIdChirho: string;
+  reviewUrlChirho: string;
+}
+
+interface ExpertTextRepeatSummaryChirho {
+  textGroupCountChirho: number;
+  duplicateTextGroupCountChirho: number;
+  duplicateTextItemCountChirho: number;
+  singletonTextGroupCountChirho: number;
+  duplicateTextGroupCountsByScriptChirho: Record<string, number>;
+  duplicateTextItemCountsByScriptChirho: Record<string, number>;
+  samplesChirho: ExpertTextRepeatSampleChirho[];
+}
+
 function countExpertPackItemsByScriptChirho(itemsChirho: ExpertPackVisionItemChirho[]): Record<string, number> {
   const countsChirho: Record<string, number> = {};
   for (const itemChirho of itemsChirho) {
@@ -905,6 +923,7 @@ interface CertificationStatusChirho {
     pendingBlankTextItemCountChirho: number;
     pendingNonblankTextCountsChirho: Record<string, number>;
     pendingBlankTextCountsChirho: Record<string, number>;
+    repeatSummaryChirho: ExpertTextRepeatSummaryChirho;
     manifestCountMatchesCurrentChirho: boolean;
     manifestIdsMatchCurrentChirho: boolean;
     manifestTextMatchesCurrentChirho: boolean;
@@ -1455,6 +1474,64 @@ function expertReviewUrlChirho(
   if (itemIdChirho !== undefined) entriesChirho.push(["item-chirho", itemIdChirho]);
   const queryChirho = urlQueryChirho(entriesChirho);
   return queryChirho.length === 0 ? "http://localhost:8771/" : `http://localhost:8771/?${queryChirho}`;
+}
+
+function expertTextRepeatSummaryChirho(
+  itemsChirho: ExpertPackVisionItemChirho[],
+  sampleLimitChirho = 12
+): ExpertTextRepeatSummaryChirho {
+  const groupsChirho = new Map<string, ExpertPackVisionItemChirho[]>();
+  for (const itemChirho of itemsChirho) {
+    const keyChirho = `${itemChirho.scriptChirho}\u0000${itemChirho.currentTextChirho}`;
+    const groupChirho = groupsChirho.get(keyChirho) ?? [];
+    groupChirho.push(itemChirho);
+    groupsChirho.set(keyChirho, groupChirho);
+  }
+  const duplicateGroupsChirho = [...groupsChirho.values()]
+    .filter((groupChirho) => groupChirho.length > 1)
+    .sort((aChirho, bChirho) => {
+      const firstAChirho = aChirho[0]!;
+      const firstBChirho = bChirho[0]!;
+      return bChirho.length - aChirho.length ||
+        firstAChirho.scriptChirho.localeCompare(firstBChirho.scriptChirho) ||
+        firstAChirho.currentTextChirho.localeCompare(firstBChirho.currentTextChirho) ||
+        firstAChirho.idChirho.localeCompare(firstBChirho.idChirho);
+    });
+  const duplicateTextGroupCountsByScriptChirho: Record<string, number> = {};
+  const duplicateTextItemCountsByScriptChirho: Record<string, number> = {};
+  for (const groupChirho of duplicateGroupsChirho) {
+    const scriptChirho = groupChirho[0]!.scriptChirho;
+    duplicateTextGroupCountsByScriptChirho[scriptChirho] =
+      (duplicateTextGroupCountsByScriptChirho[scriptChirho] ?? 0) + 1;
+    duplicateTextItemCountsByScriptChirho[scriptChirho] =
+      (duplicateTextItemCountsByScriptChirho[scriptChirho] ?? 0) + groupChirho.length;
+  }
+  return {
+    textGroupCountChirho: groupsChirho.size,
+    duplicateTextGroupCountChirho: duplicateGroupsChirho.length,
+    duplicateTextItemCountChirho: duplicateGroupsChirho.reduce(
+      (countChirho, groupChirho) => countChirho + groupChirho.length,
+      0
+    ),
+    singletonTextGroupCountChirho: [...groupsChirho.values()].filter((groupChirho) => groupChirho.length === 1).length,
+    duplicateTextGroupCountsByScriptChirho,
+    duplicateTextItemCountsByScriptChirho,
+    samplesChirho: duplicateGroupsChirho.slice(0, sampleLimitChirho).map((groupChirho) => {
+      const firstItemChirho = groupChirho[0]!;
+      return {
+        scriptChirho: firstItemChirho.scriptChirho,
+        currentTextChirho: firstItemChirho.currentTextChirho,
+        countChirho: groupChirho.length,
+        firstItemIdChirho: firstItemChirho.idChirho,
+        reviewUrlChirho: expertReviewUrlChirho(
+          firstItemChirho.scriptChirho,
+          undefined,
+          firstItemChirho.idChirho,
+          itemVolumeChirho(firstItemChirho) ?? undefined
+        ),
+      };
+    }),
+  };
 }
 
 function hebrewSkeletonChirho(textChirho: string): string {
@@ -3653,6 +3730,7 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
   const pendingExpertManifestItemsChirho = expertManifestItemsChirho.filter(
     (itemChirho) => !visionTierConfirmationSummaryChirho.confirmedItemIdsChirho.has(itemChirho.idChirho)
   );
+  const expertRepeatSummaryChirho = expertTextRepeatSummaryChirho(pendingExpertManifestItemsChirho);
   const visionTierRemainingConfirmationCountChirho =
     visionTierLiveSnapshotChirho.d1ReadErrorChirho !== null
       ? visionTierCurrentDecisionCountChirho
@@ -3708,6 +3786,7 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     pendingBlankTextCountsChirho: countExpertPackItemsByScriptChirho(
       pendingExpertManifestItemsChirho.filter((itemChirho) => itemChirho.currentTextChirho.trim().length === 0)
     ),
+    repeatSummaryChirho: expertRepeatSummaryChirho,
     manifestCountMatchesCurrentChirho: visionTierManifestCountMatchesCurrentChirho,
     manifestIdsMatchCurrentChirho: visionTierManifestIdsMatchCurrentChirho,
     manifestTextMatchesCurrentChirho: visionTierManifestTextMatchesCurrentChirho,
@@ -4636,6 +4715,18 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   const remainingLinesChirho = statusChirho.remainingWorkChirho.length === 0
     ? ["- None."]
     : statusChirho.remainingWorkChirho.map((itemChirho) => `- ${itemChirho}`);
+  const countEntriesChirho = (countsChirho: Record<string, number>): string =>
+    Object.entries(countsChirho)
+      .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
+      .join(", ") || "none";
+  const markdownCodeSpanChirho = (valueChirho: string): string => {
+    const fenceChirho = valueChirho.includes("`") ? "``" : "`";
+    return `${fenceChirho}${valueChirho}${fenceChirho}`;
+  };
+  const expertRepeatSampleTextChirho = (sampleChirho: ExpertTextRepeatSampleChirho): string =>
+    sampleChirho.currentTextChirho.trim().length === 0
+      ? "(blank text)"
+      : markdownCodeSpanChirho(sampleChirho.currentTextChirho);
   const visionCountsChirho = Object.entries(statusChirho.visionTierChirho.completeVisionCountsChirho)
     .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
     .join(", ");
@@ -5322,6 +5413,16 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Live pending blank counts: ${Object.entries(statusChirho.visionTierChirho.pendingBlankTextCountsChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
     `- Live pending counts: ${Object.entries(statusChirho.visionTierChirho.pendingVisionCountsChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
     `- Live pending source counts: ${Object.entries(statusChirho.visionTierChirho.pendingVisionSourceCountsChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
+    `- Repeat text groups among pending expert items: ${statusChirho.visionTierChirho.repeatSummaryChirho.textGroupCountChirho}`,
+    `- Repeat duplicate groups/items: ${statusChirho.visionTierChirho.repeatSummaryChirho.duplicateTextGroupCountChirho} group(s), ${statusChirho.visionTierChirho.repeatSummaryChirho.duplicateTextItemCountChirho} item(s)`,
+    `- Repeat singleton groups: ${statusChirho.visionTierChirho.repeatSummaryChirho.singletonTextGroupCountChirho}`,
+    `- Repeat duplicate groups by script: ${countEntriesChirho(statusChirho.visionTierChirho.repeatSummaryChirho.duplicateTextGroupCountsByScriptChirho)}`,
+    `- Repeat duplicate items by script: ${countEntriesChirho(statusChirho.visionTierChirho.repeatSummaryChirho.duplicateTextItemCountsByScriptChirho)}`,
+    "- Repeat clusters are planning aids only; every item still needs its own exact print confirmation and policy row.",
+    ...statusChirho.visionTierChirho.repeatSummaryChirho.samplesChirho.map(
+      (sampleChirho) =>
+        `  - ${sampleChirho.scriptChirho} x${sampleChirho.countChirho} ${expertRepeatSampleTextChirho(sampleChirho)}; first pending: ${sampleChirho.reviewUrlChirho}`
+    ),
     `- Manifest count matches current state: ${statusChirho.visionTierChirho.manifestCountMatchesCurrentChirho}`,
     `- Manifest IDs match current state: ${statusChirho.visionTierChirho.manifestIdsMatchCurrentChirho}`,
     `- Manifest text matches current state: ${statusChirho.visionTierChirho.manifestTextMatchesCurrentChirho}`,
