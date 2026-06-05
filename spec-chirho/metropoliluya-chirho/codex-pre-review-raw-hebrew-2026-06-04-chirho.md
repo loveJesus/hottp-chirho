@@ -294,6 +294,13 @@ another.
   - Visual precheck: the line reads `Le qal de`, then `רוֹם`, then French `a comme sujet normal le substantif`, then `לֵב`, then the parenthesized reference. Both target boxes are centered on their Hebrew words and the surrounding French/reference text starts outside the boxes. The direct OCR read saw only `רו` for S1 and read S3 as `לכ`, so neither ending should be certified from OCR alone.
   - Human check still needed: S1 final mem and holam-vav placement; S3 final bet and tsere; and whether both boxes fully enclose their final letters without clipping.
 
+- `vol 5 p152 L19 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A152%3A19%3A1`
+  - Live text: `לִבָּם`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the word is boxed cleanly between French `le complément` and `ayant déjà`. The direct OCR read `להמ` is close enough to show why this needs human checking but not enough to certify the bet/dagesh; no neighboring French appears swallowed by the Hebrew box.
+  - Human check still needed: bet vs visually similar shapes, dagesh inside bet, hiriq/qamats placement, and final mem.
+
 - `vol 5 p152 L13 S3/S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A3`
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A5`
