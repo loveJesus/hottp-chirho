@@ -98,6 +98,13 @@ span was surfaced.
   - Visual precheck: the short line reads French `de`, then the boxed Hebrew root, then French `avec cette préposition est fréquente.` No obvious crop clipping, neighboring French bleed, or extra hidden Hebrew is visible at packet resolution.
   - Human check still needed: exact samekh-vav-resh letters, whether this occurrence should remain bare consonantal, and whether a clean verdict on the nearby `vol 2 p149 L26 S3` occurrence should not be transferred automatically.
 
+- `vol 2 p149 L37 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A149%3A37%3A1`
+  - Live text: `תַקְדִּישׁוּ`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane.
+  - Visual precheck: the compact apparatus line reads `8,13`, then the boxed Hebrew word, then the witness list `[A] M 1Q-a 4Q-h G Sym V ST`. The target box is tight between the verse reference and `[A]`; no obvious missing neighboring Hebrew is visible, but the human should still look carefully at both crop edges.
+  - Human check still needed: exact tav/qof/dalet-yod-shin-vav sequence, dagesh, vowels, shin-dot, and whether the adjacent `[A]` witness marker remains outside the Hebrew span.
+
 - `vol 2 p150 L7 S1/S3`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A7%3A1`
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A7%3A3`
