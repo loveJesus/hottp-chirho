@@ -29,6 +29,14 @@ interface ExportPageReportChirho {
   volumeChirho?: number;
   pageChirho?: number;
   markdownPathChirho?: string;
+  lineCountChirho?: number;
+  spanCountChirho?: number;
+  unknownSpanCountChirho?: number;
+  hebrewSpanCountChirho?: number;
+  passCOcrHebrewSpanCountChirho?: number;
+  crnnValidatedHebrewSpanCountChirho?: number;
+  issueCountChirho?: number;
+  qualityStatusChirho?: string;
 }
 
 interface ExportIssueChirho {
@@ -86,18 +94,108 @@ function skipNewlinesChirho(textChirho: string, indexChirho: number): number {
   return nextIndexChirho;
 }
 
+function metadataFromCommentChirho(commentChirho: string): Map<string, string> {
+  const metadataChirho = new Map<string, string>();
+  for (const partChirho of commentChirho.split(";")) {
+    const trimmedChirho = partChirho.trim();
+    const separatorIndexChirho = trimmedChirho.indexOf(":");
+    if (separatorIndexChirho === -1) {
+      continue;
+    }
+    const keyChirho = trimmedChirho.slice(0, separatorIndexChirho).trim();
+    const valueChirho = trimmedChirho.slice(separatorIndexChirho + 1).trim();
+    metadataChirho.set(keyChirho, valueChirho);
+  }
+  return metadataChirho;
+}
+
+function commentTextAtChirho(
+  markdownPathChirho: string,
+  textChirho: string,
+  commentStartChirho: number,
+  labelChirho: string
+): string {
+  assertGeneratedCheckChirho(
+    commentStartChirho !== -1,
+    `Markdown lacks ${labelChirho} metadata comment: ${relative(PROJECT_ROOT_CHIRHO, markdownPathChirho)}`
+  );
+  const commentEndChirho = textChirho.indexOf("-->", commentStartChirho);
+  assertGeneratedCheckChirho(
+    commentEndChirho !== -1,
+    `Markdown ${labelChirho} metadata comment is not closed: ${relative(PROJECT_ROOT_CHIRHO, markdownPathChirho)}`
+  );
+  return textChirho.slice(commentStartChirho + "<!--".length, commentEndChirho).trim();
+}
+
+function metadataAtChirho(
+  markdownPathChirho: string,
+  textChirho: string,
+  commentStartChirho: number,
+  labelChirho: string
+): Map<string, string> {
+  return metadataFromCommentChirho(commentTextAtChirho(markdownPathChirho, textChirho, commentStartChirho, labelChirho));
+}
+
+function assertMetadataTextChirho(
+  metadataChirho: Map<string, string>,
+  keyChirho: string,
+  expectedChirho: string,
+  labelChirho: string
+): void {
+  assertGeneratedCheckChirho(
+    metadataChirho.get(keyChirho) === expectedChirho,
+    `${labelChirho} metadata ${keyChirho}=${metadataChirho.get(keyChirho) ?? "missing-chirho"} does not match expected ${expectedChirho}`
+  );
+}
+
+function assertMetadataNumberChirho(
+  metadataChirho: Map<string, string>,
+  keyChirho: string,
+  expectedChirho: number | undefined,
+  labelChirho: string
+): void {
+  assertGeneratedCheckChirho(
+    expectedChirho !== undefined,
+    `${labelChirho} expected number for ${keyChirho} is missing from export report`
+  );
+  assertMetadataTextChirho(metadataChirho, keyChirho, String(expectedChirho), labelChirho);
+}
+
 function pageMarkdownBodyChirho(markdownPathChirho: string, textChirho: string): string {
   const sourceCommentStartChirho = textChirho.indexOf("<!-- source-chirho:");
-  assertGeneratedCheckChirho(
-    sourceCommentStartChirho !== -1,
-    `page Markdown lacks source metadata comment: ${relative(PROJECT_ROOT_CHIRHO, markdownPathChirho)}`
+  const sourceCommentEndChirho = textChirho.indexOf(
+    "-->",
+    sourceCommentStartChirho === -1 ? 0 : sourceCommentStartChirho
   );
-  const sourceCommentEndChirho = textChirho.indexOf("-->", sourceCommentStartChirho);
-  assertGeneratedCheckChirho(
-    sourceCommentEndChirho !== -1,
-    `page Markdown source metadata comment is not closed: ${relative(PROJECT_ROOT_CHIRHO, markdownPathChirho)}`
-  );
+  commentTextAtChirho(markdownPathChirho, textChirho, sourceCommentStartChirho, "page source-chirho");
   return textChirho.slice(skipNewlinesChirho(textChirho, sourceCommentEndChirho + 3)).trimEnd();
+}
+
+function assertPageMetadataChirho(pageChirho: ExportPageReportChirho, pagePathChirho: string, pageTextChirho: string): void {
+  const metadataChirho = metadataAtChirho(
+    pagePathChirho,
+    pageTextChirho,
+    pageTextChirho.indexOf("<!-- source-chirho:"),
+    "page source-chirho"
+  );
+  const labelChirho = `page Markdown ${pageChirho.volumeChirho}:${pageChirho.pageChirho}`;
+  assertMetadataTextChirho(metadataChirho, "status-chirho", pageChirho.qualityStatusChirho ?? "", labelChirho);
+  assertMetadataNumberChirho(metadataChirho, "lines-chirho", pageChirho.lineCountChirho, labelChirho);
+  assertMetadataNumberChirho(metadataChirho, "spans-chirho", pageChirho.spanCountChirho, labelChirho);
+  assertMetadataNumberChirho(metadataChirho, "unknown-spans-chirho", pageChirho.unknownSpanCountChirho, labelChirho);
+  assertMetadataNumberChirho(metadataChirho, "hebrew-spans-chirho", pageChirho.hebrewSpanCountChirho, labelChirho);
+  assertMetadataNumberChirho(
+    metadataChirho,
+    "pass-c-ocr-hebrew-spans-chirho",
+    pageChirho.passCOcrHebrewSpanCountChirho,
+    labelChirho
+  );
+  assertMetadataNumberChirho(
+    metadataChirho,
+    "crnn-validated-hebrew-spans-chirho",
+    pageChirho.crnnValidatedHebrewSpanCountChirho,
+    labelChirho
+  );
 }
 
 function volumeMarkdownPageBodyChirho(
@@ -131,6 +229,67 @@ function volumeMarkdownPageBodyChirho(
   const nextPageStartChirho = textChirho.indexOf("\n---\n\n## Page ", bodyStartChirho);
   const bodyEndChirho = nextPageStartChirho === -1 ? textChirho.length : nextPageStartChirho;
   return textChirho.slice(bodyStartChirho, bodyEndChirho).trimEnd();
+}
+
+function volumePageMetadataChirho(
+  volumePathChirho: string,
+  textChirho: string,
+  pageNumberChirho: number
+): Map<string, string> {
+  const headingChirho = `\n## Page ${pageNumberChirho}\n\n`;
+  const headingStartChirho = textChirho.indexOf(headingChirho);
+  assertGeneratedCheckChirho(
+    headingStartChirho !== -1,
+    `volume Markdown lacks page section ${pageNumberChirho}: ${relative(PROJECT_ROOT_CHIRHO, volumePathChirho)}`
+  );
+  const statusStartChirho = headingStartChirho + headingChirho.length;
+  assertGeneratedCheckChirho(
+    textChirho.startsWith("<!-- status-chirho:", statusStartChirho),
+    `volume Markdown page ${pageNumberChirho} lacks status metadata comment: ${relative(PROJECT_ROOT_CHIRHO, volumePathChirho)}`
+  );
+  return metadataAtChirho(volumePathChirho, textChirho, statusStartChirho, `volume page ${pageNumberChirho} status-chirho`);
+}
+
+function assertVolumePageMetadataChirho(
+  pageChirho: ExportPageReportChirho,
+  volumePathChirho: string,
+  volumeTextChirho: string
+): void {
+  const metadataChirho = volumePageMetadataChirho(volumePathChirho, volumeTextChirho, pageChirho.pageChirho!);
+  const labelChirho = `volume Markdown ${pageChirho.volumeChirho}:${pageChirho.pageChirho}`;
+  assertMetadataTextChirho(metadataChirho, "status-chirho", pageChirho.qualityStatusChirho ?? "", labelChirho);
+  assertMetadataNumberChirho(metadataChirho, "lines-chirho", pageChirho.lineCountChirho, labelChirho);
+  assertMetadataNumberChirho(metadataChirho, "spans-chirho", pageChirho.spanCountChirho, labelChirho);
+  assertMetadataNumberChirho(metadataChirho, "unknown-spans-chirho", pageChirho.unknownSpanCountChirho, labelChirho);
+  assertMetadataNumberChirho(metadataChirho, "hebrew-spans-chirho", pageChirho.hebrewSpanCountChirho, labelChirho);
+  assertMetadataNumberChirho(
+    metadataChirho,
+    "pass-c-ocr-hebrew-spans-chirho",
+    pageChirho.passCOcrHebrewSpanCountChirho,
+    labelChirho
+  );
+  assertMetadataNumberChirho(
+    metadataChirho,
+    "crnn-validated-hebrew-spans-chirho",
+    pageChirho.crnnValidatedHebrewSpanCountChirho,
+    labelChirho
+  );
+  assertMetadataNumberChirho(metadataChirho, "issues-chirho", pageChirho.issueCountChirho, labelChirho);
+}
+
+function assertVolumeMetadataChirho(
+  volumeChirho: number,
+  volumePathChirho: string,
+  volumeTextChirho: string,
+  pageCountChirho: number
+): void {
+  const metadataChirho = metadataAtChirho(
+    volumePathChirho,
+    volumeTextChirho,
+    volumeTextChirho.indexOf("<!-- source-chirho:"),
+    "volume source-chirho"
+  );
+  assertMetadataNumberChirho(metadataChirho, "pages-chirho", pageCountChirho, `volume Markdown ${volumeChirho}`);
 }
 
 function volumeMarkdownPageHeadingsChirho(textChirho: string): Map<number, number> {
@@ -217,6 +376,7 @@ function mainChirho(): void {
     const pagesForVolumeChirho = (pagesByVolumeChirho.get(volumeChirho) ?? []).toSorted(
       (leftChirho, rightChirho) => leftChirho.pageChirho! - rightChirho.pageChirho!
     );
+    assertVolumeMetadataChirho(volumeChirho, volumePathChirho, volumeTextChirho, pagesForVolumeChirho.length);
     const headingCountsChirho = volumeMarkdownPageHeadingsChirho(volumeTextChirho);
     assertGeneratedCheckChirho(
       headingCountsChirho.size === pagesForVolumeChirho.length,
@@ -230,6 +390,8 @@ function mainChirho(): void {
       );
       const pagePathChirho = normalizedPathChirho(pageChirho.markdownPathChirho!);
       const pageTextChirho = markdownTextByPathChirho.get(pagePathChirho) ?? "";
+      assertPageMetadataChirho(pageChirho, pagePathChirho, pageTextChirho);
+      assertVolumePageMetadataChirho(pageChirho, volumePathChirho, volumeTextChirho);
       const pageBodyChirho = pageMarkdownBodyChirho(pagePathChirho, pageTextChirho);
       const volumeBodyChirho = volumeMarkdownPageBodyChirho(volumePathChirho, volumeTextChirho, pageNumberChirho);
       assertGeneratedCheckChirho(
