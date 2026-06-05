@@ -2494,6 +2494,14 @@ function pageHtmlChirho(): string {
       }
       if (reviewStateIsAttributionModeChirho() && savedValidationChirho) {
         const attributionLiveTextChangedChirho = validationLiveTextChangedForItemChirho(savedValidationChirho, itemChirho);
+        const attributionTextStateLabelChirho = attributionLiveTextChangedChirho
+          ? "changed-live-text-chirho"
+          : "unchanged-live-text-chirho";
+        const attributionGateEffectTextChirho = attributionLiveTextChangedChirho
+          ? "Fresh re-review can replace this generic row; the quick reattribution helper is intentionally omitted."
+          : reviewStateFilterChirho === "attribution-blocked-chirho"
+          ? "Guarded reattribution can fix attribution only; it does not certify new text, change the verdict, or change issue flags."
+          : "Fresh re-review appends a new explicit human decision that supersedes the generic row.";
         sideChirho.appendChild(elChirho("div", {
           classChirho: "warning-chirho",
           textChirho: attributionLiveTextChangedChirho
@@ -2502,6 +2510,12 @@ function pageHtmlChirho(): string {
             ? "Attribution re-review mode appends a fresh explicit human review that supersedes the generic row. Use this only when the old row is not genuinely attributable to one named reviewer."
             : "Attribution-blocked row shown read-only. Inspect the crop; reattribute only if this existing row is genuinely attributable to the named human reviewer."
         }));
+        sideChirho.appendChild(elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
+          elChirho("div", { textChirho: "Attribution text state" }),
+          elChirho("div", { classChirho: "mono-chirho", textChirho: attributionTextStateLabelChirho }),
+          elChirho("div", { textChirho: "Gate effect" }),
+          elChirho("div", { textChirho: attributionGateEffectTextChirho })
+        ]));
         if (attributionLiveTextChangedChirho) {
           sideChirho.appendChild(elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
             elChirho("div", { textChirho: "Originally reviewed text" }),
