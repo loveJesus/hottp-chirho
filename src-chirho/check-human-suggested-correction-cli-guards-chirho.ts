@@ -134,10 +134,26 @@ function mainChirho(): void {
     ["--reviewer-chirho=codex-gpt5-chirho"],
     "--reviewer-chirho must identify a human reviewer; machine reviewer codex-gpt5-chirho cannot certify"
   );
+  checkRejectedApplyChirho(
+    ["--reviewer-chirho=human-chirho"],
+    "--reviewer-chirho must identify the explicit reviewer, not generic human-chirho"
+  );
+  checkRejectedApplyChirho(
+    ["--reviewer-chirho=<explicit-human-reviewer-id-chirho>"],
+    "--reviewer-chirho must identify the explicit reviewer, not template placeholder <explicit-human-reviewer-id-chirho>"
+  );
   checkRejectedCertifyHumanChirho([], "--reviewer-chirho is required with --certify-human");
   checkRejectedCertifyHumanChirho(
     ["--reviewer-chirho=codex-gpt5-chirho"],
     "--reviewer-chirho must identify a human reviewer; machine reviewer codex-gpt5-chirho cannot certify"
+  );
+  checkRejectedCertifyHumanChirho(
+    ["--reviewer-chirho=human-chirho"],
+    "--reviewer-chirho must identify the explicit reviewer, not generic human-chirho"
+  );
+  checkRejectedCertifyHumanChirho(
+    ["--reviewer-chirho=<explicit-human-reviewer-id-chirho>"],
+    "--reviewer-chirho must identify the explicit reviewer, not template placeholder <explicit-human-reviewer-id-chirho>"
   );
   checkHumanCertifyDryRunChirho();
   console.log(`[${MODULE_CHIRHO}] human-suggested correction CLI guards passed`);
