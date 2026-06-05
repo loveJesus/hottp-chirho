@@ -663,6 +663,10 @@ interface GenericHumanValidationReviewerGroupChirho {
   liveTextMatchRowsChirho: number;
   liveTextMismatchRowsChirho: number;
   liveTextUnknownRowsChirho: number;
+  liveTextMatchIdsChirho: number[];
+  liveTextMismatchIdsChirho: number[];
+  liveTextUnknownIdsChirho: number[];
+  liveTextMatchExpectedLiveTextHashArgsChirho: string[];
   allLiveTextHashesAvailableChirho: boolean;
   expectedLiveTextHashArgsChirho: string[];
 }
@@ -2640,6 +2644,15 @@ function genericReviewerRowGroupsChirho(
       for (const rowChirho of sortedRowsChirho) {
         verdictCountsChirho[rowChirho.verdictChirho] = (verdictCountsChirho[rowChirho.verdictChirho] ?? 0) + 1;
       }
+      const liveTextMatchRowsChirho = sortedRowsChirho.filter(
+        (rowChirho) => rowChirho.liveTextMatchesOriginalChirho === true
+      );
+      const liveTextMismatchRowsChirho = sortedRowsChirho.filter(
+        (rowChirho) => rowChirho.liveTextMatchesOriginalChirho === false
+      );
+      const liveTextUnknownRowsChirho = sortedRowsChirho.filter(
+        (rowChirho) => rowChirho.liveTextMatchesOriginalChirho === null
+      );
       return {
         groupKeyChirho,
         reviewerChirho: sortedRowsChirho[0]?.reviewerChirho ?? "<unknown-reviewer-chirho>",
@@ -2648,15 +2661,17 @@ function genericReviewerRowGroupsChirho(
         idsChirho: sortedRowsChirho.map((rowChirho) => rowChirho.idChirho),
         locationsChirho: sortedRowsChirho.map((rowChirho) => rowChirho.locationChirho),
         verdictCountsChirho,
-        liveTextMatchRowsChirho: sortedRowsChirho.filter(
-          (rowChirho) => rowChirho.liveTextMatchesOriginalChirho === true
-        ).length,
-        liveTextMismatchRowsChirho: sortedRowsChirho.filter(
-          (rowChirho) => rowChirho.liveTextMatchesOriginalChirho === false
-        ).length,
-        liveTextUnknownRowsChirho: sortedRowsChirho.filter(
-          (rowChirho) => rowChirho.liveTextMatchesOriginalChirho === null
-        ).length,
+        liveTextMatchRowsChirho: liveTextMatchRowsChirho.length,
+        liveTextMismatchRowsChirho: liveTextMismatchRowsChirho.length,
+        liveTextUnknownRowsChirho: liveTextUnknownRowsChirho.length,
+        liveTextMatchIdsChirho: liveTextMatchRowsChirho.map((rowChirho) => rowChirho.idChirho),
+        liveTextMismatchIdsChirho: liveTextMismatchRowsChirho.map((rowChirho) => rowChirho.idChirho),
+        liveTextUnknownIdsChirho: liveTextUnknownRowsChirho.map((rowChirho) => rowChirho.idChirho),
+        liveTextMatchExpectedLiveTextHashArgsChirho: liveTextMatchRowsChirho.flatMap((rowChirho) =>
+          rowChirho.liveTextHashChirho === null
+            ? []
+            : [`--expected-live-text-hash-chirho=${rowChirho.idChirho}:${rowChirho.liveTextHashChirho}`]
+        ),
         allLiveTextHashesAvailableChirho: sortedRowsChirho.every((rowChirho) => rowChirho.liveTextHashChirho !== null),
         expectedLiveTextHashArgsChirho: sortedRowsChirho.flatMap((rowChirho) =>
           rowChirho.liveTextHashChirho === null
@@ -4642,6 +4657,45 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
         ];
   const genericReviewerBatchGroupsChirho = statusChirho.humanValidationDbChirho.genericReviewerRowGroupsChirho
     .filter((groupChirho) => groupChirho.rowCountChirho > 1);
+  const genericReviewerBatchCommandChirho = (
+    idsChirho: number[],
+    expectedLiveTextHashArgsChirho: string[],
+    rationalePlaceholderChirho: string
+  ): { dryRunCommandChirho: string; applyCommandChirho: string } => {
+    const validationIdArgsChirho = idsChirho.map((idChirho) => `--validation-id-chirho=${idChirho}`);
+    const baseCommandPartsChirho = [
+      "bun run reattribute-pass-c-human-validations-chirho --",
+      ...validationIdArgsChirho,
+      "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
+      `--rationale-chirho='${rationalePlaceholderChirho}'`,
+      ...expectedLiveTextHashArgsChirho,
+    ];
+    return {
+      dryRunCommandChirho: baseCommandPartsChirho.join(" "),
+      applyCommandChirho: [...baseCommandPartsChirho, "--apply-chirho"].join(" "),
+    };
+  };
+  const genericReviewerUnchangedBatchGroupsChirho = genericReviewerBatchGroupsChirho
+    .filter((groupChirho) => groupChirho.liveTextMatchIdsChirho.length > 1);
+  const genericReviewerUnchangedBatchLinesChirho =
+    genericReviewerUnchangedBatchGroupsChirho.length === 0
+      ? ["- Attribution-blocked unchanged-live-text exact-ID batch groups: none"]
+      : [
+          "- Attribution-blocked unchanged-live-text exact-ID batch groups:",
+          "- These commands exclude changed or unchecked rows; use a batch only when every selected unchanged row is genuinely attributable to the same explicit human reviewer.",
+          ...genericReviewerUnchangedBatchGroupsChirho.flatMap((groupChirho) => {
+            const { dryRunCommandChirho, applyCommandChirho } = genericReviewerBatchCommandChirho(
+              groupChirho.liveTextMatchIdsChirho,
+              groupChirho.liveTextMatchExpectedLiveTextHashArgsChirho,
+              "<why every unchanged selected row is attributable to that reviewer>"
+            );
+            return [
+              `  - applied ${groupChirho.appliedAtChirho ?? "not-applied-chirho"}; current reviewer ${groupChirho.reviewerChirho}; unchanged ids ${groupChirho.liveTextMatchIdsChirho.join(", ")}; excluded changed ids ${groupChirho.liveTextMismatchIdsChirho.join(", ") || "none"}; excluded unchecked ids ${groupChirho.liveTextUnknownIdsChirho.join(", ") || "none"}`,
+              `    - Unchanged batch dry-run command: \`${dryRunCommandChirho}\``,
+              `    - Unchanged batch apply command: \`${applyCommandChirho}\``,
+            ];
+          }),
+        ];
   const genericReviewerBatchLinesChirho =
     genericReviewerBatchGroupsChirho.length === 0
       ? ["- Attribution-blocked reviewer exact-ID batch groups: none"]
@@ -4652,17 +4706,11 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
             const verdictCountsChirho = Object.entries(groupChirho.verdictCountsChirho)
               .map(([verdictChirho, countChirho]) => `${verdictChirho}=${countChirho}`)
               .join(", ");
-            const validationIdArgsChirho = groupChirho.idsChirho
-              .map((idChirho) => `--validation-id-chirho=${idChirho}`);
-            const baseCommandPartsChirho = [
-              "bun run reattribute-pass-c-human-validations-chirho --",
-              ...validationIdArgsChirho,
-              "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
-              "--rationale-chirho='<why every selected row is attributable to that reviewer>'",
-              ...groupChirho.expectedLiveTextHashArgsChirho,
-            ];
-            const dryRunCommandChirho = baseCommandPartsChirho.join(" ");
-            const applyCommandChirho = [...baseCommandPartsChirho, "--apply-chirho"].join(" ");
+            const { dryRunCommandChirho, applyCommandChirho } = genericReviewerBatchCommandChirho(
+              groupChirho.idsChirho,
+              groupChirho.expectedLiveTextHashArgsChirho,
+              "<why every selected row is attributable to that reviewer>"
+            );
             return [
               `  - applied ${groupChirho.appliedAtChirho ?? "not-applied-chirho"}; current reviewer ${groupChirho.reviewerChirho}; ids ${groupChirho.idsChirho.join(", ")}; locations ${groupChirho.locationsChirho.join(", ")}`,
               `    - Verdict counts: ${verdictCountsChirho || "none"}; live hash guards: ${groupChirho.allLiveTextHashesAvailableChirho ? "all-present-chirho" : "missing-live-hash-chirho"}`,
@@ -4918,6 +4966,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "- Do not bulk reattribute these rows unless every selected row is genuinely attributable to the same explicit human reviewer.",
     "- If an attribution-blocked row's live text has changed since the original review, prefer the Attribution re-review lane unless the reviewer has rechecked the current live text against the print.",
     "- Reattribution commands intentionally omit `--allow-live-text-changed-chirho`; add `--allow-live-text-changed-chirho=<id>` only for a specific changed row after rechecking the current live text against the print.",
+    ...genericReviewerUnchangedBatchLinesChirho,
     ...genericReviewerBatchLinesChirho,
     ...genericReviewerDetailLinesChirho,
     "",

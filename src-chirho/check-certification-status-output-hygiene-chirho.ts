@@ -1039,11 +1039,25 @@ function reattributeBatchCommandChirho(groupChirho: unknown, applyChirho: boolea
   const labelChirho = "humanValidationDbChirho.genericReviewerRowGroupsChirho[]";
   const idsChirho = numberArrayFieldChirho(groupChirho, "idsChirho", labelChirho);
   const expectedHashArgsChirho = stringArrayFieldChirho(groupChirho, "expectedLiveTextHashArgsChirho", labelChirho);
+  return reattributeBatchCommandFromFieldsChirho(
+    idsChirho,
+    expectedHashArgsChirho,
+    "<why every selected row is attributable to that reviewer>",
+    applyChirho
+  );
+}
+
+function reattributeBatchCommandFromFieldsChirho(
+  idsChirho: number[],
+  expectedHashArgsChirho: string[],
+  rationalePlaceholderChirho: string,
+  applyChirho: boolean
+): string {
   const commandPartsChirho = [
     "bun run reattribute-pass-c-human-validations-chirho --",
     ...idsChirho.map((idChirho) => `--validation-id-chirho=${idChirho}`),
     "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
-    "--rationale-chirho='<why every selected row is attributable to that reviewer>'",
+    `--rationale-chirho='${rationalePlaceholderChirho}'`,
     ...expectedHashArgsChirho,
     ...(applyChirho ? ["--apply-chirho"] : []),
   ];
@@ -3177,6 +3191,21 @@ function assertPassCHumanReattributionHandoffChirho(
   );
   assertMarkdownContainsChirho(
     markdownChirho,
+    "- Attribution-blocked unchanged-live-text exact-ID batch groups:",
+    "Pass-C unchanged-live-text batch groups heading"
+  );
+  const hasUnchangedBatchGroupsChirho = genericGroupsChirho.some((groupChirho) =>
+    numberArrayFieldChirho(groupChirho, "liveTextMatchIdsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]").length > 1
+  );
+  if (hasUnchangedBatchGroupsChirho) {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      "- These commands exclude changed or unchecked rows; use a batch only when every selected unchanged row is genuinely attributable to the same explicit human reviewer.",
+      "Pass-C unchanged-live-text batch warning"
+    );
+  }
+  assertMarkdownContainsChirho(
+    markdownChirho,
     "- Attribution-blocked reviewer exact-ID batch groups:",
     "Pass-C reattribution batch groups heading"
   );
@@ -3248,11 +3277,35 @@ function assertPassCHumanReattributionHandoffChirho(
 
   for (const groupChirho of genericGroupsChirho) {
     const rowCountChirho = numberFieldChirho(groupChirho, "rowCountChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
-    if (rowCountChirho <= 1) continue;
     const idsChirho = numberArrayFieldChirho(groupChirho, "idsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
     const matchRowsChirho = numberFieldChirho(groupChirho, "liveTextMatchRowsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
     const mismatchRowsChirho = numberFieldChirho(groupChirho, "liveTextMismatchRowsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
     const unknownRowsChirho = numberFieldChirho(groupChirho, "liveTextUnknownRowsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    const matchIdsChirho = numberArrayFieldChirho(groupChirho, "liveTextMatchIdsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    const mismatchIdsChirho = numberArrayFieldChirho(groupChirho, "liveTextMismatchIdsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    const unknownIdsChirho = numberArrayFieldChirho(groupChirho, "liveTextUnknownIdsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    const matchHashArgsChirho = stringArrayFieldChirho(groupChirho, "liveTextMatchExpectedLiveTextHashArgsChirho", "humanValidationDbChirho.genericReviewerRowGroupsChirho[]");
+    assertGeneratedCheckChirho(matchIdsChirho.length === matchRowsChirho, "Pass-C group match IDs/count mismatch");
+    assertGeneratedCheckChirho(mismatchIdsChirho.length === mismatchRowsChirho, "Pass-C group changed IDs/count mismatch");
+    assertGeneratedCheckChirho(unknownIdsChirho.length === unknownRowsChirho, "Pass-C group unchecked IDs/count mismatch");
+    if (matchIdsChirho.length > 1) {
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        `unchanged ids ${matchIdsChirho.join(", ")}; excluded changed ids ${mismatchIdsChirho.join(", ") || "none"}; excluded unchecked ids ${unknownIdsChirho.join(", ") || "none"}`,
+        `Pass-C unchanged batch ${matchIdsChirho.join(",")} summary`
+      );
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        `Unchanged batch dry-run command: \`${reattributeBatchCommandFromFieldsChirho(matchIdsChirho, matchHashArgsChirho, "<why every unchanged selected row is attributable to that reviewer>", false)}\``,
+        `Pass-C unchanged batch ${matchIdsChirho.join(",")} dry-run command`
+      );
+      assertMarkdownContainsChirho(
+        markdownChirho,
+        `Unchanged batch apply command: \`${reattributeBatchCommandFromFieldsChirho(matchIdsChirho, matchHashArgsChirho, "<why every unchanged selected row is attributable to that reviewer>", true)}\``,
+        `Pass-C unchanged batch ${matchIdsChirho.join(",")} apply command`
+      );
+    }
+    if (rowCountChirho <= 1) continue;
     assertMarkdownContainsChirho(
       markdownChirho,
       `Live text vs original review: match=${matchRowsChirho}, changed=${mismatchRowsChirho}, unchecked=${unknownRowsChirho}`,
