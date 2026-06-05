@@ -2,7 +2,7 @@
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
 /**
- * Verify the Latin/symbol browser review server rejects placeholder issue notes.
+ * Verify the Latin/symbol browser review server rejects unsafe direct POSTs.
  *
  * The check runs the real server with disposable DB/backup/policy paths so a
  * guard regression cannot mutate production Latin/symbol review state.
@@ -159,7 +159,7 @@ async function postReviewChirho(
   return { responseChirho, dataChirho };
 }
 
-function assertIssueRejectedChirho(paramsChirho: {
+function assertReviewRejectedChirho(paramsChirho: {
   labelChirho: string;
   responseChirho: Response;
   dataChirho: LatinSymbolReviewPostResponseChirho;
@@ -204,15 +204,46 @@ async function mainChirho(): Promise<void> {
     const itemChirho = await stateItemChirho(portChirho);
     const commonBodyChirho = {
       idChirho: itemChirho.idChirho,
-      issueFlagsChirho: ["punctuation-chirho"],
       reviewerChirho: "dr-latin-symbol-server-guard-chirho",
       ...displayGuardForItemChirho(itemChirho),
     };
+    const missingCleanAckResultChirho = await postReviewChirho(portChirho, {
+      ...commonBodyChirho,
+      issueFlagsChirho: [],
+      acceptCleanChirho: false,
+    });
+    assertReviewRejectedChirho({
+      labelChirho: "missing accepted-clean acknowledgement",
+      responseChirho: missingCleanAckResultChirho.responseChirho,
+      dataChirho: missingCleanAckResultChirho.dataChirho,
+      dbPathChirho,
+    });
+    assertCheckChirho(
+      String(missingCleanAckResultChirho.dataChirho.errorChirho ?? "").includes("acceptCleanChirho acknowledgement is required"),
+      `missing accepted-clean acknowledgement failed for wrong reason: ${String(missingCleanAckResultChirho.dataChirho.errorChirho ?? "")}`
+    );
+    const machineCleanResultChirho = await postReviewChirho(portChirho, {
+      ...commonBodyChirho,
+      issueFlagsChirho: [],
+      reviewerChirho: "codex-gpt5-chirho",
+      acceptCleanChirho: true,
+    });
+    assertReviewRejectedChirho({
+      labelChirho: "machine accepted-clean",
+      responseChirho: machineCleanResultChirho.responseChirho,
+      dataChirho: machineCleanResultChirho.dataChirho,
+      dbPathChirho,
+    });
+    assertCheckChirho(
+      String(machineCleanResultChirho.dataChirho.errorChirho ?? "").includes("machine reviewer codex-gpt5-chirho cannot certify"),
+      `machine accepted-clean failed for wrong reason: ${String(machineCleanResultChirho.dataChirho.errorChirho ?? "")}`
+    );
     const placeholderResultChirho = await postReviewChirho(portChirho, {
       ...commonBodyChirho,
+      issueFlagsChirho: ["punctuation-chirho"],
       notesChirho: "<why this issue is recorded>",
     });
-    assertIssueRejectedChirho({
+    assertReviewRejectedChirho({
       labelChirho: "placeholder issue notes",
       responseChirho: placeholderResultChirho.responseChirho,
       dataChirho: placeholderResultChirho.dataChirho,
@@ -224,9 +255,10 @@ async function mainChirho(): Promise<void> {
     );
     const missingNotesResultChirho = await postReviewChirho(portChirho, {
       ...commonBodyChirho,
+      issueFlagsChirho: ["punctuation-chirho"],
       notesChirho: "   ",
     });
-    assertIssueRejectedChirho({
+    assertReviewRejectedChirho({
       labelChirho: "missing issue notes",
       responseChirho: missingNotesResultChirho.responseChirho,
       dataChirho: missingNotesResultChirho.dataChirho,
@@ -236,15 +268,26 @@ async function mainChirho(): Promise<void> {
       String(missingNotesResultChirho.dataChirho.errorChirho ?? "").includes("notesChirho is required"),
       `missing issue notes failed for wrong reason: ${String(missingNotesResultChirho.dataChirho.errorChirho ?? "")}`
     );
+    const validCleanResultChirho = await postReviewChirho(portChirho, {
+      ...commonBodyChirho,
+      issueFlagsChirho: [],
+      acceptCleanChirho: true,
+    });
+    assertCheckChirho(
+      validCleanResultChirho.responseChirho.ok,
+      `valid accepted-clean POST failed: ${validCleanResultChirho.responseChirho.status} ${String(validCleanResultChirho.dataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(reviewRowCountChirho(dbPathChirho) === 1, "valid accepted-clean POST did not write one disposable row");
     const validIssueResultChirho = await postReviewChirho(portChirho, {
       ...commonBodyChirho,
+      issueFlagsChirho: ["punctuation-chirho"],
       notesChirho: "server guard check records a concrete punctuation concern for a disposable review row",
     });
     assertCheckChirho(
       validIssueResultChirho.responseChirho.ok,
       `valid issue POST failed: ${validIssueResultChirho.responseChirho.status} ${String(validIssueResultChirho.dataChirho.errorChirho ?? "")}`
     );
-    assertCheckChirho(reviewRowCountChirho(dbPathChirho) === 1, "valid issue POST did not write one disposable row");
+    assertCheckChirho(reviewRowCountChirho(dbPathChirho) === 2, "valid issue POST did not append one disposable row");
     assertCheckChirho(existsSync(backupPathChirho), "valid issue POST did not refresh disposable backup");
     JSON.parse(readFileSync(backupPathChirho, "utf8"));
   } catch (errorChirho) {
