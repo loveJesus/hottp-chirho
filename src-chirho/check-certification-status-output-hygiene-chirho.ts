@@ -41,6 +41,7 @@ interface CertificationStatusOutputChirho {
   humanValidationDbChirho?: unknown;
   structuralChirho?: unknown;
   normalizationChirho?: unknown;
+  strictBlindScansChirho?: unknown;
 }
 
 interface ReviewStartLinkCountCheckChirho {
@@ -108,6 +109,16 @@ function numberFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho:
   const objectChirho = objectRecordChirho(valueChirho, labelChirho);
   const fieldChirho = objectChirho[keyChirho];
   assertGeneratedCheckChirho(typeof fieldChirho === "number", `${labelChirho}.${keyChirho} must be a number`);
+  return fieldChirho;
+}
+
+function nullableNumberFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): number | null {
+  const objectChirho = objectRecordChirho(valueChirho, labelChirho);
+  const fieldChirho = objectChirho[keyChirho];
+  assertGeneratedCheckChirho(
+    fieldChirho === null || typeof fieldChirho === "number",
+    `${labelChirho}.${keyChirho} must be a number or null`
+  );
   return fieldChirho;
 }
 
@@ -201,6 +212,10 @@ function assertRemainingWorkToggleChirho(
     !remainingWorkChirho.some((itemChirho) => itemChirho.includes(uniqueSnippetChirho)),
     `remainingWorkChirho has stale blocker matching ${uniqueSnippetChirho}`
   );
+}
+
+function displayValueChirho(valueChirho: string | number | boolean | null): string {
+  return valueChirho === null ? "unknown" : String(valueChirho);
 }
 
 function relativeProjectPathForStatusChirho(pathChirho: string): string {
@@ -771,6 +786,372 @@ function assertCoreRemainingWorkCoverageChirho(
   );
 }
 
+function assertCandidateScanMarkdownCoverageChirho(markdownChirho: string, labelChirho: string, scanChirho: unknown): void {
+  const scanLabelChirho = `strictBlindScansChirho.${labelChirho}`;
+  const reportPathChirho = stringFieldChirho(scanChirho, "reportPathChirho", scanLabelChirho);
+  const reportExistsChirho = booleanFieldChirho(scanChirho, "reportExistsChirho", scanLabelChirho);
+  const reportShapeOkChirho = booleanFieldChirho(scanChirho, "reportShapeOkChirho", scanLabelChirho);
+  const generatedAtChirho = nullableStringFieldChirho(scanChirho, "generatedAtChirho", scanLabelChirho);
+  const scannerSourceFileCountChirho = nullableNumberFieldChirho(scanChirho, "scannerSourceFileCountChirho", scanLabelChirho);
+  const liveScannerSourceFileCountChirho = numberFieldChirho(scanChirho, "liveScannerSourceFileCountChirho", scanLabelChirho);
+  const scannerFingerprintMatchesChirho = booleanFieldChirho(
+    scanChirho,
+    "scannerSourceFingerprintMatchesCurrentChirho",
+    scanLabelChirho
+  );
+  const spanSourceFileCountChirho = nullableNumberFieldChirho(scanChirho, "spanSourceFileCountChirho", scanLabelChirho);
+  const liveSpanSourceFileCountChirho = numberFieldChirho(scanChirho, "liveSpanSourceFileCountChirho", scanLabelChirho);
+  const spanFingerprintMatchesChirho = booleanFieldChirho(scanChirho, "spanSourceFingerprintMatchesCurrentChirho", scanLabelChirho);
+  const candidateLineCountChirho = nullableNumberFieldChirho(scanChirho, "candidateLineCountChirho", scanLabelChirho);
+  const renderedCandidateLineCountChirho = numberFieldChirho(scanChirho, "renderedCandidateLineCountChirho", scanLabelChirho);
+  const summaryCountsMatchChirho = booleanFieldChirho(scanChirho, "summaryCountsMatchRenderedCandidatesChirho", scanLabelChirho);
+  const highCountChirho = nullableNumberFieldChirho(scanChirho, "highPriorityCountChirho", scanLabelChirho);
+  const mediumCountChirho = nullableNumberFieldChirho(scanChirho, "mediumPriorityCountChirho", scanLabelChirho);
+  const lowCountChirho = nullableNumberFieldChirho(scanChirho, "lowPriorityCountChirho", scanLabelChirho);
+  const renderedHighCountChirho = numberFieldChirho(scanChirho, "renderedHighPriorityCountChirho", scanLabelChirho);
+  const renderedMediumCountChirho = numberFieldChirho(scanChirho, "renderedMediumPriorityCountChirho", scanLabelChirho);
+  const renderedLowCountChirho = numberFieldChirho(scanChirho, "renderedLowPriorityCountChirho", scanLabelChirho);
+
+  assertMarkdownContainsChirho(markdownChirho, `- ${labelChirho}: \`${reportPathChirho}\``, `${labelChirho} report path`);
+  assertMarkdownContainsChirho(markdownChirho, `  - Report exists: ${reportExistsChirho}`, `${labelChirho} exists`);
+  assertMarkdownContainsChirho(markdownChirho, `  - Report shape OK: ${reportShapeOkChirho}`, `${labelChirho} shape`);
+  assertMarkdownContainsChirho(markdownChirho, `  - Generated: ${generatedAtChirho ?? "unknown"}`, `${labelChirho} generated`);
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Scanner source files in report: ${displayValueChirho(scannerSourceFileCountChirho)}`,
+    `${labelChirho} scanner source count`
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Live scanner source files: ${liveScannerSourceFileCountChirho}`,
+    `${labelChirho} live scanner source count`
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Scanner source fingerprint matches current scanner: ${scannerFingerprintMatchesChirho}`,
+    `${labelChirho} scanner fingerprint`
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Span source files in report: ${displayValueChirho(spanSourceFileCountChirho)}`,
+    `${labelChirho} span source count`
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Live span source files: ${liveSpanSourceFileCountChirho}`,
+    `${labelChirho} live span source count`
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Span source fingerprint matches current spans: ${spanFingerprintMatchesChirho}`,
+    `${labelChirho} span fingerprint`
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Candidate lines: ${displayValueChirho(candidateLineCountChirho)}`,
+    `${labelChirho} candidate count`
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Rendered candidate headings: ${renderedCandidateLineCountChirho}`,
+    `${labelChirho} rendered candidate count`
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Summary counts match rendered candidates: ${summaryCountsMatchChirho}`,
+    `${labelChirho} summary match`
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - High/medium/low: ${[displayValueChirho(highCountChirho), displayValueChirho(mediumCountChirho), displayValueChirho(lowCountChirho)].join("/")}`,
+    `${labelChirho} priority counts`
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Rendered high/medium/low: ${[renderedHighCountChirho, renderedMediumCountChirho, renderedLowCountChirho].join("/")}`,
+    `${labelChirho} rendered priority counts`
+  );
+}
+
+function assertCandidateScanRemainingWorkCoverageChirho(
+  remainingWorkChirho: string[],
+  blockerLabelChirho: string,
+  regenerateCommandChirho: string,
+  scanChirho: unknown
+): void {
+  const scanLabelChirho = `strictBlindScansChirho.${blockerLabelChirho}`;
+  const reportExistsChirho = booleanFieldChirho(scanChirho, "reportExistsChirho", scanLabelChirho);
+  const reportShapeOkChirho = booleanFieldChirho(scanChirho, "reportShapeOkChirho", scanLabelChirho);
+  const scannerFingerprintMatchesChirho = booleanFieldChirho(
+    scanChirho,
+    "scannerSourceFingerprintMatchesCurrentChirho",
+    scanLabelChirho
+  );
+  const spanFingerprintMatchesChirho = booleanFieldChirho(scanChirho, "spanSourceFingerprintMatchesCurrentChirho", scanLabelChirho);
+  const candidateLineCountChirho = nullableNumberFieldChirho(scanChirho, "candidateLineCountChirho", scanLabelChirho) ?? 0;
+  if (!reportExistsChirho) {
+    assertRemainingWorkToggleChirho(
+      remainingWorkChirho,
+      true,
+      `${blockerLabelChirho} scanner report is missing; run ${regenerateCommandChirho}`,
+      `${blockerLabelChirho} scanner report is missing`
+    );
+    return;
+  }
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    false,
+    "",
+    `${blockerLabelChirho} scanner report is missing`
+  );
+  if (!reportShapeOkChirho) {
+    assertRemainingWorkToggleChirho(
+      remainingWorkChirho,
+      true,
+      `${blockerLabelChirho} scanner report is malformed; regenerate with ${regenerateCommandChirho}`,
+      `${blockerLabelChirho} scanner report is malformed`
+    );
+    return;
+  }
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    false,
+    "",
+    `${blockerLabelChirho} scanner report is malformed`
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    !scannerFingerprintMatchesChirho,
+    `${blockerLabelChirho} scanner report source-code fingerprint does not match current scanner; rerun ${regenerateCommandChirho}`,
+    `${blockerLabelChirho} scanner report source-code fingerprint does not match current scanner`
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    !spanFingerprintMatchesChirho,
+    `${blockerLabelChirho} scanner report span-source fingerprint does not match current spans; rerun ${regenerateCommandChirho}`,
+    `${blockerLabelChirho} scanner report span-source fingerprint does not match current spans`
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    candidateLineCountChirho !== 0,
+    `${candidateLineCountChirho} ${blockerLabelChirho} strict-blind candidate line(s) remain; visually review and repair or justify before certification`,
+    `${blockerLabelChirho} strict-blind candidate line(s) remain`
+  );
+}
+
+function assertDelimiterAuditMarkdownCoverageChirho(markdownChirho: string, scanChirho: unknown): void {
+  const scanLabelChirho = "strictBlindScansChirho.hebrewDelimiterOrderChirho";
+  const reportPathChirho = stringFieldChirho(scanChirho, "reportPathChirho", scanLabelChirho);
+  const reportExistsChirho = booleanFieldChirho(scanChirho, "reportExistsChirho", scanLabelChirho);
+  const reportShapeOkChirho = booleanFieldChirho(scanChirho, "reportShapeOkChirho", scanLabelChirho);
+  const generatedAtChirho = nullableStringFieldChirho(scanChirho, "generatedAtChirho", scanLabelChirho);
+  const scannerSourceFileCountChirho = nullableNumberFieldChirho(scanChirho, "scannerSourceFileCountChirho", scanLabelChirho);
+  const liveScannerSourceFileCountChirho = numberFieldChirho(scanChirho, "liveScannerSourceFileCountChirho", scanLabelChirho);
+  const scannerFingerprintMatchesChirho = booleanFieldChirho(
+    scanChirho,
+    "scannerSourceFingerprintMatchesCurrentChirho",
+    scanLabelChirho
+  );
+  const spanSourceFileCountChirho = nullableNumberFieldChirho(scanChirho, "spanSourceFileCountChirho", scanLabelChirho);
+  const liveSpanSourceFileCountChirho = numberFieldChirho(scanChirho, "liveSpanSourceFileCountChirho", scanLabelChirho);
+  const spanFingerprintMatchesChirho = booleanFieldChirho(scanChirho, "spanSourceFingerprintMatchesCurrentChirho", scanLabelChirho);
+  const delimiterSpanCountChirho = nullableNumberFieldChirho(scanChirho, "hebrewDelimiterSpanCountChirho", scanLabelChirho);
+  const renderedDelimiterRowsChirho = numberFieldChirho(scanChirho, "renderedHebrewDelimiterSpanCountChirho", scanLabelChirho);
+  const summaryCountsMatchChirho = booleanFieldChirho(scanChirho, "summaryCountsMatchRenderedRowsChirho", scanLabelChirho);
+  const closeBeforeOpenCountChirho = nullableNumberFieldChirho(scanChirho, "closeBeforeOpenSuspectCountChirho", scanLabelChirho);
+  const renderedCloseBeforeOpenCountChirho = numberFieldChirho(
+    scanChirho,
+    "renderedCloseBeforeOpenSuspectCountChirho",
+    scanLabelChirho
+  );
+  const neighborUnbalancedCountChirho = nullableNumberFieldChirho(
+    scanChirho,
+    "neighborUnbalancedReviewCountChirho",
+    scanLabelChirho
+  );
+  const renderedNeighborUnbalancedCountChirho = numberFieldChirho(
+    scanChirho,
+    "renderedNeighborUnbalancedReviewCountChirho",
+    scanLabelChirho
+  );
+  const coveredCountChirho = numberFieldChirho(scanChirho, "neighborUnbalancedCoveredByReviewCountChirho", scanLabelChirho);
+  const uncoveredCountChirho = numberFieldChirho(scanChirho, "neighborUnbalancedUncoveredByReviewCountChirho", scanLabelChirho);
+  const coveredSamplesChirho = stringArrayFieldChirho(scanChirho, "neighborUnbalancedCoveredSamplesChirho", scanLabelChirho);
+  const uncoveredSamplesChirho = stringArrayFieldChirho(scanChirho, "neighborUnbalancedUncoveredSamplesChirho", scanLabelChirho);
+
+  assertMarkdownContainsChirho(markdownChirho, `- Hebrew delimiter-order audit: \`${reportPathChirho}\``, "delimiter audit report path");
+  assertMarkdownContainsChirho(markdownChirho, `  - Report exists: ${reportExistsChirho}`, "delimiter audit exists");
+  assertMarkdownContainsChirho(markdownChirho, `  - Report shape OK: ${reportShapeOkChirho}`, "delimiter audit shape");
+  assertMarkdownContainsChirho(markdownChirho, `  - Generated: ${generatedAtChirho ?? "unknown"}`, "delimiter audit generated");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Scanner source files in report: ${displayValueChirho(scannerSourceFileCountChirho)}`,
+    "delimiter audit scanner source count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Live scanner source files: ${liveScannerSourceFileCountChirho}`,
+    "delimiter audit live scanner source count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Scanner source fingerprint matches current scanner: ${scannerFingerprintMatchesChirho}`,
+    "delimiter audit scanner fingerprint"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Span source files in report: ${displayValueChirho(spanSourceFileCountChirho)}`,
+    "delimiter audit span source count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Live span source files: ${liveSpanSourceFileCountChirho}`,
+    "delimiter audit live span source count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Span source fingerprint matches current spans: ${spanFingerprintMatchesChirho}`,
+    "delimiter audit span fingerprint"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Hebrew delimiter spans: ${displayValueChirho(delimiterSpanCountChirho)}`,
+    "delimiter audit span count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Rendered delimiter rows: ${renderedDelimiterRowsChirho}`,
+    "delimiter audit rendered rows"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Summary counts match rendered rows: ${summaryCountsMatchChirho}`,
+    "delimiter audit summary match"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Close-before-open suspects: ${displayValueChirho(closeBeforeOpenCountChirho)} (rendered ${renderedCloseBeforeOpenCountChirho})`,
+    "delimiter audit close-before-open count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Neighbor-unbalanced review rows: ${displayValueChirho(neighborUnbalancedCountChirho)} (rendered ${renderedNeighborUnbalancedCountChirho})`,
+    "delimiter audit neighbor-unbalanced count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Neighbor-unbalanced rows covered by raw/expert review: ${coveredCountChirho}`,
+    "delimiter audit covered count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Neighbor-unbalanced covered samples: ${coveredSamplesChirho.length === 0 ? "none" : coveredSamplesChirho.join(", ")}`,
+    "delimiter audit covered samples"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Neighbor-unbalanced rows not covered by raw/expert review: ${uncoveredCountChirho}`,
+    "delimiter audit uncovered count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `  - Neighbor-unbalanced uncovered samples: ${uncoveredSamplesChirho.length === 0 ? "none" : uncoveredSamplesChirho.join(", ")}`,
+    "delimiter audit uncovered samples"
+  );
+}
+
+function assertDelimiterAuditRemainingWorkCoverageChirho(remainingWorkChirho: string[], scanChirho: unknown): void {
+  const scanLabelChirho = "strictBlindScansChirho.hebrewDelimiterOrderChirho";
+  const regenerateCommandChirho = "bun run scan-hebrew-delimiter-order-chirho";
+  const reportExistsChirho = booleanFieldChirho(scanChirho, "reportExistsChirho", scanLabelChirho);
+  const reportShapeOkChirho = booleanFieldChirho(scanChirho, "reportShapeOkChirho", scanLabelChirho);
+  const scannerFingerprintMatchesChirho = booleanFieldChirho(
+    scanChirho,
+    "scannerSourceFingerprintMatchesCurrentChirho",
+    scanLabelChirho
+  );
+  const spanFingerprintMatchesChirho = booleanFieldChirho(scanChirho, "spanSourceFingerprintMatchesCurrentChirho", scanLabelChirho);
+  const closeBeforeOpenCountChirho = nullableNumberFieldChirho(scanChirho, "closeBeforeOpenSuspectCountChirho", scanLabelChirho) ?? 0;
+  const uncoveredCountChirho = numberFieldChirho(scanChirho, "neighborUnbalancedUncoveredByReviewCountChirho", scanLabelChirho);
+  if (!reportExistsChirho) {
+    assertRemainingWorkToggleChirho(
+      remainingWorkChirho,
+      true,
+      `Hebrew delimiter-order audit report is missing; run ${regenerateCommandChirho}`,
+      "Hebrew delimiter-order audit report is missing"
+    );
+    return;
+  }
+  assertRemainingWorkToggleChirho(remainingWorkChirho, false, "", "Hebrew delimiter-order audit report is missing");
+  if (!reportShapeOkChirho) {
+    assertRemainingWorkToggleChirho(
+      remainingWorkChirho,
+      true,
+      `Hebrew delimiter-order audit report is malformed; regenerate with ${regenerateCommandChirho}`,
+      "Hebrew delimiter-order audit report is malformed"
+    );
+    return;
+  }
+  assertRemainingWorkToggleChirho(remainingWorkChirho, false, "", "Hebrew delimiter-order audit report is malformed");
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    !scannerFingerprintMatchesChirho,
+    `Hebrew delimiter-order audit source-code fingerprint does not match current scanner; rerun ${regenerateCommandChirho}`,
+    "Hebrew delimiter-order audit source-code fingerprint does not match current scanner"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    !spanFingerprintMatchesChirho,
+    `Hebrew delimiter-order audit span-source fingerprint does not match current spans; rerun ${regenerateCommandChirho}`,
+    "Hebrew delimiter-order audit span-source fingerprint does not match current spans"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    closeBeforeOpenCountChirho !== 0,
+    `${closeBeforeOpenCountChirho} Hebrew close-before-open delimiter suspect(s) remain; visually review and repair or justify before certification`,
+    "Hebrew close-before-open delimiter suspect(s) remain"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    uncoveredCountChirho !== 0,
+    `${uncoveredCountChirho} Hebrew delimiter neighbor-unbalanced row(s) are not covered by raw/expert review; repair, route, or justify before certification`,
+    "Hebrew delimiter neighbor-unbalanced row(s) are not covered by raw/expert review"
+  );
+}
+
+function assertStrictBlindScanCoverageChirho(
+  markdownChirho: string,
+  statusChirho: CertificationStatusOutputChirho,
+  remainingWorkChirho: string[]
+): void {
+  const scansChirho = objectRecordChirho(statusChirho.strictBlindScansChirho, "strictBlindScansChirho");
+  assertMarkdownContainsChirho(markdownChirho, "## Strict-Blind Scanner Reports", "strict-blind scanner heading");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "These heuristic reports do not certify text.",
+    "strict-blind scanner non-certification warning"
+  );
+  const hiddenHebrewChirho = scansChirho.hiddenHebrewChirho;
+  const nonLatinResidueChirho = scansChirho.nonLatinResidueChirho;
+  const delimiterAuditChirho = scansChirho.hebrewDelimiterOrderChirho;
+  assertCandidateScanMarkdownCoverageChirho(markdownChirho, "Hidden Hebrew detector", hiddenHebrewChirho);
+  assertCandidateScanRemainingWorkCoverageChirho(
+    remainingWorkChirho,
+    "hidden Hebrew",
+    "bun run spec-chirho/metropoliluya-chirho/find-hidden-hebrew-candidates-2026-06-04-chirho.ts",
+    hiddenHebrewChirho
+  );
+  assertCandidateScanMarkdownCoverageChirho(markdownChirho, "Non-Latin residue detector", nonLatinResidueChirho);
+  assertCandidateScanRemainingWorkCoverageChirho(
+    remainingWorkChirho,
+    "non-Latin residue",
+    "bun run spec-chirho/metropoliluya-chirho/find-nonlatin-residue-candidates-2026-06-04-chirho.ts",
+    nonLatinResidueChirho
+  );
+  assertDelimiterAuditMarkdownCoverageChirho(markdownChirho, delimiterAuditChirho);
+  assertDelimiterAuditRemainingWorkCoverageChirho(remainingWorkChirho, delimiterAuditChirho);
+}
+
 function assertPassCHumanReattributionHandoffChirho(
   markdownChirho: string,
   statusChirho: CertificationStatusOutputChirho,
@@ -934,6 +1315,7 @@ function mainChirho(): void {
     );
   }
   assertCoreRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
+  assertStrictBlindScanCoverageChirho(markdownChirho, statusChirho, remainingWorkStringsChirho);
   assertBlankExpertHandoffCoverageChirho(markdownChirho, statusChirho);
   assertPassCHumanReattributionHandoffChirho(markdownChirho, statusChirho, remainingWorkStringsChirho);
   assertGeneratedCheckChirho(
