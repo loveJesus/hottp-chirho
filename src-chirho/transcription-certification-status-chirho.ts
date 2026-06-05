@@ -4005,6 +4005,13 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     statusChirho.rawHebrewChirho.triageChirho.preReviewUncoveredSamplesChirho,
     "Pre-review uncovered attention samples: none"
   );
+  const rawHebrewPreReviewUncoveredSectionLinesChirho =
+    statusChirho.rawHebrewChirho.triageChirho.preReviewUncoveredSamplesChirho.length === 0
+      ? rawHebrewPreReviewUncoveredSampleLinesChirho
+      : [
+          "- Pre-review note uncovered current attention samples:",
+          ...rawHebrewPreReviewUncoveredSampleLinesChirho,
+        ];
   const genericReviewerDetailLinesChirho =
     statusChirho.humanValidationDbChirho.genericReviewerRowDetailsChirho.length === 0
       ? ["- Attribution-blocked reviewer row details: none"]
@@ -4265,8 +4272,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Non-certifying pre-review note coverage: ${statusChirho.rawHebrewChirho.triageChirho.preReviewNotesAvailableChirho ? `${statusChirho.rawHebrewChirho.triageChirho.preReviewCoveredAttentionItemCountChirho}/${statusChirho.rawHebrewChirho.triageChirho.attentionItemCountChirho} current attention item(s)` : "notes unavailable"}`,
     `- Current attention items not mentioned in the pre-review note: ${statusChirho.rawHebrewChirho.triageChirho.preReviewUncoveredAttentionItemCountChirho}`,
     ...rawHebrewTriageSampleLinesChirho,
-    "- Pre-review note uncovered current attention samples:",
-    ...rawHebrewPreReviewUncoveredSampleLinesChirho,
+    ...rawHebrewPreReviewUncoveredSectionLinesChirho,
     "",
     "## Human Validation DB",
     "",
