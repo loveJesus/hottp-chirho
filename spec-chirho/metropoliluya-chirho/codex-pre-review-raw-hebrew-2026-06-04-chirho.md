@@ -269,6 +269,15 @@ another.
   - Visual precheck: the two crops sit on opposite sides of the French `J123 conjecture`; the line appears to contrast two near-identical forms, so the vowel distinction is the point rather than a reason to merge the targets.
   - Human check still needed: exact vowels/marks and whether the two forms are correctly distinguished.
 
+- `vol 5 p152 L14 S0/S2`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A152%3A14%3A0`
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A152%3A14%3A2`
+  - Item IDs: `v5-p0152-l014-s0`, `v5-p0152-l014-s2`
+  - Live texts: `תְּרוֹמֵם` and `תְּרוֹמֵם`
+  - Attention reason: none; these are current raw items in the no-pre-review-note lane.
+  - Visual precheck: S0 is the line-opening Hebrew word before the period; S2 is the comparison word after `Au lieu de`. Both red boxes bracket their own Hebrew word cleanly and leave the period/French outside the target boxes. The same-line repetition means the human should compare the two forms directly rather than rely on the direct OCR read, which is weak for S0 and stronger for S2.
+  - Human check still needed: exact dagesh/sheva and holam-vav placement in both occurrences, plus whether the two printed forms are truly identical as stored.
+
 - `vol 5 p152 L13 S3/S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A3`
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A5`
