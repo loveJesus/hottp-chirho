@@ -153,6 +153,16 @@ function booleanFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho
   return fieldChirho;
 }
 
+function nullableBooleanFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): boolean | null {
+  const objectChirho = objectRecordChirho(valueChirho, labelChirho);
+  const fieldChirho = objectChirho[keyChirho];
+  assertGeneratedCheckChirho(
+    fieldChirho === null || typeof fieldChirho === "boolean",
+    `${labelChirho}.${keyChirho} must be a boolean or null`
+  );
+  return fieldChirho;
+}
+
 function arrayFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): unknown[] {
   const objectChirho = objectRecordChirho(valueChirho, labelChirho);
   const fieldChirho = objectChirho[keyChirho];
@@ -1832,6 +1842,215 @@ function assertLatinSymbolQueueRemainingWorkCoverageChirho(
   );
 }
 
+function assertStructuralExportMarkdownCoverageChirho(markdownChirho: string, statusChirho: CertificationStatusOutputChirho): void {
+  const structuralChirho = statusChirho.structuralChirho;
+  const artifactsChirho = statusChirho.artifactsChirho;
+  const normalizationChirho = statusChirho.normalizationChirho;
+  const exportExistsChirho = booleanFieldChirho(artifactsChirho, "exportReportExistsChirho", "artifactsChirho");
+  const exportShapeOkChirho = booleanFieldChirho(artifactsChirho, "exportReportShapeOkChirho", "artifactsChirho");
+  const spanSourceCountChirho = nullableNumberFieldChirho(structuralChirho, "spanSourceFileCountChirho", "structuralChirho");
+  const d1PathChirho = nullableStringFieldChirho(structuralChirho, "d1AuditDbPathChirho", "structuralChirho");
+  const liveD1PathChirho = nullableStringFieldChirho(structuralChirho, "liveD1AuditDbPathChirho", "structuralChirho");
+  const d1ReadErrorChirho = nullableStringFieldChirho(structuralChirho, "d1AuditFingerprintReadErrorChirho", "structuralChirho");
+  const d1MatchChirho = nullableBooleanFieldChirho(structuralChirho, "d1AuditFingerprintMatchesCurrentChirho", "structuralChirho");
+  const issueSummariesChirho = stringArrayFieldChirho(structuralChirho, "issueSummariesChirho", "structuralChirho");
+
+  assertMarkdownContainsChirho(markdownChirho, "## Structural Export", "structural export heading");
+  assertMarkdownContainsChirho(markdownChirho, `- Export report exists: ${exportExistsChirho}`, "strict export report existence");
+  assertMarkdownContainsChirho(markdownChirho, `- Export report shape OK: ${exportShapeOkChirho}`, "strict export report shape");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Export span-source files in report: ${displayValueChirho(spanSourceCountChirho)}`,
+    "strict export span-source count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live span-source files for report pages: ${numberFieldChirho(structuralChirho, "liveSpanSourceFileCountChirho", "structuralChirho")}`,
+    "strict export live span-source count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live span count for report pages: ${numberFieldChirho(structuralChirho, "liveSpanCountChirho", "structuralChirho")}`,
+    "strict export live span count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Export span-source fingerprint matches live spans: ${booleanFieldChirho(structuralChirho, "spanSourceFingerprintMatchesCurrentChirho", "structuralChirho")}`,
+    "strict export span-source fingerprint"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Export D1 audit path: ${d1PathChirho ?? "none"}`,
+    "strict export D1 audit path"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live D1 audit path: ${liveD1PathChirho ?? "none"}`,
+    "strict export live D1 audit path"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- D1 audit fingerprint read error: ${d1ReadErrorChirho ?? "none"}`,
+    "strict export D1 read error"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Export D1 page/word/OCR-suggestion rows: ${[
+      displayValueChirho(nullableNumberFieldChirho(structuralChirho, "d1AuditPageRowCountChirho", "structuralChirho")),
+      displayValueChirho(nullableNumberFieldChirho(structuralChirho, "d1AuditWordRowCountChirho", "structuralChirho")),
+      displayValueChirho(nullableNumberFieldChirho(structuralChirho, "d1AuditOcrSuggestionRowCountChirho", "structuralChirho")),
+    ].join("/")}`,
+    "strict export D1 row counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live D1 page/word/OCR-suggestion rows: ${[
+      displayValueChirho(nullableNumberFieldChirho(structuralChirho, "liveD1AuditPageRowCountChirho", "structuralChirho")),
+      displayValueChirho(nullableNumberFieldChirho(structuralChirho, "liveD1AuditWordRowCountChirho", "structuralChirho")),
+      displayValueChirho(nullableNumberFieldChirho(structuralChirho, "liveD1AuditOcrSuggestionRowCountChirho", "structuralChirho")),
+    ].join("/")}`,
+    "strict export live D1 row counts"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Export D1 audit fingerprint matches live D1: ${d1MatchChirho ?? "not-applicable"}`,
+    "strict export D1 fingerprint"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Strict passed: ${booleanFieldChirho(structuralChirho, "strictPassedChirho", "structuralChirho")}`,
+    "strict export strict-passed"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Issues: ${numberFieldChirho(structuralChirho, "issueCountChirho", "structuralChirho")}`,
+    "strict export issue count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Issue code counts: ${countMapDisplayChirho(countMapFieldChirho(structuralChirho, "issueCodeCountsChirho", "structuralChirho"))}`,
+    "strict export issue code counts"
+  );
+  for (const [fieldChirho, labelChirho] of [
+    ["unknownSpanCountChirho", "Unknown spans"],
+    ["nonNfcSpanCountChirho", "Non-NFC spans in export report"],
+    ["d1GapPageCountChirho", "D1 gap pages"],
+    ["hebrewSpanCountChirho", "Hebrew spans"],
+    ["passCOcrHebrewSpanCountChirho", "Raw Pass-C Hebrew spans"],
+  ] as const) {
+    assertMarkdownContainsChirho(
+      markdownChirho,
+      `- ${labelChirho}: ${numberFieldChirho(structuralChirho, fieldChirho, "structuralChirho")}`,
+      `strict export ${fieldChirho}`
+    );
+  }
+
+  assertMarkdownContainsChirho(markdownChirho, "### Strict Issue Details", "strict issue details heading");
+  if (issueSummariesChirho.length === 0) {
+    assertMarkdownContainsChirho(markdownChirho, "### Strict Issue Details\n\n- None.", "empty strict issue details");
+  } else {
+    for (const issueChirho of issueSummariesChirho) {
+      assertMarkdownContainsChirho(markdownChirho, `- ${issueChirho}`, `strict issue summary ${issueChirho}`);
+    }
+  }
+
+  assertMarkdownContainsChirho(markdownChirho, "## Unicode Normalization", "Unicode normalization heading");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live non-NFC span text fields: ${numberFieldChirho(normalizationChirho, "liveNonNfcSpanTextFieldCountChirho", "normalizationChirho")}`,
+    "live non-NFC text field count"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Live files with non-NFC span text: ${numberFieldChirho(normalizationChirho, "liveNonNfcSpanFileCountChirho", "normalizationChirho")}`,
+    "live non-NFC file count"
+  );
+}
+
+function assertStructuralExportRemainingWorkCoverageChirho(
+  statusChirho: CertificationStatusOutputChirho,
+  remainingWorkChirho: string[]
+): void {
+  const structuralChirho = statusChirho.structuralChirho;
+  const artifactsChirho = statusChirho.artifactsChirho;
+  const exportExistsChirho = booleanFieldChirho(artifactsChirho, "exportReportExistsChirho", "artifactsChirho");
+  const exportShapeOkChirho = booleanFieldChirho(artifactsChirho, "exportReportShapeOkChirho", "artifactsChirho");
+  const spanSourceCountChirho = nullableNumberFieldChirho(structuralChirho, "spanSourceFileCountChirho", "structuralChirho");
+  const usesD1Chirho = nullableStringFieldChirho(structuralChirho, "d1AuditDbPathChirho", "structuralChirho") !== null;
+  const hasD1FingerprintChirho =
+    nullableNumberFieldChirho(structuralChirho, "d1AuditPageRowCountChirho", "structuralChirho") !== null &&
+    nullableNumberFieldChirho(structuralChirho, "d1AuditWordRowCountChirho", "structuralChirho") !== null &&
+    nullableNumberFieldChirho(structuralChirho, "d1AuditOcrSuggestionRowCountChirho", "structuralChirho") !== null;
+  const liveD1AvailableChirho =
+    nullableNumberFieldChirho(structuralChirho, "liveD1AuditPageRowCountChirho", "structuralChirho") !== null &&
+    nullableNumberFieldChirho(structuralChirho, "liveD1AuditWordRowCountChirho", "structuralChirho") !== null &&
+    nullableNumberFieldChirho(structuralChirho, "liveD1AuditOcrSuggestionRowCountChirho", "structuralChirho") !== null;
+  const d1ReadErrorChirho = nullableStringFieldChirho(structuralChirho, "d1AuditFingerprintReadErrorChirho", "structuralChirho");
+  const d1MatchesChirho = nullableBooleanFieldChirho(structuralChirho, "d1AuditFingerprintMatchesCurrentChirho", "structuralChirho");
+
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    !exportExistsChirho,
+    "strict export report is missing; run export-markdown-chirho --all --strict",
+    "strict export report is missing"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    exportExistsChirho && !exportShapeOkChirho,
+    "strict export report is malformed; regenerate export-markdown-chirho --all --strict",
+    "strict export report is malformed"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    exportExistsChirho && exportShapeOkChirho && spanSourceCountChirho === null,
+    "strict export report lacks a span-source fingerprint; regenerate export-markdown-chirho --all --strict",
+    "strict export report lacks a span-source fingerprint"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    exportExistsChirho &&
+      exportShapeOkChirho &&
+      spanSourceCountChirho !== null &&
+      !booleanFieldChirho(structuralChirho, "spanSourceFingerprintMatchesCurrentChirho", "structuralChirho"),
+    "strict export report span-source fingerprint does not match live span files; regenerate export-markdown-chirho --all --strict",
+    "strict export report span-source fingerprint does not match live span files"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    exportExistsChirho && exportShapeOkChirho && usesD1Chirho && d1ReadErrorChirho !== null,
+    `D1 audit fingerprint scan failed: ${d1ReadErrorChirho}`,
+    "D1 audit fingerprint scan failed"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    exportExistsChirho && exportShapeOkChirho && usesD1Chirho && !hasD1FingerprintChirho,
+    "strict export report lacks a D1 audit fingerprint; regenerate export-markdown-chirho --all --strict",
+    "strict export report lacks a D1 audit fingerprint"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    exportExistsChirho &&
+      exportShapeOkChirho &&
+      usesD1Chirho &&
+      hasD1FingerprintChirho &&
+      d1ReadErrorChirho === null &&
+      !liveD1AvailableChirho,
+    "strict export report used D1, but no current local D1 sqlite is available for fingerprint comparison",
+    "strict export report used D1, but no current local D1 sqlite is available for fingerprint comparison"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    exportExistsChirho &&
+      exportShapeOkChirho &&
+      usesD1Chirho &&
+      hasD1FingerprintChirho &&
+      liveD1AvailableChirho &&
+      d1MatchesChirho === false,
+    "strict export report D1 audit fingerprint does not match current D1 witness rows; regenerate export-markdown-chirho --all --strict",
+    "strict export report D1 audit fingerprint does not match current D1 witness rows"
+  );
+}
+
 function assertCoreRemainingWorkCoverageChirho(
   statusChirho: CertificationStatusOutputChirho,
   remainingWorkChirho: string[]
@@ -2473,6 +2692,8 @@ function mainChirho(): void {
       `status Markdown does not display remaining-work blocker: ${itemChirho}`
     );
   }
+  assertStructuralExportMarkdownCoverageChirho(markdownChirho, statusChirho);
+  assertStructuralExportRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
   assertCoreRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
   assertRawHebrewQueueMarkdownCoverageChirho(markdownChirho, statusChirho);
   assertRawHebrewQueueRemainingWorkCoverageChirho(statusChirho, remainingWorkStringsChirho);
