@@ -596,6 +596,7 @@ function htmlChirho(): string {
     .target-crop-image-chirho { display: block; height: auto; image-rendering: -webkit-optimize-contrast; transform-origin: top left; }
     .target-crop-marker-chirho { position: absolute; top: 0; bottom: 0; border: 4px solid #c9251f; background: rgba(201, 37, 31, 0.18); box-sizing: border-box; pointer-events: none; }
     .target-crop-label-chirho { position: absolute; top: 0; left: 0; background: #c9251f; color: white; font-size: 10px; font-weight: 800; line-height: 1; padding: 4px 5px; text-transform: uppercase; }
+    .target-boundary-note-chirho { margin: -4px 0 12px; border: 1px solid #d6d9dd; border-top: 0; background: #fff; color: #3d4650; font-size: 12px; line-height: 1.35; padding: 8px 10px; }
     .line-image-frame-chirho { position: relative; width: 100%; }
     .line-image-chirho { display: block; width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
     .span-marker-chirho { position: absolute; top: 0; bottom: 0; border: 3px solid #c9251f; background: repeating-linear-gradient(135deg, rgba(201, 37, 31, 0.24) 0, rgba(201, 37, 31, 0.24) 8px, rgba(255, 255, 255, 0.02) 8px, rgba(255, 255, 255, 0.02) 16px); box-sizing: border-box; pointer-events: none; }
@@ -1118,6 +1119,18 @@ function htmlChirho(): string {
       const widthPctChirho = ((cropChirho.spanEndChirho - cropChirho.spanStartChirho) / cropChirho.cropWidthChirho) * 100;
       return "left:" + leftPctChirho.toFixed(4) + "%;width:" + widthPctChirho.toFixed(4) + "%;";
     }
+    function targetBoundaryTextChirho(itemChirho) {
+      const cropChirho = targetCropGeometryChirho(itemChirho);
+      const partsChirho = [
+        "Target span: x" + cropChirho.spanStartChirho + ".." + cropChirho.spanEndChirho + " of " + cropChirho.lineWidthChirho + "px",
+        "script " + itemChirho.scriptChirho,
+        "segment " + itemChirho.segmentIndexChirho
+      ];
+      if (itemTextIsBlankChirho(itemChirho)) {
+        partsChirho.push("blank text means supply only the script text inside the red box, not neighboring punctuation or context");
+      }
+      return partsChirho.join("; ") + ".";
+    }
     function renderChirho() {
       syncUrlChirho();
       const appChirho = document.getElementById("app-chirho");
@@ -1143,6 +1156,7 @@ function htmlChirho(): string {
       ]));
       targetCropWrapChirho.appendChild(targetCropFrameChirho);
       leftChirho.appendChild(targetCropWrapChirho);
+      leftChirho.appendChild(elChirho("div", { classChirho: "target-boundary-note-chirho", textChirho: targetBoundaryTextChirho(itemChirho) }));
       leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Printed line" }));
       const imageWrapChirho = elChirho("div", { classChirho: "image-wrap-chirho" });
       const imageFrameChirho = elChirho("div", { classChirho: "line-image-frame-chirho" });
