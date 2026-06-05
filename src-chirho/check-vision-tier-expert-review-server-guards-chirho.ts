@@ -2,7 +2,7 @@
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
 /**
- * Verify the non-Latin expert review server rejects placeholder rationale text.
+ * Verify the non-Latin expert review server rejects unsafe direct POSTs.
  *
  * The check runs the real server with a disposable policy path so guard
  * regressions cannot mutate production expert-confirmation state.
@@ -14,7 +14,11 @@ import { join } from "path";
 import { createServer as createNetServerChirho } from "net";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
-import type { VisionTierExpertConfirmationFileChirho } from "./vision-tier-expert-confirmation-policy-chirho.ts";
+import {
+  VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO,
+  VISION_TIER_EXPERT_CONFIRMATION_REVIEWED_ISSUES_CHIRHO,
+  type VisionTierExpertConfirmationFileChirho,
+} from "./vision-tier-expert-confirmation-policy-chirho.ts";
 
 const MODULE_CHIRHO = "check-vision-tier-expert-review-server-guards-chirho";
 
@@ -146,6 +150,25 @@ function assertPlaceholderRejectedChirho(paramsChirho: {
   assertCheckChirho(!existsSync(paramsChirho.policyPathChirho), `${paramsChirho.labelChirho} wrote a policy file`);
 }
 
+function assertRejectedWithoutPolicyChirho(paramsChirho: {
+  labelChirho: string;
+  responseChirho: Response;
+  dataChirho: ExpertReviewPostResponseChirho;
+  policyPathChirho: string;
+  expectedErrorChirho: string;
+}): void {
+  assertCheckChirho(
+    paramsChirho.responseChirho.status === 400,
+    `${paramsChirho.labelChirho} expected HTTP 400, got ${paramsChirho.responseChirho.status}`
+  );
+  assertCheckChirho(paramsChirho.dataChirho.okChirho === false, `${paramsChirho.labelChirho} unexpectedly returned ok`);
+  assertCheckChirho(
+    String(paramsChirho.dataChirho.errorChirho ?? "").includes(paramsChirho.expectedErrorChirho),
+    `${paramsChirho.labelChirho} failed for wrong reason: ${String(paramsChirho.dataChirho.errorChirho ?? "")}`
+  );
+  assertCheckChirho(!existsSync(paramsChirho.policyPathChirho), `${paramsChirho.labelChirho} wrote a policy file`);
+}
+
 function policyFileChirho(pathChirho: string): VisionTierExpertConfirmationFileChirho {
   return JSON.parse(readFileSync(pathChirho, "utf8")) as VisionTierExpertConfirmationFileChirho;
 }
@@ -178,6 +201,31 @@ async function mainChirho(): Promise<void> {
       reviewerRoleChirho: itemChirho.reviewerChirho,
       ...displayGuardForItemChirho(itemChirho),
     };
+    const missingCertifyResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
+      ...commonBodyChirho,
+      rationaleChirho: "server guard check should reject missing exact-certification acknowledgement",
+      certifyExactChirho: false,
+    });
+    assertRejectedWithoutPolicyChirho({
+      labelChirho: "missing confirm acknowledgement",
+      responseChirho: missingCertifyResultChirho.responseChirho,
+      dataChirho: missingCertifyResultChirho.dataChirho,
+      policyPathChirho,
+      expectedErrorChirho: "certifyExactChirho acknowledgement is required",
+    });
+    const wrongRoleResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
+      ...commonBodyChirho,
+      reviewerRoleChirho: itemChirho.reviewerChirho === "Hebrew/WLC reviewer" ? "Syriac reader" : "Hebrew/WLC reviewer",
+      rationaleChirho: "server guard check should reject a cross-lane reviewer role",
+      certifyExactChirho: true,
+    });
+    assertRejectedWithoutPolicyChirho({
+      labelChirho: "wrong confirm reviewer role",
+      responseChirho: wrongRoleResultChirho.responseChirho,
+      dataChirho: wrongRoleResultChirho.dataChirho,
+      policyPathChirho,
+      expectedErrorChirho: "reviewerRoleChirho must be",
+    });
     const confirmResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
       ...commonBodyChirho,
       rationaleChirho: "<why these exact items are confirmed>",
@@ -200,6 +248,22 @@ async function mainChirho(): Promise<void> {
       dataChirho: issueResultChirho.dataChirho,
       policyPathChirho,
     });
+    const validConfirmResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
+      ...commonBodyChirho,
+      rationaleChirho: "server guard check confirms one exact non-Latin item in a disposable policy file",
+      certifyExactChirho: true,
+    });
+    assertCheckChirho(
+      validConfirmResultChirho.responseChirho.ok,
+      `valid confirm POST failed: ${validConfirmResultChirho.responseChirho.status} ${String(validConfirmResultChirho.dataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(existsSync(policyPathChirho), "valid confirm POST did not write disposable policy file");
+    let policyFileAfterConfirmChirho = policyFileChirho(policyPathChirho);
+    assertCheckChirho(policyFileAfterConfirmChirho.policiesChirho?.length === 1, "valid confirm POST wrote wrong policy count");
+    assertCheckChirho(
+      policyFileAfterConfirmChirho.policiesChirho?.[0]?.decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO,
+      "valid confirm POST did not write a confirmed policy"
+    );
     const validIssueResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
       ...commonBodyChirho,
       rationaleChirho: "server guard check records an uncertainty issue with a concrete non-template reason",
@@ -210,7 +274,12 @@ async function mainChirho(): Promise<void> {
       `valid issue POST failed: ${validIssueResultChirho.responseChirho.status} ${String(validIssueResultChirho.dataChirho.errorChirho ?? "")}`
     );
     assertCheckChirho(existsSync(policyPathChirho), "valid issue POST did not write disposable policy file");
-    assertCheckChirho(policyFileChirho(policyPathChirho).policiesChirho?.length === 1, "valid issue POST wrote wrong policy count");
+    const policyFileAfterIssueChirho = policyFileChirho(policyPathChirho);
+    assertCheckChirho(policyFileAfterIssueChirho.policiesChirho?.length === 1, "valid issue POST wrote wrong policy count");
+    assertCheckChirho(
+      policyFileAfterIssueChirho.policiesChirho?.[0]?.decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_REVIEWED_ISSUES_CHIRHO,
+      "valid issue POST did not supersede the earlier confirmation with an issue"
+    );
   } catch (errorChirho) {
     processChirho.kill();
     await processChirho.exited.catch(() => undefined);
@@ -222,7 +291,7 @@ async function mainChirho(): Promise<void> {
     await processChirho.exited.catch(() => undefined);
     rmSync(tempDirChirho, { recursive: true, force: true });
   }
-  console.log(`[${MODULE_CHIRHO}] expert review server rationale guards passed`);
+  console.log(`[${MODULE_CHIRHO}] expert review server guards passed`);
 }
 
 if (import.meta.main) {
