@@ -5,9 +5,9 @@
  * Non-mutating guard checks for the expert-supplied blank-span CLI.
  *
  * These checks exercise the actual command-line boundary without --apply. They
- * prove machine reviewer attribution is rejected before any target mutation can
- * happen, and, while a blank vision-tier item exists, prove the live dry-run and
- * wrong-role rejection paths still behave as expected.
+ * prove generic/machine reviewer attribution is rejected before any target
+ * mutation can happen, and, while a blank vision-tier item exists, prove the
+ * live dry-run and wrong-role rejection paths still behave as expected.
  */
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
@@ -80,6 +80,26 @@ function checkMachineReviewerRejectedBeforeTargetChirho(): void {
   assertCommandChirho(
     combinedOutputChirho.includes("machine reviewer codex-gpt5-chirho cannot certify"),
     `machine reviewer command failed for the wrong reason: ${combinedOutputChirho}`
+  );
+}
+
+function checkGenericReviewerRejectedBeforeTargetChirho(): void {
+  const argsChirho = applyArgsChirho([
+    "--id-chirho=v0-p0000-l000-s0",
+    "--supplied-text-chirho=x",
+    "--reviewer-chirho=human-chirho",
+    "--reviewer-role-chirho=Syriac reader",
+    "--rationale-chirho=certification guard generic reviewer check only",
+  ]);
+  const resultChirho = runCommandChirho(argsChirho);
+  const combinedOutputChirho = `${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`;
+  assertCommandChirho(
+    resultChirho.exitCodeChirho !== 0,
+    `generic reviewer command unexpectedly succeeded: ${commandTextChirho(argsChirho)}`
+  );
+  assertCommandChirho(
+    combinedOutputChirho.includes("--reviewer-chirho must identify the explicit reviewer, not generic human-chirho"),
+    `generic reviewer command failed for the wrong reason: ${combinedOutputChirho}`
   );
 }
 
@@ -231,6 +251,7 @@ function checkBlankLiveItemWrongRoleChirho(itemChirho: VisionTierExpertLiveItemC
 }
 
 function mainChirho(): void {
+  checkGenericReviewerRejectedBeforeTargetChirho();
   checkMachineReviewerRejectedBeforeTargetChirho();
   checkPlaceholderTextRejectedBeforeTargetChirho();
   checkPlaceholderReviewerRejectedBeforeTargetChirho();
