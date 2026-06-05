@@ -128,9 +128,22 @@ const EXPERT_SOURCES_CHIRHO = new Set([
 
 interface CertificationStatusChirho {
   reviewStartLinksChirho?: Record<string, string | null>;
+  structuralChirho?: {
+    passCOcrHebrewSpanCountChirho?: number;
+  };
   rawHebrewChirho?: {
     triageChirho?: {
       attentionItemCountChirho?: number;
+      lowConfidenceItemCountChirho?: number;
+      confidentDirectReadDisagreementItemCountChirho?: number;
+      multiTokenItemCountChirho?: number;
+      delimiterNotationItemCountChirho?: number;
+      noDirectReadItemCountChirho?: number;
+      preReviewNotesAvailableChirho?: boolean;
+      preReviewCoveredAttentionItemCountChirho?: number;
+      preReviewReasonCoveredAttentionItemCountChirho?: number;
+      preReviewReasonGapAttentionItemCountChirho?: number;
+      attentionItemsChirho?: RawHebrewAttentionHandoffItemChirho[];
     };
     repeatSummaryChirho?: {
       duplicateTextGroupCountChirho?: number;
@@ -144,6 +157,17 @@ interface CertificationStatusChirho {
       duplicateTextGroupCountChirho?: number;
     };
   };
+}
+
+interface RawHebrewAttentionHandoffItemChirho {
+  idChirho: string;
+  reviewUrlChirho: string;
+  textChirho: string;
+  validationStatusChirho: string;
+  reasonsChirho: string[];
+  witnessCountChirho?: number | null;
+  bestDirectConfidenceChirho: number | null;
+  lineTextChirho: string;
 }
 
 interface RawHebrewQueueItemChirho {
@@ -311,6 +335,178 @@ function assertReviewPageHtmlChirho(keyChirho: string, urlChirho: URL, htmlChirh
     assertGeneratedCheckChirho(htmlChirho.includes("Expert Non-Latin Review Chirho"), `${keyChirho} did not load the expert reviewer page`);
   } else {
     throw new Error(`${keyChirho} targets unsupported review port ${urlChirho.port}`);
+  }
+}
+
+function numberFieldChirho(valueChirho: unknown, pathChirho: string): number {
+  assertGeneratedCheckChirho(typeof valueChirho === "number" && Number.isFinite(valueChirho), `status JSON missing ${pathChirho} number`);
+  return valueChirho;
+}
+
+function booleanFieldChirho(valueChirho: unknown, pathChirho: string): boolean {
+  assertGeneratedCheckChirho(typeof valueChirho === "boolean", `status JSON missing ${pathChirho} boolean`);
+  return valueChirho;
+}
+
+function stringFieldChirho(valueChirho: unknown, pathChirho: string): string {
+  assertGeneratedCheckChirho(typeof valueChirho === "string", `status JSON missing ${pathChirho} string`);
+  return valueChirho;
+}
+
+function stringArrayFieldChirho(valueChirho: unknown, pathChirho: string): string[] {
+  assertGeneratedCheckChirho(
+    Array.isArray(valueChirho) && valueChirho.every((entryChirho) => typeof entryChirho === "string"),
+    `status JSON missing ${pathChirho} string array`
+  );
+  return valueChirho;
+}
+
+function markdownCodeSpanForCheckChirho(valueChirho: string): string {
+  const fenceChirho = valueChirho.includes("`") ? "``" : "`";
+  return `${fenceChirho}${valueChirho}${fenceChirho}`;
+}
+
+function oneLineSnippetForCheckChirho(textChirho: string, maxLengthChirho: number): string {
+  const normalizedChirho = textChirho.replace(/\s+/g, " ").trim();
+  return normalizedChirho.length <= maxLengthChirho
+    ? normalizedChirho
+    : `${normalizedChirho.slice(0, Math.max(0, maxLengthChirho - 1))}…`;
+}
+
+function assertMarkdownIncludesChirho(markdownChirho: string, snippetChirho: string, contextChirho: string): void {
+  assertGeneratedCheckChirho(markdownChirho.includes(snippetChirho), `raw Hebrew attention handoff missing ${contextChirho}: ${snippetChirho}`);
+}
+
+function assertRawHebrewAttentionItemShapeChirho(itemChirho: RawHebrewAttentionHandoffItemChirho, indexChirho: number): void {
+  const itemPathChirho = `rawHebrewChirho.triageChirho.attentionItemsChirho[${indexChirho}]`;
+  stringFieldChirho(itemChirho.idChirho, `${itemPathChirho}.idChirho`);
+  stringFieldChirho(itemChirho.reviewUrlChirho, `${itemPathChirho}.reviewUrlChirho`);
+  stringFieldChirho(itemChirho.textChirho, `${itemPathChirho}.textChirho`);
+  stringFieldChirho(itemChirho.validationStatusChirho, `${itemPathChirho}.validationStatusChirho`);
+  stringArrayFieldChirho(itemChirho.reasonsChirho, `${itemPathChirho}.reasonsChirho`);
+  assertGeneratedCheckChirho(
+    itemChirho.witnessCountChirho === undefined || itemChirho.witnessCountChirho === null || typeof itemChirho.witnessCountChirho === "number",
+    `status JSON missing ${itemPathChirho}.witnessCountChirho number/null`
+  );
+  assertGeneratedCheckChirho(
+    itemChirho.bestDirectConfidenceChirho === null || typeof itemChirho.bestDirectConfidenceChirho === "number",
+    `status JSON missing ${itemPathChirho}.bestDirectConfidenceChirho number/null`
+  );
+  stringFieldChirho(itemChirho.lineTextChirho, `${itemPathChirho}.lineTextChirho`);
+}
+
+function assertRawHebrewAttentionHandoffMatchesStatusChirho(statusChirho: CertificationStatusChirho, markdownChirho: string): void {
+  assertGeneratedCheckChirho(
+    statusChirho.structuralChirho !== undefined && typeof statusChirho.structuralChirho === "object",
+    "status JSON missing structuralChirho object"
+  );
+  const rawHebrewCountChirho = numberFieldChirho(
+    statusChirho.structuralChirho.passCOcrHebrewSpanCountChirho,
+    "structuralChirho.passCOcrHebrewSpanCountChirho"
+  );
+  assertGeneratedCheckChirho(
+    statusChirho.rawHebrewChirho !== undefined &&
+      typeof statusChirho.rawHebrewChirho === "object" &&
+      statusChirho.rawHebrewChirho.triageChirho !== undefined &&
+      typeof statusChirho.rawHebrewChirho.triageChirho === "object",
+    "status JSON missing rawHebrewChirho.triageChirho object"
+  );
+  const triageChirho = statusChirho.rawHebrewChirho.triageChirho;
+  const attentionItemCountChirho = numberFieldChirho(triageChirho.attentionItemCountChirho, "rawHebrewChirho.triageChirho.attentionItemCountChirho");
+  const lowConfidenceItemCountChirho = numberFieldChirho(
+    triageChirho.lowConfidenceItemCountChirho,
+    "rawHebrewChirho.triageChirho.lowConfidenceItemCountChirho"
+  );
+  const confidentDisagreementItemCountChirho = numberFieldChirho(
+    triageChirho.confidentDirectReadDisagreementItemCountChirho,
+    "rawHebrewChirho.triageChirho.confidentDirectReadDisagreementItemCountChirho"
+  );
+  const multiTokenItemCountChirho = numberFieldChirho(triageChirho.multiTokenItemCountChirho, "rawHebrewChirho.triageChirho.multiTokenItemCountChirho");
+  const delimiterNotationItemCountChirho = numberFieldChirho(
+    triageChirho.delimiterNotationItemCountChirho,
+    "rawHebrewChirho.triageChirho.delimiterNotationItemCountChirho"
+  );
+  const noDirectReadItemCountChirho = numberFieldChirho(triageChirho.noDirectReadItemCountChirho, "rawHebrewChirho.triageChirho.noDirectReadItemCountChirho");
+  const preReviewNotesAvailableChirho = booleanFieldChirho(
+    triageChirho.preReviewNotesAvailableChirho,
+    "rawHebrewChirho.triageChirho.preReviewNotesAvailableChirho"
+  );
+  const preReviewCoveredAttentionItemCountChirho = numberFieldChirho(
+    triageChirho.preReviewCoveredAttentionItemCountChirho,
+    "rawHebrewChirho.triageChirho.preReviewCoveredAttentionItemCountChirho"
+  );
+  const preReviewReasonCoveredAttentionItemCountChirho = numberFieldChirho(
+    triageChirho.preReviewReasonCoveredAttentionItemCountChirho,
+    "rawHebrewChirho.triageChirho.preReviewReasonCoveredAttentionItemCountChirho"
+  );
+  const preReviewReasonGapAttentionItemCountChirho = numberFieldChirho(
+    triageChirho.preReviewReasonGapAttentionItemCountChirho,
+    "rawHebrewChirho.triageChirho.preReviewReasonGapAttentionItemCountChirho"
+  );
+  assertGeneratedCheckChirho(
+    Array.isArray(triageChirho.attentionItemsChirho),
+    "status JSON missing rawHebrewChirho.triageChirho.attentionItemsChirho array"
+  );
+  const attentionItemsChirho = triageChirho.attentionItemsChirho;
+  assertGeneratedCheckChirho(
+    attentionItemsChirho.length === attentionItemCountChirho,
+    `status JSON attentionItemsChirho length ${attentionItemsChirho.length} does not match attentionItemCountChirho ${attentionItemCountChirho}`
+  );
+
+  assertMarkdownIncludesChirho(markdownChirho, `- Raw Hebrew items still gate-blocking certification: ${rawHebrewCountChirho}`, "raw Hebrew gate-blocking count");
+  assertMarkdownIncludesChirho(markdownChirho, `- Attention items with at least one flag: ${attentionItemCountChirho}`, "attention item count");
+  assertMarkdownIncludesChirho(markdownChirho, `- Low-confidence direct CRNN reads (<0.75): ${lowConfidenceItemCountChirho}`, "low-confidence count");
+  assertMarkdownIncludesChirho(
+    markdownChirho,
+    `- Confident direct CRNN read disagreements (>=0.85): ${confidentDisagreementItemCountChirho}`,
+    "confident direct-read disagreement count"
+  );
+  assertMarkdownIncludesChirho(markdownChirho, `- Multi-token Hebrew spans: ${multiTokenItemCountChirho}`, "multi-token count");
+  assertMarkdownIncludesChirho(markdownChirho, `- Delimiter/damaged-text notation spans: ${delimiterNotationItemCountChirho}`, "delimiter notation count");
+  assertMarkdownIncludesChirho(markdownChirho, `- No direct CRNN crop reads: ${noDirectReadItemCountChirho}`, "no-direct-read count");
+  assertMarkdownIncludesChirho(
+    markdownChirho,
+    `- Non-certifying pre-review item-location coverage: ${
+      preReviewNotesAvailableChirho ? `${preReviewCoveredAttentionItemCountChirho}/${attentionItemCountChirho}` : "notes unavailable"
+    }`,
+    "pre-review item-location coverage"
+  );
+  assertMarkdownIncludesChirho(
+    markdownChirho,
+    `- Non-certifying pre-review reason-specific coverage: ${
+      preReviewNotesAvailableChirho ? `${preReviewReasonCoveredAttentionItemCountChirho}/${attentionItemCountChirho}` : "notes unavailable"
+    }`,
+    "pre-review reason-specific coverage"
+  );
+  assertMarkdownIncludesChirho(
+    markdownChirho,
+    `- Current attention items with missing pre-review reason coverage: ${preReviewReasonGapAttentionItemCountChirho}`,
+    "pre-review reason-gap count"
+  );
+
+  const renderedItemHeadingCountChirho = [...markdownChirho.matchAll(/^## v[^\n]+$/gmu)].length;
+  assertGeneratedCheckChirho(
+    renderedItemHeadingCountChirho === attentionItemsChirho.length,
+    `raw Hebrew attention handoff rendered ${renderedItemHeadingCountChirho} item heading(s), expected ${attentionItemsChirho.length}`
+  );
+  if (attentionItemsChirho.length === 0) {
+    assertMarkdownIncludesChirho(markdownChirho, "- No raw Hebrew attention items are currently present.", "empty attention item notice");
+    return;
+  }
+
+  for (const [indexChirho, itemChirho] of attentionItemsChirho.entries()) {
+    assertRawHebrewAttentionItemShapeChirho(itemChirho, indexChirho);
+    const confidenceTextChirho = itemChirho.bestDirectConfidenceChirho === null ? "none" : itemChirho.bestDirectConfidenceChirho.toFixed(4);
+    const witnessTextChirho = itemChirho.witnessCountChirho ?? "unknown";
+    const lineContextChirho = markdownCodeSpanForCheckChirho(oneLineSnippetForCheckChirho(itemChirho.lineTextChirho, 180));
+    assertMarkdownIncludesChirho(markdownChirho, `## ${itemChirho.idChirho}`, `${itemChirho.idChirho} heading`);
+    assertMarkdownIncludesChirho(markdownChirho, `- Live review URL: ${itemChirho.reviewUrlChirho}`, `${itemChirho.idChirho} review URL`);
+    assertMarkdownIncludesChirho(markdownChirho, `- Text: ${markdownCodeSpanForCheckChirho(itemChirho.textChirho)}`, `${itemChirho.idChirho} text`);
+    assertMarkdownIncludesChirho(markdownChirho, `- Validation status: ${itemChirho.validationStatusChirho}`, `${itemChirho.idChirho} validation status`);
+    assertMarkdownIncludesChirho(markdownChirho, `- Attention reason(s): ${itemChirho.reasonsChirho.join(", ")}`, `${itemChirho.idChirho} attention reasons`);
+    assertMarkdownIncludesChirho(markdownChirho, `- Witness count: ${witnessTextChirho}`, `${itemChirho.idChirho} witness count`);
+    assertMarkdownIncludesChirho(markdownChirho, `- Best direct CRNN confidence: ${confidenceTextChirho}`, `${itemChirho.idChirho} direct confidence`);
+    assertMarkdownIncludesChirho(markdownChirho, `- Line context: ${lineContextChirho}`, `${itemChirho.idChirho} line context`);
   }
 }
 
@@ -575,6 +771,7 @@ async function mainChirho(): Promise<void> {
       typeof statusChirho.latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextGroupCountChirho === "number",
     "status JSON missing latinSymbolVisionChirho.repeatSummaryChirho.duplicateTextGroupCountChirho number"
   );
+  assertRawHebrewAttentionHandoffMatchesStatusChirho(statusChirho, rawHebrewAttentionMarkdownChirho);
   const checkedLinksChirho = new Set<string>();
   let jsonCheckedCountChirho = 0;
   for (const [keyChirho, linkChirho] of Object.entries(statusChirho.reviewStartLinksChirho)) {
