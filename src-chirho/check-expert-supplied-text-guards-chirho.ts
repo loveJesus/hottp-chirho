@@ -331,6 +331,29 @@ function checkBlankLiveItemWrongSourceHashChirho(itemChirho: VisionTierExpertLiv
   );
 }
 
+function checkBlankLiveItemWrongPacketHashChirho(itemChirho: VisionTierExpertLiveItemChirho): void {
+  const expectedRoleChirho = expectedVisionTierReviewerRoleChirho(itemChirho.scriptChirho);
+  if (expectedRoleChirho === null) throw new Error(`${itemChirho.idChirho} has no expected reviewer role`);
+  const argsChirho = applyArgsChirho([
+    `--id-chirho=${itemChirho.idChirho}`,
+    `--supplied-text-chirho=${textForScriptChirho(itemChirho.scriptChirho)}`,
+    "--reviewer-chirho=dr-expert-supplied-guard-check-chirho",
+    `--reviewer-role-chirho=${expectedRoleChirho}`,
+    "--rationale-chirho=certification guard packet hash check only",
+    "--expected-packet-sha256-chirho=0000000000000000000000000000000000000000000000000000000000000000",
+  ]);
+  const resultChirho = runCommandChirho(argsChirho);
+  const combinedOutputChirho = `${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`;
+  assertCommandChirho(
+    resultChirho.exitCodeChirho !== 0,
+    `wrong packet hash command unexpectedly succeeded: ${commandTextChirho(argsChirho)}`
+  );
+  assertCommandChirho(
+    combinedOutputChirho.includes("packet image hash mismatch"),
+    `wrong packet hash command failed for the wrong reason: ${combinedOutputChirho}`
+  );
+}
+
 function mainChirho(): void {
   checkGenericReviewerRejectedBeforeTargetChirho();
   checkMachineReviewerRejectedBeforeTargetChirho();
@@ -353,6 +376,7 @@ function mainChirho(): void {
     checkBlankLiveItemDryRunChirho(blankItemChirho);
     checkBlankLiveItemWrongRoleChirho(blankItemChirho);
     checkBlankLiveItemWrongSourceHashChirho(blankItemChirho);
+    checkBlankLiveItemWrongPacketHashChirho(blankItemChirho);
     console.log(`[${MODULE_CHIRHO}] checked live blank item ${blankItemChirho.idChirho}`);
   }
   console.log(`[${MODULE_CHIRHO}] expert-supplied text CLI guards passed`);
