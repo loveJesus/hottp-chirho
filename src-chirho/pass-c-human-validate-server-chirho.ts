@@ -300,8 +300,8 @@ type QueueModeChirho = "hebrew-chirho" | "suspect-text-chirho" | "unknown-script
 
 const ISSUE_FLAG_OPTIONS_CHIRHO = [
   { valueChirho: "letters-chirho", labelChirho: "Letters", helpChirho: "Wrong consonant/base letter." },
-  { valueChirho: "vowels-chirho", labelChirho: "Vowels/niqqud", helpChirho: "Vowel points plus dagesh, mappiq, shuruk, and shin/sin dots." },
-  { valueChirho: "accents-chirho", labelChirho: "Accents/meteg", helpChirho: "Cantillation marks and meteg; not dagesh or shin/sin dot." },
+  { valueChirho: "vowels-chirho", labelChirho: "Vowels/niqqud", helpChirho: "Vowel points plus dagesh, mappiq, shuruk, and shin/sin dots; a dot inside a letter belongs here." },
+  { valueChirho: "accents-chirho", labelChirho: "Accents/meteg", helpChirho: "Cantillation marks and meteg; not dagesh, mappiq, shuruk, or shin/sin dot." },
   { valueChirho: "hebrew-punctuation-chirho", labelChirho: "Hebrew punct.", helpChirho: "Maqqef, sof pasuq, Hebrew-side quotes, or Hebrew citation punctuation." },
   { valueChirho: "latin-punctuation-chirho", labelChirho: "Latin punct.", helpChirho: "French/Latin-side comma, period, parentheses, brackets, or spacing punctuation." },
   { valueChirho: "missing-hebrew-chirho", labelChirho: "Missing Heb.", helpChirho: "Printed Hebrew is absent from the stored span text." },
@@ -311,7 +311,7 @@ const ISSUE_FLAG_OPTIONS_CHIRHO = [
   { valueChirho: "missing-greek-chirho", labelChirho: "Missing Greek", helpChirho: "Printed Greek is absent from the stored span text." },
   { valueChirho: "extra-symbol-chirho", labelChirho: "Extra symbol", helpChirho: "Symbol/reference/operator is extra or misclassified." },
   { valueChirho: "wrong-language-chirho", labelChirho: "Wrong lang.", helpChirho: "The language/script family is correct enough to render, but the content belongs to another review lane." },
-  { valueChirho: "segmentation-chirho", labelChirho: "Segmentation", helpChirho: "Wrong split/merge/box: multiple words lumped, one word split, or punctuation attached to the wrong span." },
+  { valueChirho: "segmentation-chirho", labelChirho: "Segmentation", helpChirho: "Wrong split/merge/box or word boundary: multiple words lumped incorrectly, one word split, spaces/maqqef wrong, or punctuation attached to the wrong span." },
 ];
 const ISSUE_FLAG_VALUES_CHIRHO = new Set(ISSUE_FLAG_OPTIONS_CHIRHO.map((optionChirho) => optionChirho.valueChirho));
 const SCRIPT_VERDICT_OPTIONS_CHIRHO = [
@@ -1912,6 +1912,10 @@ function pageHtmlChirho(): string {
       const sideChirho = elChirho("aside", { classChirho: "side-chirho" });
       if (queueModeChirho === "hebrew-chirho") {
         sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "Machine witnesses validate consonants only. Vowels and niqqud are UNVERIFIED even when consonants agree." }));
+        sideChirho.appendChild(elChirho("div", {
+          classChirho: "warning-chirho",
+          textChirho: "Clean certification means letters, marks, punctuation, spacing, maqqef, word boundaries, and the red box all match the print. Multiple Hebrew words in one box are fine only when the box intentionally covers exactly those words."
+        }));
       } else if (queueModeChirho === "suspect-text-chirho") {
         sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "No issue boxes checked means this suspect-text warning is a false positive after source review." }));
       } else {
@@ -2071,7 +2075,7 @@ function pageHtmlChirho(): string {
       issuesBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Issues" }));
       issuesBoxChirho.appendChild(elChirho("div", {
         classChirho: "label-chirho",
-        textChirho: "Dagesh/mappiq/shuruk/shin-dot are Vowels/niqqud; cantillation/meteg are Accents/meteg; wrong splits or lumped words are Segmentation."
+        textChirho: "Dots inside letters, mappiq, shuruk, and shin/sin dots are Vowels/niqqud; cantillation/meteg are Accents/meteg; wrong splits, lumped words, spaces, or maqqef are Segmentation."
       }));
       const issueGridChirho = elChirho("div", { classChirho: "issue-grid-chirho" });
       for (const optionChirho of issueFlagOptionsChirho) {
