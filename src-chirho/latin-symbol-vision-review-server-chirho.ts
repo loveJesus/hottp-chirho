@@ -814,7 +814,15 @@ Bun.serve({
             errorChirho: `Latin/symbol review item is stale: ${staleDisplayChirho}; reload review state`,
           }, 409);
         }
-        const issueFlagsChirho = parseLatinSymbolIssueFlagsChirho(bodyChirho.issueFlagsChirho);
+        let issueFlagsChirho: string[];
+        try {
+          issueFlagsChirho = parseLatinSymbolIssueFlagsChirho(bodyChirho.issueFlagsChirho);
+        } catch (errorChirho) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+          }, 400);
+        }
         if (issueFlagsChirho.length === 0 && bodyChirho.acceptCleanChirho !== true) {
           return jsonResponseChirho({
             okChirho: false,

@@ -280,12 +280,17 @@ export function normalizeLatinSymbolIssueFlagsChirho(flagsChirho: string[]): str
 }
 
 export function parseLatinSymbolIssueFlagsChirho(valueChirho: unknown): string[] {
-  if (!Array.isArray(valueChirho)) return [];
-  return normalizeLatinSymbolIssueFlagsChirho(
-    valueChirho
-      .filter((flagChirho): flagChirho is string => typeof flagChirho === "string")
-      .filter((flagChirho) => flagChirho.length > 0)
-  );
+  if (!Array.isArray(valueChirho)) {
+    throw new Error("issueFlagsChirho must be an array");
+  }
+  const flagsChirho: string[] = [];
+  for (const flagChirho of valueChirho) {
+    if (typeof flagChirho !== "string" || flagChirho.length === 0) {
+      throw new Error(`unsupported issue flag: ${String(flagChirho)}`);
+    }
+    flagsChirho.push(flagChirho);
+  }
+  return normalizeLatinSymbolIssueFlagsChirho(flagsChirho);
 }
 
 export function parseStoredLatinSymbolIssueFlagsChirho(valueChirho: string | null): string[] {

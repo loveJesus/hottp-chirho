@@ -238,6 +238,37 @@ async function mainChirho(): Promise<void> {
       String(missingCleanAckResultChirho.dataChirho.errorChirho ?? "").includes("acceptCleanChirho acknowledgement is required"),
       `missing accepted-clean acknowledgement failed for wrong reason: ${String(missingCleanAckResultChirho.dataChirho.errorChirho ?? "")}`
     );
+    const nonArrayIssueFlagsResultChirho = await postReviewChirho(portChirho, {
+      ...commonBodyChirho,
+      issueFlagsChirho: "punctuation-chirho",
+      acceptCleanChirho: true,
+    });
+    assertReviewRejectedChirho({
+      labelChirho: "non-array issue flags",
+      responseChirho: nonArrayIssueFlagsResultChirho.responseChirho,
+      dataChirho: nonArrayIssueFlagsResultChirho.dataChirho,
+      dbPathChirho,
+    });
+    assertCheckChirho(
+      String(nonArrayIssueFlagsResultChirho.dataChirho.errorChirho ?? "").includes("issueFlagsChirho must be an array"),
+      `non-array issue flags failed for wrong reason: ${String(nonArrayIssueFlagsResultChirho.dataChirho.errorChirho ?? "")}`
+    );
+    const unknownIssueFlagResultChirho = await postReviewChirho(portChirho, {
+      ...commonBodyChirho,
+      issueFlagsChirho: ["punctuation-typo-chirho"],
+      acceptCleanChirho: true,
+      notesChirho: "unknown issue flag must not be silently converted to accepted-clean",
+    });
+    assertReviewRejectedChirho({
+      labelChirho: "unknown issue flag",
+      responseChirho: unknownIssueFlagResultChirho.responseChirho,
+      dataChirho: unknownIssueFlagResultChirho.dataChirho,
+      dbPathChirho,
+    });
+    assertCheckChirho(
+      String(unknownIssueFlagResultChirho.dataChirho.errorChirho ?? "").includes("unknown issue flag punctuation-typo-chirho"),
+      `unknown issue flag failed for wrong reason: ${String(unknownIssueFlagResultChirho.dataChirho.errorChirho ?? "")}`
+    );
     const machineCleanResultChirho = await postReviewChirho(portChirho, {
       ...commonBodyChirho,
       issueFlagsChirho: [],

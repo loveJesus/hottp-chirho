@@ -168,10 +168,17 @@ function reviewerRoleErrorChirho(itemChirho: VisionTierExpertLiveItemChirho, rev
 }
 
 function parseIssueFlagsChirho(valueChirho: unknown): string[] {
-  if (!Array.isArray(valueChirho)) return [];
-  return valueChirho
-    .filter((flagChirho): flagChirho is string => typeof flagChirho === "string")
-    .filter((flagChirho) => VISION_TIER_EXPERT_ISSUE_FLAG_VALUES_CHIRHO.has(flagChirho));
+  if (!Array.isArray(valueChirho)) {
+    throw new Error("issueFlagsChirho must be an array");
+  }
+  const flagsChirho: string[] = [];
+  for (const flagChirho of valueChirho) {
+    if (typeof flagChirho !== "string" || !VISION_TIER_EXPERT_ISSUE_FLAG_VALUES_CHIRHO.has(flagChirho)) {
+      throw new Error(`unsupported issue flag: ${String(flagChirho)}`);
+    }
+    if (!flagsChirho.includes(flagChirho)) flagsChirho.push(flagChirho);
+  }
+  return flagsChirho;
 }
 
 function slugChirho(valueChirho: string): string {
@@ -1237,7 +1244,15 @@ Bun.serve({
         const reviewerChirho = nonEmptyTrimmedChirho(bodyChirho.reviewerChirho);
         const reviewerRoleChirho = nonEmptyTrimmedChirho(bodyChirho.reviewerRoleChirho);
         const rationaleChirho = nonEmptyTrimmedChirho(bodyChirho.rationaleChirho);
-        const issueFlagsChirho = parseIssueFlagsChirho(bodyChirho.issueFlagsChirho);
+        let issueFlagsChirho: string[];
+        try {
+          issueFlagsChirho = parseIssueFlagsChirho(bodyChirho.issueFlagsChirho);
+        } catch (errorChirho) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+          }, 400);
+        }
         if (itemIdChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "missing idChirho" }, 400);
         if (reviewerChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
         const reviewerErrorChirho = explicitReviewerAttributionErrorChirho(reviewerChirho);

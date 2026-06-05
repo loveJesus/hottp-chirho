@@ -291,6 +291,30 @@ async function mainChirho(): Promise<void> {
       policyPathChirho,
       expectedErrorChirho: "at least one issue flag is required",
     });
+    const nonArrayIssueFlagsResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
+      ...commonBodyChirho,
+      rationaleChirho: "server guard check should reject non-array expert issue flags",
+      issueFlagsChirho: "uncertain-chirho",
+    });
+    assertRejectedWithoutPolicyChirho({
+      labelChirho: "non-array issue flags",
+      responseChirho: nonArrayIssueFlagsResultChirho.responseChirho,
+      dataChirho: nonArrayIssueFlagsResultChirho.dataChirho,
+      policyPathChirho,
+      expectedErrorChirho: "issueFlagsChirho must be an array",
+    });
+    const unknownIssueFlagResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
+      ...commonBodyChirho,
+      rationaleChirho: "server guard check should reject unknown expert issue flags",
+      issueFlagsChirho: ["uncertain-typo-chirho"],
+    });
+    assertRejectedWithoutPolicyChirho({
+      labelChirho: "unknown issue flag",
+      responseChirho: unknownIssueFlagResultChirho.responseChirho,
+      dataChirho: unknownIssueFlagResultChirho.dataChirho,
+      policyPathChirho,
+      expectedErrorChirho: "unsupported issue flag: uncertain-typo-chirho",
+    });
     const issueResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
       ...commonBodyChirho,
       rationaleChirho: "<why this issue is recorded>",
