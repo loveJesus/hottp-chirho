@@ -18,6 +18,8 @@
     "src-chirho/vision-tier-expert-review-server-chirho.ts",
     "src-chirho/review-servers-chirho.ts",
     "src-chirho/scan-hebrew-delimiter-order-chirho.ts",
+    "spec-chirho/metropoliluya-chirho/find-hidden-hebrew-candidates-2026-06-04-chirho.ts",
+    "spec-chirho/metropoliluya-chirho/find-nonlatin-residue-candidates-2026-06-04-chirho.ts",
     "src-chirho/check-certification-chirho.ts",
     "src-chirho/check-certification-status-gate-guards-chirho.ts",
     "src-chirho/check-certification-status-output-hygiene-chirho.ts",
