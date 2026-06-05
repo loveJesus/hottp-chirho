@@ -132,6 +132,15 @@ span was surfaced.
   - Visual precheck: the line explicitly contrasts the root `קָשָׁה` with the source reading `קֶשֶׁר`; both red boxes are centered on their own Hebrew word and leave the intervening French parenthetical outside the target boxes. Treat the two roots as separate review targets, not as interchangeable similar shapes.
   - Human check still needed: for S1, exact qamats/shin-dot and final he; for S3, exact segol/shin-dot and final resh; and whether both short words remain correctly separated from the French parenthetical.
 
+- `vol 2 p151 L16 S1/S3`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A16%3A1`
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A16%3A3`
+  - Item IDs: `v2-p0151-l016-s1`, `v2-p0151-l016-s3`
+  - Live texts: `לְפוּצֶךָ` and `לְמִקְדָּשׁ`
+  - Attention reason: S1 is unvalidated with a weak direct read; S3 is all-token-validated, but both are current raw items in the no-pre-review-note lane.
+  - Visual precheck: the line says `En 14, c'est`, then S1, then French `qui y tient la place de`, then S3. Both target boxes are separate from the French text and from each other. The S1 direct OCR read `לפורעכ` is weak, and S3's stronger witnesses still do not certify the exact printed marks.
+  - Human check still needed: for S1, exact pe/vav/tsade/final-kaf sequence and all vowels; for S3, exact mem-qof-dalet-shin sequence, dagesh, shin-dot, and whether the final mark/dot belongs to the Hebrew word rather than adjacent punctuation.
+
 - `vol 5 p149 L28 S1`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A149%3A28%3A1`
   - Live text: `ליץ`
