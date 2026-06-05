@@ -38,6 +38,12 @@ interface CertificationStatusForGuardChirho {
   artifactsChirho?: {
     expertSuppliedVisionTextBackupShapeOkChirho?: boolean;
   };
+  structuralChirho?: {
+    blankVisionTierHandoffsChirho?: Array<{
+      handoffDocumentExistsChirho?: boolean;
+      handoffCropExistsChirho?: boolean;
+    }>;
+  };
   expertSuppliedVisionTextBackupChirho?: {
     shapeErrorsChirho?: string[];
   };
@@ -196,7 +202,13 @@ function writeGenericExpertSuppliedBackupFixtureChirho(pathChirho: string): void
   );
 }
 
-function runStatusChirho(dbPathChirho: string, outDirChirho: string, expertSuppliedBackupPathChirho: string): void {
+function runStatusChirho(
+  dbPathChirho: string,
+  outDirChirho: string,
+  expertSuppliedBackupPathChirho: string,
+  syriacBlankHandoffDocumentPathChirho: string,
+  syriacBlankHandoffCropPathChirho: string
+): void {
   const argsChirho = [
     process.execPath,
     "run",
@@ -205,6 +217,8 @@ function runStatusChirho(dbPathChirho: string, outDirChirho: string, expertSuppl
     `--db=${dbPathChirho}`,
     `--out-dir=${outDirChirho}`,
     `--expert-supplied-backup-chirho=${expertSuppliedBackupPathChirho}`,
+    `--syriac-blank-handoff-document-chirho=${syriacBlankHandoffDocumentPathChirho}`,
+    `--syriac-blank-handoff-crop-chirho=${syriacBlankHandoffCropPathChirho}`,
   ];
   const resultChirho = Bun.spawnSync(argsChirho, {
     cwd: PROJECT_ROOT_CHIRHO,
@@ -230,6 +244,14 @@ function mainChirho(): void {
   const dbPathChirho = join(tempDirChirho, "progress-chirho.sqlite");
   const outDirChirho = join(tempDirChirho, "status-output-chirho");
   const expertSuppliedBackupPathChirho = join(tempDirChirho, "expert-supplied-backup-chirho.json");
+  const missingSyriacBlankHandoffDocumentPathChirho = join(
+    tempDirChirho,
+    "missing-syriac-blank-handoff-document-chirho.md"
+  );
+  const missingSyriacBlankHandoffCropPathChirho = join(
+    tempDirChirho,
+    "missing-syriac-blank-handoff-crop-chirho.png"
+  );
   mkdirSync(outDirChirho, { recursive: true });
   try {
     copyProgressDbSnapshotChirho(dbPathChirho);
@@ -241,7 +263,13 @@ function mainChirho(): void {
       console.log(`[${MODULE_CHIRHO}] no current schema-v2 Pass-C human validation row available; skipped generic reviewer status guard`);
       return;
     }
-    runStatusChirho(dbPathChirho, outDirChirho, expertSuppliedBackupPathChirho);
+    runStatusChirho(
+      dbPathChirho,
+      outDirChirho,
+      expertSuppliedBackupPathChirho,
+      missingSyriacBlankHandoffDocumentPathChirho,
+      missingSyriacBlankHandoffCropPathChirho
+    );
     const statusChirho = readStatusChirho(outDirChirho);
     assertCheckChirho(statusChirho.certificationCompleteChirho === false, "generic reviewer status unexpectedly completed certification");
     assertCheckChirho(
@@ -294,11 +322,35 @@ function mainChirho(): void {
       ),
       "generic expert-supplied backup status did not add the malformed-backup remaining-work blocker"
     );
+    assertCheckChirho(
+      (statusChirho.structuralChirho?.blankVisionTierHandoffsChirho ?? []).some(
+        (handoffChirho) => handoffChirho.handoffDocumentExistsChirho === false
+      ),
+      "missing blank Syriac handoff document did not show as absent in status"
+    );
+    assertCheckChirho(
+      (statusChirho.structuralChirho?.blankVisionTierHandoffsChirho ?? []).some(
+        (handoffChirho) => handoffChirho.handoffCropExistsChirho === false
+      ),
+      "missing blank Syriac handoff crop did not show as absent in status"
+    );
+    assertCheckChirho(
+      (statusChirho.remainingWorkChirho ?? []).some((itemChirho) =>
+        itemChirho.includes("blank expert transcription handoff document(s) are missing")
+      ),
+      "missing blank Syriac handoff document did not add the remaining-work blocker"
+    );
+    assertCheckChirho(
+      (statusChirho.remainingWorkChirho ?? []).some((itemChirho) =>
+        itemChirho.includes("blank expert transcription handoff crop image(s) are missing")
+      ),
+      "missing blank Syriac handoff crop did not add the remaining-work blocker"
+    );
     console.log(
       `[${MODULE_CHIRHO}] generic reviewer status gate guard passed for disposable row ${rowIdChirho}` +
         (latinItemIdChirho === null ? "" : ` and Latin/symbol item ${latinItemIdChirho}`) +
         (staleLatinItemIdChirho === null ? "" : `; stale Latin/symbol item ${staleLatinItemIdChirho}`) +
-        "; generic expert-supplied backup blocked"
+        "; generic expert-supplied backup blocked; blank Syriac handoff artifacts blocked"
     );
   } finally {
     rmSync(tempDirChirho, { recursive: true, force: true });
