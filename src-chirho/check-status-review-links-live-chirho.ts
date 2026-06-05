@@ -54,6 +54,10 @@ const RAW_ATTENTION_KINDS_CHIRHO = new Set([
   "delimiter-notation-chirho",
   "no-direct-read-chirho",
 ]);
+const RAW_PRE_REVIEW_NOTE_FILTERS_CHIRHO = new Set([
+  "with-note-chirho",
+  "without-note-chirho",
+]);
 const LATIN_SYMBOL_SCRIPTS_CHIRHO = new Set([
   "french-chirho",
   "latin-non-french-chirho",
@@ -88,6 +92,7 @@ interface RawHebrewQueueItemChirho {
   validationStatusChirho: string;
   tierChirho: string;
   attentionKindsChirho: string[];
+  preReviewNoteChirho?: string | null;
   volumeChirho: number;
 }
 
@@ -179,6 +184,7 @@ function assertRawQueryValuesChirho(urlChirho: URL, keyChirho: string): void {
       "validation-status-chirho",
       "tier-chirho",
       "attention-chirho",
+      "pre-review-note-chirho",
       "volume-chirho",
       "review-state-chirho",
     ])
@@ -187,6 +193,7 @@ function assertRawQueryValuesChirho(urlChirho: URL, keyChirho: string): void {
   assertParamInSetChirho(urlChirho, keyChirho, "validation-status-chirho", RAW_VALIDATION_STATUSES_CHIRHO);
   assertParamInSetChirho(urlChirho, keyChirho, "tier-chirho", RAW_REVIEW_TIERS_CHIRHO);
   assertParamInSetChirho(urlChirho, keyChirho, "attention-chirho", RAW_ATTENTION_KINDS_CHIRHO);
+  assertParamInSetChirho(urlChirho, keyChirho, "pre-review-note-chirho", RAW_PRE_REVIEW_NOTE_FILTERS_CHIRHO);
   parseVolumeFilterChirho(urlChirho);
 }
 
@@ -266,6 +273,15 @@ function assertRawFiltersChirho(urlChirho: URL, itemChirho: RawHebrewQueueItemCh
     assertGeneratedCheckChirho(
       itemChirho.attentionKindsChirho.includes(attentionChirho),
       `${keyChirho} item ${itemChirho.keyChirho} does not match attention-chirho=${attentionChirho}`
+    );
+  }
+  const preReviewNoteChirho = urlChirho.searchParams.get("pre-review-note-chirho");
+  if (preReviewNoteChirho !== null) {
+    const hasPreReviewNoteChirho = typeof itemChirho.preReviewNoteChirho === "string" && itemChirho.preReviewNoteChirho.length > 0;
+    assertGeneratedCheckChirho(
+      (preReviewNoteChirho === "with-note-chirho" && hasPreReviewNoteChirho) ||
+        (preReviewNoteChirho === "without-note-chirho" && !hasPreReviewNoteChirho),
+      `${keyChirho} item ${itemChirho.keyChirho} does not match pre-review-note-chirho=${preReviewNoteChirho}`
     );
   }
   const volumeChirho = parseVolumeFilterChirho(urlChirho);

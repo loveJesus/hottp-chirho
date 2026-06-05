@@ -413,6 +413,7 @@ interface RawHebrewTriageSummaryChirho {
   multiTokenItemCountChirho: number;
   delimiterNotationItemCountChirho: number;
   noDirectReadItemCountChirho: number;
+  preReviewNoteItemCountChirho: number;
   preReviewNotesAvailableChirho: boolean;
   preReviewCoveredAttentionItemCountChirho: number;
   preReviewUncoveredAttentionItemCountChirho: number;
@@ -1314,7 +1315,8 @@ function rawHebrewReviewUrlChirho(
   tierChirho?: string,
   itemKeyChirho?: string,
   volumeChirho?: number,
-  attentionChirho?: string
+  attentionChirho?: string,
+  preReviewNoteChirho?: string
 ): string {
   const entriesChirho: Array<[string, string]> = [];
   if (validationStatusChirho !== undefined) entriesChirho.push(["validation-status-chirho", validationStatusChirho]);
@@ -1322,6 +1324,7 @@ function rawHebrewReviewUrlChirho(
   if (tierChirho !== undefined) entriesChirho.push(["tier-chirho", tierChirho]);
   if (volumeChirho !== undefined) entriesChirho.push(["volume-chirho", volumeFilterValueChirho(volumeChirho)]);
   if (attentionChirho !== undefined) entriesChirho.push(["attention-chirho", attentionChirho]);
+  if (preReviewNoteChirho !== undefined) entriesChirho.push(["pre-review-note-chirho", preReviewNoteChirho]);
   if (itemKeyChirho !== undefined) entriesChirho.push(["item-chirho", itemKeyChirho]);
   const queryChirho = urlQueryChirho(entriesChirho);
   return queryChirho.length === 0 ? "http://localhost:8766/" : `http://localhost:8766/?${queryChirho}`;
@@ -1483,6 +1486,9 @@ function rawHebrewTriageSummaryChirho(
     : attentionEntriesChirho.filter(
         (entryChirho) => !rawHebrewPreReviewMentionsItemChirho(entryChirho.itemChirho, preReviewNotesTextChirho)
       );
+  const preReviewNoteItemsChirho = preReviewNotesTextChirho === null
+    ? []
+    : itemsChirho.filter((itemChirho) => rawHebrewPreReviewMentionsItemChirho(itemChirho, preReviewNotesTextChirho));
   const sampleItemsChirho = attentionEntriesChirho
     .slice(0, 8);
   return {
@@ -1491,6 +1497,7 @@ function rawHebrewTriageSummaryChirho(
     multiTokenItemCountChirho: multiTokenItemsChirho.length,
     delimiterNotationItemCountChirho: delimiterNotationItemsChirho.length,
     noDirectReadItemCountChirho: noDirectReadItemsChirho.length,
+    preReviewNoteItemCountChirho: preReviewNoteItemsChirho.length,
     preReviewNotesAvailableChirho: preReviewNotesTextChirho !== null,
     preReviewCoveredAttentionItemCountChirho: attentionEntriesChirho.length - preReviewUncoveredEntriesChirho.length,
     preReviewUncoveredAttentionItemCountChirho: preReviewUncoveredEntriesChirho.length,
@@ -1657,6 +1664,27 @@ function rawHebrewAttentionReviewStartUrlChirho(
   return itemChirho === null || itemKeyChirho === null
     ? null
     : rawHebrewReviewUrlChirho(undefined, undefined, undefined, itemKeyChirho, undefined, attentionChirho);
+}
+
+function firstRawHebrewPreReviewNoteItemChirho(
+  itemsChirho: RawHebrewPackItemChirho[],
+  preReviewNotesTextChirho: string | null
+): RawHebrewPackItemChirho | null {
+  if (preReviewNotesTextChirho === null) return null;
+  return [...itemsChirho]
+    .filter((itemChirho) => rawHebrewPreReviewMentionsItemChirho(itemChirho, preReviewNotesTextChirho))
+    .sort(compareRawHebrewPackQueueOrderChirho)[0] ?? null;
+}
+
+function rawHebrewPreReviewNoteReviewStartUrlChirho(
+  itemsChirho: RawHebrewPackItemChirho[],
+  preReviewNotesTextChirho: string | null
+): string | null {
+  const itemChirho = firstRawHebrewPreReviewNoteItemChirho(itemsChirho, preReviewNotesTextChirho);
+  const itemKeyChirho = itemChirho === null ? null : rawHebrewPackItemKeyChirho(itemChirho);
+  return itemChirho === null || itemKeyChirho === null
+    ? null
+    : rawHebrewReviewUrlChirho(undefined, undefined, undefined, itemKeyChirho, undefined, undefined, "with-note-chirho");
 }
 
 function latinSymbolReviewStartUrlChirho(
@@ -4313,6 +4341,10 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
       livePendingRawHebrewPackItemsChirho,
       RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO
     ),
+    rawHebrewPreReviewNoteChirho: rawHebrewPreReviewNoteReviewStartUrlChirho(
+      livePendingRawHebrewPackItemsChirho,
+      rawHebrewPreReviewNotesTextChirho
+    ),
     latinSymbolAllChirho: latinSymbolReviewStartUrlChirho(pendingLatinSymbolLiveItemsChirho),
     latinSymbolFrenchChirho: latinSymbolReviewStartUrlChirho(pendingLatinSymbolLiveItemsChirho, "french-chirho"),
     latinSymbolNonFrenchChirho: latinSymbolReviewStartUrlChirho(pendingLatinSymbolLiveItemsChirho, "latin-non-french-chirho"),
@@ -4600,6 +4632,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw Hebrew multi-token lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO)} (${statusChirho.rawHebrewChirho.triageChirho.multiTokenItemCountChirho} pending attention span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewMultiTokenChirho)})`,
     `- Raw Hebrew delimiter/damaged-notation lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO)} (${statusChirho.rawHebrewChirho.triageChirho.delimiterNotationItemCountChirho} pending attention span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewDelimiterNotationChirho)})`,
     `- Raw Hebrew no-direct-read lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO)} (${statusChirho.rawHebrewChirho.triageChirho.noDirectReadItemCountChirho} pending attention span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewNoDirectReadChirho)})`,
+    `- Raw Hebrew pre-review-note lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, undefined, "with-note-chirho")} (${statusChirho.rawHebrewChirho.triageChirho.preReviewNoteItemCountChirho} pending span(s) with non-certifying pre-review notes${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewPreReviewNoteChirho)})`,
   ];
   const latinSymbolVolumeLaneLinesChirho = volumeLaneLinesChirho(
     "Latin/symbol",
