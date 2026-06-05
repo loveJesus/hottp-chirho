@@ -234,6 +234,13 @@ span was surfaced.
   - Visual precheck: the line explicitly contrasts the root `קָשָׁה` with the source reading `קֶשֶׁר`; both red boxes are centered on their own Hebrew word and leave the intervening French parenthetical outside the target boxes. Treat the two roots as separate review targets, not as interchangeable similar shapes.
   - Human check still needed: for S1, exact qamats/shin-dot and final he; for S3, exact segol/shin-dot and final resh; and whether both short words remain correctly separated from the French parenthetical.
 
+- `vol 2 p151 L9 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A9%3A1`
+  - Live text: `קדש`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane; the crop also shows visible closing punctuation after the Hebrew word.
+  - Visual precheck: the short line reads French `que de` followed by the boxed Hebrew word at the line end. The packet crop visibly includes closing parenthesis/period-shaped punctuation after `קדש`, while the stored live text is bare `קדש`.
+  - Human check still needed: exact qof-dalet-shin letters and whether the visible `).` should be included with this Hebrew span, split into an adjacent punctuation span, or otherwise represented before any clean verdict is recorded.
+
 - `vol 2 p151 L16 S1/S3`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A16%3A1`
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A16%3A3`
