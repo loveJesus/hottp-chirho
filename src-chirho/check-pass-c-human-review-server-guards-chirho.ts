@@ -18,6 +18,14 @@ import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
 const MODULE_CHIRHO = "check-pass-c-human-review-server-guards-chirho";
 const SOURCE_PROGRESS_DB_PATH_CHIRHO = join(PROJECT_ROOT_CHIRHO, "spec-chirho", "progress-chirho.sqlite");
+const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
+  "Clean certification means letters, marks, punctuation, spacing, maqqef, word boundaries, and the red box all match the print.",
+  "Multiple Hebrew words in one box are fine only when the box intentionally covers exactly those words.",
+  "Dots inside letters, mappiq, shuruk, and shin/sin dots are Vowels/niqqud",
+  "cantillation/meteg are Accents/meteg",
+  "wrong splits, lumped words, spaces, or maqqef are Segmentation",
+  "I checked the crop and full line against the print; if no issue boxes are checked and the text is unchanged, this exact span is intentionally reviewed clean.",
+];
 
 interface RawReviewQueueItemChirho {
   keyChirho: string;
@@ -92,6 +100,15 @@ function queueItemsFromHtmlChirho(htmlChirho: string): RawReviewQueueItemChirho[
   const matchChirho = htmlChirho.match(/const queueChirho = (.*?);\n\s+const queueModeChirho/s);
   if (matchChirho === null) throw new Error("could not find queueChirho JSON in raw review server HTML");
   return JSON.parse(matchChirho[1]!) as RawReviewQueueItemChirho[];
+}
+
+function assertRawReviewGuidanceHtmlChirho(htmlChirho: string): void {
+  for (const snippetChirho of RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO) {
+    assertCheckChirho(
+      htmlChirho.includes(snippetChirho),
+      `raw review server HTML is missing guidance snippet: ${snippetChirho}`
+    );
+  }
 }
 
 function firstQueueItemFromHtmlChirho(htmlChirho: string): RawReviewQueueItemChirho {
@@ -227,6 +244,7 @@ async function mainChirho(): Promise<void> {
     const pageHtmlChirho = await fetch(`http://127.0.0.1:${portChirho}/`).then((responseChirho) =>
       responseChirho.text()
     );
+    assertRawReviewGuidanceHtmlChirho(pageHtmlChirho);
     const itemChirho = firstQueueItemFromHtmlChirho(pageHtmlChirho);
     const attributionBlockedItemChirho = firstAttributionBlockedQueueItemFromHtmlChirho(pageHtmlChirho);
     const attributionBlockedSubmitResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
