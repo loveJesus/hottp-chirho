@@ -252,6 +252,8 @@ const HEBREW_DELIMITER_ORDER_SCANNER_PATH_CHIRHO = join(
 const OUT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "certification-status-chirho");
 const EXPERT_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO = "expert-repeat-clusters-chirho.md";
 const EXPERT_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO = `workspace-chirho/certification-status-chirho/${EXPERT_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO}`;
+const ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO = "attribution-cleanup-handoff-chirho.md";
+const ATTRIBUTION_CLEANUP_HANDOFF_RELATIVE_PATH_CHIRHO = `workspace-chirho/certification-status-chirho/${ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO}`;
 const ALLOWED_WLC_CORRECTION_FLAGS_CHIRHO = new Set([
   "accents-chirho",
   "vowels-chirho",
@@ -5417,6 +5419,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Attribution-blocked rows whose live text still matches the original reviewed text: ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextMatchRowsChirho}`,
     `- Attribution-blocked rows whose live text has changed since the original review: ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextMismatchRowsChirho}`,
     `- Attribution-blocked rows whose live text could not be checked: ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextUnknownRowsChirho}`,
+    `- Attribution cleanup handoff: \`${ATTRIBUTION_CLEANUP_HANDOFF_RELATIVE_PATH_CHIRHO}\``,
     "- Attribution-blocked reviewer single-row dry-run path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>'`",
     "- Attribution-blocked reviewer single-row apply path (live-text guarded): `bun run reattribute-pass-c-human-validations-chirho -- --validation-id-chirho='<id>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --rationale-chirho='<why this existing row is attributable to that reviewer>' --expected-live-text-chirho='<current-live-text>' --apply-chirho`",
     ...genericReviewerBulkLinesChirho,
@@ -5587,6 +5590,106 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   ].join("\n");
 }
 
+function attributionCleanupRowLinesChirho(rowChirho: GenericHumanValidationReviewerRowChirho): string[] {
+  const flagsChirho = rowChirho.issueFlagsChirho.length === 0 ? "none" : rowChirho.issueFlagsChirho.join(", ");
+  const correctedTextChirho = rowChirho.correctedTextChirho === null
+    ? "none"
+    : markdownCodeSpanChirho(rowChirho.correctedTextChirho);
+  const liveTextChirho = rowChirho.liveTextChirho === null
+    ? "none"
+    : markdownCodeSpanChirho(rowChirho.liveTextChirho);
+  const liveTextMatchesOriginalChirho = rowChirho.liveTextMatchesOriginalChirho === null
+    ? "unknown"
+    : String(rowChirho.liveTextMatchesOriginalChirho);
+  const blockedUrlChirho = rawHebrewReviewUrlChirho(
+    undefined,
+    "attribution-blocked-chirho",
+    undefined,
+    rowChirho.locationChirho
+  );
+  const rereviewUrlChirho = rawHebrewReviewUrlChirho(
+    undefined,
+    "attribution-rereview-chirho",
+    undefined,
+    rowChirho.locationChirho
+  );
+  const scanlineStatusChirho = rowChirho.liveScanlineExistsChirho ? "present-chirho" : "missing-chirho";
+  const liveSpanStatusChirho = rowChirho.liveSpanReadErrorChirho !== null
+    ? `read-error-chirho ${markdownCodeSpanChirho(rowChirho.liveSpanReadErrorChirho)}`
+    : rowChirho.liveSpanExistsChirho
+      ? "present-chirho"
+      : "missing-chirho";
+  const reattributeLinesChirho =
+    rowChirho.liveTextMatchesOriginalChirho === true && rowChirho.liveTextChirho !== null
+      ? (() => {
+          const baseCommandPartsChirho = [
+            "bun run reattribute-pass-c-human-validations-chirho --",
+            `--validation-id-chirho=${rowChirho.idChirho}`,
+            "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
+            "--rationale-chirho='<why this existing row is attributable to that reviewer>'",
+            `--expected-live-text-chirho=${shellSingleQuoteChirho(rowChirho.liveTextChirho)}`,
+          ];
+          const dryRunCommandChirho = baseCommandPartsChirho.join(" ");
+          const applyCommandChirho = [...baseCommandPartsChirho, "--apply-chirho"].join(" ");
+          return [
+            `  - Guarded reattribute dry-run: ${markdownCodeSpanChirho(dryRunCommandChirho)}`,
+            `  - Guarded reattribute apply: ${markdownCodeSpanChirho(applyCommandChirho)}`,
+          ];
+        })()
+      : rowChirho.liveTextMatchesOriginalChirho === false
+        ? [
+            `  - Reattribute command omitted: live text changed since the original row. Use Attribution re-review unless the named human rechecks the current live text against the print.`,
+          ]
+        : [
+            "  - Reattribute command omitted: live text could not be checked.",
+          ];
+  return [
+    `## id ${rowChirho.idChirho} - ${rowChirho.locationChirho}`,
+    "",
+    `- Attribution-blocked read-only view: ${blockedUrlChirho}`,
+    `- Attribution re-review view: ${rereviewUrlChirho}`,
+    `- Current reviewer value: ${markdownCodeSpanChirho(rowChirho.reviewerChirho)}`,
+    `- Verdict: ${rowChirho.verdictChirho}; applied: ${rowChirho.appliedAtChirho ?? "not-applied-chirho"}; script verdict: ${rowChirho.scriptVerdictChirho ?? "none"}; issue flags: ${flagsChirho}`,
+    `- Original reviewed text: ${markdownCodeSpanChirho(rowChirho.originalTextChirho)}`,
+    `- Corrected text: ${correctedTextChirho}`,
+    `- Live span: ${liveSpanStatusChirho}; live text: ${liveTextChirho}; live script: ${rowChirho.liveScriptChirho ?? "none-chirho"}; live provenance: ${rowChirho.liveProvenanceChirho ?? "none-chirho"}; text matches original: ${liveTextMatchesOriginalChirho}`,
+    `- Live span JSON: ${markdownCodeSpanChirho(relativeProjectPathChirho(rowChirho.liveSpanLinePathChirho))}`,
+    `- Source scanline: ${markdownCodeSpanChirho(relativeProjectPathChirho(rowChirho.liveScanlinePathChirho))} (${scanlineStatusChirho})`,
+    ...reattributeLinesChirho,
+    "",
+  ];
+}
+
+function attributionCleanupHandoffMarkdownChirho(statusChirho: CertificationStatusChirho): string {
+  const rowsChirho = statusChirho.humanValidationDbChirho.genericReviewerRowDetailsChirho;
+  const rowLinesChirho = rowsChirho.length === 0
+    ? ["- No attribution-blocked Pass-C human validation rows are currently present.", ""]
+    : rowsChirho.flatMap(attributionCleanupRowLinesChirho);
+  return [
+    "<!-- For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16 -->",
+    "# Attribution Cleanup Handoff Chirho",
+    "",
+    `Generated: ${statusChirho.generatedAtChirho}`,
+    "",
+    "This is a non-certifying handoff for prior Pass-C human-validation rows whose reviewer attribution is blank, generic, or machine-like. It does not certify text, decrement the gate, or apply corrections.",
+    "",
+    "Use reattribution only when the existing row is genuinely attributable to the named human reviewer. If the live text changed, use the Attribution re-review lane unless that reviewer explicitly rechecks the current live text against the print.",
+    "",
+    `- Attribution-blocked rows: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho}`,
+    `- Live text still matches original reviewed text: ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextMatchRowsChirho}`,
+    `- Live text changed since original review: ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextMismatchRowsChirho}`,
+    `- Live text could not be checked: ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextUnknownRowsChirho}`,
+    "",
+    "## Safe Use",
+    "",
+    "- Unchanged-live-text rows may be reattributed with the guarded command only after replacing the reviewer and rationale placeholders with an explicit human reviewer identity and reason.",
+    "- Changed-live-text rows should be re-reviewed in the Attribution re-review lane. The generated commands intentionally omit `--allow-live-text-changed-chirho`.",
+    "- Placeholder reviewer/rationale values are rejected by the command; this file is a queue, not a certification artifact.",
+    "",
+    ...rowLinesChirho,
+  ].join("\n");
+}
+
 function expertRepeatClusterMarkdownChirho(statusChirho: CertificationStatusChirho): string {
   const summaryChirho = statusChirho.visionTierChirho.repeatSummaryChirho;
   const groupLinesChirho = summaryChirho.groupsChirho.length === 0
@@ -5671,6 +5774,10 @@ function mainChirho(): void {
   writeTextAtomicChirho(
     join(outDirChirho, EXPERT_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO),
     expertRepeatClusterMarkdownChirho(statusChirho)
+  );
+  writeTextAtomicChirho(
+    join(outDirChirho, ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO),
+    attributionCleanupHandoffMarkdownChirho(statusChirho)
   );
   console.log(
     `[${MODULE_CHIRHO}] complete=${statusChirho.certificationCompleteChirho} ` +
