@@ -29,6 +29,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
     argsChirho: [process.execPath, "run", "check-reviewer-attribution-chirho"],
   },
   {
+    labelChirho: "certification status gate guards",
+    argsChirho: [process.execPath, "run", "check-certification-status-gate-guards-chirho"],
+  },
+  {
     labelChirho: "expert-supplied text CLI guards",
     argsChirho: [process.execPath, "run", "check-expert-supplied-text-guards-chirho"],
   },

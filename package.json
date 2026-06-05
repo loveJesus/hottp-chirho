@@ -32,6 +32,7 @@
     "vision-tier-expert-review-chirho": "bun run src-chirho/vision-tier-expert-review-server-chirho.ts",
     "review-servers-chirho": "bun run src-chirho/review-servers-chirho.ts",
     "check-certification-chirho": "bun run src-chirho/check-certification-chirho.ts",
+    "check-certification-status-gate-guards-chirho": "bun run src-chirho/check-certification-status-gate-guards-chirho.ts",
     "check-reviewer-attribution-chirho": "bun run src-chirho/check-reviewer-attribution-chirho.ts",
     "check-expert-supplied-text-guards-chirho": "bun run src-chirho/check-expert-supplied-text-guards-chirho.ts",
     "check-human-suggested-correction-cli-guards-chirho": "bun run src-chirho/check-human-suggested-correction-cli-guards-chirho.ts",
