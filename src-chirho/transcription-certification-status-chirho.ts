@@ -147,6 +147,12 @@ const RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "raw-hebrew-human-certification-quickstart-2026-06-05-chirho.md"
 );
+const HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "hallelujah-review-session-guide-2026-06-05-chirho.md"
+);
 const LATIN_SYMBOL_PACK_DIR_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "workspace-chirho",
@@ -4926,6 +4932,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "- Raw Hebrew pending counts match the live validator; report totals include already-saved rows.",
     `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Raw Hebrew human certification quickstart: \`${relativeProjectPathChirho(RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO)}\``,
+    `- Hallelujah review session guide: \`${relativeProjectPathChirho(HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO)}\``,
     `- Raw Hebrew pre-review notes: \`${relativeProjectPathChirho(RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO)}\` (non-certifying; current/superseded notes only)`,
     `- Latin/symbol live reviewer: http://localhost:8770/ (${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} remaining decision(s); command: \`bun run latin-symbol-vision-review-chirho\`${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolAllChirho)})`,
     `- Latin/symbol French lane: ${latinSymbolReviewUrlChirho("french-chirho")} (${pendingLatinSymbolScriptCountChirho("french-chirho")} pending of ${latinSymbolFrenchCountChirho} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.latinSymbolFrenchChirho)})`,
