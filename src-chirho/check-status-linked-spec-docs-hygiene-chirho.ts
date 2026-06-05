@@ -34,6 +34,7 @@ const MARKDOWN_IMAGE_RE_CHIRHO = /!\[[^\]\n]*\]\(([^)\n]+)\)/g;
 const BACKTICK_RE_CHIRHO = /`([^`\n]+)`/g;
 const RAW_HEBREW_QUICKSTART_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/raw-hebrew-human-certification-quickstart-2026-06-05-chirho.md";
 const HALLELUJAH_SESSION_GUIDE_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/hallelujah-review-session-guide-2026-06-05-chirho.md";
+const REVIEWER_SCOPE_PRIMER_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/reviewer-scope-and-primer-2026-06-02-chirho.md";
 const TRANSCRIPTION_STATUS_PRODUCTION_PATH_DOC_CHIRHO =
   "spec-chirho/metropoliluya-chirho/transcription-status-and-production-path-2026-06-03-chirho.md";
 const LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
@@ -61,6 +62,17 @@ const HALLELUJAH_SESSION_GUIDE_SNIPPETS_CHIRHO = [
   "If the status report says live text changed, prefer re-review.",
   "If you are not sure who made the original decision, re-review instead of reattributing.",
   "Stop or skip when the crop is unclear, the script is outside your competence, the exact marks are uncertain",
+] as const;
+const REVIEWER_SCOPE_PRIMER_SNIPPETS_CHIRHO = [
+  "Hebrew-script Aramaic/Targum: do not treat this as ordinary Hebrew.",
+  "Syriac: route to a Syriac reader.",
+  "Arabic: route to an Arabist.",
+  "Syriac script orientation: HMML School",
+  "Aramaic/Targum reference: CAL",
+  "Arabic romanization/reference boundary",
+  "These notes are only for orientation and triage. They do not make a non-reader competent to certify the scripts.",
+  "Exact letters, joined forms, dots, vowels, punctuation, word spacing",
+  "Confirm only when the printed line and stored text agree at the level the queue is asking for.",
 ] as const;
 
 interface StatusLinkedSpecDocsStatusChirho {
@@ -192,6 +204,9 @@ function checkSpecDocChirho(docPathChirho: string, statusChirho: StatusLinkedSpe
   }
   if (docPathChirho === HALLELUJAH_SESSION_GUIDE_DOC_CHIRHO) {
     assertDocContainsSnippetsChirho(docPathChirho, textChirho, HALLELUJAH_SESSION_GUIDE_SNIPPETS_CHIRHO);
+  }
+  if (docPathChirho === REVIEWER_SCOPE_PRIMER_DOC_CHIRHO) {
+    assertDocContainsSnippetsChirho(docPathChirho, textChirho, REVIEWER_SCOPE_PRIMER_SNIPPETS_CHIRHO);
   }
   if (docPathChirho === TRANSCRIPTION_STATUS_PRODUCTION_PATH_DOC_CHIRHO) {
     assertProductionPathCountsChirho(docPathChirho, textChirho, statusChirho);
