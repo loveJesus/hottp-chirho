@@ -272,6 +272,22 @@ async function assertExpertAssetEndpointNoStoreChirho(portChirho: number, itemCh
   await responseChirho.arrayBuffer();
 }
 
+async function assertBlankItemPageTargetsSpanChirho(portChirho: number, itemChirho: ExpertReviewStateItemChirho): Promise<void> {
+  const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/?item-chirho=${encodeURIComponent(itemChirho.idChirho)}`);
+  const htmlChirho = await responseChirho.text();
+  assertCheckChirho(responseChirho.ok, `blank expert item page request failed: ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, "blank expert item page");
+  for (const snippetChirho of [
+    "Target crop",
+    "Target span",
+    'Target span: x" + cropChirho.spanStartChirho + ".." + cropChirho.spanEndChirho + " of " + cropChirho.lineWidthChirho + "px',
+    "blank text means supply only the script text inside the red box, not neighboring punctuation or context",
+    "This item has no current text. Do not confirm an empty transcription",
+  ]) {
+    assertCheckChirho(htmlChirho.includes(snippetChirho), `blank expert item page is missing target guidance: ${snippetChirho}`);
+  }
+}
+
 function assertPlaceholderRejectedChirho(paramsChirho: {
   labelChirho: string;
   responseChirho: Response;
@@ -341,6 +357,7 @@ async function mainChirho(): Promise<void> {
     const blankItemChirho = await blankStateItemChirho(portChirho);
     if (blankItemChirho !== null) {
       await assertExpertAssetEndpointNoStoreChirho(portChirho, blankItemChirho);
+      await assertBlankItemPageTargetsSpanChirho(portChirho, blankItemChirho);
     }
     const commonBodyChirho = {
       idChirho: itemChirho.idChirho,
