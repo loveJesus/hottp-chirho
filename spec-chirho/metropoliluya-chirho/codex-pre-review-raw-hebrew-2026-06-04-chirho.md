@@ -301,6 +301,13 @@ another.
   - Visual precheck: the word is boxed cleanly between French `le complément` and `ayant déjà`. The direct OCR read `להמ` is close enough to show why this needs human checking but not enough to certify the bet/dagesh; no neighboring French appears swallowed by the Hebrew box.
   - Human check still needed: bet vs visually similar shapes, dagesh inside bet, hiriq/qamats placement, and final mem.
 
+- `vol 5 p152 L21 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A152%3A21%3A1`
+  - Live text: `תְּרֹמֵם`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the Hebrew word is cleanly boxed after French `du polel`; the following period and French `Il semble...` are outside the target box. This line appears to contrast with nearby `תְּרוֹמֵם` forms, so the missing/present vav and the holam placement are the review point, not a segmentation issue.
+  - Human check still needed: tav/dagesh, sheva, holam placement, whether there is no vav in this printed form, and final mem.
+
 - `vol 5 p152 L13 S3/S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A3`
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A5`
