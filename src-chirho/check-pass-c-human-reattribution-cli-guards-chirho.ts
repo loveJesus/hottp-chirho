@@ -42,6 +42,7 @@ interface ValidationSummaryRowChirho {
   rowCountChirho: number;
   currentCountChirho: number;
   currentHumanReviewerCountChirho: number;
+  currentOriginalTextChirho: string | null;
   reviewerChirho: string | null;
   supersedesIdChirho: number | null;
 }
@@ -101,7 +102,10 @@ function findLiveSpanFixturesChirho(countChirho: number): LiveSpanFixtureChirho[
   throw new Error(`could not find ${countChirho} non-empty live span fixture(s)`);
 }
 
-function createFixtureChirho(rowCountChirho = 1): ReattributionFixtureChirho {
+function createFixtureChirho(
+  rowCountChirho = 1,
+  originalTextOverridesChirho: Map<number, string> = new Map()
+): ReattributionFixtureChirho {
   const dirChirho = mkdtempSync(join(tmpdir(), "pass-c-human-reattribution-cli-guard-chirho-"));
   const dbPathChirho = join(dirChirho, "progress-chirho.sqlite");
   const backupPathChirho = join(dirChirho, "pass-c-human-validations-backup-chirho.json");
@@ -150,14 +154,15 @@ function createFixtureChirho(rowCountChirho = 1): ReattributionFixtureChirho {
            'human-chirho', '2026-06-04T00:00:00.000Z', '2026-06-04T00:00:00.000Z',
            NULL, 1, NULL, NULL, 2)`
     );
-    for (const liveSpanChirho of liveSpansChirho) {
+    for (const [indexChirho, liveSpanChirho] of liveSpansChirho.entries()) {
+      const originalTextChirho = originalTextOverridesChirho.get(indexChirho) ?? liveSpanChirho.textChirho;
       const resultChirho = insertStmtChirho.run(
         liveSpanChirho.volumeChirho,
         liveSpanChirho.pageChirho,
         liveSpanChirho.lineIndexChirho,
         liveSpanChirho.segmentIndexChirho,
-        liveSpanChirho.textChirho,
-        hashTextChirho(liveSpanChirho.textChirho)
+        originalTextChirho,
+        hashTextChirho(originalTextChirho)
       );
       validationIdsChirho.push(Number(resultChirho.lastInsertRowid));
     }
@@ -176,6 +181,7 @@ function validationSummaryChirho(dbPathChirho: string): ValidationSummaryRowChir
            COUNT(*) AS rowCountChirho,
            SUM(CASE WHEN is_current_chirho = 1 THEN 1 ELSE 0 END) AS currentCountChirho,
            SUM(CASE WHEN is_current_chirho = 1 AND reviewer_chirho = 'human-chirho' THEN 1 ELSE 0 END) AS currentHumanReviewerCountChirho,
+           MAX(CASE WHEN is_current_chirho = 1 THEN original_text_chirho ELSE NULL END) AS currentOriginalTextChirho,
            MAX(CASE WHEN is_current_chirho = 1 THEN reviewer_chirho ELSE NULL END) AS reviewerChirho,
            MAX(CASE WHEN is_current_chirho = 1 THEN supersedes_id_chirho ELSE NULL END) AS supersedesIdChirho
          FROM pass_c_human_validations_chirho`
@@ -289,6 +295,32 @@ function assertSuccessfulApplyChirho(fixtureChirho: ReattributionFixtureChirho):
   assertCheckChirho(summaryChirho.reviewerChirho === "hallelujah-chirho", "successful reattribution did not set reviewer");
   assertCheckChirho(summaryChirho.supersedesIdChirho === 1, "successful reattribution did not supersede the old row");
   assertCheckChirho(existsSync(fixtureChirho.backupPathChirho), "successful reattribution did not refresh backup");
+}
+
+function assertSuccessfulApplyWithRepairedLiveTextChirho(fixtureChirho: ReattributionFixtureChirho): void {
+  const expectedStoredOriginalTextChirho = "stale-original-text-before-repair-chirho";
+  const argsChirho = reattributeArgsChirho(fixtureChirho, [
+    "--reviewer-chirho=hallelujah-chirho",
+    "--rationale-chirho=fixture confirms current live text can guard a repaired row",
+    `--expected-live-text-chirho=${fixtureChirho.liveSpanChirho.textChirho}`,
+    "--apply-chirho",
+  ]);
+  const resultChirho = runCommandChirho(argsChirho);
+  assertCheckChirho(
+    resultChirho.exitCodeChirho === 0,
+    `repaired-live-text reattribution apply command failed: ${commandTextChirho(argsChirho)}\n${resultChirho.stdoutChirho}\n${resultChirho.stderrChirho}`
+  );
+  const summaryChirho = validationSummaryChirho(fixtureChirho.dbPathChirho);
+  assertCheckChirho(summaryChirho.rowCountChirho === 2, "repaired-live-text reattribution did not append one row");
+  assertCheckChirho(
+    summaryChirho.currentOriginalTextChirho === expectedStoredOriginalTextChirho,
+    "repaired-live-text reattribution changed the stored review original text"
+  );
+  assertCheckChirho(
+    summaryChirho.currentHumanReviewerCountChirho === 0,
+    "repaired-live-text reattribution left a generic current row"
+  );
+  assertCheckChirho(summaryChirho.reviewerChirho === "hallelujah-chirho", "repaired-live-text reattribution did not set reviewer");
 }
 
 function assertSuccessfulSelectedBatchApplyChirho(fixtureChirho: ReattributionFixtureChirho): void {
@@ -475,6 +507,16 @@ function mainChirho(): void {
     assertSuccessfulApplyChirho(applyFixtureChirho);
   } finally {
     rmSync(applyFixtureChirho.dirChirho, { recursive: true, force: true });
+  }
+
+  const repairedLiveTextApplyFixtureChirho = createFixtureChirho(
+    1,
+    new Map([[0, "stale-original-text-before-repair-chirho"]])
+  );
+  try {
+    assertSuccessfulApplyWithRepairedLiveTextChirho(repairedLiveTextApplyFixtureChirho);
+  } finally {
+    rmSync(repairedLiveTextApplyFixtureChirho.dirChirho, { recursive: true, force: true });
   }
 
   const selectedBatchApplyFixtureChirho = createFixtureChirho(2);
