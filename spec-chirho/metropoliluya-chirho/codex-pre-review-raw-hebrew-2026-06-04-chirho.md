@@ -278,6 +278,13 @@ another.
   - Visual precheck: S0 is the line-opening Hebrew word before the period; S2 is the comparison word after `Au lieu de`. Both red boxes bracket their own Hebrew word cleanly and leave the period/French outside the target boxes. The same-line repetition means the human should compare the two forms directly rather than rely on the direct OCR read, which is weak for S0 and stronger for S2.
   - Human check still needed: exact dagesh/sheva and holam-vav placement in both occurrences, plus whether the two printed forms are truly identical as stored.
 
+- `vol 5 p152 L15 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=5%3A152%3A15%3A1`
+  - Live text: `תִּתְרוֹרַם`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the compact line reads French `écrivent`, then one Hebrew word, then a period. The red box cleanly brackets the Hebrew word and does not include the period. The stored consonantal pattern with repeated tav/resh-like strokes is plausible at review resolution, but the direct OCR read is not reliable enough to certify it.
+  - Human check still needed: exact first two letters, the middle resh/vav sequence, final mem, and all vowel/dagesh marks.
+
 - `vol 5 p152 L13 S3/S5`:
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A3`
   `http://localhost:8766/?attention-chirho=multi-token-chirho&item-chirho=5%3A152%3A13%3A5`
