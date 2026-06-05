@@ -26,7 +26,7 @@ This report is mostly about (2), because that is where the remaining work is.
 - 5 volumes · 46 pages · 1,789 span-line files · **4,511 spans**
 - **0 unknown spans · 0 replacement characters · 0 non-NFC spans** (Unicode normalization is enforced and gate-checked)
 - Export to markdown is span-first (the spans are the source of truth; D1 is an audit witness)
-- Strict-blind scanner reports are current and clear: hidden-Hebrew candidates **0**, non-Latin-residue candidates **0**, Hebrew close-before-open delimiter suspects **0**. These reports are fail-closed: stale scanner code, stale spans, malformed summaries, nonzero hidden/residue candidates, or delimiter rows not covered by raw/expert review block completion. The one neighbor-unbalanced Hebrew delimiter row is a damaged-text/Qumran notation review target already covered by the raw Hebrew queue, not a certification.
+- Strict-blind scanner reports are current and clear: hidden-Hebrew candidates **0**, non-Latin-residue candidates **0**, Hebrew close-before-open delimiter suspects **0**, neighbor-unbalanced damaged-text review rows **0**. These reports are fail-closed: stale scanner code, stale spans, malformed summaries, nonzero hidden/residue candidates, or delimiter rows not covered by raw/expert review block completion. Any future neighbor-unbalanced damaged-text row must be covered by raw/expert review or it blocks completion.
 
 **The certification gate** (`bun run transcription-certification-status-chirho`) currently reports **complete = false**, with three outstanding review categories:
 

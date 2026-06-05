@@ -77,6 +77,7 @@ const REVIEWER_SCOPE_PRIMER_SNIPPETS_CHIRHO = [
 
 interface StatusLinkedSpecDocsStatusChirho {
   structuralChirho?: unknown;
+  strictBlindScansChirho?: unknown;
   visionTierChirho?: unknown;
   latinSymbolVisionChirho?: unknown;
   humanValidationDbChirho?: unknown;
@@ -139,6 +140,13 @@ function numberFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho:
   return fieldChirho;
 }
 
+function booleanFieldChirho(valueChirho: unknown, keyChirho: string, labelChirho: string): boolean {
+  const recordChirho = recordFieldChirho(valueChirho, labelChirho);
+  const fieldChirho = recordChirho[keyChirho];
+  assertGeneratedCheckChirho(typeof fieldChirho === "boolean", `${labelChirho}.${keyChirho} must be a boolean`);
+  return fieldChirho;
+}
+
 function countMapValueChirho(valueChirho: unknown, keyChirho: string, itemKeyChirho: string, labelChirho: string): number {
   const recordChirho = recordFieldChirho(valueChirho, labelChirho);
   const fieldChirho = recordFieldChirho(recordChirho[keyChirho], `${labelChirho}.${keyChirho}`);
@@ -150,6 +158,26 @@ function countMapValueChirho(valueChirho: unknown, keyChirho: string, itemKeyChi
   return countChirho ?? 0;
 }
 
+function formattedNumberChirho(valueChirho: number): string {
+  return valueChirho.toLocaleString("en-US");
+}
+
+function assertScannerFreshChirho(scanChirho: Record<string, unknown>, labelChirho: string, summaryFieldChirho: string): void {
+  assertGeneratedCheckChirho(booleanFieldChirho(scanChirho, "reportShapeOkChirho", labelChirho), `${labelChirho} report shape is not OK`);
+  assertGeneratedCheckChirho(
+    booleanFieldChirho(scanChirho, "scannerSourceFingerprintMatchesCurrentChirho", labelChirho),
+    `${labelChirho} scanner source fingerprint does not match current source`
+  );
+  assertGeneratedCheckChirho(
+    booleanFieldChirho(scanChirho, "spanSourceFingerprintMatchesCurrentChirho", labelChirho),
+    `${labelChirho} span source fingerprint does not match current spans`
+  );
+  assertGeneratedCheckChirho(
+    booleanFieldChirho(scanChirho, summaryFieldChirho, labelChirho),
+    `${labelChirho} rendered summary counts do not match report rows`
+  );
+}
+
 function assertProductionPathCountsChirho(
   docPathChirho: string,
   textChirho: string,
@@ -159,6 +187,41 @@ function assertProductionPathCountsChirho(
   const visionTierChirho = statusChirho.visionTierChirho;
   const latinSymbolChirho = statusChirho.latinSymbolVisionChirho;
   const humanValidationDbChirho = statusChirho.humanValidationDbChirho;
+  const strictBlindScansChirho = recordFieldChirho(statusChirho.strictBlindScansChirho, "strictBlindScansChirho");
+  const hiddenHebrewScanChirho = recordFieldChirho(
+    strictBlindScansChirho.hiddenHebrewChirho,
+    "strictBlindScansChirho.hiddenHebrewChirho"
+  );
+  const nonLatinResidueScanChirho = recordFieldChirho(
+    strictBlindScansChirho.nonLatinResidueChirho,
+    "strictBlindScansChirho.nonLatinResidueChirho"
+  );
+  const hebrewDelimiterScanChirho = recordFieldChirho(
+    strictBlindScansChirho.hebrewDelimiterOrderChirho,
+    "strictBlindScansChirho.hebrewDelimiterOrderChirho"
+  );
+  assertScannerFreshChirho(
+    hiddenHebrewScanChirho,
+    "strictBlindScansChirho.hiddenHebrewChirho",
+    "summaryCountsMatchRenderedCandidatesChirho"
+  );
+  assertScannerFreshChirho(
+    nonLatinResidueScanChirho,
+    "strictBlindScansChirho.nonLatinResidueChirho",
+    "summaryCountsMatchRenderedCandidatesChirho"
+  );
+  assertScannerFreshChirho(
+    hebrewDelimiterScanChirho,
+    "strictBlindScansChirho.hebrewDelimiterOrderChirho",
+    "summaryCountsMatchRenderedRowsChirho"
+  );
+  const volumeCountChirho = numberFieldChirho(structuralChirho, "markdownVolumeFingerprintCountChirho", "structuralChirho");
+  const pageCountChirho = numberFieldChirho(structuralChirho, "markdownPageFingerprintCountChirho", "structuralChirho");
+  const spanLineFileCountChirho = numberFieldChirho(structuralChirho, "liveSpanSourceFileCountChirho", "structuralChirho");
+  const liveSpanCountChirho = numberFieldChirho(structuralChirho, "liveSpanCountChirho", "structuralChirho");
+  const unknownSpanCountChirho = numberFieldChirho(structuralChirho, "unknownSpanCountChirho", "structuralChirho");
+  const replacementCharCountChirho = numberFieldChirho(structuralChirho, "replacementCharCountChirho", "structuralChirho");
+  const nonNfcSpanCountChirho = numberFieldChirho(structuralChirho, "nonNfcSpanCountChirho", "structuralChirho");
   const rawHebrewCountChirho = numberFieldChirho(structuralChirho, "passCOcrHebrewSpanCountChirho", "structuralChirho");
   const expertCountChirho = numberFieldChirho(visionTierChirho, "remainingConfirmationCountChirho", "visionTierChirho");
   const latinSymbolCountChirho = numberFieldChirho(latinSymbolChirho, "remainingDecisionCountChirho", "latinSymbolVisionChirho");
@@ -167,7 +230,30 @@ function assertProductionPathCountsChirho(
   const expertGreekCountChirho = countMapValueChirho(visionTierChirho, "pendingVisionCountsChirho", "greek-chirho", "visionTierChirho");
   const expertSyriacCountChirho = countMapValueChirho(visionTierChirho, "pendingVisionCountsChirho", "syriac-chirho", "visionTierChirho");
   const expertArabicCountChirho = countMapValueChirho(visionTierChirho, "pendingVisionCountsChirho", "arabic-chirho", "visionTierChirho");
+  const hiddenHebrewCandidateCountChirho = numberFieldChirho(
+    hiddenHebrewScanChirho,
+    "candidateLineCountChirho",
+    "strictBlindScansChirho.hiddenHebrewChirho"
+  );
+  const nonLatinResidueCandidateCountChirho = numberFieldChirho(
+    nonLatinResidueScanChirho,
+    "candidateLineCountChirho",
+    "strictBlindScansChirho.nonLatinResidueChirho"
+  );
+  const closeBeforeOpenSuspectCountChirho = numberFieldChirho(
+    hebrewDelimiterScanChirho,
+    "closeBeforeOpenSuspectCountChirho",
+    "strictBlindScansChirho.hebrewDelimiterOrderChirho"
+  );
+  const neighborUnbalancedReviewCountChirho = numberFieldChirho(
+    hebrewDelimiterScanChirho,
+    "neighborUnbalancedReviewCountChirho",
+    "strictBlindScansChirho.hebrewDelimiterOrderChirho"
+  );
   assertDocContainsSnippetsChirho(docPathChirho, textChirho, [
+    `${formattedNumberChirho(volumeCountChirho)} volumes · ${formattedNumberChirho(pageCountChirho)} pages · ${formattedNumberChirho(spanLineFileCountChirho)} span-line files · **${formattedNumberChirho(liveSpanCountChirho)} spans**`,
+    `**${unknownSpanCountChirho} unknown spans · ${replacementCharCountChirho} replacement characters · ${nonNfcSpanCountChirho} non-NFC spans**`,
+    `hidden-Hebrew candidates **${hiddenHebrewCandidateCountChirho}**, non-Latin-residue candidates **${nonLatinResidueCandidateCountChirho}**, Hebrew close-before-open delimiter suspects **${closeBeforeOpenSuspectCountChirho}**, neighbor-unbalanced damaged-text review rows **${neighborUnbalancedReviewCountChirho}**`,
     `raw Hebrew (${rawHebrewCountChirho} spans)`,
     `Latin/symbol (${latinSymbolCountChirho} remaining decisions)`,
     `non-Latin expert (${expertCountChirho}: Hebrew ${expertHebrewCountChirho}, Greek ${expertGreekCountChirho}, Syriac ${expertSyriacCountChirho}, Arabic ${expertArabicCountChirho})`,

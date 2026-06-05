@@ -294,6 +294,7 @@ interface ExportReportChirho {
   pagesChirho?: ExportPageReportChirho[];
   volumesChirho?: ExportVolumeReportChirho[];
   unknownSpanCountChirho?: number;
+  replacementCharCountChirho?: number;
   nonNfcSpanCountChirho?: number;
   hebrewSpanCountChirho?: number;
   passCOcrHebrewSpanCountChirho?: number;
@@ -960,6 +961,7 @@ interface CertificationStatusChirho {
     d1AuditFingerprintMatchesCurrentChirho: boolean | null;
     d1AuditFingerprintReadErrorChirho: string | null;
     unknownSpanCountChirho: number;
+    replacementCharCountChirho: number;
     nonNfcSpanCountChirho: number;
     d1GapPageCountChirho: number;
     hebrewSpanCountChirho: number;
@@ -4011,6 +4013,7 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
       liveD1AuditFingerprintChirho === null ? null : exportReportD1AuditFingerprintMatchesCurrentChirho,
     d1AuditFingerprintReadErrorChirho,
     unknownSpanCountChirho: exportReportChirho.unknownSpanCountChirho ?? 0,
+    replacementCharCountChirho: exportReportChirho.replacementCharCountChirho ?? 0,
     nonNfcSpanCountChirho: exportReportChirho.nonNfcSpanCountChirho ?? 0,
     d1GapPageCountChirho: exportReportChirho.d1PagesWithoutSpansChirho?.length ?? 0,
     hebrewSpanCountChirho: exportReportChirho.hebrewSpanCountChirho ?? 0,
@@ -4576,6 +4579,9 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
   }
   if (structuralChirho.unknownSpanCountChirho !== 0) {
     remainingWorkChirho.push(`${structuralChirho.unknownSpanCountChirho} unknown span(s) remain`);
+  }
+  if (structuralChirho.replacementCharCountChirho !== 0) {
+    remainingWorkChirho.push(`${structuralChirho.replacementCharCountChirho} Unicode replacement character(s) remain in the latest export report`);
   }
   if (structuralChirho.nonNfcSpanCountChirho !== 0) {
     remainingWorkChirho.push(`${structuralChirho.nonNfcSpanCountChirho} non-NFC span(s) remain in the latest export report`);
@@ -5841,6 +5847,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Issues: ${statusChirho.structuralChirho.issueCountChirho}`,
     `- Issue code counts: ${issueCodeCountsChirho || "none"}`,
     `- Unknown spans: ${statusChirho.structuralChirho.unknownSpanCountChirho}`,
+    `- Unicode replacement characters in export report: ${statusChirho.structuralChirho.replacementCharCountChirho}`,
     `- Non-NFC spans in export report: ${statusChirho.structuralChirho.nonNfcSpanCountChirho}`,
     `- D1 gap pages: ${statusChirho.structuralChirho.d1GapPageCountChirho}`,
     `- Hebrew spans: ${statusChirho.structuralChirho.hebrewSpanCountChirho}`,

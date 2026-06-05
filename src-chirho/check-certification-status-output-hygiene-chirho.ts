@@ -2992,6 +2992,7 @@ function assertStructuralExportMarkdownCoverageChirho(markdownChirho: string, st
   );
   for (const [fieldChirho, labelChirho] of [
     ["unknownSpanCountChirho", "Unknown spans"],
+    ["replacementCharCountChirho", "Unicode replacement characters in export report"],
     ["nonNfcSpanCountChirho", "Non-NFC spans in export report"],
     ["d1GapPageCountChirho", "D1 gap pages"],
     ["hebrewSpanCountChirho", "Hebrew spans"],
@@ -3118,6 +3119,7 @@ function assertCoreRemainingWorkCoverageChirho(
   const strictPassedChirho = booleanFieldChirho(structuralChirho, "strictPassedChirho", "structuralChirho");
   const issueCountChirho = numberFieldChirho(structuralChirho, "issueCountChirho", "structuralChirho");
   const unknownSpanCountChirho = numberFieldChirho(structuralChirho, "unknownSpanCountChirho", "structuralChirho");
+  const replacementCharCountChirho = numberFieldChirho(structuralChirho, "replacementCharCountChirho", "structuralChirho");
   const nonNfcSpanCountChirho = numberFieldChirho(structuralChirho, "nonNfcSpanCountChirho", "structuralChirho");
   const d1GapPageCountChirho = numberFieldChirho(structuralChirho, "d1GapPageCountChirho", "structuralChirho");
   const passCOcrHebrewSpanCountChirho = numberFieldChirho(
@@ -3152,6 +3154,12 @@ function assertCoreRemainingWorkCoverageChirho(
     unknownSpanCountChirho !== 0,
     `${unknownSpanCountChirho} unknown span(s) remain`,
     "unknown span(s) remain"
+  );
+  assertRemainingWorkToggleChirho(
+    remainingWorkChirho,
+    replacementCharCountChirho !== 0,
+    `${replacementCharCountChirho} Unicode replacement character(s) remain in the latest export report`,
+    "Unicode replacement character(s) remain in the latest export report"
   );
   assertRemainingWorkToggleChirho(
     remainingWorkChirho,
