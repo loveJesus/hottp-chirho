@@ -240,9 +240,18 @@ function printReviewRoutingSummaryChirho(statusChirho: CertificationStatusSummar
   );
 }
 
-function printReadinessSummaryChirho(statusChirho: CertificationStatusSummaryChirho): void {
+function printReadinessSummaryChirho(
+  statusChirho: CertificationStatusSummaryChirho,
+  appBuildCheckedChirho: boolean
+): void {
   const contentReadyChirho = statusChirho.certificationCompleteChirho === true;
-  console.log(`[${MODULE_CHIRHO}] Review app build readiness: yes`);
+  console.log(
+    `[${MODULE_CHIRHO}] Review app build readiness: ${
+      appBuildCheckedChirho
+        ? "yes"
+        : "not checked in summary-only mode; run bun run check-app-publication-readiness-chirho for app check/build"
+    }`
+  );
   console.log(`[${MODULE_CHIRHO}] Status artifact generated: ${stringOrUnknownChirho(statusChirho.generatedAtChirho)}`);
   console.log(`[${MODULE_CHIRHO}] Certified UTF-8 Markdown publication readiness: ${contentReadyChirho ? "yes" : "no"}`);
   console.log(
@@ -271,7 +280,7 @@ function mainChirho(): void {
       `[${MODULE_CHIRHO}] Summary-only mode: using existing status artifact; run without --summary-only-chirho before any publication claim.`
     );
     const statusChirho = readCertificationStatusChirho();
-    printReadinessSummaryChirho(statusChirho);
+    printReadinessSummaryChirho(statusChirho, false);
     if (requireCertifiedMarkdownChirho && statusChirho.certificationCompleteChirho !== true) {
       throw new Error("certified UTF-8 Markdown publication is not ready");
     }
@@ -300,7 +309,7 @@ function mainChirho(): void {
   }
 
   const statusChirho = readCertificationStatusChirho();
-  printReadinessSummaryChirho(statusChirho);
+  printReadinessSummaryChirho(statusChirho, true);
   if (requireCertifiedMarkdownChirho && statusChirho.certificationCompleteChirho !== true) {
     throw new Error("certified UTF-8 Markdown publication is not ready");
   }
