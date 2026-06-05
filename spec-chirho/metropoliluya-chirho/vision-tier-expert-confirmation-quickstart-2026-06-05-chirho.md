@@ -7,6 +7,14 @@ This is a reviewer aid for the non-Latin expert lane, including vision-tier span
 
 Use the live expert reviewer at http://localhost:8771/. Put an explicit human reviewer id in the Reviewer field and the exact lane role in Reviewer role.
 
+## Source Filter
+
+The Source filter changes review order only; it does not change what confirmation means.
+
+- `explicit-span-chirho`: spans we recovered or boxed from the live span files. Review these as exact printed text, with special care for any repaired hidden-script or re-segmented lines.
+- `pass-c-ocr-span-chirho`: non-Hebrew Pass-C OCR spans routed into the expert lane. These often already have text, but still need exact script-reader confirmation against the scanline.
+- `d1-derived-chirho`: non-Latin D1 word-derived items. Confirm them only from the displayed scanline and crop, not from the database source alone.
+
 ## Confirm Only If
 
 Confirm only if you are competent for the displayed script and the current text exactly matches the printed scanline.

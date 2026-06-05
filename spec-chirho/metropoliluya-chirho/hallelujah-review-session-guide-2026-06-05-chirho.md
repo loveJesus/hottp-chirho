@@ -32,6 +32,16 @@ Do not confirm Syriac, Arabic, or exact Hebrew-script Aramaic/Targum vocalizatio
 
 The attention lanes are useful when you want the riskiest raw Hebrew first: low confidence, multi-token, delimiter/damaged notation, and no-direct-read. They are triage signals, not verdicts.
 
+## Expert Source Filters
+
+The expert reviewer Source filter is for triage, not a different standard of proof.
+
+- `explicit-span-chirho`: recovered or boxed non-Latin spans from the live span files, including repaired hidden-script lines. Treat them as print-first expert confirmations.
+- `pass-c-ocr-span-chirho`: non-Hebrew Pass-C OCR spans now routed to the expert lane. These are useful for a systematic sweep of OCR text that already exists but still needs a script reader.
+- `d1-derived-chirho`: D1-derived non-Latin word items. Use the scanline/crop as authority; the D1 source is provenance, not certification.
+
+When a source-filtered item is outside your competence, skip it or report a crop/segmentation/source issue. Do not confirm exact letters or marks from source category alone.
+
 ## Clean Means Exact
 
 A clean raw Hebrew save means the red-boxed printed content and stored text match exactly enough for certification:
