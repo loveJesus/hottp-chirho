@@ -2,14 +2,14 @@
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
 /**
- * Verify the Pass-C human review server rejects machine-authored issue rows.
+ * Verify the Pass-C human review server rejects unsafe direct POSTs.
  *
  * The test uses a disposable DB/backup and a temporary server port so a guard
  * regression cannot mutate real review state.
  */
 
 import { Database } from "bun:sqlite";
-import { mkdtempSync, rmSync } from "fs";
+import { existsSync, mkdtempSync, readFileSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 import { createServer as createNetServerChirho } from "net";
@@ -162,6 +162,68 @@ async function mainChirho(): Promise<void> {
       responseChirho.text()
     );
     const itemChirho = firstQueueItemFromHtmlChirho(pageHtmlChirho);
+    const missingCleanAckResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: [],
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: false,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const missingCleanAckDataChirho = (await missingCleanAckResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      missingCleanAckResponseChirho.status === 400,
+      `expected missing-clean-ack HTTP 400, got ${missingCleanAckResponseChirho.status}`
+    );
+    assertCheckChirho(missingCleanAckDataChirho.okChirho === false, "missing-clean-ack POST unexpectedly returned ok");
+    assertCheckChirho(
+      String(missingCleanAckDataChirho.errorChirho ?? "").includes("certifyCleanChirho acknowledgement is required"),
+      `missing-clean-ack POST failed for the wrong reason: ${String(missingCleanAckDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "missing-clean-ack POST persisted a row"
+    );
+    const machineCleanResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: [],
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "",
+        scriptVerdictChirho: "",
+        reviewerChirho: "codex-gpt5-chirho",
+        certifyCleanChirho: true,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const machineCleanDataChirho = (await machineCleanResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      machineCleanResponseChirho.status === 400,
+      `expected machine-clean HTTP 400, got ${machineCleanResponseChirho.status}`
+    );
+    assertCheckChirho(machineCleanDataChirho.okChirho === false, "machine clean POST unexpectedly returned ok");
+    assertCheckChirho(
+      String(machineCleanDataChirho.errorChirho ?? "").includes("machine reviewer codex-gpt5-chirho cannot certify"),
+      `machine clean POST failed for the wrong reason: ${String(machineCleanDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "machine clean POST persisted a row"
+    );
     const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -249,6 +311,60 @@ async function mainChirho(): Promise<void> {
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
       "placeholder-notes issue POST persisted a row"
     );
+    const validCleanResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: [],
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: true,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const validCleanDataChirho = (await validCleanResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      validCleanResponseChirho.ok,
+      `valid clean POST failed: ${validCleanResponseChirho.status} ${String(validCleanDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho + 1,
+      "valid clean POST did not append one row"
+    );
+    const validIssueResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: ["letters-chirho"],
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "server guard check records a concrete issue for disposable Pass-C review state",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: false,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const validIssueDataChirho = (await validIssueResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      validIssueResponseChirho.ok,
+      `valid issue POST failed: ${validIssueResponseChirho.status} ${String(validIssueDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho + 2,
+      "valid issue POST did not append one row"
+    );
+    assertCheckChirho(existsSync(backupPathChirho), "valid POSTs did not refresh disposable backup");
+    JSON.parse(readFileSync(backupPathChirho, "utf8"));
   } catch (errorChirho) {
     processChirho.kill();
     await processChirho.exited.catch(() => undefined);
