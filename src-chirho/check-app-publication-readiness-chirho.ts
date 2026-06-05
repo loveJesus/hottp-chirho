@@ -36,6 +36,7 @@ interface CommandChirho {
 }
 
 interface CertificationStatusSummaryChirho {
+  generatedAtChirho?: unknown;
   certificationCompleteChirho?: unknown;
   remainingWorkChirho?: unknown;
   reviewStartLinksChirho?: Record<string, unknown>;
@@ -81,6 +82,10 @@ function numberOrUnknownChirho(valueChirho: unknown): string {
   return typeof valueChirho === "number" && Number.isFinite(valueChirho) ? String(valueChirho) : "unknown";
 }
 
+function stringOrUnknownChirho(valueChirho: unknown): string {
+  return typeof valueChirho === "string" && valueChirho.length > 0 ? valueChirho : "unknown";
+}
+
 function remainingWorkLinesChirho(statusChirho: CertificationStatusSummaryChirho): string[] {
   if (!Array.isArray(statusChirho.remainingWorkChirho)) return ["remaining work unavailable"];
   return statusChirho.remainingWorkChirho.map((itemChirho) => String(itemChirho));
@@ -111,6 +116,7 @@ function printNextReviewLinksChirho(statusChirho: CertificationStatusSummaryChir
 function printReadinessSummaryChirho(statusChirho: CertificationStatusSummaryChirho): void {
   const contentReadyChirho = statusChirho.certificationCompleteChirho === true;
   console.log(`[${MODULE_CHIRHO}] Review app build readiness: yes`);
+  console.log(`[${MODULE_CHIRHO}] Status artifact generated: ${stringOrUnknownChirho(statusChirho.generatedAtChirho)}`);
   console.log(`[${MODULE_CHIRHO}] Certified UTF-8 Markdown publication readiness: ${contentReadyChirho ? "yes" : "no"}`);
   console.log(
     `[${MODULE_CHIRHO}] Gate summary: strict=${String(statusChirho.structuralChirho?.strictPassedChirho ?? "unknown")}; ` +
