@@ -591,6 +591,11 @@ function htmlChirho(): string {
     .main-chirho { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 18px; padding-top: 18px; }
     .image-label-chirho { color: #59636f; font-size: 13px; font-weight: 650; margin: 0 0 6px; }
     .image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: auto; margin-bottom: 12px; }
+    .target-crop-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: hidden; margin-bottom: 12px; }
+    .target-crop-frame-chirho { position: relative; width: 100%; overflow: hidden; }
+    .target-crop-image-chirho { display: block; height: auto; image-rendering: -webkit-optimize-contrast; transform-origin: top left; }
+    .target-crop-marker-chirho { position: absolute; top: 0; bottom: 0; border: 4px solid #c9251f; background: rgba(201, 37, 31, 0.18); box-sizing: border-box; pointer-events: none; }
+    .target-crop-label-chirho { position: absolute; top: 0; left: 0; background: #c9251f; color: white; font-size: 10px; font-weight: 800; line-height: 1; padding: 4px 5px; text-transform: uppercase; }
     .line-image-frame-chirho { position: relative; width: 100%; }
     .line-image-chirho { display: block; width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
     .span-marker-chirho { position: absolute; top: 0; bottom: 0; border: 3px solid #c9251f; background: repeating-linear-gradient(135deg, rgba(201, 37, 31, 0.24) 0, rgba(201, 37, 31, 0.24) 8px, rgba(255, 255, 255, 0.02) 8px, rgba(255, 255, 255, 0.02) 16px); box-sizing: border-box; pointer-events: none; }
@@ -1090,6 +1095,29 @@ function htmlChirho(): string {
     function markerStyleChirho(itemChirho) {
       return "left:" + itemChirho.markerLeftPctChirho.toFixed(4) + "%;width:" + itemChirho.markerWidthPctChirho.toFixed(4) + "%;";
     }
+    function targetCropGeometryChirho(itemChirho) {
+      const lineWidthChirho = Math.max(1, Number(itemChirho.lineWidthPxChirho) || 1);
+      const spanStartChirho = Math.max(0, Math.min(lineWidthChirho, Number(itemChirho.spanXMinPxChirho) || 0));
+      const spanWidthChirho = Math.max(1, Number(itemChirho.spanWidthPxChirho) || 1);
+      const spanEndChirho = Math.max(spanStartChirho + 1, Math.min(lineWidthChirho, spanStartChirho + spanWidthChirho));
+      const contextPxChirho = Math.max(48, Math.min(120, spanWidthChirho * 0.5));
+      const cropStartChirho = Math.max(0, Math.floor(spanStartChirho - contextPxChirho));
+      const cropEndChirho = Math.min(lineWidthChirho, Math.ceil(spanEndChirho + contextPxChirho));
+      const cropWidthChirho = Math.max(1, cropEndChirho - cropStartChirho);
+      return { lineWidthChirho, spanStartChirho, spanEndChirho, cropStartChirho, cropWidthChirho };
+    }
+    function targetCropImageStyleChirho(itemChirho) {
+      const cropChirho = targetCropGeometryChirho(itemChirho);
+      const imageWidthPctChirho = (cropChirho.lineWidthChirho / cropChirho.cropWidthChirho) * 100;
+      const translatePctChirho = (cropChirho.cropStartChirho / cropChirho.lineWidthChirho) * 100;
+      return "width:" + imageWidthPctChirho.toFixed(4) + "%;transform:translateX(-" + translatePctChirho.toFixed(4) + "%);";
+    }
+    function targetCropMarkerStyleChirho(itemChirho) {
+      const cropChirho = targetCropGeometryChirho(itemChirho);
+      const leftPctChirho = ((cropChirho.spanStartChirho - cropChirho.cropStartChirho) / cropChirho.cropWidthChirho) * 100;
+      const widthPctChirho = ((cropChirho.spanEndChirho - cropChirho.spanStartChirho) / cropChirho.cropWidthChirho) * 100;
+      return "left:" + leftPctChirho.toFixed(4) + "%;width:" + widthPctChirho.toFixed(4) + "%;";
+    }
     function renderChirho() {
       syncUrlChirho();
       const appChirho = document.getElementById("app-chirho");
@@ -1101,6 +1129,20 @@ function htmlChirho(): string {
         return;
       }
       const leftChirho = elChirho("div");
+      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Target crop" }));
+      const targetCropWrapChirho = elChirho("div", { classChirho: "target-crop-wrap-chirho" });
+      const targetCropFrameChirho = elChirho("div", { classChirho: "target-crop-frame-chirho" });
+      targetCropFrameChirho.appendChild(elChirho("img", {
+        classChirho: "target-crop-image-chirho",
+        src: imageSrcChirho(itemChirho.markdownPathChirho),
+        style: targetCropImageStyleChirho(itemChirho),
+        alt: ""
+      }));
+      targetCropFrameChirho.appendChild(elChirho("div", { classChirho: "target-crop-marker-chirho", style: targetCropMarkerStyleChirho(itemChirho) }, [
+        elChirho("span", { classChirho: "target-crop-label-chirho", textChirho: "Target span" })
+      ]));
+      targetCropWrapChirho.appendChild(targetCropFrameChirho);
+      leftChirho.appendChild(targetCropWrapChirho);
       leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Printed line" }));
       const imageWrapChirho = elChirho("div", { classChirho: "image-wrap-chirho" });
       const imageFrameChirho = elChirho("div", { classChirho: "line-image-frame-chirho" });
