@@ -31,6 +31,7 @@ const STATUS_LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
   "app-chirho/",
 ];
 const STATUS_BACKTICK_RE_CHIRHO = /`([^`\n]+)`/g;
+const STATUS_CERTIFICATION_HANDOFF_MARKDOWN_RE_CHIRHO = /`(workspace-chirho\/certification-status-chirho\/[^`\n]+\.md)`/g;
 const STATUS_BUN_RUN_COMMAND_RE_CHIRHO = /\bbun run\s+([^\s`]+)/g;
 const REVIEW_SERVER_PORTS_CHIRHO = new Set([8766, 8770, 8771]);
 const REVIEW_VOLUMES_CHIRHO = [1, 2, 3, 4, 5] as const;
@@ -86,6 +87,35 @@ function assertStatusLocalArtifactLinksChirho(markdownChirho: string): void {
     );
     assertGeneratedCheckChirho(existsSync(resolvedChirho), `status Markdown local artifact path is missing: ${valueChirho}`);
   }
+}
+
+function linkedStatusHandoffMarkdownPathsChirho(markdownChirho: string): string[] {
+  return [...new Set([...markdownChirho.matchAll(STATUS_CERTIFICATION_HANDOFF_MARKDOWN_RE_CHIRHO)].map((matchChirho) => matchChirho[1]!))].sort();
+}
+
+function assertStatusHandoffMarkdownArtifactsChirho(
+  statusMarkdownChirho: string,
+  statusChirho: CertificationStatusOutputChirho
+): Map<string, string> {
+  const handoffPathsChirho = linkedStatusHandoffMarkdownPathsChirho(statusMarkdownChirho);
+  assertGeneratedCheckChirho(handoffPathsChirho.length > 0, "status Markdown links no certification handoff Markdown artifacts");
+  const handoffMarkdownByPathChirho = new Map<string, string>();
+  for (const handoffPathChirho of handoffPathsChirho) {
+    const absolutePathChirho = resolve(PROJECT_ROOT_CHIRHO, handoffPathChirho);
+    assertGeneratedCheckChirho(existsSync(absolutePathChirho), `linked certification handoff Markdown is missing: ${handoffPathChirho}`);
+    const handoffMarkdownChirho = readFileSync(absolutePathChirho, "utf8");
+    assertGeneratedTextHygieneChirho(absolutePathChirho, handoffMarkdownChirho);
+    assertMarkdownHeaderChirho(handoffPathChirho, handoffMarkdownChirho, ATTRIBUTION_HANDOFF_MARKDOWN_HEADER_CHIRHO);
+    assertStatusLocalArtifactLinksChirho(handoffMarkdownChirho);
+    assertStatusBunRunCommandReferencesChirho(handoffMarkdownChirho);
+    assertGeneratedCheckChirho(
+      typeof statusChirho.generatedAtChirho === "string" &&
+        handoffMarkdownChirho.includes(`Generated: ${statusChirho.generatedAtChirho}`),
+      `${handoffPathChirho} Generated line does not match status JSON generatedAtChirho`
+    );
+    handoffMarkdownByPathChirho.set(handoffPathChirho, handoffMarkdownChirho);
+  }
+  return handoffMarkdownByPathChirho;
 }
 
 function packageScriptNamesChirho(): Set<string> {
@@ -3975,18 +4005,22 @@ function mainChirho(): void {
 
   const markdownChirho = readFileSync(markdownPathChirho, "utf8");
   const jsonTextChirho = readFileSync(jsonPathChirho, "utf8");
-  const attributionHandoffMarkdownChirho = readFileSync(attributionHandoffPathChirho, "utf8");
   assertGeneratedTextHygieneChirho(markdownPathChirho, markdownChirho);
   assertGeneratedTextHygieneChirho(jsonPathChirho, jsonTextChirho);
-  assertGeneratedTextHygieneChirho(attributionHandoffPathChirho, attributionHandoffMarkdownChirho);
   assertMarkdownHeaderChirho(markdownPathChirho, markdownChirho, JOHN_316_INLINE_MARKDOWN_HEADER_CHIRHO);
   assertStatusLocalArtifactLinksChirho(markdownChirho);
-  assertStatusLocalArtifactLinksChirho(attributionHandoffMarkdownChirho);
   assertStatusBunRunCommandReferencesChirho(markdownChirho);
-  assertStatusBunRunCommandReferencesChirho(attributionHandoffMarkdownChirho);
 
   const statusChirho = JSON.parse(jsonTextChirho) as CertificationStatusOutputChirho;
   assertGeneratedCheckChirho(typeof statusChirho.generatedAtChirho === "string", "status JSON missing generatedAtChirho");
+  const handoffMarkdownByPathChirho = assertStatusHandoffMarkdownArtifactsChirho(markdownChirho, statusChirho);
+  const attributionHandoffMarkdownChirho = handoffMarkdownByPathChirho.get(
+    relativeProjectPathForStatusChirho(attributionHandoffPathChirho)
+  );
+  assertGeneratedCheckChirho(
+    attributionHandoffMarkdownChirho !== undefined,
+    "status Markdown does not link the generated attribution cleanup handoff"
+  );
   assertGeneratedCheckChirho(
     typeof statusChirho.certificationCompleteChirho === "boolean",
     "status JSON missing certificationCompleteChirho boolean"
