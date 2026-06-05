@@ -1404,8 +1404,10 @@ function pageHtmlChirho(): string {
     .tier-chirho { display: inline-block; padding: 2px 6px; border: 1px solid #b8bec7; background: #f5f7f8; font-size: 12px; }
     .issue-grid-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
     .script-grid-chirho { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
-    .issue-option-chirho { display: flex; gap: 7px; align-items: center; border: 1px solid #d6d9dd; padding: 8px; min-height: 38px; box-sizing: border-box; cursor: pointer; }
+    .issue-option-chirho { display: flex; gap: 7px; align-items: flex-start; border: 1px solid #d6d9dd; padding: 8px; min-height: 38px; box-sizing: border-box; cursor: pointer; }
     .issue-option-chirho input { margin: 0; }
+    .issue-label-text-chirho { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .issue-help-chirho { color: #59636f; font-size: 11px; line-height: 1.25; overflow-wrap: anywhere; }
     .issue-option-chirho:has(input:checked) { border-color: #bd7a1b; background: #fff7e8; }
     .clean-certify-option-chirho { display: flex; gap: 8px; align-items: flex-start; border: 1px solid #b8d5ca; background: #f2fbf7; padding: 10px; font-size: 13px; line-height: 1.35; cursor: pointer; }
     .clean-certify-option-chirho input { width: auto; margin: 3px 0 0; }
@@ -2443,7 +2445,10 @@ function pageHtmlChirho(): string {
           "aria-label": optionChirho.labelChirho + ": " + optionChirho.helpChirho
         }, [
           inputChirho,
-          elChirho("span", { textChirho: optionChirho.labelChirho })
+          elChirho("span", { classChirho: "issue-label-text-chirho" }, [
+            elChirho("span", { textChirho: optionChirho.labelChirho }),
+            elChirho("span", { classChirho: "issue-help-chirho", textChirho: optionChirho.helpChirho })
+          ])
         ]));
       }
       issuesBoxChirho.appendChild(issueGridChirho);
