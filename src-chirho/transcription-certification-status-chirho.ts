@@ -4490,6 +4490,22 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
       "pass-c-ocr-span-chirho"
     ),
     expertSyriacChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, "syriac-chirho"),
+    expertSyriacExplicitSpanSourceChirho: expertReviewStartUrlChirho(
+      pendingExpertManifestItemsChirho,
+      "syriac-chirho",
+      undefined,
+      undefined,
+      undefined,
+      "explicit-span-chirho"
+    ),
+    expertSyriacPassCOcrSourceChirho: expertReviewStartUrlChirho(
+      pendingExpertManifestItemsChirho,
+      "syriac-chirho",
+      undefined,
+      undefined,
+      undefined,
+      "pass-c-ocr-span-chirho"
+    ),
     expertSyriacNonblankChirho: expertReviewStartUrlChirho(
       pendingExpertManifestItemsChirho,
       "syriac-chirho",
@@ -4505,6 +4521,14 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
       "blank-chirho"
     ),
     expertArabicChirho: expertReviewStartUrlChirho(pendingExpertManifestItemsChirho, "arabic-chirho"),
+    expertArabicExplicitSpanSourceChirho: expertReviewStartUrlChirho(
+      pendingExpertManifestItemsChirho,
+      "arabic-chirho",
+      undefined,
+      undefined,
+      undefined,
+      "explicit-span-chirho"
+    ),
     expertExplicitSpanSourceChirho: expertReviewStartUrlChirho(
       pendingExpertManifestItemsChirho,
       undefined,
@@ -5075,12 +5099,15 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Expert Greek explicit-span lane: ${expertReviewUrlChirho("greek-chirho", undefined, undefined, undefined, undefined, "explicit-span-chirho")} (${pendingExpertScriptSourceCountChirho("greek-chirho", "explicit-span-chirho")} pending of ${expertScriptSourceCountChirho("greek-chirho", "explicit-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertGreekExplicitSpanSourceChirho)})`,
     `- Expert Greek Pass-C OCR lane: ${expertReviewUrlChirho("greek-chirho", undefined, undefined, undefined, undefined, "pass-c-ocr-span-chirho")} (${pendingExpertScriptSourceCountChirho("greek-chirho", "pass-c-ocr-span-chirho")} pending of ${expertScriptSourceCountChirho("greek-chirho", "pass-c-ocr-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertGreekPassCOcrSourceChirho)})`,
     `- Expert Syriac reader lane: ${expertReviewUrlChirho("syriac-chirho")} (${pendingExpertScriptCountChirho("syriac-chirho")} pending of ${expertScriptCountChirho("syriac-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacChirho)})`,
+    `- Expert Syriac reader explicit-span lane: ${expertReviewUrlChirho("syriac-chirho", undefined, undefined, undefined, undefined, "explicit-span-chirho")} (${pendingExpertScriptSourceCountChirho("syriac-chirho", "explicit-span-chirho")} pending of ${expertScriptSourceCountChirho("syriac-chirho", "explicit-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacExplicitSpanSourceChirho)})`,
+    `- Expert Syriac reader Pass-C OCR lane: ${expertReviewUrlChirho("syriac-chirho", undefined, undefined, undefined, undefined, "pass-c-ocr-span-chirho")} (${pendingExpertScriptSourceCountChirho("syriac-chirho", "pass-c-ocr-span-chirho")} pending of ${expertScriptSourceCountChirho("syriac-chirho", "pass-c-ocr-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacPassCOcrSourceChirho)})`,
     `- Expert Syriac reader has-text lane: ${expertReviewUrlChirho("syriac-chirho", undefined, undefined, undefined, "nonblank-chirho")} (${pendingExpertScriptNonblankCountChirho("syriac-chirho")} pending confirmation(s) with current text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacNonblankChirho)})`,
     `- Expert Syriac reader blank-text handoff lane: ${expertReviewUrlChirho("syriac-chirho", undefined, undefined, undefined, "blank-chirho")} (${pendingExpertScriptBlankCountChirho("syriac-chirho")} pending blank item(s) requiring supplied text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacBlankChirho)})`,
     "- Expert-supplied blank-span dry-run path: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='<item-id-chirho>' --supplied-text-chirho='<exact printed text>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>' --expected-source-sha256-chirho='<source-image-sha256-chirho>' --expected-packet-sha256-chirho='<packet-image-sha256-chirho>'`",
     "- Expert-supplied blank-span apply path, only after dry-run verification: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='<item-id-chirho>' --supplied-text-chirho='<exact printed text>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>' --expected-source-sha256-chirho='<source-image-sha256-chirho>' --expected-packet-sha256-chirho='<packet-image-sha256-chirho>' --apply` (the item remains in the expert lane until explicitly confirmed)",
     "- Expert-supplied text commands reject copied template placeholders; replace placeholders with the actual item id, exact printed UTF-8, reviewer id, and rationale.",
     `- Expert Arabist lane: ${expertReviewUrlChirho("arabic-chirho")} (${pendingExpertScriptCountChirho("arabic-chirho")} pending of ${expertScriptCountChirho("arabic-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertArabicChirho)})`,
+    `- Expert Arabist explicit-span lane: ${expertReviewUrlChirho("arabic-chirho", undefined, undefined, undefined, undefined, "explicit-span-chirho")} (${pendingExpertScriptSourceCountChirho("arabic-chirho", "explicit-span-chirho")} pending of ${expertScriptSourceCountChirho("arabic-chirho", "explicit-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertArabicExplicitSpanSourceChirho)})`,
     ...expertVolumeLaneLinesChirho,
     `- Expert non-Latin image packet: \`${relativeProjectPathChirho(EXPERT_PACK_INDEX_PATH_CHIRHO)}\` (${statusChirho.visionTierChirho.remainingConfirmationCountChirho} remaining confirmation(s))`,
     `- Expert confirmation quickstart: \`${relativeProjectPathChirho(VISION_TIER_EXPERT_CONFIRMATION_QUICKSTART_PATH_CHIRHO)}\``,
@@ -5095,6 +5122,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Hallelujah expert source order: Hebrew/WLC explicit-span ${pendingExpertScriptSourceCountChirho("hebrew-chirho", "explicit-span-chirho")} item(s), Hebrew/WLC D1-derived ${pendingExpertScriptSourceCountChirho("hebrew-chirho", "d1-derived-chirho")} item(s), Greek Pass-C OCR ${pendingExpertScriptSourceCountChirho("greek-chirho", "pass-c-ocr-span-chirho")} item(s), then Greek explicit-span ${pendingExpertScriptSourceCountChirho("greek-chirho", "explicit-span-chirho")} item(s). Hebrew/WLC Pass-C OCR currently has ${pendingExpertScriptSourceCountChirho("hebrew-chirho", "pass-c-ocr-span-chirho")} item(s).`,
     `- Attribution cleanup: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho} prior Pass-C human validation row(s) still need explicit reviewer attribution in ${rawHebrewReviewUrlChirho(undefined, "attribution-blocked-chirho")}. Reattribute only rows genuinely attributable to the named human reviewer; otherwise use ${rawHebrewReviewUrlChirho(undefined, "attribution-rereview-chirho")} to re-review them explicitly.`,
     `- External script-expert lanes: Syriac reader + Arabist (${externalExpertReviewCountChirho} item(s): ${externalExpertNonblankReviewCountChirho} with current text, ${externalExpertBlankReviewCountChirho} blank). A non-reader can flag crop or segmentation problems, but should not confirm exact letters, dots, vowels, or punctuation. Syriac readers can use the has-text lane first; the blank lane needs the supplied-text handoff before confirmation.`,
+    `- External expert source order: Syriac explicit-span ${pendingExpertScriptSourceCountChirho("syriac-chirho", "explicit-span-chirho")} item(s), Syriac Pass-C OCR ${pendingExpertScriptSourceCountChirho("syriac-chirho", "pass-c-ocr-span-chirho")} item(s), Arabic explicit-span ${pendingExpertScriptSourceCountChirho("arabic-chirho", "explicit-span-chirho")} item(s).`,
     "- Hebrew-script Aramaic/Targum: confirm consonants only when the print is clear; route exact Aramaic vocalization, dagesh/shin-dot details, and Targum wording to a Targum/Aramaic reviewer.",
     `- Latin/symbol proofing: ${statusChirho.latinSymbolVisionChirho.remainingDecisionCountChirho} item(s) remain. Use the symbol-risk lanes because witness sigla, references, and ornament guesses are not blanket-safe.`,
     ...guardedWlcCorrectionRoutingLinesChirho,

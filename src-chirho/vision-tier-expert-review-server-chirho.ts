@@ -703,7 +703,10 @@ function htmlChirho(): string {
       <a href="/?script-chirho=greek-chirho&source-chirho=pass-c-ocr-span-chirho">Greek Pass-C</a>
       <a href="/?script-chirho=greek-chirho&source-chirho=explicit-span-chirho">Greek explicit</a>
       <a href="/?script-chirho=syriac-chirho&text-state-chirho=nonblank-chirho">Syriac has text</a>
+      <a href="/?script-chirho=syriac-chirho&source-chirho=explicit-span-chirho">Syriac explicit</a>
+      <a href="/?script-chirho=syriac-chirho&source-chirho=pass-c-ocr-span-chirho">Syriac Pass-C</a>
       <a href="/?script-chirho=arabic-chirho">Arabic</a>
+      <a href="/?script-chirho=arabic-chirho&source-chirho=explicit-span-chirho">Arabic explicit</a>
       <a href="/?source-chirho=pass-c-ocr-span-chirho">Pass-C OCR</a>
       <a href="/?priority-chirho=priority-chirho">Priority</a>
     </div>

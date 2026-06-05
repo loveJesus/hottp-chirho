@@ -45,6 +45,9 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "script-chirho=hebrew-chirho&source-chirho=d1-derived-chirho",
   "script-chirho=greek-chirho&source-chirho=pass-c-ocr-span-chirho",
   "script-chirho=greek-chirho&source-chirho=explicit-span-chirho",
+  "script-chirho=syriac-chirho&source-chirho=explicit-span-chirho",
+  "script-chirho=syriac-chirho&source-chirho=pass-c-ocr-span-chirho",
+  "script-chirho=arabic-chirho&source-chirho=explicit-span-chirho",
   "text-state-chirho=nonblank-chirho",
   "Target span",
 ];

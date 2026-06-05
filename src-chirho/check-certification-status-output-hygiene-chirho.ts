@@ -678,6 +678,26 @@ function reviewStartLinkCountChecksChirho(statusChirho: CertificationStatusOutpu
       countChirho: countMapValueChirho(expertChirho, "pendingVisionCountsChirho", "syriac-chirho", "visionTierChirho"),
     },
     {
+      keyChirho: "expertSyriacExplicitSpanSourceChirho",
+      countChirho: nestedCountMapValueChirho(
+        expertChirho,
+        "pendingVisionScriptSourceCountsChirho",
+        "syriac-chirho",
+        "explicit-span-chirho",
+        "visionTierChirho"
+      ),
+    },
+    {
+      keyChirho: "expertSyriacPassCOcrSourceChirho",
+      countChirho: nestedCountMapValueChirho(
+        expertChirho,
+        "pendingVisionScriptSourceCountsChirho",
+        "syriac-chirho",
+        "pass-c-ocr-span-chirho",
+        "visionTierChirho"
+      ),
+    },
+    {
       keyChirho: "expertSyriacNonblankChirho",
       countChirho: countMapValueChirho(expertChirho, "pendingNonblankTextCountsChirho", "syriac-chirho", "visionTierChirho"),
     },
@@ -688,6 +708,16 @@ function reviewStartLinkCountChecksChirho(statusChirho: CertificationStatusOutpu
     {
       keyChirho: "expertArabicChirho",
       countChirho: countMapValueChirho(expertChirho, "pendingVisionCountsChirho", "arabic-chirho", "visionTierChirho"),
+    },
+    {
+      keyChirho: "expertArabicExplicitSpanSourceChirho",
+      countChirho: nestedCountMapValueChirho(
+        expertChirho,
+        "pendingVisionScriptSourceCountsChirho",
+        "arabic-chirho",
+        "explicit-span-chirho",
+        "visionTierChirho"
+      ),
     },
     ...volumeLinkCountChecksChirho(
       "expertChirho",
@@ -1058,6 +1088,16 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
   );
   assertMarkdownContainsChirho(
     markdownChirho,
+    `- Expert Syriac reader explicit-span lane: http://localhost:8771/?script-chirho=syriac-chirho&source-chirho=explicit-span-chirho (${expertPendingScriptSourceChirho("syriac-chirho", "explicit-span-chirho")} pending of ${expertScriptSourceTotalChirho("syriac-chirho", "explicit-span-chirho")} item(s)${reviewStartSuffixChirho(linksChirho, "expertSyriacExplicitSpanSourceChirho")})`,
+    "expert Syriac explicit-span lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Expert Syriac reader Pass-C OCR lane: http://localhost:8771/?script-chirho=syriac-chirho&source-chirho=pass-c-ocr-span-chirho (${expertPendingScriptSourceChirho("syriac-chirho", "pass-c-ocr-span-chirho")} pending of ${expertScriptSourceTotalChirho("syriac-chirho", "pass-c-ocr-span-chirho")} item(s)${reviewStartSuffixChirho(linksChirho, "expertSyriacPassCOcrSourceChirho")})`,
+    "expert Syriac Pass-C OCR lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
     `- Expert Syriac reader has-text lane: http://localhost:8771/?script-chirho=syriac-chirho&text-state-chirho=nonblank-chirho (${expertPendingNonblankScriptChirho("syriac-chirho")} pending confirmation(s) with current text${reviewStartSuffixChirho(linksChirho, "expertSyriacNonblankChirho")})`,
     "expert Syriac has-text lane"
   );
@@ -1081,6 +1121,11 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     markdownChirho,
     `- Expert Arabist lane: http://localhost:8771/?script-chirho=arabic-chirho (${expertPendingScriptChirho("arabic-chirho")} pending of ${expertScriptTotalChirho("arabic-chirho")} item(s)${reviewStartSuffixChirho(linksChirho, "expertArabicChirho")})`,
     "expert Arabic lane"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- Expert Arabist explicit-span lane: http://localhost:8771/?script-chirho=arabic-chirho&source-chirho=explicit-span-chirho (${expertPendingScriptSourceChirho("arabic-chirho", "explicit-span-chirho")} pending of ${expertScriptSourceTotalChirho("arabic-chirho", "explicit-span-chirho")} item(s)${reviewStartSuffixChirho(linksChirho, "expertArabicExplicitSpanSourceChirho")})`,
+    "expert Arabic explicit-span lane"
   );
   assertVolumeLaneMarkdownCoverageChirho(
     markdownChirho,
@@ -1140,6 +1185,11 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     markdownChirho,
     `- External script-expert lanes: Syriac reader + Arabist (${externalExpertReviewCountChirho} item(s): ${externalExpertNonblankCountChirho} with current text, ${externalExpertBlankCountChirho} blank).`,
     "external expert routing total"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- External expert source order: Syriac explicit-span ${expertPendingScriptSourceChirho("syriac-chirho", "explicit-span-chirho")} item(s), Syriac Pass-C OCR ${expertPendingScriptSourceChirho("syriac-chirho", "pass-c-ocr-span-chirho")} item(s), Arabic explicit-span ${expertPendingScriptSourceChirho("arabic-chirho", "explicit-span-chirho")} item(s).`,
+    "external expert source routing"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
