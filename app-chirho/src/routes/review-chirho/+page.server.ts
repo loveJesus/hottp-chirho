@@ -3,7 +3,7 @@
 
 import type { PageServerLoad } from "./$types";
 import { drizzle } from "drizzle-orm/d1";
-import { eq, and, ne, isNull, or, sql, desc } from "drizzle-orm";
+import { eq, ne, sql } from "drizzle-orm";
 import { pagesChirho, scanlinesChirho, segmentsChirho } from "$lib/server-chirho/schema-d1-chirho";
 
 export const load: PageServerLoad = async ({ platform, url }) => {

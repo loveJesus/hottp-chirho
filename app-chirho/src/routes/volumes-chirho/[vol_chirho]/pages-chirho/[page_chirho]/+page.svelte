@@ -401,6 +401,11 @@
       wordInputElChirho?.select();
     });
   }
+  function openWordEditFromKeyChirho(eChirho: KeyboardEvent, wChirho: MergedWordChirho): void {
+    if (eChirho.key !== "Enter" && eChirho.key !== " ") return;
+    eChirho.preventDefault();
+    openWordEditChirho(wChirho);
+  }
   function onWordKeyChirho(eChirho: KeyboardEvent): void {
     if (eChirho.key === "Enter") {
       eChirho.preventDefault();
@@ -959,6 +964,7 @@
                   onmouseenter={() => (hoveredWordChirho = wChirho)}
                   onmouseleave={() => { if (hoveredWordChirho?.wordIdChirho === wChirho.wordIdChirho) hoveredWordChirho = null; }}
                   onclick={(eChirho) => { if (paintDraggingChirho) { eChirho.preventDefault(); return; } openWordEditChirho(wChirho); }}
+                  onkeydown={(eChirho) => openWordEditFromKeyChirho(eChirho, wChirho)}
                   oncontextmenu={(eChirho) => wordContextMenuChirho(eChirho, wChirho)}
                   role="button"
                   tabindex="0"
@@ -1055,6 +1061,7 @@
                   width={wChirho.xMaxChirho - wChirho.xMinChirho}
                   height={wChirho.yMaxChirho - wChirho.yMinChirho}
                   onclick={() => openWordEditChirho(wChirho)}
+                  onkeydown={(eChirho) => openWordEditFromKeyChirho(eChirho, wChirho)}
                   oncontextmenu={(eChirho) => wordContextMenuChirho(eChirho, wChirho)}
                   role="button"
                   tabindex="0"
@@ -1133,7 +1140,7 @@
   {@const hPxChirho = wChirho.yMaxChirho - wChirho.yMinChirho}
   {@const cropScaleChirho = hPxChirho > 0 ? 120 / hPxChirho : 1}
   <div class="modal-backdrop-chirho" onclick={closeWordEditChirho} role="presentation">
-    <div class="modal-chirho word-modal-chirho" onclick={(eChirho) => eChirho.stopPropagation()} role="dialog" aria-modal="true">
+    <div class="modal-chirho word-modal-chirho" onclick={(eChirho) => eChirho.stopPropagation()} onkeydown={(eChirho) => eChirho.stopPropagation()} role="dialog" aria-modal="true" tabindex="-1">
       <header class="modal-header-chirho">
         <h3>Edit word · line {wChirho.lineIndexChirho}</h3>
         <button class="close-btn-chirho" onclick={closeWordEditChirho} aria-label="Close">×</button>
@@ -1226,7 +1233,7 @@
 {#if editingSegmentChirho}
   {@const segChirho = editingSegmentChirho}
   <div class="modal-backdrop-chirho" onclick={closeEditChirho} role="presentation">
-    <div class="modal-chirho" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+    <div class="modal-chirho" onclick={(eChirho) => eChirho.stopPropagation()} onkeydown={(eChirho) => eChirho.stopPropagation()} role="dialog" aria-modal="true" tabindex="-1">
       <header class="modal-header-chirho">
         <h3>Edit segment</h3>
         <button class="close-btn-chirho" onclick={closeEditChirho} aria-label="Close">×</button>
@@ -1310,7 +1317,7 @@
     flex: 1 1 auto;
     overflow: auto;
   }
-  .page-image-panel-chirho h2, .segments-panel-chirho h2 { font-size: 1rem; color: #ccc; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid #2a2a4a; }
+  .page-image-panel-chirho h2 { font-size: 1rem; color: #ccc; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid #2a2a4a; }
   .image-container-chirho { position: relative; border: 1px solid #2a2a4a; border-radius: 6px; background: #fff; }
   .full-page-img-chirho { width: 100%; display: block; }
   .overlay-chirho {
@@ -1327,36 +1334,11 @@
     box-shadow: 0 0 8px var(--seg-color);
     z-index: 2;
   }
-  .segments-panel-chirho { max-height: 90vh; overflow-y: auto; padding-right: 0.5rem; }
   .line-block-chirho { margin-bottom: 0.5rem; padding: 0.4rem 0.5rem; background: #12121f; border: 1px solid #2a2a4a; border-radius: 6px; }
   .line-header-chirho { font-size: 0.7rem; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.3rem; }
-  .line-segments-chirho { display: flex; flex-wrap: wrap; gap: 0.3rem; }
-  .segment-chip-chirho {
-    display: inline-flex;
-    flex-direction: column;
-    padding: 0.3rem 0.55rem;
-    background: #1a1a2e;
-    border: 1px solid #2a2a4a;
-    border-left: 3px solid var(--seg-color);
-    border-radius: 4px;
-    cursor: pointer;
-    color: inherit;
-    font: inherit;
-    text-align: left;
-    transition: background 0.12s, border-color 0.12s, transform 0.12s;
-  }
-  .segment-chip-chirho:hover, .segment-chip-chirho.hovered-chirho {
-    background: color-mix(in srgb, var(--seg-color) 18%, #1a1a2e);
-    border-color: var(--seg-color);
-    transform: translateY(-1px);
-  }
-  .seg-script-chirho { font-size: 0.65rem; color: var(--seg-color); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0.15rem; }
-  .conf-badge-chirho { display: inline-block; font-size: 0.7rem; font-weight: 700; padding: 0 0.3rem; margin-right: 0.3rem; border-radius: 3px; vertical-align: middle; }
   .conf-high-chirho { color: #16a34a; background: rgba(22, 163, 74, 0.15); }
   .conf-medium-chirho { color: #ca8a04; background: rgba(202, 138, 4, 0.15); }
   .conf-low-chirho { color: #dc2626; background: rgba(220, 38, 38, 0.15); }
-  .conf-none-chirho { color: #6b7280; background: rgba(107, 114, 128, 0.15); }
-  .seg-text-chirho { font-size: 1rem; color: #e0e0e0; font-family: "Georgia", "Noto Serif", "SBL Hebrew", "SBL Greek", serif; line-height: 1.4; }
   .empty-chirho { color: #666; padding: 2rem; text-align: center; }
   .recon-chirho { margin-top: 2rem; border: 1px solid #2a2a4a; border-radius: 6px; padding: 0.75rem 1rem; background: #12121f; }
   .recon-chirho summary { color: #c9a84c; cursor: pointer; font-size: 0.9rem; }
@@ -1404,7 +1386,6 @@
   }
   .modal-body-chirho textarea { min-height: 5rem; resize: vertical; }
   .modal-hint-chirho { font-size: 0.75rem; color: #666; margin: 0; }
-  .modal-hint-chirho code { color: #c9a84c; background: #111; padding: 0.05rem 0.3rem; border-radius: 3px; }
   .modal-hint-chirho kbd {
     display: inline-block;
     padding: 0 0.3rem;
@@ -1522,16 +1503,6 @@
   }
 
   /* ===== Word edit modal extras ===== */
-  .word-modal-chirho .word-crop-preview-chirho {
-    background: #fff;
-    border: 1px solid #2a2a4a;
-    border-radius: 4px;
-    padding: 0.5rem;
-    margin-bottom: 0.75rem;
-    display: flex;
-    justify-content: center;
-    overflow: auto;
-  }
   .word-crop-bg-chirho {
     display: block;
     background-repeat: no-repeat;
