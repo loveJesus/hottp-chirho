@@ -47,6 +47,32 @@ are not certification, not a clean verdict, and not a substitute for the live
 validator. They are only meant to save the human reviewer from re-triaging why a
 span was surfaced.
 
+## 2026-06-05 Spot Audit Addendum
+
+This addendum is also non-certifying. I re-opened several high-risk current raw
+Hebrew spans at native scanline coordinates to look for obvious hidden-script,
+segmentation, or over-normalization defects before human review. No gate state
+was changed.
+
+- `vol 2 p148 L11 S1`:
+  `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=2%3A148%3A11%3A1`
+  - Live text: `(וְיַסִּירֵנִי)`
+  - Native crop checked: x90..310 on the current scanline.
+  - Spot-audit observation: the printed span is visibly a parenthesized Hebrew word with the stored consonantal shape and surrounding parentheses. The exact opening vowel/conjunction and interior marks remain the review point; I did not treat this as a clean certification.
+
+- `vol 1 p149 L10 S1` and `vol 1 p149 L11 S1`:
+  `http://localhost:8766/?attention-chirho=no-direct-read-chirho&item-chirho=1%3A149%3A10%3A1`
+  `http://localhost:8766/?attention-chirho=no-direct-read-chirho&item-chirho=1%3A149%3A11%3A1`
+  - Live texts: `נִכְרְתוּ מֵי הַיַּרְדֵּן` and `נִכְרְתוּ מֵימֵי הַיַּרְדֵּן`
+  - Native crops checked: L10 x45..355 and L11 x720..960 on the current scanlines.
+  - Spot-audit observation: the crops support the documented contrast: L10 has the shorter middle word `מֵי`, while L11 has the longer `מֵימֵי`. This does not certify the full pointing; it only makes the over-normalization risk visible for the human reviewer.
+
+- `vol 2 p148 L22 S1`:
+  `http://localhost:8766/?attention-chirho=delimiter-notation-chirho&item-chirho=2%3A148%3A22%3A1`
+  - Live text: `[מ̇ק̇[י`
+  - Native crop checked: x1229..1439 on the current scanline.
+  - Spot-audit observation: the print shows damaged-text bracket notation plus supralinear dot-like marks at the right edge of the line. This remains a DSS/Qumran notation item; exact bracket order, dot convention, and transcription should not be certified by ordinary Hebrew familiarity alone.
+
 - `vol 2 p148 L11 S1`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=2%3A148%3A11%3A1`
   - Live text: `(וְיַסִּירֵנִי)`
