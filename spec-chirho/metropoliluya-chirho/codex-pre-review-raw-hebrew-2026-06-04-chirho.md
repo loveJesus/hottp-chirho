@@ -308,6 +308,13 @@ span was surfaced.
   - Visual precheck: the line fragment reads French `sation.` immediately followed by the boxed Hebrew word. The period before the Hebrew appears to belong to the preceding French fragment and is outside the red Hebrew box; the Hebrew target itself is line-final with no following neighboring span.
   - Human check still needed: exact bet/qamats/dagesh, final he with mappiq, and confirmation that the preceding period remains outside the Hebrew span.
 
+- `vol 2 p152 L38 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A152%3A38%3A1`
+  - Live text: `בה`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane; direct OCR confidence is modest on this short unpointed form.
+  - Visual precheck: the target crop boxes the bare Hebrew word after French `sa traduction de` and before French `par`; the Greek translation `ἐφ' ὑμᾶς` begins later in its own span and is outside the Hebrew target.
+  - Human check still needed: exact bet-he letters, whether the unpointed form is intended here, and confirmation that `par` and the following Greek remain outside the Hebrew span.
+
 - `vol 5 p149 L28 S1`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A149%3A28%3A1`
   - Live text: `ליץ`
