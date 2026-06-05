@@ -19,6 +19,7 @@ export const JOHN_316_INLINE_MARKDOWN_HEADER_CHIRHO = [
 ].join("\n");
 
 const GENERATED_RENDERED_SENTINELS_CHIRHO = ["undefined", "NaN", "[object Object]", "\uFFFD"];
+const ALLOWED_CONTROL_CHARS_CHIRHO = new Set(["\n", "\t"]);
 
 export function assertGeneratedCheckChirho(conditionChirho: boolean, messageChirho: string): asserts conditionChirho {
   if (!conditionChirho) throw new Error(messageChirho);
@@ -43,9 +44,21 @@ export function assertNoRenderedSentinelLeakChirho(pathChirho: string, textChirh
   }
 }
 
+export function assertNoUnsafeControlCharsChirho(pathChirho: string, textChirho: string): void {
+  for (let indexChirho = 0; indexChirho < textChirho.length; indexChirho += 1) {
+    const charChirho = textChirho[indexChirho]!;
+    const codeChirho = charChirho.charCodeAt(0);
+    if (codeChirho < 0x20 && !ALLOWED_CONTROL_CHARS_CHIRHO.has(charChirho)) {
+      const hexChirho = `U+${codeChirho.toString(16).toUpperCase().padStart(4, "0")}`;
+      throw new Error(`${pathChirho} contains unsafe control character ${hexChirho} at UTF-16 offset ${indexChirho}`);
+    }
+  }
+}
+
 export function assertGeneratedTextHygieneChirho(pathChirho: string, textChirho: string): void {
   assertNoTrailingWhitespaceChirho(pathChirho, textChirho);
   assertNoRenderedSentinelLeakChirho(pathChirho, textChirho);
+  assertNoUnsafeControlCharsChirho(pathChirho, textChirho);
   assertGeneratedCheckChirho(textChirho.normalize("NFC") === textChirho, `${pathChirho} is not NFC-normalized`);
 }
 
