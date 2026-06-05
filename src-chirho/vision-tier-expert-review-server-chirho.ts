@@ -585,6 +585,9 @@ function htmlChirho(): string {
     .toolbar-chirho select, .toolbar-chirho button, .toolbar-link-chirho { border: 1px solid #aab1b9; background: white; min-height: 34px; padding: 5px 8px; box-sizing: border-box; }
     .toolbar-link-chirho { display: inline-flex; align-items: center; color: #1f2933; text-decoration: none; font-size: 13px; }
     .toolbar-link-chirho:hover { background: #edf1f4; }
+    .lane-shortcuts-chirho { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin-top: 10px; font-size: 12px; color: #59636f; }
+    .lane-shortcuts-chirho a { color: #1f2933; text-decoration: none; border: 1px solid #c8cdd3; background: #fff; padding: 4px 7px; }
+    .lane-shortcuts-chirho a:hover { background: #edf1f4; }
     .main-chirho { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 18px; padding-top: 18px; }
     .image-label-chirho { color: #59636f; font-size: 13px; font-weight: 650; margin: 0 0 6px; }
     .image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: auto; margin-bottom: 12px; }
@@ -668,6 +671,15 @@ function htmlChirho(): string {
       <button type="button" id="next-chirho">Skip</button>
       <button type="button" id="copy-link-chirho">Copy link</button>
       <a class="toolbar-link-chirho" href="/quickstart-chirho" target="_blank" rel="noreferrer">Quickstart</a>
+    </div>
+    <div class="lane-shortcuts-chirho" aria-label="Recommended expert review lanes">
+      <span>Recommended expert lanes</span>
+      <a href="/?text-state-chirho=blank-chirho&script-chirho=syriac-chirho">Blank Syriac handoff</a>
+      <a href="/?script-chirho=hebrew-chirho">Hebrew/WLC</a>
+      <a href="/?script-chirho=greek-chirho">Greek</a>
+      <a href="/?script-chirho=syriac-chirho&text-state-chirho=nonblank-chirho">Syriac has text</a>
+      <a href="/?script-chirho=arabic-chirho">Arabic</a>
+      <a href="/?priority-chirho=priority-chirho">Priority</a>
     </div>
     <section class="main-chirho" id="app-chirho"></section>
   </main>

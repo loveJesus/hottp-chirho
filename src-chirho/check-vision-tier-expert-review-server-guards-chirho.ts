@@ -38,6 +38,10 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Copy command",
   "Quickstart",
   "/quickstart-chirho",
+  "Recommended expert lanes",
+  "Blank Syriac handoff",
+  "script-chirho=hebrew-chirho",
+  "text-state-chirho=nonblank-chirho",
 ];
 const EXPERT_QUICKSTART_SNIPPETS_CHIRHO = [
   "Vision-Tier Expert Confirmation Quickstart Chirho",

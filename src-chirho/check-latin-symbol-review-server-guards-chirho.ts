@@ -26,6 +26,10 @@ const LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Dagesh/mappiq/shuruk",
   "Quickstart",
   "/quickstart-chirho",
+  "Recommended Latin/symbol lanes",
+  "Witness sigla",
+  "symbol-risk-chirho=nontrivial-symbol-chirho",
+  "volume-chirho=vol-5-chirho",
 ];
 const LATIN_SYMBOL_QUICKSTART_SNIPPETS_CHIRHO = [
   "Latin/Symbol Human Review Quickstart Chirho",

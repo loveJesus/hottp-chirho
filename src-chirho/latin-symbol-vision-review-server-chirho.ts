@@ -194,6 +194,9 @@ function htmlChirho(): string {
     .toolbar-chirho select, .toolbar-chirho button, .toolbar-link-chirho { border: 1px solid #aab1b9; background: white; min-height: 34px; padding: 5px 8px; box-sizing: border-box; }
     .toolbar-link-chirho { display: inline-flex; align-items: center; color: #1f2933; text-decoration: none; font-size: 13px; }
     .toolbar-link-chirho:hover { background: #edf1f4; }
+    .lane-shortcuts-chirho { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; margin-top: 10px; font-size: 12px; color: #59636f; }
+    .lane-shortcuts-chirho a { color: #1f2933; text-decoration: none; border: 1px solid #c8cdd3; background: #fff; padding: 4px 7px; }
+    .lane-shortcuts-chirho a:hover { background: #edf1f4; }
     .main-chirho { display: grid; grid-template-columns: minmax(0, 1fr) 390px; gap: 18px; padding-top: 18px; }
     .panel-chirho { min-width: 0; }
     .image-label-chirho { color: #59636f; font-size: 13px; font-weight: 650; margin: 0 0 6px; }
@@ -265,6 +268,14 @@ function htmlChirho(): string {
       <button type="button" id="next-chirho">Skip</button>
       <button type="button" id="copy-link-chirho">Copy link</button>
       <a class="toolbar-link-chirho" href="/quickstart-chirho" target="_blank" rel="noreferrer">Quickstart</a>
+    </div>
+    <div class="lane-shortcuts-chirho" aria-label="Recommended Latin/symbol review lanes">
+      <span>Recommended Latin/symbol lanes</span>
+      <a href="/?script-chirho=french-chirho">French</a>
+      <a href="/?script-chirho=latin-non-french-chirho">Latin non-French</a>
+      <a href="/?script-chirho=symbol-chirho&symbol-risk-chirho=script-or-siglum-symbol-chirho">Witness sigla</a>
+      <a href="/?script-chirho=symbol-chirho&symbol-risk-chirho=nontrivial-symbol-chirho">Nontrivial symbols</a>
+      <a href="/?volume-chirho=vol-5-chirho">Vol 5 large batch</a>
     </div>
     <section class="main-chirho" id="app-chirho"></section>
   </main>
