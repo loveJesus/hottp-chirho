@@ -142,6 +142,13 @@ span was surfaced.
   - Visual precheck: the target crop boxes the Hebrew root after French `*M de la racine` and before `Lowth`; the printed crop visibly shows a terminal period immediately after the Hebrew root.
   - Human check still needed: exact qof-shin-resh letters, shin-dot, intentionally bare/unpointed root status, and whether the visible terminal period should be included with this Hebrew span or treated as adjacent punctuation before `Lowth`.
 
+- `vol 2 p150 L26 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A26%3A1`
+  - Live text: `קדשׁ`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane.
+  - Visual precheck: the target crop boxes the bare Hebrew root after French `deux emplois de la racine`; the following opening parenthesis for `(en 13 et 14)` remains outside the Hebrew box. The same printed line later has a separate Hebrew span `תַקְדִּישׁוּ` near the right edge, so keep these two targets distinct.
+  - Human check still needed: exact qof-dalet-shin letters, shin-dot, intentionally bare/unpointed root status, and confirmation that the following parenthesis belongs to the French context rather than this Hebrew span.
+
 - `vol 2 p150 L27 S1`:
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A27%3A1`
   - Live text: `תָּקְשִׁרוּ`
