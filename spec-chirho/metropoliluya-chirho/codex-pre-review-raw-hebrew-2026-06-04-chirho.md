@@ -116,6 +116,13 @@ span was surfaced.
   - Visual precheck: the crop visibly contains the target Hebrew word between French context; no obvious extra or missing word is visible.
   - Human check still needed: exact final letters and pointing, especially the tight yod/tsade region.
 
+- `vol 2 p151 L1 S1`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A1%3A1`
+  - Live text: `תַקְדִּישׁוּ`
+  - Attention reason: none; this is a current raw item in the no-pre-review-note lane.
+  - Visual precheck: the Hebrew word is boxed after French `traduction de` and before Greek `(ἁγιάσατε)`; the adjacent Greek and the later Hebrew `לְמִקְדָּשׁ` are outside this target box. The direct OCR read has exact consonants, but it does not certify the printed vowels, dagesh, or shin-dot.
+  - Human check still needed: exact tav/qof/dalet-yod-shin-vav sequence, dagesh, vowels, and shin-dot against the print.
+
 - `vol 5 p149 L28 S1`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A149%3A28%3A1`
   - Live text: `ליץ`
