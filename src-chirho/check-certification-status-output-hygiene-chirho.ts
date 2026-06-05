@@ -980,7 +980,7 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
   assertMarkdownContainsChirho(markdownChirho, "## Suggested Review Routing", "suggested review routing heading");
   assertMarkdownContainsChirho(
     markdownChirho,
-    `- Hallelujah starting lanes: pending raw Hebrew + Hebrew/WLC vision + Greek vision (${hallelujahReviewCountChirho} review target(s)).`,
+    `- Hallelujah starting lanes: pending raw Hebrew + Hebrew/WLC expert lane + Greek expert lane (${hallelujahReviewCountChirho} review target(s)).`,
     "Hallelujah routing total"
   );
   assertMarkdownContainsChirho(
@@ -1288,7 +1288,7 @@ function assertBlankExpertHandoffCoverageChirho(markdownChirho: string, statusCh
     assertMarkdownContainsChirho(markdownChirho, "Replace every placeholder before running", `blank expert handoff ${idChirho} placeholder warning`);
     assertMarkdownContainsChirho(
       markdownChirho,
-      "Applying supplied text removes only the EMPTY-SPAN structural marker; the item remains vision-tier until explicit expert confirmation.",
+      "Applying supplied text removes only the EMPTY-SPAN structural marker; the item remains in the expert lane until explicit expert confirmation.",
       `blank expert handoff ${idChirho} no-over-cert warning`
     );
   }
@@ -1900,7 +1900,7 @@ function assertVisionTierExpertQueueMarkdownCoverageChirho(
     "expert-supplied drift samples"
   );
 
-  assertMarkdownContainsChirho(markdownChirho, "## Vision-Tier Expert Confirmation Policy", "expert confirmation policy heading");
+  assertMarkdownContainsChirho(markdownChirho, "## Expert Non-Latin Confirmation Policy", "expert confirmation policy heading");
   assertMarkdownContainsChirho(
     markdownChirho,
     `- Policy exists: ${booleanFieldChirho(confirmationPolicyChirho, "policyFileExistsChirho", "visionTierExpertConfirmationPolicyChirho")}`,
@@ -2009,8 +2009,8 @@ function assertVisionTierExpertQueueRemainingWorkCoverageChirho(
   assertRemainingWorkToggleChirho(
     remainingWorkChirho,
     d1ReadErrorChirho === null && expertManifestExistsChirho && expertManifestShapeOkChirho && !manifestCountMatchesChirho,
-    "expert confirmation manifest count does not match current vision-tier span/D1 state; regenerate make-expert-confirm-pack-chirho",
-    "expert confirmation manifest count does not match current vision-tier span/D1 state"
+    "expert confirmation manifest count does not match current expert-lane state; regenerate make-expert-confirm-pack-chirho",
+    "expert confirmation manifest count does not match current expert-lane state"
   );
   assertRemainingWorkToggleChirho(
     remainingWorkChirho,
@@ -2019,8 +2019,8 @@ function assertVisionTierExpertQueueRemainingWorkCoverageChirho(
       expertManifestShapeOkChirho &&
       manifestCountMatchesChirho &&
       !manifestIdsMatchChirho,
-    "expert confirmation manifest item IDs do not match current vision-tier span/D1 state; regenerate make-expert-confirm-pack-chirho",
-    "expert confirmation manifest item IDs do not match current vision-tier span/D1 state"
+    "expert confirmation manifest item IDs do not match current expert-lane state; regenerate make-expert-confirm-pack-chirho",
+    "expert confirmation manifest item IDs do not match current expert-lane state"
   );
   assertRemainingWorkToggleChirho(
     remainingWorkChirho,
@@ -2029,8 +2029,8 @@ function assertVisionTierExpertQueueRemainingWorkCoverageChirho(
       expertManifestShapeOkChirho &&
       manifestIdsMatchChirho &&
       !booleanFieldChirho(expertChirho, "manifestTextMatchesCurrentChirho", "visionTierChirho"),
-    "expert confirmation manifest text does not match current live vision-tier span text; regenerate make-expert-confirm-pack-chirho",
-    "expert confirmation manifest text does not match current live vision-tier span text"
+    "expert confirmation manifest text does not match current live expert-lane text; regenerate make-expert-confirm-pack-chirho",
+    "expert confirmation manifest text does not match current live expert-lane text"
   );
   assertRemainingWorkToggleChirho(
     remainingWorkChirho,
@@ -2734,8 +2734,8 @@ function assertCoreRemainingWorkCoverageChirho(
   assertRemainingWorkToggleChirho(
     remainingWorkChirho,
     visionRemainingChirho !== 0,
-    `${visionRemainingChirho} vision-tier non-Latin span(s) still need expert/human confirmation`,
-    "vision-tier non-Latin span(s) still need expert/human confirmation"
+    `${visionRemainingChirho} expert non-Latin item(s) still need expert/human confirmation`,
+    "expert non-Latin item(s) still need expert/human confirmation"
   );
   assertRemainingWorkToggleChirho(
     remainingWorkChirho,

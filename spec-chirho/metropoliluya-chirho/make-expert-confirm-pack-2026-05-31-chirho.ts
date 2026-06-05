@@ -1,12 +1,10 @@
 // For God so loved the world that he gave his only begotten Son,
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
-// Builds a reviewer packet for the remaining vision-tier transcription
-// questions. Priority items are listed first, followed by a complete generated
-// appendix of every non-Latin vision-tier span so machine text is never
-// mistaken for human-confirmed text. Vision-tier includes explicit
-// provenanceChirho="vision-chirho" spans plus D1 current_source_chirho
-// vision words that resolve a Hebrew span by exact text or skeleton.
+// Builds a reviewer packet for the remaining non-Latin expert-lane
+// transcription questions. Priority items are listed first, followed by a
+// complete generated appendix of every non-Latin expert-lane span so machine
+// or Pass-C OCR text is never mistaken for human-confirmed text.
 
 import {
   copyFileSync,
@@ -416,9 +414,9 @@ function displayCurrentTextChirho(textChirho: string): string {
 
 function completeVisionMarkdownChirho(itemsChirho: VisionSpanItemChirho[]): string[] {
   const linesChirho: string[] = [
-    "## Complete Vision-Tier Appendix",
+    "## Complete Expert Non-Latin Appendix",
     "",
-    "Every item below is vision-tier, not human-confirmed. Priority items are marked `yes` but are repeated here so this appendix is complete.",
+    "Every item below is expert-pending, not human-confirmed. The source field distinguishes explicit vision spans, non-Hebrew Pass-C OCR spans, and D1-derived items. Priority items are marked `yes` but are repeated here so this appendix is complete.",
     "",
   ];
 
@@ -432,7 +430,7 @@ function completeVisionMarkdownChirho(itemsChirho: VisionSpanItemChirho[]): stri
         `- Reviewer: ${itemChirho.reviewerChirho}`,
         `- Location: vol ${itemChirho.volumeChirho}, p${itemChirho.pageChirho}, L${itemChirho.lineIndexChirho} S${itemChirho.segmentIndexChirho}`,
         `- Priority section: ${itemChirho.priorityMatchChirho ? "yes" : "no"}`,
-        `- Vision source: ${itemChirho.visionSourceChirho}`,
+        `- Queue source: ${itemChirho.visionSourceChirho}`,
         `- Current text: ${displayCurrentTextChirho(itemChirho.currentTextChirho)}`,
         "",
         `![${itemChirho.idChirho}](${itemChirho.markdownPathChirho})`,
@@ -622,11 +620,11 @@ function generatePacketChirho(): void {
     "",
     "# Expert Confirm Packet Chirho, 2026-05-31",
     "",
-    "Use this packet to confirm vision-tier text against the printed line images. Keep machine provenance unless an expert/human reviewer explicitly certifies the text.",
+    "Use this packet to confirm non-Latin expert-lane text against the printed line images. Keep machine or OCR provenance unless an expert/human reviewer explicitly certifies the text.",
     "",
     "The strict Markdown export currently passes with `issues=0`, `unknownSpans=0`, and `d1GapPages=0`; these questions are semantic review items, not structural export blockers.",
     "",
-    "The first section is a priority subset. The appendix is complete for non-Latin machine-read spans: " +
+    "The first section is a priority subset. The appendix is complete for non-Latin expert-lane spans: " +
       REVIEW_SCRIPT_ORDER_CHIRHO.map((scriptChirho) => `${scriptChirho}=${completeVisionCountsChirho[scriptChirho] ?? 0}`).join(", ") +
       ".",
     "",
@@ -647,7 +645,7 @@ function generatePacketChirho(): void {
   writeJsonAtomicChirho(join(OUT_DIR_CHIRHO, "manifest-chirho.json"), manifestChirho);
   writeTextAtomicChirho(join(OUT_DIR_CHIRHO, "index-chirho.md"), `${markdownChirho.trimEnd()}\n`);
   console.log(
-    `wrote ${priorityItemsChirho.length} priority item(s) and ${completeVisionItemsChirho.length} complete vision item(s) to ${OUT_DIR_CHIRHO}`
+    `wrote ${priorityItemsChirho.length} priority item(s) and ${completeVisionItemsChirho.length} complete expert item(s) to ${OUT_DIR_CHIRHO}`
   );
 }
 

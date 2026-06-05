@@ -6,7 +6,7 @@
  * certified transcription.
  *
  * Default mode writes a status report and exits 0. Use --strict to make this a
- * gate: exit 1 until no raw Pass-C Hebrew spans and no vision-tier non-Latin
+ * gate: exit 1 until no raw Pass-C Hebrew spans and no expert non-Latin
  * spans remain uncertified.
  */
 
@@ -4136,7 +4136,7 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     expertPackManifestShapeOkChirho &&
     !visionTierManifestCountMatchesCurrentChirho
   ) {
-    remainingWorkChirho.push("expert confirmation manifest count does not match current vision-tier span/D1 state; regenerate make-expert-confirm-pack-chirho");
+    remainingWorkChirho.push("expert confirmation manifest count does not match current expert-lane state; regenerate make-expert-confirm-pack-chirho");
   }
   if (
     visionTierLiveSnapshotChirho.d1ReadErrorChirho === null &&
@@ -4145,7 +4145,7 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     visionTierManifestCountMatchesCurrentChirho &&
     !visionTierManifestIdsMatchCurrentChirho
   ) {
-    remainingWorkChirho.push("expert confirmation manifest item IDs do not match current vision-tier span/D1 state; regenerate make-expert-confirm-pack-chirho");
+    remainingWorkChirho.push("expert confirmation manifest item IDs do not match current expert-lane state; regenerate make-expert-confirm-pack-chirho");
   }
   if (
     visionTierLiveSnapshotChirho.d1ReadErrorChirho === null &&
@@ -4154,7 +4154,7 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     visionTierManifestIdsMatchCurrentChirho &&
     !visionTierManifestTextMatchesCurrentChirho
   ) {
-    remainingWorkChirho.push("expert confirmation manifest text does not match current live vision-tier span text; regenerate make-expert-confirm-pack-chirho");
+    remainingWorkChirho.push("expert confirmation manifest text does not match current live expert-lane text; regenerate make-expert-confirm-pack-chirho");
   }
   if (
     expertPackManifestExistsChirho &&
@@ -4226,7 +4226,7 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
     );
   }
   if (visionTierRemainingConfirmationCountChirho !== 0) {
-    remainingWorkChirho.push(`${visionTierRemainingConfirmationCountChirho} vision-tier non-Latin span(s) still need expert/human confirmation`);
+    remainingWorkChirho.push(`${visionTierRemainingConfirmationCountChirho} expert non-Latin item(s) still need expert/human confirmation`);
   }
   if (
     latinSymbolD1ReadErrorChirho === null &&
@@ -4600,7 +4600,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
           `  - Expert-supplied text dry-run after exact script-reader transcription: \`${handoffChirho.dryRunCommandTemplateChirho}\``,
           `  - Expert-supplied text apply after dry-run verification: \`${handoffChirho.applyCommandTemplateChirho}\``,
           "  - Replace every placeholder before running; copied template values such as `<exact printed text>` are rejected by the CLI.",
-          "  - Applying supplied text removes only the EMPTY-SPAN structural marker; the item remains vision-tier until explicit expert confirmation.",
+          "  - Applying supplied text removes only the EMPTY-SPAN structural marker; the item remains in the expert lane until explicit expert confirmation.",
         ]);
   const guardedWlcCorrectionCommandLinesChirho = statusChirho.structuralChirho.guardedWlcCorrectionCommandsChirho.length === 0
     ? ["- Guarded WLC correction commands: none pending"]
@@ -4976,7 +4976,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Expert Syriac reader has-text lane: ${expertReviewUrlChirho("syriac-chirho", undefined, undefined, undefined, "nonblank-chirho")} (${pendingExpertScriptNonblankCountChirho("syriac-chirho")} pending confirmation(s) with current text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacNonblankChirho)})`,
     `- Expert Syriac reader blank-text handoff lane: ${expertReviewUrlChirho("syriac-chirho", undefined, undefined, undefined, "blank-chirho")} (${pendingExpertScriptBlankCountChirho("syriac-chirho")} pending blank item(s) requiring supplied text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacBlankChirho)})`,
     "- Expert-supplied blank-span dry-run path: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='<item-id-chirho>' --supplied-text-chirho='<exact printed text>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>' --expected-source-sha256-chirho='<source-image-sha256-chirho>' --expected-packet-sha256-chirho='<packet-image-sha256-chirho>'`",
-    "- Expert-supplied blank-span apply path, only after dry-run verification: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='<item-id-chirho>' --supplied-text-chirho='<exact printed text>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>' --expected-source-sha256-chirho='<source-image-sha256-chirho>' --expected-packet-sha256-chirho='<packet-image-sha256-chirho>' --apply` (the item remains vision-tier until explicitly confirmed)",
+    "- Expert-supplied blank-span apply path, only after dry-run verification: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='<item-id-chirho>' --supplied-text-chirho='<exact printed text>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>' --expected-source-sha256-chirho='<source-image-sha256-chirho>' --expected-packet-sha256-chirho='<packet-image-sha256-chirho>' --apply` (the item remains in the expert lane until explicitly confirmed)",
     "- Expert-supplied text commands reject copied template placeholders; replace placeholders with the actual item id, exact printed UTF-8, reviewer id, and rationale.",
     `- Expert Arabist lane: ${expertReviewUrlChirho("arabic-chirho")} (${pendingExpertScriptCountChirho("arabic-chirho")} pending of ${expertScriptCountChirho("arabic-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertArabicChirho)})`,
     ...expertVolumeLaneLinesChirho,
@@ -4989,7 +4989,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     "## Suggested Review Routing",
     "",
-    `- Hallelujah starting lanes: pending raw Hebrew + Hebrew/WLC vision + Greek vision (${hallelujahReviewCountChirho} review target(s)). Start with raw Hebrew primary vols 3-5, then raw Hebrew vols 1-2 / partial, then Hebrew/WLC vision and Greek vision; flag or skip Hebrew-script Aramaic/Targum details outside your competence.`,
+    `- Hallelujah starting lanes: pending raw Hebrew + Hebrew/WLC expert lane + Greek expert lane (${hallelujahReviewCountChirho} review target(s)). Start with raw Hebrew primary vols 3-5, then raw Hebrew vols 1-2 / partial, then Hebrew/WLC and Greek expert lanes; flag or skip Hebrew-script Aramaic/Targum details outside your competence.`,
     `- Attribution cleanup: ${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho} prior Pass-C human validation row(s) still need explicit reviewer attribution in ${rawHebrewReviewUrlChirho(undefined, "attribution-blocked-chirho")}. Reattribute only rows genuinely attributable to the named human reviewer; otherwise use ${rawHebrewReviewUrlChirho(undefined, "attribution-rereview-chirho")} to re-review them explicitly.`,
     `- External script-expert lanes: Syriac reader + Arabist (${externalExpertReviewCountChirho} item(s): ${externalExpertNonblankReviewCountChirho} with current text, ${externalExpertBlankReviewCountChirho} blank). A non-reader can flag crop or segmentation problems, but should not confirm exact letters, dots, vowels, or punctuation. Syriac readers can use the has-text lane first; the blank lane needs the supplied-text handoff before confirmation.`,
     "- Hebrew-script Aramaic/Targum: confirm consonants only when the print is clear; route exact Aramaic vocalization, dagesh/shin-dot details, and Targum wording to a Targum/Aramaic reviewer.",
@@ -5194,7 +5194,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Shape errors: ${statusChirho.expertSuppliedVisionTextBackupChirho.shapeErrorsChirho.length === 0 ? "none" : statusChirho.expertSuppliedVisionTextBackupChirho.shapeErrorsChirho.join("; ")}`,
     `- Drift samples: ${statusChirho.expertSuppliedVisionTextBackupChirho.driftSamplesChirho.length === 0 ? "none" : statusChirho.expertSuppliedVisionTextBackupChirho.driftSamplesChirho.join("; ")}`,
     "",
-    "## Vision-Tier Expert Confirmation Policy",
+    "## Expert Non-Latin Confirmation Policy",
     "",
     `- Policy exists: ${statusChirho.visionTierExpertConfirmationPolicyChirho.policyFileExistsChirho}`,
     `- Policy shape OK: ${statusChirho.visionTierExpertConfirmationPolicyChirho.policyFileShapeOkChirho}`,
