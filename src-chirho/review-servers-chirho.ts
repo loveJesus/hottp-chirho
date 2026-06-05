@@ -19,6 +19,7 @@ import {
 const MODULE_CHIRHO = "review-servers-chirho";
 const CHECK_TIMEOUT_MS_CHIRHO = 3000;
 const START_TIMEOUT_MS_CHIRHO = 8000;
+const NO_STORE_CACHE_CONTROL_RE_CHIRHO = /\bno-store\b/i;
 
 interface ReviewServerChirho {
   keyChirho: ReviewServerKeyChirho;
@@ -38,6 +39,11 @@ interface ServerCheckChirho {
   staleSameServiceChirho: boolean;
   sourceFingerprintChirho: string | null;
   expectedSourceFingerprintChirho: string | null;
+}
+
+interface FetchedReviewServerHealthChirho {
+  healthChirho: ReviewServerHealthChirho;
+  noStoreChirho: boolean;
 }
 
 const REVIEW_SERVERS_CHIRHO: ReviewServerChirho[] = [
@@ -82,10 +88,14 @@ function serverProbeUrlChirho(serviceChirho: ReviewServerChirho, probePathChirho
   return new URL(probePathChirho, serverUrlChirho(serviceChirho)).toString();
 }
 
+function responseHasNoStoreChirho(responseChirho: Response): boolean {
+  return NO_STORE_CACHE_CONTROL_RE_CHIRHO.test(responseChirho.headers.get("cache-control") ?? "");
+}
+
 async function fetchServerHealthChirho(
   serviceChirho: ReviewServerChirho,
   timeoutMsChirho: number
-): Promise<ReviewServerHealthChirho> {
+): Promise<FetchedReviewServerHealthChirho> {
   const abortControllerChirho = new AbortController();
   const timeoutChirho = setTimeout(() => abortControllerChirho.abort(), timeoutMsChirho);
   try {
@@ -93,7 +103,10 @@ async function fetchServerHealthChirho(
       signal: abortControllerChirho.signal,
     });
     if (!responseChirho.ok) throw new Error(`HTTP ${responseChirho.status}`);
-    return (await responseChirho.json()) as ReviewServerHealthChirho;
+    return {
+      healthChirho: (await responseChirho.json()) as ReviewServerHealthChirho,
+      noStoreChirho: responseHasNoStoreChirho(responseChirho),
+    };
   } finally {
     clearTimeout(timeoutChirho);
   }
@@ -101,6 +114,7 @@ async function fetchServerHealthChirho(
 
 async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChirho = CHECK_TIMEOUT_MS_CHIRHO): Promise<ServerCheckChirho> {
   const checkedUrlsChirho: string[] = [];
+  let noStoreErrorChirho: string | null = null;
   for (const probePathChirho of serviceChirho.probePathsChirho) {
     const probeUrlChirho = serverProbeUrlChirho(serviceChirho, probePathChirho);
     checkedUrlsChirho.push(probeUrlChirho);
@@ -123,6 +137,9 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
           expectedSourceFingerprintChirho: null,
         };
       }
+      if (!responseHasNoStoreChirho(responseChirho)) {
+        noStoreErrorChirho ??= `${probePathChirho} missing no-store cache control`;
+      }
     } catch (errorChirho) {
       const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
       return {
@@ -144,16 +161,33 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
   const healthUrlChirho = serverProbeUrlChirho(serviceChirho, "/api-chirho/server-health-chirho");
   checkedUrlsChirho.push(healthUrlChirho);
   try {
-    const healthChirho = await fetchServerHealthChirho(serviceChirho, timeoutMsChirho);
+    const healthResultChirho = await fetchServerHealthChirho(serviceChirho, timeoutMsChirho);
+    const healthChirho = healthResultChirho.healthChirho;
+    const staleSameServiceChirho =
+      healthChirho.schemaVersionChirho === 1 &&
+      healthChirho.keyChirho === serviceChirho.keyChirho;
+    if (!healthResultChirho.noStoreChirho) {
+      noStoreErrorChirho ??= "/api-chirho/server-health-chirho missing no-store cache control";
+    }
+    if (noStoreErrorChirho !== null) {
+      return {
+        serviceChirho,
+        runningChirho: false,
+        statusChirho: 200,
+        errorChirho: noStoreErrorChirho,
+        checkedUrlsChirho,
+        portRespondedChirho: true,
+        staleSameServiceChirho,
+        sourceFingerprintChirho: healthChirho.sourceFingerprintChirho ?? null,
+        expectedSourceFingerprintChirho: expectedFingerprintChirho.sourceFingerprintChirho,
+      };
+    }
     if (
       healthChirho.schemaVersionChirho !== 1 ||
       healthChirho.keyChirho !== serviceChirho.keyChirho ||
       healthChirho.sourceFingerprintChirho !== expectedFingerprintChirho.sourceFingerprintChirho ||
       healthChirho.sourceFileCountChirho !== expectedFingerprintChirho.sourceFileCountChirho
     ) {
-      const staleSameServiceChirho =
-        healthChirho.schemaVersionChirho === 1 &&
-        healthChirho.keyChirho === serviceChirho.keyChirho;
       return {
         serviceChirho,
         runningChirho: false,

@@ -50,7 +50,10 @@ import {
   REVIEWER_TEMPLATE_PLACEHOLDER_RE_FLAGS_CHIRHO,
   REVIEWER_TEMPLATE_PLACEHOLDER_RE_SOURCE_CHIRHO,
 } from "./reviewer-attribution-chirho.ts";
-import { reviewServerStartupHealthChirho } from "./review-server-health-chirho.ts";
+import {
+  reviewServerNoStoreHeadersChirho,
+  reviewServerStartupHealthChirho,
+} from "./review-server-health-chirho.ts";
 import {
   REVIEW_NOTES_PLACEHOLDER_VALUES_CHIRHO,
   reviewNotesLookPlaceholderChirho,
@@ -140,7 +143,7 @@ function safeAssetPathChirho(relativePathChirho: string): string | null {
 function jsonResponseChirho(dataChirho: unknown, statusChirho = 200): Response {
   return new Response(JSON.stringify(dataChirho), {
     status: statusChirho,
-    headers: { "Content-Type": "application/json; charset=utf-8" },
+    headers: reviewServerNoStoreHeadersChirho("application/json; charset=utf-8"),
   });
 }
 
@@ -994,7 +997,7 @@ const serverChirho = Bun.serve({
     const urlChirho = new URL(reqChirho.url);
     try {
       if (urlChirho.pathname === "/") {
-        return new Response(htmlChirho(), { headers: { "Content-Type": "text/html; charset=utf-8" } });
+        return new Response(htmlChirho(), { headers: reviewServerNoStoreHeadersChirho("text/html; charset=utf-8") });
       }
       if (urlChirho.pathname === "/favicon.ico") {
         return new Response(null, { status: 204 });
@@ -1007,7 +1010,7 @@ const serverChirho = Bun.serve({
           return new Response("quickstart not found", { status: 404 });
         }
         return new Response(readFileSync(LATIN_SYMBOL_HUMAN_REVIEW_QUICKSTART_PATH_CHIRHO, "utf8"), {
-          headers: { "Content-Type": "text/markdown; charset=utf-8" },
+          headers: reviewServerNoStoreHeadersChirho("text/markdown; charset=utf-8"),
         });
       }
       if (urlChirho.pathname === "/asset-chirho") {
@@ -1015,7 +1018,7 @@ const serverChirho = Bun.serve({
         if (!relativePathChirho) return new Response("missing path", { status: 400 });
         const assetPathChirho = safeAssetPathChirho(relativePathChirho);
         if (assetPathChirho === null || !existsSync(assetPathChirho)) return new Response("not found", { status: 404 });
-        return new Response(Bun.file(assetPathChirho));
+        return new Response(Bun.file(assetPathChirho), { headers: reviewServerNoStoreHeadersChirho("image/png") });
       }
       if (urlChirho.pathname === "/api-chirho/state-chirho") {
         const { manifestChirho, liveItemsChirho } = loadCurrentStateChirho();

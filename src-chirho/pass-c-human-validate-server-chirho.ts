@@ -45,7 +45,10 @@ import {
   REVIEWER_TEMPLATE_PLACEHOLDER_RE_FLAGS_CHIRHO,
   REVIEWER_TEMPLATE_PLACEHOLDER_RE_SOURCE_CHIRHO,
 } from "./reviewer-attribution-chirho.ts";
-import { reviewServerStartupHealthChirho } from "./review-server-health-chirho.ts";
+import {
+  reviewServerNoStoreHeadersChirho,
+  reviewServerStartupHealthChirho,
+} from "./review-server-health-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import {
   REVIEW_NOTES_PLACEHOLDER_VALUES_CHIRHO,
@@ -2987,7 +2990,7 @@ function pageHtmlChirho(): string {
 function jsonResponseChirho(dataChirho: unknown, statusChirho = 200): Response {
   return new Response(JSON.stringify(dataChirho), {
     status: statusChirho,
-    headers: { "Content-Type": "application/json" },
+    headers: reviewServerNoStoreHeadersChirho("application/json; charset=utf-8"),
   });
 }
 
@@ -3013,7 +3016,7 @@ async function spanImageResponseChirho(itemChirho: QueueItemChirho): Promise<Res
   if (exitCodeChirho !== 0) {
     return new Response(errorOutputChirho || "crop failed", { status: 500 });
   }
-  return new Response(outputChirho, { headers: { "Content-Type": "image/png" } });
+  return new Response(outputChirho, { headers: reviewServerNoStoreHeadersChirho("image/png") });
 }
 
 const serverChirho = Bun.serve({
@@ -3021,7 +3024,7 @@ const serverChirho = Bun.serve({
   async fetch(reqChirho: Request) {
     const urlChirho = new URL(reqChirho.url);
     if (urlChirho.pathname === "/") {
-      return new Response(pageHtmlChirho(), { headers: { "Content-Type": "text/html; charset=utf-8" } });
+      return new Response(pageHtmlChirho(), { headers: reviewServerNoStoreHeadersChirho("text/html; charset=utf-8") });
     }
     if (urlChirho.pathname === "/favicon.ico") {
       return new Response(null, { status: 204 });
@@ -3034,7 +3037,7 @@ const serverChirho = Bun.serve({
         return new Response("quickstart not found", { status: 404 });
       }
       return new Response(readFileSync(RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO, "utf8"), {
-        headers: { "Content-Type": "text/markdown; charset=utf-8" },
+        headers: reviewServerNoStoreHeadersChirho("text/markdown; charset=utf-8"),
       });
     }
     if (urlChirho.pathname === "/session-guide-chirho") {
@@ -3042,14 +3045,16 @@ const serverChirho = Bun.serve({
         return new Response("session guide not found", { status: 404 });
       }
       return new Response(readFileSync(HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO, "utf8"), {
-        headers: { "Content-Type": "text/markdown; charset=utf-8" },
+        headers: reviewServerNoStoreHeadersChirho("text/markdown; charset=utf-8"),
       });
     }
     if (urlChirho.pathname.startsWith("/line-image-chirho/")) {
       const keyChirho = decodeURIComponent(urlChirho.pathname.slice("/line-image-chirho/".length));
       const itemChirho = queueByKeyChirho.get(keyChirho);
       if (!itemChirho || !existsSync(itemChirho.lineImagePathChirho)) return new Response("not found", { status: 404 });
-      return new Response(Bun.file(itemChirho.lineImagePathChirho));
+      return new Response(Bun.file(itemChirho.lineImagePathChirho), {
+        headers: reviewServerNoStoreHeadersChirho("image/png"),
+      });
     }
     if (urlChirho.pathname.startsWith("/span-image-chirho/")) {
       const keyChirho = decodeURIComponent(urlChirho.pathname.slice("/span-image-chirho/".length));

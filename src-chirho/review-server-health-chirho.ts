@@ -23,6 +23,15 @@ export interface ReviewServerHealthChirho extends ReviewServerSourceFingerprintC
   startedAtChirho: string;
 }
 
+export function reviewServerNoStoreHeadersChirho(contentTypeChirho?: string): Record<string, string> {
+  return {
+    ...(contentTypeChirho === undefined ? {} : { "Content-Type": contentTypeChirho }),
+    "Cache-Control": "no-store, no-cache, must-revalidate, max-age=0",
+    Pragma: "no-cache",
+    Expires: "0",
+  };
+}
+
 const COMMON_REVIEW_SERVER_SOURCE_FILES_CHIRHO = [
   "src-chirho/config-chirho.ts",
   "src-chirho/review-server-health-chirho.ts",
