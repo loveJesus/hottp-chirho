@@ -123,6 +123,15 @@ span was surfaced.
   - Visual precheck: the Hebrew word is boxed after French `traduction de` and before Greek `(ἁγιάσατε)`; the adjacent Greek and the later Hebrew `לְמִקְדָּשׁ` are outside this target box. The direct OCR read has exact consonants, but it does not certify the printed vowels, dagesh, or shin-dot.
   - Human check still needed: exact tav/qof/dalet-yod-shin-vav sequence, dagesh, vowels, and shin-dot against the print.
 
+- `vol 2 p151 L8 S1/S3`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A8%3A1`
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A151%3A8%3A3`
+  - Item IDs: `v2-p0151-l008-s1`, `v2-p0151-l008-s3`
+  - Live texts: `קָשָׁה` and `קֶשֶׁר`
+  - Attention reason: S1 is unvalidated; S3 is all-token-validated, but both are current raw items in the no-pre-review-note lane.
+  - Visual precheck: the line explicitly contrasts the root `קָשָׁה` with the source reading `קֶשֶׁר`; both red boxes are centered on their own Hebrew word and leave the intervening French parenthetical outside the target boxes. Treat the two roots as separate review targets, not as interchangeable similar shapes.
+  - Human check still needed: for S1, exact qamats/shin-dot and final he; for S3, exact segol/shin-dot and final resh; and whether both short words remain correctly separated from the French parenthetical.
+
 - `vol 5 p149 L28 S1`:
   `http://localhost:8766/?attention-chirho=low-confidence-direct-read-chirho&item-chirho=5%3A149%3A28%3A1`
   - Live text: `ליץ`
