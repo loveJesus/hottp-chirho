@@ -20,6 +20,23 @@ export const JOHN_316_INLINE_MARKDOWN_HEADER_CHIRHO = [
 
 const GENERATED_RENDERED_SENTINELS_CHIRHO = ["undefined", "NaN", "[object Object]", "\uFFFD"];
 const ALLOWED_CONTROL_CHARS_CHIRHO = new Set(["\n", "\t"]);
+const UNSAFE_FORMAT_CONTROLS_CHIRHO = new Map<number, string>([
+  [0x200b, "ZERO WIDTH SPACE"],
+  [0x200c, "ZERO WIDTH NON-JOINER"],
+  [0x200d, "ZERO WIDTH JOINER"],
+  [0x200e, "LEFT-TO-RIGHT MARK"],
+  [0x200f, "RIGHT-TO-LEFT MARK"],
+  [0x202a, "LEFT-TO-RIGHT EMBEDDING"],
+  [0x202b, "RIGHT-TO-LEFT EMBEDDING"],
+  [0x202c, "POP DIRECTIONAL FORMATTING"],
+  [0x202d, "LEFT-TO-RIGHT OVERRIDE"],
+  [0x202e, "RIGHT-TO-LEFT OVERRIDE"],
+  [0x2066, "LEFT-TO-RIGHT ISOLATE"],
+  [0x2067, "RIGHT-TO-LEFT ISOLATE"],
+  [0x2068, "FIRST STRONG ISOLATE"],
+  [0x2069, "POP DIRECTIONAL ISOLATE"],
+  [0xfeff, "BYTE ORDER MARK"],
+]);
 
 export function assertGeneratedCheckChirho(conditionChirho: boolean, messageChirho: string): asserts conditionChirho {
   if (!conditionChirho) throw new Error(messageChirho);
@@ -55,10 +72,23 @@ export function assertNoUnsafeControlCharsChirho(pathChirho: string, textChirho:
   }
 }
 
+export function assertNoUnsafeFormatControlsChirho(pathChirho: string, textChirho: string): void {
+  for (let indexChirho = 0; indexChirho < textChirho.length; indexChirho += 1) {
+    const codeChirho = textChirho.codePointAt(indexChirho)!;
+    const nameChirho = UNSAFE_FORMAT_CONTROLS_CHIRHO.get(codeChirho);
+    if (nameChirho !== undefined) {
+      const hexChirho = `U+${codeChirho.toString(16).toUpperCase().padStart(4, "0")}`;
+      throw new Error(`${pathChirho} contains unsafe format control ${hexChirho} ${nameChirho} at UTF-16 offset ${indexChirho}`);
+    }
+    if (codeChirho > 0xffff) indexChirho += 1;
+  }
+}
+
 export function assertGeneratedTextHygieneChirho(pathChirho: string, textChirho: string): void {
   assertNoTrailingWhitespaceChirho(pathChirho, textChirho);
   assertNoRenderedSentinelLeakChirho(pathChirho, textChirho);
   assertNoUnsafeControlCharsChirho(pathChirho, textChirho);
+  assertNoUnsafeFormatControlsChirho(pathChirho, textChirho);
   assertGeneratedCheckChirho(textChirho.normalize("NFC") === textChirho, `${pathChirho} is not NFC-normalized`);
 }
 
