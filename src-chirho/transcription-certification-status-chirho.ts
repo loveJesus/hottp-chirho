@@ -1980,7 +1980,13 @@ function blankVisionTierHandoffsChirho(
       const packetSha256Chirho = fileSha256Chirho(manifestItemChirho?.packetPathChirho ?? null);
       const handoffCropSha256Chirho = fileSha256Chirho(artifactPathsChirho.cropPathChirho);
       const handoffTargetCropSha256Chirho = fileSha256Chirho(artifactPathsChirho.targetCropPathChirho);
-      const expertReviewUrlResultChirho = expertReviewUrlChirho(scriptChirho ?? undefined, undefined, idChirho);
+      const expertReviewUrlResultChirho = expertReviewUrlChirho(
+        scriptChirho ?? undefined,
+        undefined,
+        idChirho,
+        undefined,
+        "blank-chirho"
+      );
       const requiredDocumentSnippetsChirho = blankVisionTierHandoffRequiredDocumentSnippetsChirho(
         idChirho,
         expectedReviewerRoleChirho,

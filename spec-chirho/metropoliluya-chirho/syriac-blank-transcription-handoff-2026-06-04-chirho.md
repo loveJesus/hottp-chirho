@@ -11,7 +11,7 @@ This is a handoff for one intentionally blank expert-tier span. It is not a tran
 - Location: volume 3, page 151, line 10, segment 3
 - Script lane: `syriac-chirho`
 - Required reviewer role: `Syriac reader`
-- Live reviewer URL: `http://localhost:8771/?script-chirho=syriac-chirho&item-chirho=v3-p0151-l010-s3`
+- Live reviewer URL: `http://localhost:8771/?script-chirho=syriac-chirho&text-state-chirho=blank-chirho&item-chirho=v3-p0151-l010-s3`
 - Source scanline: `workspace-chirho/scanlines-chirho/vol-3-chirho/page-0151-chirho/line-010-chirho.png`
 - Source scanline SHA-256: `0da1fd552928d2a5b10fc9770edc72d2e9c48340c9c4292b8e125b51336ac742`
 - Expert packet image: `workspace-chirho/expert-confirm-pack-chirho/2026-05-31-chirho/images-chirho/vol-3-page-0151-line-010-chirho.png`
