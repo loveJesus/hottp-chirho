@@ -254,6 +254,38 @@ async function mainChirho(): Promise<void> {
       String(machineCleanResultChirho.dataChirho.errorChirho ?? "").includes("machine reviewer codex-gpt5-chirho cannot certify"),
       `machine accepted-clean failed for wrong reason: ${String(machineCleanResultChirho.dataChirho.errorChirho ?? "")}`
     );
+    const genericCleanResultChirho = await postReviewChirho(portChirho, {
+      ...commonBodyChirho,
+      issueFlagsChirho: [],
+      reviewerChirho: "human-chirho",
+      acceptCleanChirho: true,
+    });
+    assertReviewRejectedChirho({
+      labelChirho: "generic accepted-clean",
+      responseChirho: genericCleanResultChirho.responseChirho,
+      dataChirho: genericCleanResultChirho.dataChirho,
+      dbPathChirho,
+    });
+    assertCheckChirho(
+      String(genericCleanResultChirho.dataChirho.errorChirho ?? "").includes("must identify the explicit reviewer, not generic human-chirho"),
+      `generic accepted-clean failed for wrong reason: ${String(genericCleanResultChirho.dataChirho.errorChirho ?? "")}`
+    );
+    const genericIssueResultChirho = await postReviewChirho(portChirho, {
+      ...commonBodyChirho,
+      issueFlagsChirho: ["punctuation-chirho"],
+      reviewerChirho: "human-chirho",
+      notesChirho: "server guard check should reject generic reviewer before persistence",
+    });
+    assertReviewRejectedChirho({
+      labelChirho: "generic issue reviewer",
+      responseChirho: genericIssueResultChirho.responseChirho,
+      dataChirho: genericIssueResultChirho.dataChirho,
+      dbPathChirho,
+    });
+    assertCheckChirho(
+      String(genericIssueResultChirho.dataChirho.errorChirho ?? "").includes("must identify the explicit reviewer, not generic human-chirho"),
+      `generic issue reviewer failed for wrong reason: ${String(genericIssueResultChirho.dataChirho.errorChirho ?? "")}`
+    );
     const placeholderResultChirho = await postReviewChirho(portChirho, {
       ...commonBodyChirho,
       issueFlagsChirho: ["punctuation-chirho"],

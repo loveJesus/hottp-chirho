@@ -309,6 +309,37 @@ async function mainChirho(): Promise<void> {
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
       "machine clean POST persisted a row"
     );
+    const genericCleanResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: [],
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "",
+        scriptVerdictChirho: "",
+        reviewerChirho: "human-chirho",
+        certifyCleanChirho: true,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const genericCleanDataChirho = (await genericCleanResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      genericCleanResponseChirho.status === 400,
+      `expected generic-clean HTTP 400, got ${genericCleanResponseChirho.status}`
+    );
+    assertCheckChirho(genericCleanDataChirho.okChirho === false, "generic clean POST unexpectedly returned ok");
+    assertCheckChirho(
+      String(genericCleanDataChirho.errorChirho ?? "").includes("must identify the explicit reviewer, not generic human-chirho"),
+      `generic clean POST failed for the wrong reason: ${String(genericCleanDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "generic clean POST persisted a row"
+    );
     const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -333,6 +364,37 @@ async function mainChirho(): Promise<void> {
     assertCheckChirho(
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
       "machine reviewer issue POST persisted a row"
+    );
+    const genericIssueResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: ["letters-chirho"],
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "guard check should reject generic reviewer before persistence",
+        scriptVerdictChirho: "",
+        reviewerChirho: "human-chirho",
+        certifyCleanChirho: false,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const genericIssueDataChirho = (await genericIssueResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      genericIssueResponseChirho.status === 400,
+      `expected generic-issue HTTP 400, got ${genericIssueResponseChirho.status}`
+    );
+    assertCheckChirho(genericIssueDataChirho.okChirho === false, "generic reviewer issue POST unexpectedly returned ok");
+    assertCheckChirho(
+      String(genericIssueDataChirho.errorChirho ?? "").includes("must identify the explicit reviewer, not generic human-chirho"),
+      `generic reviewer issue POST failed for the wrong reason: ${String(genericIssueDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "generic reviewer issue POST persisted a row"
     );
     const editedNoIssueResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",

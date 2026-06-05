@@ -242,6 +242,32 @@ async function mainChirho(): Promise<void> {
       policyPathChirho,
       expectedErrorChirho: "reviewerRoleChirho must be",
     });
+    const genericConfirmResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
+      ...commonBodyChirho,
+      reviewerChirho: "human-chirho",
+      rationaleChirho: "server guard check should reject generic expert confirmation reviewer",
+      certifyExactChirho: true,
+    });
+    assertRejectedWithoutPolicyChirho({
+      labelChirho: "generic confirm reviewer",
+      responseChirho: genericConfirmResultChirho.responseChirho,
+      dataChirho: genericConfirmResultChirho.dataChirho,
+      policyPathChirho,
+      expectedErrorChirho: "must identify the explicit reviewer, not generic human-chirho",
+    });
+    const genericIssueResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
+      ...commonBodyChirho,
+      reviewerChirho: "human-chirho",
+      rationaleChirho: "server guard check should reject generic expert issue reviewer",
+      issueFlagsChirho: ["uncertain-chirho"],
+    });
+    assertRejectedWithoutPolicyChirho({
+      labelChirho: "generic issue reviewer",
+      responseChirho: genericIssueResultChirho.responseChirho,
+      dataChirho: genericIssueResultChirho.dataChirho,
+      policyPathChirho,
+      expectedErrorChirho: "must identify the explicit reviewer, not generic human-chirho",
+    });
     const confirmResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
       ...commonBodyChirho,
       rationaleChirho: "<why these exact items are confirmed>",
