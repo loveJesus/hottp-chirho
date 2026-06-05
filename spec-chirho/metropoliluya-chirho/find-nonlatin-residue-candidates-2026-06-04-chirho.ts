@@ -44,6 +44,7 @@ const APPARATUS_TARGET_RE_CHIRHO = /\.967\s+≠\s+\+/u;
 const SHORT_GARBAGE_RE_CHIRHO = /^(?=.{2,14}$)(?=.*[0-9{}[\]£?+])[\p{L}0-9{}[\]£?+ "'”“.-]+$/u;
 const BENIGN_SHORT_RE_CHIRHO =
   /^(?:\d{1,2}|\d{1,2}\.|\d{1,2}\s+lire|\d+\s+vocalisent|\d+\s+donne|[A-Z]|\{[A-Z]\}|\[[A-Z]\]|\[R\]NEB lit|Cpl|Cpl et rel\.\[\d+\]|rel\.\[\d+\]|\+\s+rel\.\[\d+\]|vel|et|du vs \d{1,2} par|en\s+\d+\s+par|et en\s+\d+\s+par|et la \d+\s+e par|à la \d+e forme|\+|≠)$/u;
+const DELIMITER_RE_CHIRHO = /[()[\]{}]/u;
 
 interface SpanChirho {
   segmentIndexChirho: number;
@@ -126,6 +127,26 @@ function hasNonLatinNeighborChirho(spansChirho: SpanChirho[], indexChirho: numbe
   return [leftChirho, rightChirho].some((spanChirho) => spanChirho !== undefined && NON_LATIN_SCRIPT_SET_CHIRHO.has(spanChirho.scriptChirho));
 }
 
+function delimiterCountsChirho(textChirho: string): { roundOpenChirho: number; roundCloseChirho: number } {
+  return {
+    roundOpenChirho: [...textChirho.matchAll(/\(/g)].length,
+    roundCloseChirho: [...textChirho.matchAll(/\)/g)].length,
+  };
+}
+
+function nonHebrewOpenDelimiterUnbalancedChirho(spanChirho: SpanChirho, spansChirho: SpanChirho[], indexChirho: number): boolean {
+  if (spanChirho.scriptChirho === "hebrew-chirho" || !NON_LATIN_SCRIPT_SET_CHIRHO.has(spanChirho.scriptChirho)) return false;
+  if (!DELIMITER_RE_CHIRHO.test(spanChirho.utf8TextChirho)) return false;
+  const spanCountsChirho = delimiterCountsChirho(spanChirho.utf8TextChirho);
+  if (spanCountsChirho.roundOpenChirho <= spanCountsChirho.roundCloseChirho) return false;
+  const suffixTextChirho = spansChirho
+    .slice(indexChirho)
+    .map((suffixSpanChirho) => suffixSpanChirho.utf8TextChirho)
+    .join(" ");
+  const suffixCountsChirho = delimiterCountsChirho(suffixTextChirho);
+  return suffixCountsChirho.roundOpenChirho > suffixCountsChirho.roundCloseChirho;
+}
+
 function wrongScriptReasonsChirho(spanChirho: SpanChirho): string[] {
   const textChirho = compactTextChirho(spanChirho.utf8TextChirho);
   const reasonsChirho: string[] = [];
@@ -148,6 +169,9 @@ function spanReasonsChirho(spanChirho: SpanChirho, spansChirho: SpanChirho[], in
     !BENIGN_SHORT_RE_CHIRHO.test(textChirho)
   ) {
     reasonsChirho.push("short-garble-near-nonlatin-chirho");
+  }
+  if (nonHebrewOpenDelimiterUnbalancedChirho(spanChirho, spansChirho, indexChirho)) {
+    reasonsChirho.push("non-hebrew-open-delimiter-unbalanced-chirho");
   }
   return [...new Set(reasonsChirho)];
 }
@@ -173,6 +197,7 @@ function scoreCandidateChirho(lineReasonsValueChirho: string[], suspiciousSpansC
     if (spanChirho.reasonsChirho.some((reasonChirho) => reasonChirho.startsWith("syriac-chars-in-non-syriac"))) scoreChirho += 4;
     if (spanChirho.reasonsChirho.some((reasonChirho) => reasonChirho.startsWith("arabic-chars-in-non-arabic"))) scoreChirho += 4;
     if (spanChirho.reasonsChirho.includes("short-garble-near-nonlatin-chirho")) scoreChirho += 4;
+    if (spanChirho.reasonsChirho.includes("non-hebrew-open-delimiter-unbalanced-chirho")) scoreChirho += 6;
   }
   if (suspiciousSpansChirho.length > 0) reasonsChirho.push("line-has-suspicious-span-chirho");
   scoreChirho += Math.min(3, suspiciousSpansChirho.length);

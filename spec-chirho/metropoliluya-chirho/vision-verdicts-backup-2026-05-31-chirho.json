@@ -1,9 +1,9 @@
 {
   "john316Chirho": "For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16",
   "schemaVersionChirho": 1,
-  "generatedAtChirho": "2026-06-05T13:48:45.156Z",
+  "generatedAtChirho": "2026-06-05T13:56:19.230Z",
   "sourceChirho": "pass_c_vision_validations_chirho (latest per span)",
-  "countChirho": 889,
+  "countChirho": 891,
   "reapplyChirho": "bun src-chirho/vision-transcribe-unknown-chirho.ts --verdicts=spec-chirho/metropoliluya-chirho/vision-verdicts-backup-2026-05-31-chirho.json --apply",
   "verdictsChirho": [
     {
@@ -8895,6 +8895,26 @@
       "scriptChirho": "greek-chirho",
       "utf8TextChirho": "(πεφραγμένος).",
       "notesChirho": "Second pass over vol 4 p148 line 17 confirmed the Greek span box x235..546 includes the printed close parenthesis and sentence period: `(πεφραγμένος).` before French `C'est`. The prior hidden-Hebrew repair note already described the scanline as `20 lire גָדוּר (πεφραγμένος)`, but the stored Greek span omitted `).`. Stored as greek-chirho vision-tier; exact Greek text, punctuation attachment, and geometry remain Greek expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 148,
+      "lineIndexChirho": 9,
+      "segmentIndexChirho": 1,
+      "garbleTextChirho": "(καὶ ἀπέστησέ με",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "(καὶ ἀπέστησέ με),",
+      "notesChirho": "Second pass over vol 2 p148 line 9 confirmed the Greek span box x253..587 includes the printed close parenthesis and comma: `(καὶ ἀπέστησέ με),` before French `attesté`. The stored Greek span omitted `),`. Stored as greek-chirho vision-tier; exact Greek text, punctuation attachment, and geometry remain Greek expert-confirmation tier."
+    },
+    {
+      "volumeChirho": 2,
+      "pageChirho": 151,
+      "lineIndexChirho": 2,
+      "segmentIndexChirho": 0,
+      "garbleTextChirho": "(εἰς ἁγίασμα",
+      "scriptChirho": "greek-chirho",
+      "utf8TextChirho": "(εἰς ἁγίασμα).",
+      "notesChirho": "Second pass over vol 2 p151 line 2 confirmed the Greek span box x0..264 includes the printed close parenthesis and sentence period: `(εἰς ἁγίασμα).` before French `Sur ces deux points`. The stored Greek span omitted `).`. Stored as greek-chirho vision-tier; exact Greek text, punctuation attachment, and geometry remain Greek expert-confirmation tier."
     }
   ]
 }
