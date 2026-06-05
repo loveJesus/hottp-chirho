@@ -110,6 +110,7 @@ const RAW_HEBREW_REPORT_PATH_CHIRHO = join(
   "pass-c-hebrew-validation-chirho",
   "pass-c-hebrew-validation-chirho.json"
 );
+const SCANLINES_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "scanlines-chirho");
 const EXPERT_PACK_DIR_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "workspace-chirho",
@@ -589,6 +590,9 @@ interface GenericHumanValidationReviewerRowChirho {
   liveHumanValidationVerdictChirho: string | null;
   liveTextMatchesOriginalChirho: boolean | null;
   liveTextHashChirho: string | null;
+  liveSpanLinePathChirho: string;
+  liveScanlinePathChirho: string;
+  liveScanlineExistsChirho: boolean;
 }
 
 interface GenericHumanValidationReviewerGroupChirho {
@@ -2162,11 +2166,27 @@ interface HumanValidationLiveSpanContextChirho {
   liveHumanValidationVerdictChirho: string | null;
   liveTextMatchesOriginalChirho: boolean | null;
   liveTextHashChirho: string | null;
+  liveSpanLinePathChirho: string;
+  liveScanlinePathChirho: string;
+  liveScanlineExistsChirho: boolean;
+}
+
+function scanlinePathForHumanValidationRowChirho(
+  rowChirho: Pick<HumanValidationDbRowChirho, "volume_chirho" | "page_chirho" | "line_index_chirho">
+): string {
+  return join(
+    SCANLINES_DIR_CHIRHO,
+    `vol-${rowChirho.volume_chirho}-chirho`,
+    `page-${String(rowChirho.page_chirho).padStart(4, "0")}-chirho`,
+    `line-${String(rowChirho.line_index_chirho).padStart(3, "0")}-chirho.png`
+  );
 }
 
 function liveSpanContextForHumanValidationRowChirho(
   rowChirho: HumanValidationDbRowChirho
 ): HumanValidationLiveSpanContextChirho {
+  const pathChirho = spanLinePathChirho(rowChirho.volume_chirho, rowChirho.page_chirho, rowChirho.line_index_chirho);
+  const scanlinePathChirho = scanlinePathForHumanValidationRowChirho(rowChirho);
   const emptyChirho: HumanValidationLiveSpanContextChirho = {
     liveSpanExistsChirho: false,
     liveSpanReadErrorChirho: null,
@@ -2177,8 +2197,10 @@ function liveSpanContextForHumanValidationRowChirho(
     liveHumanValidationVerdictChirho: null,
     liveTextMatchesOriginalChirho: null,
     liveTextHashChirho: null,
+    liveSpanLinePathChirho: pathChirho,
+    liveScanlinePathChirho: scanlinePathChirho,
+    liveScanlineExistsChirho: existsSync(scanlinePathChirho),
   };
-  const pathChirho = spanLinePathChirho(rowChirho.volume_chirho, rowChirho.page_chirho, rowChirho.line_index_chirho);
   if (!existsSync(pathChirho)) return emptyChirho;
   try {
     const lineChirho = JSON.parse(readFileSync(pathChirho, "utf8")) as SpanLineLikeChirho;
@@ -2204,6 +2226,9 @@ function liveSpanContextForHumanValidationRowChirho(
       liveTextMatchesOriginalChirho:
         liveTextChirho === null ? null : liveTextChirho === normalizeTextForStorageChirho(rowChirho.original_text_chirho),
       liveTextHashChirho: liveTextChirho === null ? null : hashTextChirho(liveTextChirho),
+      liveSpanLinePathChirho: pathChirho,
+      liveScanlinePathChirho: scanlinePathChirho,
+      liveScanlineExistsChirho: existsSync(scanlinePathChirho),
     };
   } catch (errorChirho) {
     return {
@@ -4044,6 +4069,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
               : rowChirho.liveSpanExistsChirho
                 ? "present-chirho"
                 : "missing-chirho";
+            const scanlineStatusChirho = rowChirho.liveScanlineExistsChirho ? "present-chirho" : "missing-chirho";
             const baseCommandPartsChirho = [
               "bun run reattribute-pass-c-human-validations-chirho --",
               `--validation-id-chirho=${rowChirho.idChirho}`,
@@ -4061,6 +4087,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
               `    - Original text: ${markdownInlineCodeChirho(rowChirho.originalTextChirho)}; corrected text: ${correctionChirho}`,
               `    - Stored notes: ${notesChirho}`,
               `    - Live span: ${liveSpanStatusChirho}; text: ${liveTextChirho}; script: ${rowChirho.liveScriptChirho ?? "none-chirho"}; provenance: ${rowChirho.liveProvenanceChirho ?? "none-chirho"}; human validation id/verdict: ${rowChirho.liveHumanValidationIdChirho ?? "none-chirho"}/${rowChirho.liveHumanValidationVerdictChirho ?? "none-chirho"}; text matches original: ${liveTextMatchesOriginalChirho}`,
+              `    - Live span JSON: \`${relativeProjectPathChirho(rowChirho.liveSpanLinePathChirho)}\``,
+              `    - Source scanline: \`${relativeProjectPathChirho(rowChirho.liveScanlinePathChirho)}\` (${scanlineStatusChirho})`,
               `    - Reattribute dry-run command: \`${dryRunCommandChirho}\``,
               `    - Reattribute apply command: \`${applyCommandChirho}\``,
             ];
