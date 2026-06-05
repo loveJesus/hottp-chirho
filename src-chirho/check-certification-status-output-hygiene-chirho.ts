@@ -45,6 +45,12 @@ function assertNoTrailingWhitespaceChirho(pathChirho: string, textChirho: string
   });
 }
 
+function assertNoRenderedSentinelLeakChirho(pathChirho: string, textChirho: string): void {
+  for (const sentinelChirho of ["undefined", "NaN", "[object Object]"]) {
+    assertCheckChirho(!textChirho.includes(sentinelChirho), `${pathChirho} contains rendered sentinel ${sentinelChirho}`);
+  }
+}
+
 function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const outDirChirho = parseArgValueChirho(argsChirho, "out-dir") ?? DEFAULT_STATUS_OUT_DIR_CHIRHO;
@@ -57,6 +63,7 @@ function mainChirho(): void {
   const jsonTextChirho = readFileSync(jsonPathChirho, "utf8");
   assertNoTrailingWhitespaceChirho(markdownPathChirho, markdownChirho);
   assertNoTrailingWhitespaceChirho(jsonPathChirho, jsonTextChirho);
+  assertNoRenderedSentinelLeakChirho(markdownPathChirho, markdownChirho);
   assertCheckChirho(
     markdownChirho.startsWith(JOHN_316_MARKDOWN_HEADER_CHIRHO),
     "status Markdown is missing the John 3:16 header"
@@ -69,6 +76,20 @@ function mainChirho(): void {
     "status JSON missing certificationCompleteChirho boolean"
   );
   assertCheckChirho(Array.isArray(statusChirho.remainingWorkChirho), "status JSON missing remainingWorkChirho array");
+  const remainingWorkChirho = statusChirho.remainingWorkChirho;
+  assertCheckChirho(
+    remainingWorkChirho.every((itemChirho) => typeof itemChirho === "string" && itemChirho.trim().length > 0),
+    "status JSON remainingWorkChirho must contain only non-empty strings"
+  );
+  if (!statusChirho.certificationCompleteChirho) {
+    assertCheckChirho(remainingWorkChirho.length > 0, "incomplete status JSON has no remainingWorkChirho blockers");
+  }
+  for (const itemChirho of remainingWorkChirho as string[]) {
+    assertCheckChirho(
+      markdownChirho.includes(itemChirho),
+      `status Markdown does not display remaining-work blocker: ${itemChirho}`
+    );
+  }
   assertCheckChirho(
     markdownChirho.includes(`Generated: ${statusChirho.generatedAtChirho}`),
     "status Markdown Generated line does not match status JSON generatedAtChirho"
