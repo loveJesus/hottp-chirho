@@ -250,6 +250,8 @@ const HEBREW_DELIMITER_ORDER_SCANNER_PATH_CHIRHO = join(
   "scan-hebrew-delimiter-order-chirho.ts"
 );
 const OUT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "certification-status-chirho");
+const EXPERT_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO = "expert-repeat-clusters-chirho.md";
+const EXPERT_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO = `workspace-chirho/certification-status-chirho/${EXPERT_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO}`;
 const ALLOWED_WLC_CORRECTION_FLAGS_CHIRHO = new Set([
   "accents-chirho",
   "vowels-chirho",
@@ -459,6 +461,16 @@ interface ExpertTextRepeatSampleChirho {
   reviewUrlChirho: string;
 }
 
+interface ExpertTextRepeatItemChirho {
+  idChirho: string;
+  volumeChirho: number | null;
+  reviewUrlChirho: string;
+}
+
+interface ExpertTextRepeatGroupChirho extends ExpertTextRepeatSampleChirho {
+  itemsChirho: ExpertTextRepeatItemChirho[];
+}
+
 interface ExpertTextRepeatSummaryChirho {
   textGroupCountChirho: number;
   duplicateTextGroupCountChirho: number;
@@ -466,6 +478,7 @@ interface ExpertTextRepeatSummaryChirho {
   singletonTextGroupCountChirho: number;
   duplicateTextGroupCountsByScriptChirho: Record<string, number>;
   duplicateTextItemCountsByScriptChirho: Record<string, number>;
+  groupsChirho: ExpertTextRepeatGroupChirho[];
   samplesChirho: ExpertTextRepeatSampleChirho[];
 }
 
@@ -1508,6 +1521,38 @@ function expertTextRepeatSummaryChirho(
     duplicateTextItemCountsByScriptChirho[scriptChirho] =
       (duplicateTextItemCountsByScriptChirho[scriptChirho] ?? 0) + groupChirho.length;
   }
+  const groupSummariesChirho = duplicateGroupsChirho.map((groupChirho): ExpertTextRepeatGroupChirho => {
+    const firstItemChirho = groupChirho[0]!;
+    const exactTextChirho = firstItemChirho.currentTextChirho;
+    return {
+      scriptChirho: firstItemChirho.scriptChirho,
+      currentTextChirho: exactTextChirho,
+      countChirho: groupChirho.length,
+      firstItemIdChirho: firstItemChirho.idChirho,
+      reviewUrlChirho: expertReviewUrlChirho(
+        firstItemChirho.scriptChirho,
+        undefined,
+        firstItemChirho.idChirho,
+        itemVolumeChirho(firstItemChirho) ?? undefined,
+        undefined,
+        undefined,
+        exactTextChirho
+      ),
+      itemsChirho: groupChirho.map((itemChirho) => ({
+        idChirho: itemChirho.idChirho,
+        volumeChirho: itemVolumeChirho(itemChirho),
+        reviewUrlChirho: expertReviewUrlChirho(
+          itemChirho.scriptChirho,
+          undefined,
+          itemChirho.idChirho,
+          itemVolumeChirho(itemChirho) ?? undefined,
+          undefined,
+          undefined,
+          exactTextChirho
+        ),
+      })),
+    };
+  });
   return {
     textGroupCountChirho: groupsChirho.size,
     duplicateTextGroupCountChirho: duplicateGroupsChirho.length,
@@ -1518,24 +1563,14 @@ function expertTextRepeatSummaryChirho(
     singletonTextGroupCountChirho: [...groupsChirho.values()].filter((groupChirho) => groupChirho.length === 1).length,
     duplicateTextGroupCountsByScriptChirho,
     duplicateTextItemCountsByScriptChirho,
-    samplesChirho: duplicateGroupsChirho.slice(0, sampleLimitChirho).map((groupChirho) => {
-      const firstItemChirho = groupChirho[0]!;
-      return {
-        scriptChirho: firstItemChirho.scriptChirho,
-        currentTextChirho: firstItemChirho.currentTextChirho,
-        countChirho: groupChirho.length,
-        firstItemIdChirho: firstItemChirho.idChirho,
-        reviewUrlChirho: expertReviewUrlChirho(
-          firstItemChirho.scriptChirho,
-          undefined,
-          firstItemChirho.idChirho,
-          itemVolumeChirho(firstItemChirho) ?? undefined,
-          undefined,
-          undefined,
-          firstItemChirho.currentTextChirho
-        ),
-      };
-    }),
+    groupsChirho: groupSummariesChirho,
+    samplesChirho: groupSummariesChirho.slice(0, sampleLimitChirho).map((groupChirho) => ({
+      scriptChirho: groupChirho.scriptChirho,
+      currentTextChirho: groupChirho.currentTextChirho,
+      countChirho: groupChirho.countChirho,
+      firstItemIdChirho: groupChirho.firstItemIdChirho,
+      reviewUrlChirho: groupChirho.reviewUrlChirho,
+    })),
   };
 }
 
@@ -4716,6 +4751,11 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
   };
 }
 
+function markdownCodeSpanChirho(valueChirho: string): string {
+  const fenceChirho = valueChirho.includes("`") ? "``" : "`";
+  return `${fenceChirho}${valueChirho}${fenceChirho}`;
+}
+
 function markdownChirho(statusChirho: CertificationStatusChirho): string {
   const remainingLinesChirho = statusChirho.remainingWorkChirho.length === 0
     ? ["- None."]
@@ -4724,10 +4764,6 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     Object.entries(countsChirho)
       .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
       .join(", ") || "none";
-  const markdownCodeSpanChirho = (valueChirho: string): string => {
-    const fenceChirho = valueChirho.includes("`") ? "``" : "`";
-    return `${fenceChirho}${valueChirho}${fenceChirho}`;
-  };
   const expertRepeatSampleTextChirho = (sampleChirho: ExpertTextRepeatSampleChirho): string =>
     sampleChirho.currentTextChirho.trim().length === 0
       ? "(blank text)"
@@ -5424,6 +5460,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Repeat duplicate groups by script: ${countEntriesChirho(statusChirho.visionTierChirho.repeatSummaryChirho.duplicateTextGroupCountsByScriptChirho)}`,
     `- Repeat duplicate items by script: ${countEntriesChirho(statusChirho.visionTierChirho.repeatSummaryChirho.duplicateTextItemCountsByScriptChirho)}`,
     "- Repeat clusters are planning aids only; every item still needs its own exact print confirmation and policy row.",
+    `- Complete repeat-cluster handoff: \`${EXPERT_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO}\``,
     ...statusChirho.visionTierChirho.repeatSummaryChirho.samplesChirho.map(
       (sampleChirho) =>
         `  - ${sampleChirho.scriptChirho} x${sampleChirho.countChirho} ${expertRepeatSampleTextChirho(sampleChirho)}; first pending: ${sampleChirho.reviewUrlChirho}`
@@ -5550,6 +5587,47 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
   ].join("\n");
 }
 
+function expertRepeatClusterMarkdownChirho(statusChirho: CertificationStatusChirho): string {
+  const summaryChirho = statusChirho.visionTierChirho.repeatSummaryChirho;
+  const groupLinesChirho = summaryChirho.groupsChirho.length === 0
+    ? ["- No duplicate expert text groups are currently pending."]
+    : summaryChirho.groupsChirho.flatMap((groupChirho, indexChirho) => {
+        const textDisplayChirho = groupChirho.currentTextChirho.trim().length === 0
+          ? "(blank text)"
+          : markdownCodeSpanChirho(groupChirho.currentTextChirho);
+        return [
+          `## ${indexChirho + 1}. ${groupChirho.scriptChirho} x${groupChirho.countChirho} ${textDisplayChirho}`,
+          "",
+          `- First pending: ${groupChirho.reviewUrlChirho}`,
+          `- Item IDs: ${groupChirho.itemsChirho.map((itemChirho) => itemChirho.idChirho).join(", ")}`,
+          "- Items:",
+          ...groupChirho.itemsChirho.map((itemChirho) => {
+            const volumeTextChirho = itemChirho.volumeChirho === null ? "vol ?" : `vol ${itemChirho.volumeChirho}`;
+            return `  - ${itemChirho.idChirho} (${volumeTextChirho}): ${itemChirho.reviewUrlChirho}`;
+          }),
+          "",
+        ];
+      });
+  return [
+    "<!-- For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16 -->",
+    "# Expert Repeat Cluster Handoff Chirho",
+    "",
+    `Generated: ${statusChirho.generatedAtChirho}`,
+    "",
+    "This is a non-certifying planning aid. Repeated text can make review faster, but every listed item still needs its own exact print confirmation and policy row. Do not use this file to decrement the certification gate.",
+    "",
+    `- Pending expert items: ${statusChirho.visionTierChirho.pendingVisionItemCountChirho}`,
+    `- Text groups: ${summaryChirho.textGroupCountChirho}`,
+    `- Duplicate groups: ${summaryChirho.duplicateTextGroupCountChirho}`,
+    `- Duplicate items: ${summaryChirho.duplicateTextItemCountChirho}`,
+    `- Singleton groups: ${summaryChirho.singletonTextGroupCountChirho}`,
+    `- Duplicate groups by script: ${Object.entries(summaryChirho.duplicateTextGroupCountsByScriptChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
+    `- Duplicate items by script: ${Object.entries(summaryChirho.duplicateTextItemCountsByScriptChirho).map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ") || "none"}`,
+    "",
+    ...groupLinesChirho,
+  ].join("\n");
+}
+
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | undefined {
   const prefixChirho = `--${nameChirho}=`;
   return argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho))?.slice(prefixChirho.length);
@@ -5590,6 +5668,10 @@ function mainChirho(): void {
   });
   writeJsonAtomicChirho(join(outDirChirho, "status-chirho.json"), statusChirho);
   writeTextAtomicChirho(join(outDirChirho, "status-chirho.md"), markdownChirho(statusChirho));
+  writeTextAtomicChirho(
+    join(outDirChirho, EXPERT_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO),
+    expertRepeatClusterMarkdownChirho(statusChirho)
+  );
   console.log(
     `[${MODULE_CHIRHO}] complete=${statusChirho.certificationCompleteChirho} ` +
       `strictMode=${strictChirho} ` +
