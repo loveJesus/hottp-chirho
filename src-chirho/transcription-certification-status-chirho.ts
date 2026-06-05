@@ -256,6 +256,8 @@ const LATIN_SYMBOL_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO = "latin-symbol-repeat-
 const LATIN_SYMBOL_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO = `workspace-chirho/certification-status-chirho/${LATIN_SYMBOL_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO}`;
 const ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO = "attribution-cleanup-handoff-chirho.md";
 const ATTRIBUTION_CLEANUP_HANDOFF_RELATIVE_PATH_CHIRHO = `workspace-chirho/certification-status-chirho/${ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO}`;
+const RAW_HEBREW_ATTENTION_HANDOFF_FILENAME_CHIRHO = "raw-hebrew-attention-handoff-chirho.md";
+const RAW_HEBREW_ATTENTION_HANDOFF_RELATIVE_PATH_CHIRHO = `workspace-chirho/certification-status-chirho/${RAW_HEBREW_ATTENTION_HANDOFF_FILENAME_CHIRHO}`;
 const ALLOWED_WLC_CORRECTION_FLAGS_CHIRHO = new Set([
   "accents-chirho",
   "vowels-chirho",
@@ -434,6 +436,7 @@ interface RawHebrewTriageSummaryChirho {
   preReviewNotesAvailableChirho: boolean;
   preReviewCoveredAttentionItemCountChirho: number;
   preReviewUncoveredAttentionItemCountChirho: number;
+  attentionItemsChirho: RawHebrewTriageSampleChirho[];
   preReviewUncoveredSamplesChirho: RawHebrewTriageSampleChirho[];
   samplesChirho: RawHebrewTriageSampleChirho[];
 }
@@ -1795,6 +1798,9 @@ function rawHebrewTriageSummaryChirho(
     preReviewNotesAvailableChirho: preReviewNotesChirho !== null,
     preReviewCoveredAttentionItemCountChirho: attentionEntriesChirho.length - preReviewUncoveredEntriesChirho.length,
     preReviewUncoveredAttentionItemCountChirho: preReviewUncoveredEntriesChirho.length,
+    attentionItemsChirho: attentionEntriesChirho.map((entryChirho) =>
+      rawHebrewTriageSampleChirho(entryChirho.itemChirho, entryChirho.reasonsChirho)
+    ),
     preReviewUncoveredSamplesChirho: preReviewUncoveredEntriesChirho
       .slice(0, 8)
       .map((entryChirho) => rawHebrewTriageSampleChirho(entryChirho.itemChirho, entryChirho.reasonsChirho)),
@@ -4881,6 +4887,64 @@ function markdownCodeSpanChirho(valueChirho: string): string {
   return `${fenceChirho}${valueChirho}${fenceChirho}`;
 }
 
+function rawHebrewAttentionItemLinesChirho(itemChirho: RawHebrewTriageSampleChirho): string[] {
+  const confidenceTextChirho = itemChirho.bestDirectConfidenceChirho === null
+    ? "none"
+    : itemChirho.bestDirectConfidenceChirho.toFixed(4);
+  return [
+    `## ${itemChirho.idChirho}`,
+    "",
+    `- Live review URL: ${itemChirho.reviewUrlChirho}`,
+    `- Text: ${markdownCodeSpanChirho(itemChirho.textChirho)}`,
+    `- Validation status: ${itemChirho.validationStatusChirho}`,
+    `- Attention reason(s): ${itemChirho.reasonsChirho.join(", ")}`,
+    `- Witness count: ${itemChirho.witnessCountChirho ?? "unknown"}`,
+    `- Best direct CRNN confidence: ${confidenceTextChirho}`,
+    `- Line context: ${markdownCodeSpanChirho(oneLineSnippetChirho(itemChirho.lineTextChirho, 180))}`,
+    "",
+  ];
+}
+
+function rawHebrewAttentionHandoffMarkdownChirho(statusChirho: CertificationStatusChirho): string {
+  const triageChirho = statusChirho.rawHebrewChirho.triageChirho;
+  const itemLinesChirho = triageChirho.attentionItemsChirho.length === 0
+    ? ["- No raw Hebrew attention items are currently present.", ""]
+    : triageChirho.attentionItemsChirho.flatMap(rawHebrewAttentionItemLinesChirho);
+  return [
+    "<!-- For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16 -->",
+    "# Raw Hebrew Attention Handoff Chirho",
+    "",
+    `Generated: ${statusChirho.generatedAtChirho}`,
+    "",
+    "This is a non-certifying review queue for raw Hebrew items with triage risk signals. It does not certify text, decrement the gate, or apply corrections.",
+    "",
+    "Use these links to prioritize the human print review. A clean save still requires checking the letters, vowels/marks, accents/meteg, punctuation, spacing, maqqef, word boundaries, script, and red box against the print in the live reviewer.",
+    "",
+    "## Summary",
+    "",
+    `- Raw Hebrew items still gate-blocking certification: ${statusChirho.structuralChirho.passCOcrHebrewSpanCountChirho}`,
+    `- Attention items with at least one flag: ${triageChirho.attentionItemCountChirho}`,
+    `- Low-confidence direct CRNN reads (<0.75): ${triageChirho.lowConfidenceItemCountChirho}`,
+    `- Multi-token Hebrew spans: ${triageChirho.multiTokenItemCountChirho}`,
+    `- Delimiter/damaged-text notation spans: ${triageChirho.delimiterNotationItemCountChirho}`,
+    `- No direct CRNN crop reads: ${triageChirho.noDirectReadItemCountChirho}`,
+    `- Non-certifying pre-review note coverage: ${triageChirho.preReviewNotesAvailableChirho ? `${triageChirho.preReviewCoveredAttentionItemCountChirho}/${triageChirho.attentionItemCountChirho}` : "notes unavailable"}`,
+    "",
+    "## Attention Lanes",
+    "",
+    `- Low-confidence lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_LOW_CONFIDENCE_DIRECT_READ_CHIRHO)}`,
+    `- Multi-token lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_MULTI_TOKEN_CHIRHO)}`,
+    `- Delimiter/damaged-text notation lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_DELIMITER_NOTATION_CHIRHO)}`,
+    `- No-direct-read lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO)}`,
+    `- Pre-review-note lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, undefined, "with-note-chirho")}`,
+    `- Without-pre-review-note lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, undefined, "without-note-chirho")}`,
+    "",
+    "## Items",
+    "",
+    ...itemLinesChirho,
+  ].join("\n");
+}
+
 function markdownChirho(statusChirho: CertificationStatusChirho): string {
   const remainingLinesChirho = statusChirho.remainingWorkChirho.length === 0
     ? ["- None."]
@@ -5090,6 +5154,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw Hebrew no-direct-read lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO)} (${statusChirho.rawHebrewChirho.triageChirho.noDirectReadItemCountChirho} pending attention span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewNoDirectReadChirho)})`,
     `- Raw Hebrew pre-review-note lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, undefined, "with-note-chirho")} (${statusChirho.rawHebrewChirho.triageChirho.preReviewNoteItemCountChirho} pending span(s) with non-certifying pre-review notes${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewPreReviewNoteChirho)})`,
     `- Raw Hebrew without-pre-review-note lane: ${rawHebrewReviewUrlChirho(undefined, undefined, undefined, undefined, undefined, undefined, "without-note-chirho")} (${statusChirho.rawHebrewChirho.triageChirho.withoutPreReviewNoteItemCountChirho} pending span(s) without non-certifying pre-review notes${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewWithoutPreReviewNoteChirho)})`,
+    `- Raw Hebrew attention handoff: \`${RAW_HEBREW_ATTENTION_HANDOFF_RELATIVE_PATH_CHIRHO}\` (${statusChirho.rawHebrewChirho.triageChirho.attentionItemCountChirho} current attention item(s); display-only, non-certifying)`,
   ];
   const latinSymbolVolumeLaneLinesChirho = volumeLaneLinesChirho(
     "Latin/symbol",
@@ -5530,6 +5595,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Delimiter/damaged-text notation spans: ${statusChirho.rawHebrewChirho.triageChirho.delimiterNotationItemCountChirho}`,
     `- No direct CRNN crop reads: ${statusChirho.rawHebrewChirho.triageChirho.noDirectReadItemCountChirho}`,
     `- Attention items with at least one flag: ${statusChirho.rawHebrewChirho.triageChirho.attentionItemCountChirho}`,
+    `- Complete attention handoff: \`${RAW_HEBREW_ATTENTION_HANDOFF_RELATIVE_PATH_CHIRHO}\``,
     `- Non-certifying pre-review note coverage: ${statusChirho.rawHebrewChirho.triageChirho.preReviewNotesAvailableChirho ? `${statusChirho.rawHebrewChirho.triageChirho.preReviewCoveredAttentionItemCountChirho}/${statusChirho.rawHebrewChirho.triageChirho.attentionItemCountChirho} current attention item(s)` : "notes unavailable"}`,
     `- Current attention items not mentioned in the pre-review note: ${statusChirho.rawHebrewChirho.triageChirho.preReviewUncoveredAttentionItemCountChirho}`,
     ...rawHebrewTriageSampleLinesChirho,
@@ -5961,6 +6027,10 @@ function mainChirho(): void {
   writeTextAtomicChirho(
     join(outDirChirho, ATTRIBUTION_CLEANUP_HANDOFF_FILENAME_CHIRHO),
     attributionCleanupHandoffMarkdownChirho(statusChirho)
+  );
+  writeTextAtomicChirho(
+    join(outDirChirho, RAW_HEBREW_ATTENTION_HANDOFF_FILENAME_CHIRHO),
+    rawHebrewAttentionHandoffMarkdownChirho(statusChirho)
   );
   console.log(
     `[${MODULE_CHIRHO}] complete=${statusChirho.certificationCompleteChirho} ` +

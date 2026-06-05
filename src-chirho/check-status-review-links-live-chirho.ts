@@ -47,6 +47,12 @@ const ATTRIBUTION_CLEANUP_HANDOFF_MARKDOWN_PATH_CHIRHO = join(
   "certification-status-chirho",
   "attribution-cleanup-handoff-chirho.md"
 );
+const RAW_HEBREW_ATTENTION_HANDOFF_MARKDOWN_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "certification-status-chirho",
+  "raw-hebrew-attention-handoff-chirho.md"
+);
 const FETCH_TIMEOUT_MS_CHIRHO = 5000;
 const REVIEW_SERVER_PORTS_CHIRHO = new Set([8766, 8770, 8771]);
 const MARKDOWN_REVIEW_URL_RE_CHIRHO = /http:\/\/localhost:(?:8766|8770|8771)\/[^\s)`<>\]]+/gu;
@@ -108,6 +114,11 @@ const EXPERT_SOURCES_CHIRHO = new Set([
 
 interface CertificationStatusChirho {
   reviewStartLinksChirho?: Record<string, string | null>;
+  rawHebrewChirho?: {
+    triageChirho?: {
+      attentionItemCountChirho?: number;
+    };
+  };
   humanValidationDbChirho?: {
     genericReviewerRowsChirho?: number;
   };
@@ -470,11 +481,16 @@ async function mainChirho(): Promise<void> {
     existsSync(ATTRIBUTION_CLEANUP_HANDOFF_MARKDOWN_PATH_CHIRHO),
     `missing attribution cleanup handoff Markdown: ${ATTRIBUTION_CLEANUP_HANDOFF_MARKDOWN_PATH_CHIRHO}`
   );
+  assertGeneratedCheckChirho(
+    existsSync(RAW_HEBREW_ATTENTION_HANDOFF_MARKDOWN_PATH_CHIRHO),
+    `missing raw Hebrew attention handoff Markdown: ${RAW_HEBREW_ATTENTION_HANDOFF_MARKDOWN_PATH_CHIRHO}`
+  );
   const statusChirho = JSON.parse(readFileSync(STATUS_JSON_PATH_CHIRHO, "utf8")) as CertificationStatusChirho;
   const markdownChirho = readFileSync(STATUS_MARKDOWN_PATH_CHIRHO, "utf8");
   const expertRepeatMarkdownChirho = readFileSync(EXPERT_REPEAT_CLUSTER_MARKDOWN_PATH_CHIRHO, "utf8");
   const latinSymbolRepeatMarkdownChirho = readFileSync(LATIN_SYMBOL_REPEAT_CLUSTER_MARKDOWN_PATH_CHIRHO, "utf8");
   const attributionCleanupMarkdownChirho = readFileSync(ATTRIBUTION_CLEANUP_HANDOFF_MARKDOWN_PATH_CHIRHO, "utf8");
+  const rawHebrewAttentionMarkdownChirho = readFileSync(RAW_HEBREW_ATTENTION_HANDOFF_MARKDOWN_PATH_CHIRHO, "utf8");
   assertGeneratedCheckChirho(
     statusChirho.reviewStartLinksChirho !== undefined && typeof statusChirho.reviewStartLinksChirho === "object",
     "status JSON missing reviewStartLinksChirho object"
@@ -484,6 +500,14 @@ async function mainChirho(): Promise<void> {
       typeof statusChirho.humanValidationDbChirho === "object" &&
       typeof statusChirho.humanValidationDbChirho.genericReviewerRowsChirho === "number",
     "status JSON missing humanValidationDbChirho.genericReviewerRowsChirho number"
+  );
+  assertGeneratedCheckChirho(
+    statusChirho.rawHebrewChirho !== undefined &&
+      typeof statusChirho.rawHebrewChirho === "object" &&
+      statusChirho.rawHebrewChirho.triageChirho !== undefined &&
+      typeof statusChirho.rawHebrewChirho.triageChirho === "object" &&
+      typeof statusChirho.rawHebrewChirho.triageChirho.attentionItemCountChirho === "number",
+    "status JSON missing rawHebrewChirho.triageChirho.attentionItemCountChirho number"
   );
   assertGeneratedCheckChirho(
     statusChirho.latinSymbolVisionChirho !== undefined &&
@@ -580,12 +604,42 @@ async function mainChirho(): Promise<void> {
       "attribution cleanup handoff Markdown still contains review URLs after attribution-blocked rows reached zero"
     );
   }
+  const rawHebrewAttentionLinksChirho = markdownReviewLinksChirho(rawHebrewAttentionMarkdownChirho);
+  let rawHebrewAttentionCheckedCountChirho = 0;
+  let rawHebrewAttentionTotalCountChirho = 0;
+  for (const linkChirho of rawHebrewAttentionLinksChirho) {
+    rawHebrewAttentionTotalCountChirho += 1;
+    const urlChirho = new URL(linkChirho);
+    assertBaseReviewUrlChirho(urlChirho, `Raw Hebrew attention URL ${rawHebrewAttentionTotalCountChirho}`);
+    const canonicalLinkChirho = urlChirho.toString();
+    if (checkedLinksChirho.has(canonicalLinkChirho)) continue;
+    if (urlChirho.searchParams.has("item-chirho")) {
+      await checkReviewItemUrlChirho(`Raw Hebrew attention URL ${rawHebrewAttentionTotalCountChirho}`, urlChirho);
+    } else {
+      await checkReviewLandingUrlChirho(`Raw Hebrew attention URL ${rawHebrewAttentionTotalCountChirho}`, urlChirho);
+    }
+    checkedLinksChirho.add(canonicalLinkChirho);
+    rawHebrewAttentionCheckedCountChirho += 1;
+  }
+  const rawHebrewAttentionItemCountChirho = statusChirho.rawHebrewChirho.triageChirho.attentionItemCountChirho;
+  if (rawHebrewAttentionItemCountChirho > 0) {
+    assertGeneratedCheckChirho(
+      rawHebrewAttentionTotalCountChirho > 0,
+      "raw Hebrew attention handoff Markdown contains no live review URLs while attention items remain"
+    );
+  } else {
+    assertGeneratedCheckChirho(
+      rawHebrewAttentionTotalCountChirho === 0,
+      "raw Hebrew attention handoff Markdown still contains review URLs after attention items reached zero"
+    );
+  }
   console.log(
     `[${MODULE_CHIRHO}] live status review links passed for ${jsonCheckedCountChirho} JSON link(s), ` +
       `${markdownCheckedCountChirho} additional Markdown URL(s), and ` +
       `${expertRepeatCheckedCountChirho} expert repeat-cluster URL(s), ` +
       `${latinSymbolRepeatCheckedCountChirho}/${latinSymbolRepeatTotalCountChirho} Latin/symbol repeat-cluster URL(s), and ` +
-      `${attributionCleanupCheckedCountChirho}/${attributionCleanupTotalCountChirho} attribution cleanup URL(s)`
+      `${attributionCleanupCheckedCountChirho}/${attributionCleanupTotalCountChirho} attribution cleanup URL(s), and ` +
+      `${rawHebrewAttentionCheckedCountChirho}/${rawHebrewAttentionTotalCountChirho} raw Hebrew attention URL(s)`
   );
 }
 
