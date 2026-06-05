@@ -163,6 +163,13 @@ span was surfaced.
   - Visual precheck: the Hebrew word is cleanly boxed between French `corruption de` and `qu'il comprend`; no neighboring French appears swallowed by the Hebrew target box. The direct OCR read `מקשלרה` is weak and should not be used for certification.
   - Human check still needed: exact tav/dagesh, qof-shin-resh sequence, final vav, and all vowels/shin-dot marks.
 
+- `vol 2 p150 L28 S2`:
+  `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A28%3A2`
+  - Live text: `לְמִקְדָּשׁ`
+  - Attention reason: all-token-validated but still in the current raw no-pre-review-note lane.
+  - Visual precheck: the target crop boxes the Hebrew word after French `Quant à` and before French `(au vs 14)`; the opening parenthesis stays outside the Hebrew target box. No neighboring Latin/French text appears swallowed by the Hebrew span.
+  - Human check still needed: exact lamed-prefix, mem-hiriq, qof-sheva, dalet-dagesh/qamats, shin-dot, and whether the following parenthesis remains adjacent French punctuation rather than part of the Hebrew span.
+
 - `vol 2 p150 L37 S1/S3`:
   `http://localhost:8766/?attention-chirho=delimiter-notation-chirho&item-chirho=2%3A150%3A37%3A1`
   `http://localhost:8766/?pre-review-note-chirho=without-note-chirho&item-chirho=2%3A150%3A37%3A3`
