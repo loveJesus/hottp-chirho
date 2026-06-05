@@ -489,6 +489,7 @@ interface HumanValidationDbRowChirho {
   issue_flags_chirho: string | null;
   script_verdict_chirho: string | null;
   applied_at_chirho: string | null;
+  notes_chirho: string | null;
   reviewer_chirho: string;
   schema_version_chirho: number;
 }
@@ -578,6 +579,7 @@ interface GenericHumanValidationReviewerRowChirho {
   issueFlagsChirho: string[];
   scriptVerdictChirho: string | null;
   appliedAtChirho: string | null;
+  notesChirho: string | null;
   liveSpanExistsChirho: boolean;
   liveSpanReadErrorChirho: string | null;
   liveTextChirho: string | null;
@@ -2227,6 +2229,7 @@ function genericReviewerRowDetailChirho(rowChirho: HumanValidationDbRowChirho): 
     issueFlagsChirho: issueFlagsFromDbTextChirho(rowChirho.issue_flags_chirho),
     scriptVerdictChirho: rowChirho.script_verdict_chirho,
     appliedAtChirho: rowChirho.applied_at_chirho,
+    notesChirho: rowChirho.notes_chirho,
     ...liveSpanContextChirho,
   };
 }
@@ -2302,6 +2305,7 @@ function validationRowsChirho(dbPathChirho: string): HumanValidationDbRowChirho[
     const hasIssueFlagsChirho = columnsChirho.has("issue_flags_chirho");
     const hasOriginalTextChirho = columnsChirho.has("original_text_chirho");
     const hasOriginalTextHashChirho = columnsChirho.has("original_text_hash_chirho");
+    const hasNotesChirho = columnsChirho.has("notes_chirho");
     const hasReviewerChirho = columnsChirho.has("reviewer_chirho");
     const hasScriptVerdictChirho = columnsChirho.has("script_verdict_chirho");
     return dbChirho
@@ -2316,6 +2320,7 @@ function validationRowsChirho(dbPathChirho: string): HumanValidationDbRowChirho[
                ${hasIssueFlagsChirho ? "issue_flags_chirho" : "NULL AS issue_flags_chirho"},
                ${hasScriptVerdictChirho ? "script_verdict_chirho" : "NULL AS script_verdict_chirho"},
                ${hasAppliedAtChirho ? "applied_at_chirho" : "NULL AS applied_at_chirho"},
+               ${hasNotesChirho ? "notes_chirho" : "NULL AS notes_chirho"},
                ${hasReviewerChirho ? "reviewer_chirho" : "'unknown-reviewer-chirho' AS reviewer_chirho"},
                ${hasSchemaVersionChirho ? "schema_version_chirho" : "1 AS schema_version_chirho"}
           FROM pass_c_human_validations_chirho
@@ -4024,6 +4029,9 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
               : markdownInlineCodeChirho(rowChirho.correctedTextChirho);
             const scriptVerdictChirho = rowChirho.scriptVerdictChirho ?? "none";
             const appliedChirho = rowChirho.appliedAtChirho ?? "not-applied-chirho";
+            const notesChirho = rowChirho.notesChirho === null || rowChirho.notesChirho.trim().length === 0
+              ? "none"
+              : markdownInlineCodeChirho(oneLineSnippetChirho(rowChirho.notesChirho, 180));
             const liveTextChirho = rowChirho.liveTextChirho === null
               ? "none"
               : markdownInlineCodeChirho(rowChirho.liveTextChirho);
@@ -4050,6 +4058,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
               `  - id ${rowChirho.idChirho} (${rowChirho.locationChirho}; current reviewer ${rowChirho.reviewerChirho})`,
               `    - Verdict: ${rowChirho.verdictChirho}; applied: ${appliedChirho}; script verdict: ${scriptVerdictChirho}; issue flags: ${flagsChirho}`,
               `    - Original text: ${markdownInlineCodeChirho(rowChirho.originalTextChirho)}; corrected text: ${correctionChirho}`,
+              `    - Stored notes: ${notesChirho}`,
               `    - Live span: ${liveSpanStatusChirho}; text: ${liveTextChirho}; script: ${rowChirho.liveScriptChirho ?? "none-chirho"}; provenance: ${rowChirho.liveProvenanceChirho ?? "none-chirho"}; human validation id/verdict: ${rowChirho.liveHumanValidationIdChirho ?? "none-chirho"}/${rowChirho.liveHumanValidationVerdictChirho ?? "none-chirho"}; text matches original: ${liveTextMatchesOriginalChirho}`,
               `    - Reattribute dry-run command: \`${dryRunCommandChirho}\``,
               `    - Reattribute apply command: \`${applyCommandChirho}\``,
