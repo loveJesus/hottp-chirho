@@ -244,6 +244,13 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
       outputChirho.includes("Expert Greek Pass-C:"),
     "publication summary must link the actionable expert script and source lanes"
   );
+  assertCheckChirho(
+    outputChirho.includes("Volume review links:") &&
+      outputChirho.includes("Raw Hebrew vol 2:") &&
+      outputChirho.includes("Expert vol 5:") &&
+      outputChirho.includes("Latin/symbol vol 5:"),
+    "publication summary must link the actionable volume review lanes"
+  );
 }
 
 async function mainChirho(): Promise<void> {

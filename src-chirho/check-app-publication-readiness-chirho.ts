@@ -329,6 +329,35 @@ function printNextReviewLinksChirho(statusChirho: CertificationStatusSummaryChir
   }
 }
 
+function printVolumeReviewLinksChirho(statusChirho: CertificationStatusSummaryChirho): void {
+  const linksChirho: Array<[string, string | null]> = [];
+  for (const volumeKeyChirho of REVIEW_VOLUME_KEYS_CHIRHO) {
+    const volumeNumberChirho = reviewVolumeLabelChirho(volumeKeyChirho);
+    const volumeSuffixChirho = volumeKeyChirho.replace(/^vol-/, "").replace(/-chirho$/, "");
+    const volumePascalSuffixChirho = `Vol${volumeSuffixChirho}`;
+    linksChirho.push([
+      `Raw Hebrew ${volumeNumberChirho}`,
+      reviewStartLinkChirho(statusChirho, `rawHebrewChirho${volumePascalSuffixChirho}Chirho`),
+    ]);
+    linksChirho.push([
+      `Expert ${volumeNumberChirho}`,
+      reviewStartLinkChirho(statusChirho, `expertChirho${volumePascalSuffixChirho}Chirho`),
+    ]);
+    linksChirho.push([
+      `Latin/symbol ${volumeNumberChirho}`,
+      reviewStartLinkChirho(statusChirho, `latinSymbolChirho${volumePascalSuffixChirho}Chirho`),
+    ]);
+  }
+  const presentLinksChirho = linksChirho.filter(
+    (entryChirho): entryChirho is [string, string] => entryChirho[1] !== null
+  );
+  if (presentLinksChirho.length === 0) return;
+  console.log(`[${MODULE_CHIRHO}] Volume review links:`);
+  for (const [labelChirho, linkChirho] of presentLinksChirho) {
+    console.log(`- ${labelChirho}: ${linkChirho}`);
+  }
+}
+
 function printReviewGuidePathsChirho(): void {
   const guidePathsChirho: Array<[string, string]> = [
     ["Raw Hebrew certification quickstart", RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO],
@@ -461,6 +490,7 @@ function printReadinessSummaryChirho(
     }
     printReviewRoutingSummaryChirho(statusChirho);
     printNextReviewLinksChirho(statusChirho);
+    printVolumeReviewLinksChirho(statusChirho);
     printReviewGuidePathsChirho();
   }
 }
