@@ -80,6 +80,13 @@ function readinessLockSmokeTestEnvChirho(): Record<string, string> {
   } as Record<string, string>;
 }
 
+function skipReadinessLockSmokeTestEnvChirho(): Record<string, string> {
+  return {
+    ...process.env,
+    [SKIP_READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO]: "1",
+  } as Record<string, string>;
+}
+
 async function assertReadinessLockSerializesChirho(): Promise<void> {
   if (process.env[SKIP_READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO] === "1") {
     console.log(
@@ -111,17 +118,31 @@ async function assertReadinessLockSerializesChirho(): Promise<void> {
     }
   );
   await new Promise((resolveChirho) => setTimeout(resolveChirho, 150));
-  const secondResultChirho = await runAsyncCommandChirho([
+  const nestedSkipResultPromiseChirho = runAsyncCommandChirho([
+    process.execPath,
+    "run",
+    "check-publication-readiness-summary-guards-chirho",
+  ], { envChirho: skipReadinessLockSmokeTestEnvChirho() });
+  const secondResultPromiseChirho = runAsyncCommandChirho([
     process.execPath,
     "run",
     "src-chirho/check-app-publication-readiness-chirho.ts",
     "--lock-smoke-test-chirho=0",
   ], { envChirho: readinessLockSmokeTestEnvChirho() });
+  const [nestedSkipResultChirho, secondResultChirho] = await Promise.all([
+    nestedSkipResultPromiseChirho,
+    secondResultPromiseChirho,
+  ]);
   const firstOutputChirho = await processOutputChirho(firstProcessChirho);
   const firstExitCodeChirho = await firstProcessChirho.exited;
   assertCheckChirho(
     firstExitCodeChirho === 0,
     `first readiness lock smoke test exited ${String(firstExitCodeChirho)}\n${firstOutputChirho}`
+  );
+  assertCheckChirho(
+    nestedSkipResultChirho.exitCodeChirho === 0 &&
+      nestedSkipResultChirho.outputChirho.includes(`skipped readiness lock smoke test because ${SKIP_READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO}=1`),
+    `nested publication summary guard did not pass with lock smoke test skipped while app readiness lock was held\n${nestedSkipResultChirho.outputChirho}`
   );
   assertCheckChirho(
     secondResultChirho.exitCodeChirho === 0,
