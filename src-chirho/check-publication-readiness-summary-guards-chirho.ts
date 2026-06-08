@@ -6,7 +6,7 @@
  * is useful for triage, but it must not imply that app check/build ran.
  */
 
-import { existsSync } from "fs";
+import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
@@ -20,6 +20,15 @@ const READINESS_LOCK_DIR_CHIRHO = join(
   "run-locks-chirho",
   "app-publication-readiness-chirho.lock"
 );
+const STATUS_MARKDOWN_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "certification-status-chirho",
+  "status-chirho.md"
+);
+const SUMMARY_CHECKLIST_HEADING_CHIRHO =
+  "[check-app-publication-readiness-chirho] Human review session checklist:";
+const STATUS_CHECKLIST_HEADING_CHIRHO = "## Human Review Session Checklist";
 
 interface CommandResultChirho {
   exitCodeChirho: number;
@@ -300,6 +309,62 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
   );
 }
 
+function humanReviewChecklistBulletLinesFromSummaryChirho(outputChirho: string): string[] {
+  const linesChirho = outputChirho.split(/\r?\n/u);
+  const headingIndexChirho = linesChirho.findIndex(
+    (lineChirho) => lineChirho.trim() === SUMMARY_CHECKLIST_HEADING_CHIRHO
+  );
+  assertCheckChirho(headingIndexChirho !== -1, "publication summary must render the human review checklist heading");
+  const bulletLinesChirho: string[] = [];
+  for (const lineChirho of linesChirho.slice(headingIndexChirho + 1)) {
+    if (lineChirho.startsWith("- ")) {
+      bulletLinesChirho.push(lineChirho);
+      continue;
+    }
+    if (lineChirho.trim().length === 0) continue;
+    if (lineChirho.startsWith("[check-app-publication-readiness-chirho] ")) break;
+    break;
+  }
+  assertCheckChirho(bulletLinesChirho.length > 0, "publication summary human review checklist must contain bullets");
+  return bulletLinesChirho;
+}
+
+function humanReviewChecklistBulletLinesFromMarkdownChirho(markdownChirho: string): string[] {
+  const linesChirho = markdownChirho.split(/\r?\n/u);
+  const headingIndexChirho = linesChirho.findIndex(
+    (lineChirho) => lineChirho.trim() === STATUS_CHECKLIST_HEADING_CHIRHO
+  );
+  assertCheckChirho(headingIndexChirho !== -1, "status markdown must render the human review checklist heading");
+  const bulletLinesChirho: string[] = [];
+  for (const lineChirho of linesChirho.slice(headingIndexChirho + 1)) {
+    if (lineChirho.startsWith("## ")) break;
+    if (lineChirho.startsWith("- ")) bulletLinesChirho.push(lineChirho);
+  }
+  assertCheckChirho(bulletLinesChirho.length > 0, "status markdown human review checklist must contain bullets");
+  return bulletLinesChirho;
+}
+
+function assertHumanReviewChecklistSyncChirho(summaryOutputChirho: string): void {
+  assertCheckChirho(
+    existsSync(STATUS_MARKDOWN_PATH_CHIRHO),
+    `status markdown does not exist at ${STATUS_MARKDOWN_PATH_CHIRHO}`
+  );
+  const summaryChecklistChirho = humanReviewChecklistBulletLinesFromSummaryChirho(summaryOutputChirho);
+  const statusChecklistChirho = humanReviewChecklistBulletLinesFromMarkdownChirho(
+    readFileSync(STATUS_MARKDOWN_PATH_CHIRHO, "utf8")
+  );
+  assertCheckChirho(
+    JSON.stringify(summaryChecklistChirho) === JSON.stringify(statusChecklistChirho),
+    [
+      "human review checklist drifted between publication summary and status markdown",
+      "publication summary checklist:",
+      ...summaryChecklistChirho,
+      "status markdown checklist:",
+      ...statusChecklistChirho,
+    ].join("\n")
+  );
+}
+
 async function mainChirho(): Promise<void> {
   const summaryResultChirho = runPublicationSummaryChirho([process.execPath, "run", "publication-readiness-summary-chirho"]);
   const summaryOutputChirho = summaryResultChirho.outputChirho;
@@ -308,6 +373,7 @@ async function mainChirho(): Promise<void> {
     `publication summary exited ${summaryResultChirho.exitCodeChirho}\n${summaryOutputChirho}`
   );
   assertSummaryOnlyDoesNotBuildChirho(summaryOutputChirho);
+  assertHumanReviewChecklistSyncChirho(summaryOutputChirho);
   const certifiedReadyChirho = summaryOutputChirho.includes("Certified UTF-8 Markdown publication readiness: yes");
   assertCheckChirho(
     certifiedReadyChirho || summaryOutputChirho.includes("Certified UTF-8 Markdown publication readiness: no"),
