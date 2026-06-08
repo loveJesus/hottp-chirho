@@ -6,11 +6,20 @@
  * is useful for triage, but it must not imply that app check/build ran.
  */
 
+import { existsSync } from "fs";
+import { join } from "path";
+
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
 const MODULE_CHIRHO = "check-publication-readiness-summary-guards-chirho";
 const READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO = "READINESS_LOCK_SMOKE_TEST_CHIRHO";
 const SKIP_READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO = "SKIP_READINESS_LOCK_SMOKE_TEST_CHIRHO";
+const READINESS_LOCK_DIR_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "run-locks-chirho",
+  "app-publication-readiness-chirho.lock"
+);
 
 interface CommandResultChirho {
   exitCodeChirho: number;
@@ -89,6 +98,10 @@ function skipReadinessLockSmokeTestEnvChirho(): Record<string, string> {
 
 async function assertReadinessLockSerializesChirho(): Promise<void> {
   if (process.env[SKIP_READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO] === "1") {
+    assertCheckChirho(
+      existsSync(READINESS_LOCK_DIR_CHIRHO),
+      `${SKIP_READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO}=1 requires an active app publication readiness lock`
+    );
     console.log(
       `[${MODULE_CHIRHO}] skipped readiness lock smoke test because ${SKIP_READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO}=1`
     );
