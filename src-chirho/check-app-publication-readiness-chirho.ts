@@ -67,6 +67,12 @@ const HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "hallelujah-review-session-guide-2026-06-05-chirho.md"
 );
+const ATTRIBUTION_CLEANUP_HANDOFF_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "certification-status-chirho",
+  "attribution-cleanup-handoff-chirho.md"
+);
 const REVIEW_VOLUME_KEYS_CHIRHO = [
   "vol-1-chirho",
   "vol-2-chirho",
@@ -140,6 +146,11 @@ interface CertificationStatusSummaryChirho {
     genericReviewerLiveTextMatchRowsChirho?: unknown;
     genericReviewerLiveTextMismatchRowsChirho?: unknown;
     genericReviewerLiveTextUnknownRowsChirho?: unknown;
+    genericReviewerRowGroupsChirho?: Array<{
+      liveTextMatchIdsChirho?: unknown;
+      liveTextMismatchIdsChirho?: unknown;
+      liveTextUnknownIdsChirho?: unknown;
+    }>;
   };
   strictBlindScansChirho?: {
     hiddenHebrewChirho?: {
@@ -319,6 +330,19 @@ function booleanTextChirho(valueChirho: unknown): string {
 
 function stringOrUnknownChirho(valueChirho: unknown): string {
   return typeof valueChirho === "string" && valueChirho.length > 0 ? valueChirho : "unknown";
+}
+
+function numberArrayChirho(valueChirho: unknown): number[] {
+  if (!Array.isArray(valueChirho)) return [];
+  return valueChirho.filter((itemChirho): itemChirho is number => Number.isInteger(itemChirho));
+}
+
+function sortedUniqueNumbersChirho(valuesChirho: number[]): number[] {
+  return [...new Set(valuesChirho)].sort((leftChirho, rightChirho) => leftChirho - rightChirho);
+}
+
+function idListTextChirho(idsChirho: number[]): string {
+  return idsChirho.length === 0 ? "none" : idsChirho.join(", ");
 }
 
 function remainingWorkLinesChirho(statusChirho: CertificationStatusSummaryChirho): string[] {
@@ -583,6 +607,30 @@ function printStrictBlindScanSummaryChirho(statusChirho: CertificationStatusSumm
   console.log("- Strict-blind scans are heuristic evidence only; certification still requires the listed human/expert review gates.");
 }
 
+function printAttributionCleanupHandoffChirho(statusChirho: CertificationStatusSummaryChirho): void {
+  const genericRowCountChirho = finiteNumberChirho(statusChirho.humanValidationDbChirho?.genericReviewerRowsChirho);
+  if (genericRowCountChirho === null || genericRowCountChirho === 0) return;
+  const groupsChirho = statusChirho.humanValidationDbChirho?.genericReviewerRowGroupsChirho ?? [];
+  const unchangedIdsChirho = sortedUniqueNumbersChirho(
+    groupsChirho.flatMap((groupChirho) => numberArrayChirho(groupChirho.liveTextMatchIdsChirho))
+  );
+  const changedIdsChirho = sortedUniqueNumbersChirho(
+    groupsChirho.flatMap((groupChirho) => numberArrayChirho(groupChirho.liveTextMismatchIdsChirho))
+  );
+  const unknownIdsChirho = sortedUniqueNumbersChirho(
+    groupsChirho.flatMap((groupChirho) => numberArrayChirho(groupChirho.liveTextUnknownIdsChirho))
+  );
+  console.log(`[${MODULE_CHIRHO}] Attribution cleanup handoff:`);
+  console.log(`- Handoff doc: ${relativeProjectPathChirho(ATTRIBUTION_CLEANUP_HANDOFF_PATH_CHIRHO)}`);
+  console.log(
+    `- Attribution-blocked ids: unchanged ${idListTextChirho(unchangedIdsChirho)}; ` +
+      `changed/re-review ${idListTextChirho(changedIdsChirho)}; unchecked ${idListTextChirho(unknownIdsChirho)}`
+  );
+  console.log(
+    "- Reattribute unchanged rows only when they are genuinely attributable to the named human reviewer; use Attribution re-review for changed or uncertain rows."
+  );
+}
+
 function printReadinessSummaryChirho(
   statusChirho: CertificationStatusSummaryChirho,
   appBuildCheckedChirho: boolean
@@ -614,6 +662,7 @@ function printReadinessSummaryChirho(
     printNextReviewLinksChirho(statusChirho);
     printVolumeReviewLinksChirho(statusChirho);
     printBlankTextHandoffsChirho(statusChirho);
+    printAttributionCleanupHandoffChirho(statusChirho);
     printReviewGuidePathsChirho();
   }
 }

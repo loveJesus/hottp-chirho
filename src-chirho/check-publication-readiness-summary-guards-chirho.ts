@@ -266,6 +266,13 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
       outputChirho.includes("context crop:"),
     "publication summary must surface blank text handoff artifacts"
   );
+  assertCheckChirho(
+    outputChirho.includes("Attribution cleanup handoff:") &&
+      outputChirho.includes("attribution-cleanup-handoff-chirho.md") &&
+      outputChirho.includes("Attribution-blocked ids: unchanged 5, 6, 7, 8, 9, 11, 12; changed/re-review 3, 4, 10; unchecked none") &&
+      outputChirho.includes("Reattribute unchanged rows only when they are genuinely attributable"),
+    "publication summary must surface attribution cleanup handoff and safe routing"
+  );
 }
 
 async function mainChirho(): Promise<void> {
