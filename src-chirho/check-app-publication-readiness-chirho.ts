@@ -99,6 +99,9 @@ interface CertificationStatusSummaryChirho {
   };
   humanValidationDbChirho?: {
     genericReviewerRowsChirho?: unknown;
+    genericReviewerLiveTextMatchRowsChirho?: unknown;
+    genericReviewerLiveTextMismatchRowsChirho?: unknown;
+    genericReviewerLiveTextUnknownRowsChirho?: unknown;
   };
 }
 
@@ -317,7 +320,10 @@ function printReviewRoutingSummaryChirho(statusChirho: CertificationStatusSummar
   );
   console.log(
     `- Attribution cleanup: ${numberOrUnknownChirho(statusChirho.humanValidationDbChirho?.genericReviewerRowsChirho)} row(s); ` +
-      `reattribute only if genuinely attributable, otherwise use re-review`
+      `unchanged ${numberOrUnknownChirho(statusChirho.humanValidationDbChirho?.genericReviewerLiveTextMatchRowsChirho)}, ` +
+      `changed ${numberOrUnknownChirho(statusChirho.humanValidationDbChirho?.genericReviewerLiveTextMismatchRowsChirho)}, ` +
+      `unknown ${numberOrUnknownChirho(statusChirho.humanValidationDbChirho?.genericReviewerLiveTextUnknownRowsChirho)}; ` +
+      `reattribute unchanged rows only if genuinely attributable, otherwise use re-review`
   );
 }
 

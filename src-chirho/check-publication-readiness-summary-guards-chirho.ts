@@ -156,6 +156,13 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
     outputChirho.includes("Certified UTF-8 Markdown publication readiness:"),
     "publication summary must still report certified Markdown readiness"
   );
+  assertCheckChirho(
+    outputChirho.includes("Attribution cleanup:") &&
+      outputChirho.includes("unchanged") &&
+      outputChirho.includes("changed") &&
+      outputChirho.includes("reattribute unchanged rows only if genuinely attributable"),
+    "publication summary must split attribution cleanup into unchanged/changed routing"
+  );
 }
 
 async function mainChirho(): Promise<void> {
