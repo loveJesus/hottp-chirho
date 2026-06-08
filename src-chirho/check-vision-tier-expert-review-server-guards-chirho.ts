@@ -89,6 +89,10 @@ const SYRIAC_BLANK_HANDOFF_SNIPPETS_CHIRHO = [
   "Do not include the surrounding French parenthesis or comma",
   "Applying supplied text only fills the blank structural hole. It does not certify the item.",
 ];
+const SYRIAC_BLANK_HANDOFF_IMAGE_FILENAMES_CHIRHO = [
+  "syriac-v3-p0151-l010-s3-context-crop-2026-06-04-chirho.png",
+  "syriac-v3-p0151-l010-s3-target-crop-2026-06-05-chirho.png",
+];
 
 interface ExpertReviewStateItemChirho {
   idChirho: string;
@@ -273,6 +277,20 @@ async function assertSyriacBlankHandoffEndpointChirho(portChirho: number): Promi
   }
 }
 
+async function assertSyriacBlankHandoffImagesChirho(portChirho: number): Promise<void> {
+  for (const filenameChirho of SYRIAC_BLANK_HANDOFF_IMAGE_FILENAMES_CHIRHO) {
+    const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/${filenameChirho}`);
+    const bytesChirho = await responseChirho.arrayBuffer();
+    assertCheckChirho(responseChirho.ok, `Syriac blank handoff image request failed for ${filenameChirho}: ${responseChirho.status}`);
+    assertNoStoreResponseChirho(responseChirho, `Syriac blank handoff image ${filenameChirho}`);
+    assertCheckChirho(
+      responseChirho.headers.get("content-type")?.startsWith("image/png") === true,
+      `Syriac blank handoff image has wrong content-type for ${filenameChirho}: ${String(responseChirho.headers.get("content-type"))}`
+    );
+    assertCheckChirho(bytesChirho.byteLength > 0, `Syriac blank handoff image is empty: ${filenameChirho}`);
+  }
+}
+
 async function blankStateItemChirho(portChirho: number): Promise<ExpertReviewStateItemChirho | null> {
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/state-chirho`);
   const dataChirho = (await responseChirho.json()) as ExpertReviewStateResponseChirho;
@@ -378,6 +396,7 @@ async function mainChirho(): Promise<void> {
     await assertExpertReviewGuidanceHtmlChirho(portChirho);
     await assertExpertQuickstartEndpointChirho(portChirho);
     await assertSyriacBlankHandoffEndpointChirho(portChirho);
+    await assertSyriacBlankHandoffImagesChirho(portChirho);
     const itemChirho = await stateItemChirho(portChirho);
     await assertExpertAssetEndpointNoStoreChirho(portChirho, itemChirho);
     const blankItemChirho = await blankStateItemChirho(portChirho);

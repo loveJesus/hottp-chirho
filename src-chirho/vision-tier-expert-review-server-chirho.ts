@@ -9,7 +9,7 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import { join, resolve } from "path";
+import { basename, join, resolve } from "path";
 
 import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
@@ -83,6 +83,22 @@ const SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "syriac-blank-transcription-handoff-2026-06-04-chirho.md"
 );
+const SYRIAC_BLANK_HANDOFF_CONTEXT_CROP_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "syriac-v3-p0151-l010-s3-context-crop-2026-06-04-chirho.png"
+);
+const SYRIAC_BLANK_HANDOFF_TARGET_CROP_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "syriac-v3-p0151-l010-s3-target-crop-2026-06-05-chirho.png"
+);
+const SYRIAC_BLANK_HANDOFF_IMAGE_PATHS_CHIRHO = new Map([
+  [basename(SYRIAC_BLANK_HANDOFF_CONTEXT_CROP_PATH_CHIRHO), SYRIAC_BLANK_HANDOFF_CONTEXT_CROP_PATH_CHIRHO],
+  [basename(SYRIAC_BLANK_HANDOFF_TARGET_CROP_PATH_CHIRHO), SYRIAC_BLANK_HANDOFF_TARGET_CROP_PATH_CHIRHO],
+]);
 
 interface ExpertPackItemChirho {
   idChirho: string;
@@ -1767,6 +1783,15 @@ const serverChirho = Bun.serve({
         }
         return new Response(readFileSync(SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO, "utf8"), {
           headers: reviewServerNoStoreHeadersChirho("text/markdown; charset=utf-8"),
+        });
+      }
+      const syriacBlankHandoffImagePathChirho = SYRIAC_BLANK_HANDOFF_IMAGE_PATHS_CHIRHO.get(urlChirho.pathname.slice(1));
+      if (syriacBlankHandoffImagePathChirho !== undefined) {
+        if (!existsSync(syriacBlankHandoffImagePathChirho)) {
+          return new Response("Syriac blank handoff image not found", { status: 404 });
+        }
+        return new Response(Bun.file(syriacBlankHandoffImagePathChirho), {
+          headers: reviewServerNoStoreHeadersChirho("image/png"),
         });
       }
       if (urlChirho.pathname === "/asset-chirho") {
