@@ -77,6 +77,12 @@ const HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "hallelujah-review-session-guide-2026-06-05-chirho.md"
 );
+const SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "syriac-blank-transcription-handoff-2026-06-04-chirho.md"
+);
 
 interface ExpertPackItemChirho {
   idChirho: string;
@@ -709,6 +715,7 @@ function htmlChirho(): string {
       <button type="button" id="copy-link-chirho">Copy link</button>
       <a class="toolbar-link-chirho" href="/quickstart-chirho" target="_blank" rel="noreferrer">Quickstart</a>
       <a class="toolbar-link-chirho" href="/session-guide-chirho" target="_blank" rel="noreferrer">Session guide</a>
+      <a class="toolbar-link-chirho" href="/syriac-blank-handoff-chirho" target="_blank" rel="noreferrer">Syriac blank handoff</a>
     </div>
     <div class="lane-shortcuts-chirho" aria-label="Recommended expert review lanes">
       <span>Recommended expert lanes</span>
@@ -1751,6 +1758,14 @@ const serverChirho = Bun.serve({
           return new Response("session guide not found", { status: 404 });
         }
         return new Response(readFileSync(HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO, "utf8"), {
+          headers: reviewServerNoStoreHeadersChirho("text/markdown; charset=utf-8"),
+        });
+      }
+      if (urlChirho.pathname === "/syriac-blank-handoff-chirho") {
+        if (!existsSync(SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO)) {
+          return new Response("Syriac blank handoff not found", { status: 404 });
+        }
+        return new Response(readFileSync(SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO, "utf8"), {
           headers: reviewServerNoStoreHeadersChirho("text/markdown; charset=utf-8"),
         });
       }

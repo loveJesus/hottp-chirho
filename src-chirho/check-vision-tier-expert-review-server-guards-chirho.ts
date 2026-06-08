@@ -41,6 +41,8 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Copy command",
   "Quickstart",
   "/quickstart-chirho",
+  "Syriac blank handoff",
+  "/syriac-blank-handoff-chirho",
   "Recommended expert lanes",
   "Blank Syriac handoff",
   "script-chirho=hebrew-chirho",
@@ -78,6 +80,14 @@ const EXPERT_QUICKSTART_SNIPPETS_CHIRHO = [
   "Report Issue",
   "Blank Text",
   "expert-supplied text",
+];
+const SYRIAC_BLANK_HANDOFF_SNIPPETS_CHIRHO = [
+  "Syriac Blank Transcription Handoff Chirho",
+  "v3-p0151-l010-s3",
+  "x `767..950`",
+  "transcribe only the Syriac text inside the red box",
+  "Do not include the surrounding French parenthesis or comma",
+  "Applying supplied text only fills the blank structural hole. It does not certify the item.",
 ];
 
 interface ExpertReviewStateItemChirho {
@@ -250,6 +260,19 @@ async function assertExpertQuickstartEndpointChirho(portChirho: number): Promise
   }
 }
 
+async function assertSyriacBlankHandoffEndpointChirho(portChirho: number): Promise<void> {
+  const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/syriac-blank-handoff-chirho`);
+  const markdownChirho = await responseChirho.text();
+  assertCheckChirho(responseChirho.ok, `Syriac blank handoff request failed: ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, "Syriac blank handoff");
+  for (const snippetChirho of SYRIAC_BLANK_HANDOFF_SNIPPETS_CHIRHO) {
+    assertCheckChirho(
+      markdownChirho.includes(snippetChirho),
+      `Syriac blank handoff is missing snippet: ${snippetChirho}`
+    );
+  }
+}
+
 async function blankStateItemChirho(portChirho: number): Promise<ExpertReviewStateItemChirho | null> {
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/state-chirho`);
   const dataChirho = (await responseChirho.json()) as ExpertReviewStateResponseChirho;
@@ -354,6 +377,7 @@ async function mainChirho(): Promise<void> {
     await waitForServerChirho(portChirho, processChirho);
     await assertExpertReviewGuidanceHtmlChirho(portChirho);
     await assertExpertQuickstartEndpointChirho(portChirho);
+    await assertSyriacBlankHandoffEndpointChirho(portChirho);
     const itemChirho = await stateItemChirho(portChirho);
     await assertExpertAssetEndpointNoStoreChirho(portChirho, itemChirho);
     const blankItemChirho = await blankStateItemChirho(portChirho);
