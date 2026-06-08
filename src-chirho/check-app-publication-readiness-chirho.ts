@@ -13,15 +13,29 @@
  * Use --summary-only-chirho to print the current status artifact without
  * running the app build or certification bundle. That mode is a quick triage
  * view, not a publication verification.
+ *
+ * Use --lock-smoke-test-chirho=<ms> only from guard tests with
+ * READINESS_LOCK_SMOKE_TEST_CHIRHO=1; it exercises the readiness lock without
+ * running the app build or certification bundle.
  */
 
-import { readFileSync } from "fs";
-import { join, relative } from "path";
+import { mkdirSync, readFileSync, rmSync, statSync, writeFileSync } from "fs";
+import { dirname, join, relative } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
 const MODULE_CHIRHO = "check-app-publication-readiness-chirho";
 const APP_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "app-chirho");
+const READINESS_LOCK_DIR_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "run-locks-chirho",
+  "app-publication-readiness-chirho.lock"
+);
+const READINESS_LOCK_WAIT_MS_CHIRHO = 180_000;
+const READINESS_LOCK_STALE_MS_CHIRHO = 15 * 60_000;
+const READINESS_LOCK_POLL_MS_CHIRHO = 250;
+const READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO = "READINESS_LOCK_SMOKE_TEST_CHIRHO";
 const STATUS_JSON_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "workspace-chirho",
@@ -105,6 +119,73 @@ function runCommandChirho(commandChirho: CommandChirho): void {
   if (resultChirho.exitCode !== 0) {
     throw new Error(`${commandChirho.labelChirho} failed with exit code ${resultChirho.exitCode}`);
   }
+}
+
+function sleepSyncChirho(msChirho: number): void {
+  const bufferChirho = new SharedArrayBuffer(4);
+  Atomics.wait(new Int32Array(bufferChirho), 0, 0, msChirho);
+}
+
+function lockInfoTextChirho(): string {
+  return JSON.stringify(
+    {
+      moduleChirho: MODULE_CHIRHO,
+      pidChirho: process.pid,
+      startedAtChirho: new Date().toISOString(),
+    },
+    null,
+    2
+  );
+}
+
+function acquireReadinessLockChirho(): () => void {
+  mkdirSync(dirname(READINESS_LOCK_DIR_CHIRHO), { recursive: true });
+  const deadlineChirho = Date.now() + READINESS_LOCK_WAIT_MS_CHIRHO;
+  while (true) {
+    try {
+      mkdirSync(READINESS_LOCK_DIR_CHIRHO);
+      writeFileSync(join(READINESS_LOCK_DIR_CHIRHO, "owner-chirho.json"), `${lockInfoTextChirho()}\n`);
+      console.log(`[${MODULE_CHIRHO}] acquired readiness lock: ${relativeProjectPathChirho(READINESS_LOCK_DIR_CHIRHO)}`);
+      return () => {
+        rmSync(READINESS_LOCK_DIR_CHIRHO, { recursive: true, force: true });
+        console.log(`[${MODULE_CHIRHO}] released readiness lock`);
+      };
+    } catch (errorChirho) {
+      const codeChirho = typeof errorChirho === "object" && errorChirho !== null && "code" in errorChirho
+        ? String((errorChirho as { code?: unknown }).code)
+        : "";
+      if (codeChirho !== "EEXIST") throw errorChirho;
+      let staleChirho = false;
+      try {
+        const ageMsChirho = Date.now() - statSync(READINESS_LOCK_DIR_CHIRHO).mtimeMs;
+        staleChirho = ageMsChirho > READINESS_LOCK_STALE_MS_CHIRHO;
+      } catch {
+        staleChirho = true;
+      }
+      if (staleChirho) {
+        rmSync(READINESS_LOCK_DIR_CHIRHO, { recursive: true, force: true });
+        continue;
+      }
+      if (Date.now() >= deadlineChirho) {
+        throw new Error(
+          `timed out waiting for readiness lock ${relativeProjectPathChirho(READINESS_LOCK_DIR_CHIRHO)}`
+        );
+      }
+      sleepSyncChirho(READINESS_LOCK_POLL_MS_CHIRHO);
+    }
+  }
+}
+
+function parseLockSmokeTestMsChirho(argsChirho: string[]): number | null {
+  const prefixChirho = "--lock-smoke-test-chirho=";
+  const argChirho = argsChirho.find((candidateChirho) => candidateChirho.startsWith(prefixChirho));
+  if (argChirho === undefined) return null;
+  const valueChirho = argChirho.slice(prefixChirho.length);
+  const parsedChirho = Number.parseInt(valueChirho, 10);
+  if (!Number.isInteger(parsedChirho) || parsedChirho < 0 || String(parsedChirho) !== valueChirho.trim()) {
+    throw new Error(`invalid ${prefixChirho}${valueChirho}`);
+  }
+  return parsedChirho;
 }
 
 function readCertificationStatusChirho(): CertificationStatusSummaryChirho {
@@ -275,6 +356,23 @@ function printReadinessSummaryChirho(
 function mainChirho(): void {
   const requireCertifiedMarkdownChirho = process.argv.includes("--require-certified-markdown-chirho");
   const summaryOnlyChirho = process.argv.includes("--summary-only-chirho");
+  const lockSmokeTestMsChirho = parseLockSmokeTestMsChirho(process.argv);
+  if (lockSmokeTestMsChirho !== null) {
+    if (process.env[READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO] !== "1") {
+      throw new Error(
+        `--lock-smoke-test-chirho is guard-only and requires ${READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO}=1`
+      );
+    }
+    const releaseReadinessLockChirho = acquireReadinessLockChirho();
+    try {
+      console.log(`[${MODULE_CHIRHO}] lock smoke test holding for ${lockSmokeTestMsChirho}ms`);
+      sleepSyncChirho(lockSmokeTestMsChirho);
+      console.log(`[${MODULE_CHIRHO}] lock smoke test completed`);
+    } finally {
+      releaseReadinessLockChirho();
+    }
+    return;
+  }
   if (summaryOnlyChirho) {
     console.log(
       `[${MODULE_CHIRHO}] Summary-only mode: using existing status artifact; run without --summary-only-chirho before any publication claim.`
@@ -286,7 +384,7 @@ function mainChirho(): void {
     }
     return;
   }
-  const commandsChirho: CommandChirho[] = [
+  const appCommandsChirho: CommandChirho[] = [
     {
       labelChirho: "Svelte app check",
       argsChirho: [process.execPath, "run", "check"],
@@ -297,21 +395,27 @@ function mainChirho(): void {
       argsChirho: [process.execPath, "run", "build"],
       cwdChirho: APP_DIR_CHIRHO,
     },
-    {
-      labelChirho: "transcription certification verification bundle",
-      argsChirho: [process.execPath, "run", "check-certification-chirho"],
-      cwdChirho: PROJECT_ROOT_CHIRHO,
-    },
   ];
+  const certificationCommandChirho: CommandChirho = {
+    labelChirho: "transcription certification verification bundle",
+    argsChirho: [process.execPath, "run", "check-certification-chirho"],
+    cwdChirho: PROJECT_ROOT_CHIRHO,
+  };
 
-  for (const commandChirho of commandsChirho) {
-    runCommandChirho(commandChirho);
-  }
+  const releaseReadinessLockChirho = acquireReadinessLockChirho();
+  try {
+    for (const commandChirho of appCommandsChirho) {
+      runCommandChirho(commandChirho);
+    }
+    runCommandChirho(certificationCommandChirho);
 
-  const statusChirho = readCertificationStatusChirho();
-  printReadinessSummaryChirho(statusChirho, true);
-  if (requireCertifiedMarkdownChirho && statusChirho.certificationCompleteChirho !== true) {
-    throw new Error("certified UTF-8 Markdown publication is not ready");
+    const statusChirho = readCertificationStatusChirho();
+    printReadinessSummaryChirho(statusChirho, true);
+    if (requireCertifiedMarkdownChirho && statusChirho.certificationCompleteChirho !== true) {
+      throw new Error("certified UTF-8 Markdown publication is not ready");
+    }
+  } finally {
+    releaseReadinessLockChirho();
   }
 }
 

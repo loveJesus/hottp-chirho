@@ -44,6 +44,8 @@ const LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
   "app-chirho/",
 ];
 const RAW_HEBREW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
+  "Before a review session, run `bun run publication-readiness-summary-chirho` for the current first-pending raw Hebrew links",
+  "The summary is a live triage aid only; it does not certify text",
   "If no issue boxes are selected, a save is clean only when the clean-certification acknowledgement is checked.",
   "A dot inside a Hebrew letter is dagesh, mappiq, or shuruk, so classify it under Vowels/niqqud.",
   "Several Hebrew words in one span are acceptable only when the box intentionally covers exactly those words",
@@ -54,6 +56,8 @@ const RAW_HEBREW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "When uncertain, skip or save an issue. Do not use a clean review to express \"probably right.\"",
 ] as const;
 const HALLELUJAH_SESSION_GUIDE_SNIPPETS_CHIRHO = [
+  "Run `bun run publication-readiness-summary-chirho` for the current first-pending links and blocker counts.",
+  "This summary does not certify anything; it is a live triage map.",
   "Leaving all issue boxes unchecked is clean only when the clean-certification acknowledgement is checked.",
   "A dot inside a Hebrew letter is usually dagesh or mappiq; inside vav for `וּ` it is shuruk.",
   "Flag `Segmentation` when the box or text has a wrong word boundary",
@@ -121,6 +125,15 @@ function assertDocContainsSnippetsChirho(docPathChirho: string, textChirho: stri
     assertGeneratedCheckChirho(
       textChirho.includes(snippetChirho),
       `${docPathChirho} is missing required review guidance: ${snippetChirho}`
+    );
+  }
+}
+
+function assertDocOmitsSnippetsChirho(docPathChirho: string, textChirho: string, snippetsChirho: readonly string[]): void {
+  for (const snippetChirho of snippetsChirho) {
+    assertGeneratedCheckChirho(
+      !textChirho.includes(snippetChirho),
+      `${docPathChirho} contains deprecated or overclaiming wording: ${snippetChirho}`
     );
   }
 }
@@ -251,6 +264,8 @@ function assertProductionPathCountsChirho(
     "strictBlindScansChirho.hebrewDelimiterOrderChirho"
   );
   assertDocContainsSnippetsChirho(docPathChirho, textChirho, [
+    "# HOTTP Transcription — Status & Path to Production (updated 2026-06-08)",
+    "## 2. What we have today (verified 2026-06-08)",
     `${formattedNumberChirho(volumeCountChirho)} volumes · ${formattedNumberChirho(pageCountChirho)} pages · ${formattedNumberChirho(spanLineFileCountChirho)} span-line files · **${formattedNumberChirho(liveSpanCountChirho)} spans**`,
     `**${unknownSpanCountChirho} unknown spans · ${replacementCharCountChirho} replacement characters · ${nonNfcSpanCountChirho} non-NFC spans**`,
     `hidden-Hebrew candidates **${hiddenHebrewCandidateCountChirho}**, non-Latin-residue candidates **${nonLatinResidueCandidateCountChirho}**, Hebrew close-before-open delimiter suspects **${closeBeforeOpenSuspectCountChirho}**, neighbor-unbalanced damaged-text review rows **${neighborUnbalancedReviewCountChirho}**`,
@@ -261,6 +276,19 @@ function assertProductionPathCountsChirho(
     `| Non-Latin expert items | **${expertCountChirho}** (Hebrew ${expertHebrewCountChirho} · Greek ${expertGreekCountChirho} · Syriac ${expertSyriacCountChirho} · Arabic ${expertArabicCountChirho}) |`,
     `| Latin/symbol vision decisions | **${latinSymbolCountChirho} remaining**`,
     `${attributionBlockedCountChirho} current Pass-C human validation rows use the generic reviewer id \`human-chirho\``,
+    "The public app URLs currently respond, but app availability is separate from the certified-text gate",
+    "does not prove the current working corpus is published or certified.",
+    "**Review app release readiness:** `bun run check-app-publication-readiness-chirho`",
+    "A passing app preflight means the review app is build-ready; it does **not** mean the corpus is certified.",
+    "**Certified markdown publication gate:** `bun run check-certified-markdown-publication-chirho`",
+    "exits nonzero until the content-certification gate is green",
+    "**Quick triage only:** `bun run publication-readiness-summary-chirho`",
+    "It is useful for status checks, not for a publication claim.",
+  ]);
+  assertDocOmitsSnippetsChirho(docPathChirho, textChirho, [
+    "This is *already deployed and running*.",
+    "with all 5 volumes segmented + coordinates and OCR suggestions served",
+    "The supporting web app and OCR suggestions are already deployed",
   ]);
 }
 

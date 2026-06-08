@@ -9,8 +9,9 @@ This is a live-review workflow aid, not a certification record. It does not decr
 
 1. Run `bun run review-servers-chirho -- --check-chirho`.
 2. If a server is missing, run `bun run review-servers-chirho`.
-3. Use an explicit reviewer id in review forms, for example `hallelujah-chirho`. Do not use `human-chirho`, a role label, a template placeholder, or a machine id.
-4. When the page shows a stale warning, reload. If it still shows stale, stop and rerun `bun run check-certification-chirho`.
+3. Run `bun run publication-readiness-summary-chirho` for the current first-pending links and blocker counts. This summary does not certify anything; it is a live triage map.
+4. Use an explicit reviewer id in review forms, for example `hallelujah-chirho`. Do not use `human-chirho`, a role label, a template placeholder, or a machine id.
+5. When the page shows a stale warning, reload. If it still shows stale, stop and rerun `bun run check-certification-chirho`.
 
 ## Work You Can Do
 

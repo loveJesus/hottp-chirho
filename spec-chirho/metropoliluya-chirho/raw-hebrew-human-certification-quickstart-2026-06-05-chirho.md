@@ -7,6 +7,8 @@ This is a reviewer aid for the Pass-C Hebrew lane. It is not a certification rec
 
 Use the live validator at http://localhost:8766/. Put an explicit human reviewer id in the Reviewer field, for example `hallelujah-chirho`; do not use `human-chirho`, role labels, template text, or a machine id.
 
+Before a review session, run `bun run publication-readiness-summary-chirho` for the current first-pending raw Hebrew links, attribution cleanup links, and blocker counts. The summary is a live triage aid only; it does not certify text and does not replace checking the crop and full line.
+
 ## Fast Answers
 
 - Yes, use the validator for Hebrew and Greek you can actually read against the print. It is the certification UI. Skip or flag items outside your competence instead of clean-certifying them.

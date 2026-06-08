@@ -9,10 +9,21 @@
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
 const MODULE_CHIRHO = "check-publication-readiness-summary-guards-chirho";
+const READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO = "READINESS_LOCK_SMOKE_TEST_CHIRHO";
 
 interface CommandResultChirho {
   exitCodeChirho: number;
   outputChirho: string;
+}
+
+interface AsyncCommandOptionsChirho {
+  envChirho?: Record<string, string>;
+}
+
+interface AsyncCommandResultChirho {
+  exitCodeChirho: number | null;
+  outputChirho: string;
+  elapsedMsChirho: number;
 }
 
 function assertCheckChirho(conditionChirho: boolean, messageChirho: string): asserts conditionChirho {
@@ -31,6 +42,97 @@ function runPublicationSummaryChirho(argsChirho: string[]): CommandResultChirho 
     exitCodeChirho: resultChirho.exitCode,
     outputChirho: `${stdoutChirho}\n${stderrChirho}`,
   };
+}
+
+async function processOutputChirho(processChirho: Bun.Subprocess): Promise<string> {
+  const stdoutChirho =
+    processChirho.stdout instanceof ReadableStream ? await new Response(processChirho.stdout).text() : "";
+  const stderrChirho =
+    processChirho.stderr instanceof ReadableStream ? await new Response(processChirho.stderr).text() : "";
+  return [stdoutChirho, stderrChirho].filter((valueChirho) => valueChirho.length > 0).join("\n");
+}
+
+async function runAsyncCommandChirho(
+  argsChirho: string[],
+  optionsChirho: AsyncCommandOptionsChirho = {}
+): Promise<AsyncCommandResultChirho> {
+  const startedAtChirho = Date.now();
+  const processChirho = Bun.spawn(argsChirho, {
+    cwd: PROJECT_ROOT_CHIRHO,
+    env: optionsChirho.envChirho,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  const outputChirho = await processOutputChirho(processChirho);
+  const exitCodeChirho = await processChirho.exited;
+  return {
+    exitCodeChirho,
+    outputChirho,
+    elapsedMsChirho: Date.now() - startedAtChirho,
+  };
+}
+
+function readinessLockSmokeTestEnvChirho(): Record<string, string> {
+  return {
+    ...process.env,
+    [READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO]: "1",
+  } as Record<string, string>;
+}
+
+async function assertReadinessLockSerializesChirho(): Promise<void> {
+  const unguardedResultChirho = await runAsyncCommandChirho([
+    process.execPath,
+    "run",
+    "src-chirho/check-app-publication-readiness-chirho.ts",
+    "--lock-smoke-test-chirho=0",
+  ]);
+  assertCheckChirho(
+    unguardedResultChirho.exitCodeChirho !== 0,
+    "readiness lock smoke-test flag unexpectedly passed without guard environment variable"
+  );
+  assertCheckChirho(
+    unguardedResultChirho.outputChirho.includes(`${READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO}=1`),
+    `unguarded smoke-test failure did not name required env var\n${unguardedResultChirho.outputChirho}`
+  );
+  const firstProcessChirho = Bun.spawn(
+    [process.execPath, "run", "src-chirho/check-app-publication-readiness-chirho.ts", "--lock-smoke-test-chirho=900"],
+    {
+      cwd: PROJECT_ROOT_CHIRHO,
+      env: readinessLockSmokeTestEnvChirho(),
+      stdout: "pipe",
+      stderr: "pipe",
+    }
+  );
+  await new Promise((resolveChirho) => setTimeout(resolveChirho, 150));
+  const secondResultChirho = await runAsyncCommandChirho([
+    process.execPath,
+    "run",
+    "src-chirho/check-app-publication-readiness-chirho.ts",
+    "--lock-smoke-test-chirho=0",
+  ], { envChirho: readinessLockSmokeTestEnvChirho() });
+  const firstOutputChirho = await processOutputChirho(firstProcessChirho);
+  const firstExitCodeChirho = await firstProcessChirho.exited;
+  assertCheckChirho(
+    firstExitCodeChirho === 0,
+    `first readiness lock smoke test exited ${String(firstExitCodeChirho)}\n${firstOutputChirho}`
+  );
+  assertCheckChirho(
+    secondResultChirho.exitCodeChirho === 0,
+    `second readiness lock smoke test exited ${String(secondResultChirho.exitCodeChirho)}\n${secondResultChirho.outputChirho}`
+  );
+  assertCheckChirho(
+    firstOutputChirho.includes("acquired readiness lock") && firstOutputChirho.includes("released readiness lock"),
+    `first readiness lock smoke test did not acquire/release lock\n${firstOutputChirho}`
+  );
+  assertCheckChirho(
+    secondResultChirho.outputChirho.includes("acquired readiness lock") &&
+      secondResultChirho.outputChirho.includes("released readiness lock"),
+    `second readiness lock smoke test did not acquire/release lock\n${secondResultChirho.outputChirho}`
+  );
+  assertCheckChirho(
+    secondResultChirho.elapsedMsChirho >= 500,
+    `second readiness lock smoke test did not wait for the first lock holder; elapsed ${secondResultChirho.elapsedMsChirho}ms`
+  );
 }
 
 function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
@@ -56,7 +158,7 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
   );
 }
 
-function mainChirho(): void {
+async function mainChirho(): Promise<void> {
   const summaryResultChirho = runPublicationSummaryChirho([process.execPath, "run", "publication-readiness-summary-chirho"]);
   const summaryOutputChirho = summaryResultChirho.outputChirho;
   assertCheckChirho(
@@ -93,12 +195,13 @@ function mainChirho(): void {
       "strict publication summary failure must name certified Markdown readiness"
     );
   }
-  console.log(`[${MODULE_CHIRHO}] publication summary-only guard passed`);
+  await assertReadinessLockSerializesChirho();
+  console.log(`[${MODULE_CHIRHO}] publication summary-only and readiness-lock guards passed`);
 }
 
 if (import.meta.main) {
   try {
-    mainChirho();
+    await mainChirho();
   } catch (errorChirho) {
     const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
     console.error(`[${MODULE_CHIRHO}] ${messageChirho}`);

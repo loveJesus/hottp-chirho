@@ -1,13 +1,13 @@
 <!-- For God so loved the world that he gave his only begotten Son,
 that whoever believes in him should not perish but have eternal life. John 3:16 -->
 
-# HOTTP Transcription — Status & Path to Production (updated 2026-06-05)
+# HOTTP Transcription — Status & Path to Production (updated 2026-06-08)
 
 ## TL;DR (share-sized)
 
 We've built the full machine for turning the Barthélemy PDFs into *flawless* UTF-8 markdown, and it's working: the current 46-page working set (all 5 volumes) is transcribed into structured "spans" with **0 unknown characters, 0 broken characters, and 0 Unicode-normalization issues**, exported to markdown, and watched by a strict gate. The engineering is essentially done — what's left is **human/expert eyes confirming the non-Latin text against the printed page**, which the system now makes safe, attributable, and impossible to fake. To keep us honest, the certification gate is **deliberately RED** and will not turn green until that review actually happens — "the export passes != the text is certified."
 
-The path to production is now mostly **review, not building**. Three review stations are live: raw Hebrew (90 spans), Latin/symbol (563 remaining decisions), and non-Latin expert (645: Hebrew 336, Greek 267, Syriac 29, Arabic 13). Hebrew and Greek are yours to confirm; Syriac/Arabic and exact Aramaic/Targum vocalization route to experts. As each item is confirmed against the print (with the reviewer's name + rationale, anchored to the exact text), the gate counts down; when it reaches zero the **certified flawless markdown is the production artifact** — the published digital critical edition. The supporting web app and OCR suggestions are already deployed; the certified text is the thing we're now reviewing toward.
+The path to production is now mostly **review, not building**. Three review stations are live: raw Hebrew (90 spans), Latin/symbol (563 remaining decisions), and non-Latin expert (645: Hebrew 336, Greek 267, Syriac 29, Arabic 13). Hebrew and Greek are yours to confirm; Syriac/Arabic and exact Aramaic/Targum vocalization route to experts. As each item is confirmed against the print (with the reviewer's name + rationale, anchored to the exact text), the gate counts down; when it reaches zero the **certified flawless markdown is the production artifact** — the published digital critical edition. The supporting review/OCR app surface has a separate app-readiness preflight; the certified text is the thing we're now reviewing toward.
 
 ---
 
@@ -15,12 +15,18 @@ The path to production is now mostly **review, not building**. Three review stat
 
 Two distinct things are sometimes both called "production":
 
-1. **The live web infrastructure** — the Cloudflare Worker review/OCR app (`hottp-chirho.lovejesus.workers.dev` / `hottp-chirho.bible.systems`), with all 5 volumes segmented + coordinates and OCR suggestions served. This is *already deployed and running*.
+1. **The live web infrastructure** — the Cloudflare Worker review/OCR app (`hottp-chirho.lovejesus.workers.dev` / `hottp-chirho.bible.systems`). The public app URLs currently respond, but app availability is separate from the certified-text gate and does not prove the current working corpus is published or certified.
 2. **The certified flawless transcription** — the actual UTF-8 markdown of Barthélemy's *Critique textuelle de l'Ancien Testament*, certified correct against the print. This is the real "landing," and it is **not done yet**: it is gated on human/expert review, by design.
 
 This report is mostly about (2), because that is where the remaining work is.
 
-## 2. What we have today (verified 2026-06-05)
+Operationally, use the current readiness commands for the distinction:
+
+- **Review app release readiness:** `bun run check-app-publication-readiness-chirho` checks the app build/check surface and the certification bundle, then reports the certified-text gate separately. A passing app preflight means the review app is build-ready; it does **not** mean the corpus is certified.
+- **Certified markdown publication gate:** `bun run check-certified-markdown-publication-chirho` runs the same preflight but exits nonzero until the content-certification gate is green. This is the command to require before any "flawless UTF-8 markdown is ready to publish" claim.
+- **Quick triage only:** `bun run publication-readiness-summary-chirho` reads the existing status artifact without running the app build. It is useful for status checks, not for a publication claim.
+
+## 2. What we have today (verified 2026-06-08)
 
 **Transcription corpus (current working set):**
 - 5 volumes · 46 pages · 1,789 span-line files · **4,511 spans**
