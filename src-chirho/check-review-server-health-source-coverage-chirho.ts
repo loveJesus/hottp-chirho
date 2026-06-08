@@ -6,7 +6,9 @@ import { dirname, relative, resolve } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
+  reviewServerSourceStaleErrorChirho,
   reviewServerSourceFilesChirho,
+  reviewServerStartupHealthChirho,
   type ReviewServerKeyChirho,
 } from "./review-server-health-chirho.ts";
 
@@ -89,6 +91,29 @@ function missingSourceImportsForKeyChirho(keyChirho: ReviewServerKeyChirho): Mis
   return missingChirho;
 }
 
+function assertCheckChirho(conditionChirho: boolean, messageChirho: string): asserts conditionChirho {
+  if (!conditionChirho) throw new Error(messageChirho);
+}
+
+function assertStaleSourceChecksChirho(): void {
+  for (const keyChirho of REVIEW_SERVER_KEYS_CHIRHO) {
+    const freshHealthChirho = reviewServerStartupHealthChirho(keyChirho);
+    assertCheckChirho(
+      reviewServerSourceStaleErrorChirho(freshHealthChirho) === null,
+      `${keyChirho} fresh startup health unexpectedly reports stale source`
+    );
+    const staleHealthChirho = {
+      ...freshHealthChirho,
+      sourceFingerprintChirho: "0".repeat(freshHealthChirho.sourceFingerprintChirho.length),
+    };
+    const staleErrorChirho = reviewServerSourceStaleErrorChirho(staleHealthChirho);
+    assertCheckChirho(
+      staleErrorChirho !== null && staleErrorChirho.includes("review server source changed since startup"),
+      `${keyChirho} stale startup health did not report source drift`
+    );
+  }
+}
+
 function mainChirho(): void {
   const missingChirho = REVIEW_SERVER_KEYS_CHIRHO.flatMap((keyChirho) => missingSourceImportsForKeyChirho(keyChirho));
   if (missingChirho.length > 0) {
@@ -100,6 +125,7 @@ function mainChirho(): void {
     }
     process.exit(1);
   }
+  assertStaleSourceChecksChirho();
   console.log(`[${MODULE_CHIRHO}] review server source fingerprint lists cover local imports`);
 }
 

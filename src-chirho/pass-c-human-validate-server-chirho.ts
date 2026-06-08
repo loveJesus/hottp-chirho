@@ -47,6 +47,7 @@ import {
 } from "./reviewer-attribution-chirho.ts";
 import {
   reviewServerNoStoreHeadersChirho,
+  reviewServerSourceStaleErrorChirho,
   reviewServerStartupHealthChirho,
 } from "./review-server-health-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
@@ -2994,6 +2995,11 @@ function jsonResponseChirho(dataChirho: unknown, statusChirho = 200): Response {
   });
 }
 
+function staleReviewServerWriteResponseChirho(): Response | null {
+  const staleErrorChirho = reviewServerSourceStaleErrorChirho(SERVER_HEALTH_CHIRHO);
+  return staleErrorChirho === null ? null : jsonResponseChirho({ okChirho: false, errorChirho: staleErrorChirho }, 409);
+}
+
 async function spanImageResponseChirho(itemChirho: QueueItemChirho): Promise<Response> {
   if (!existsSync(itemChirho.lineImagePathChirho)) return new Response("not found", { status: 404 });
   const cropSpecChirho =
@@ -3066,6 +3072,8 @@ const serverChirho = Bun.serve({
       return jsonResponseChirho({ validationsChirho: validationsChirho() });
     }
     if (urlChirho.pathname === "/api-chirho/submit-chirho" && reqChirho.method === "POST") {
+      const staleServerResponseChirho = staleReviewServerWriteResponseChirho();
+      if (staleServerResponseChirho !== null) return staleServerResponseChirho;
       const bodyChirho = (await reqChirho.json()) as RawReviewSubmitRequestChirho;
       const itemChirho = queueByKeyChirho.get(bodyChirho.keyChirho);
       if (!itemChirho) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown key" }, 404);
@@ -3213,6 +3221,8 @@ const serverChirho = Bun.serve({
       return jsonResponseChirho({ okChirho: true, rowChirho });
     }
     if (urlChirho.pathname === "/api-chirho/undo-last-chirho" && reqChirho.method === "POST") {
+      const staleServerResponseChirho = staleReviewServerWriteResponseChirho();
+      if (staleServerResponseChirho !== null) return staleServerResponseChirho;
       const bodyChirho = (await reqChirho.json().catch(() => ({}))) as RawReviewUndoRequestChirho;
       const latestChirho = latestCurrentValidationStmtChirho.get() as
         | {

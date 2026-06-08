@@ -111,3 +111,25 @@ export function reviewServerStartupHealthChirho(keyChirho: ReviewServerKeyChirho
     ...reviewServerSourceFingerprintChirho(keyChirho),
   };
 }
+
+export function reviewServerSourceStaleErrorChirho(startupHealthChirho: ReviewServerHealthChirho): string | null {
+  let currentFingerprintChirho: ReviewServerSourceFingerprintChirho;
+  try {
+    currentFingerprintChirho = reviewServerSourceFingerprintChirho(startupHealthChirho.keyChirho);
+  } catch (errorChirho) {
+    const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
+    return `review server source freshness check failed: ${messageChirho}`;
+  }
+  if (
+    currentFingerprintChirho.sourceFingerprintChirho === startupHealthChirho.sourceFingerprintChirho &&
+    currentFingerprintChirho.sourceFileCountChirho === startupHealthChirho.sourceFileCountChirho
+  ) {
+    return null;
+  }
+  return (
+    `review server source changed since startup; restart the review server before saving ` +
+    `(started ${startupHealthChirho.startedAtChirho}, ` +
+    `server ${startupHealthChirho.sourceFingerprintChirho.slice(0, 12)}, ` +
+    `current ${currentFingerprintChirho.sourceFingerprintChirho.slice(0, 12)})`
+  );
+}

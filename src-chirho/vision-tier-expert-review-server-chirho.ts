@@ -24,6 +24,7 @@ import {
 } from "./reviewer-attribution-chirho.ts";
 import {
   reviewServerNoStoreHeadersChirho,
+  reviewServerSourceStaleErrorChirho,
   reviewServerStartupHealthChirho,
 } from "./review-server-health-chirho.ts";
 import { hashTextChirho } from "./text-normalization-chirho.ts";
@@ -173,6 +174,11 @@ function jsonResponseChirho(dataChirho: unknown, statusChirho = 200): Response {
     status: statusChirho,
     headers: reviewServerNoStoreHeadersChirho("application/json; charset=utf-8"),
   });
+}
+
+function staleReviewServerWriteResponseChirho(): Response | null {
+  const staleErrorChirho = reviewServerSourceStaleErrorChirho(SERVER_HEALTH_CHIRHO);
+  return staleErrorChirho === null ? null : jsonResponseChirho({ okChirho: false, errorChirho: staleErrorChirho }, 409);
 }
 
 function scriptJsonChirho(valueChirho: unknown): string {
@@ -1771,6 +1777,8 @@ const serverChirho = Bun.serve({
         });
       }
       if (urlChirho.pathname === "/api-chirho/confirm-chirho" && reqChirho.method === "POST") {
+        const staleServerResponseChirho = staleReviewServerWriteResponseChirho();
+        if (staleServerResponseChirho !== null) return staleServerResponseChirho;
         const bodyChirho = (await reqChirho.json()) as ConfirmRequestChirho;
         const itemIdChirho = nonEmptyTrimmedChirho(bodyChirho.idChirho);
         const reviewerChirho = nonEmptyTrimmedChirho(bodyChirho.reviewerChirho);
@@ -1837,6 +1845,8 @@ const serverChirho = Bun.serve({
         return jsonResponseChirho({ okChirho: true, policyChirho });
       }
       if (urlChirho.pathname === "/api-chirho/issue-chirho" && reqChirho.method === "POST") {
+        const staleServerResponseChirho = staleReviewServerWriteResponseChirho();
+        if (staleServerResponseChirho !== null) return staleServerResponseChirho;
         const bodyChirho = (await reqChirho.json()) as IssueRequestChirho;
         const itemIdChirho = nonEmptyTrimmedChirho(bodyChirho.idChirho);
         const reviewerChirho = nonEmptyTrimmedChirho(bodyChirho.reviewerChirho);
