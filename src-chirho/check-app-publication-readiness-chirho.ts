@@ -36,6 +36,7 @@ const READINESS_LOCK_WAIT_MS_CHIRHO = 180_000;
 const READINESS_LOCK_STALE_MS_CHIRHO = 15 * 60_000;
 const READINESS_LOCK_POLL_MS_CHIRHO = 250;
 const READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO = "READINESS_LOCK_SMOKE_TEST_CHIRHO";
+const SKIP_READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO = "SKIP_READINESS_LOCK_SMOKE_TEST_CHIRHO";
 const STATUS_JSON_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "workspace-chirho",
@@ -71,6 +72,7 @@ interface CommandChirho {
   labelChirho: string;
   argsChirho: string[];
   cwdChirho: string;
+  envChirho?: Record<string, string>;
 }
 
 interface CertificationStatusSummaryChirho {
@@ -115,6 +117,7 @@ function runCommandChirho(commandChirho: CommandChirho): void {
   console.log(`[${MODULE_CHIRHO}] ${commandChirho.labelChirho}: ${commandTextChirho(commandChirho)}`);
   const resultChirho = Bun.spawnSync(commandChirho.argsChirho, {
     cwd: commandChirho.cwdChirho,
+    env: commandChirho.envChirho,
     stdin: "inherit",
     stdout: "inherit",
     stderr: "inherit",
@@ -406,6 +409,10 @@ function mainChirho(): void {
     labelChirho: "transcription certification verification bundle",
     argsChirho: [process.execPath, "run", "check-certification-chirho"],
     cwdChirho: PROJECT_ROOT_CHIRHO,
+    envChirho: {
+      ...process.env,
+      [SKIP_READINESS_LOCK_SMOKE_TEST_ENV_CHIRHO]: "1",
+    } as Record<string, string>,
   };
 
   const releaseReadinessLockChirho = acquireReadinessLockChirho();
