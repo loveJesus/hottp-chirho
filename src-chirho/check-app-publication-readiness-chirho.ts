@@ -82,6 +82,19 @@ interface CertificationStatusSummaryChirho {
   reviewStartLinksChirho?: Record<string, unknown>;
   rawHebrewChirho?: {
     livePendingSpanCountChirho?: unknown;
+    triageChirho?: {
+      attentionItemCountChirho?: unknown;
+      lowConfidenceItemCountChirho?: unknown;
+      confidentDirectReadDisagreementItemCountChirho?: unknown;
+      multiTokenItemCountChirho?: unknown;
+      delimiterNotationItemCountChirho?: unknown;
+      noDirectReadItemCountChirho?: unknown;
+      preReviewNoteItemCountChirho?: unknown;
+      withoutPreReviewNoteItemCountChirho?: unknown;
+      preReviewCoveredAttentionItemCountChirho?: unknown;
+      preReviewUncoveredAttentionItemCountChirho?: unknown;
+      preReviewReasonGapAttentionItemCountChirho?: unknown;
+    };
   };
   structuralChirho?: {
     strictPassedChirho?: unknown;
@@ -299,6 +312,18 @@ function printReviewRoutingSummaryChirho(statusChirho: CertificationStatusSummar
   const frenchChirho = recordNumberChirho(pendingLatinCountsChirho, "french-chirho");
   const latinNonFrenchChirho = recordNumberChirho(pendingLatinCountsChirho, "latin-non-french-chirho");
   const symbolChirho = recordNumberChirho(pendingLatinCountsChirho, "symbol-chirho");
+  const rawTriageChirho = statusChirho.rawHebrewChirho?.triageChirho;
+  const rawAttentionChirho = finiteNumberChirho(rawTriageChirho?.attentionItemCountChirho);
+  const rawLowConfidenceChirho = finiteNumberChirho(rawTriageChirho?.lowConfidenceItemCountChirho);
+  const rawConfidentDisagreementChirho =
+    finiteNumberChirho(rawTriageChirho?.confidentDirectReadDisagreementItemCountChirho);
+  const rawMultiTokenChirho = finiteNumberChirho(rawTriageChirho?.multiTokenItemCountChirho);
+  const rawDelimiterNotationChirho = finiteNumberChirho(rawTriageChirho?.delimiterNotationItemCountChirho);
+  const rawNoDirectReadChirho = finiteNumberChirho(rawTriageChirho?.noDirectReadItemCountChirho);
+  const rawPreReviewNotesChirho = finiteNumberChirho(rawTriageChirho?.preReviewNoteItemCountChirho);
+  const rawWithoutPreReviewNotesChirho = finiteNumberChirho(rawTriageChirho?.withoutPreReviewNoteItemCountChirho);
+  const rawUncoveredAttentionChirho = finiteNumberChirho(rawTriageChirho?.preReviewUncoveredAttentionItemCountChirho);
+  const rawReasonGapAttentionChirho = finiteNumberChirho(rawTriageChirho?.preReviewReasonGapAttentionItemCountChirho);
 
   console.log(`[${MODULE_CHIRHO}] Review routing summary:`);
   console.log(
@@ -306,6 +331,18 @@ function printReviewRoutingSummaryChirho(statusChirho: CertificationStatusSummar
       `raw Hebrew ${numberTextChirho(rawHebrewPendingChirho)} + ` +
       `expert Hebrew/WLC ${numberTextChirho(expertHebrewChirho)} + ` +
       `expert Greek ${numberTextChirho(expertGreekChirho)}`
+  );
+  console.log(
+    `- Raw Hebrew attention triage: ${numberTextChirho(rawAttentionChirho)} flagged span(s); ` +
+      `overlapping signals low-confidence ${numberTextChirho(rawLowConfidenceChirho)}, ` +
+      `confident-disagreement ${numberTextChirho(rawConfidentDisagreementChirho)}, ` +
+      `multi-token ${numberTextChirho(rawMultiTokenChirho)}, ` +
+      `delimiter/damaged-text ${numberTextChirho(rawDelimiterNotationChirho)}, ` +
+      `no-direct-read ${numberTextChirho(rawNoDirectReadChirho)}; ` +
+      `pre-review notes ${numberTextChirho(rawPreReviewNotesChirho)}/${numberTextChirho(rawHebrewPendingChirho)} ` +
+      `pending raw span(s), without notes ${numberTextChirho(rawWithoutPreReviewNotesChirho)}, ` +
+      `uncovered attention ${numberTextChirho(rawUncoveredAttentionChirho)}, ` +
+      `reason gaps ${numberTextChirho(rawReasonGapAttentionChirho)}`
   );
   console.log(
     `- External script-expert lanes: ${numberTextChirho(externalScriptTargetsChirho)} item(s) = ` +

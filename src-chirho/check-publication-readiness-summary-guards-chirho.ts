@@ -204,6 +204,14 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
       outputChirho.includes("reattribute unchanged rows only if genuinely attributable"),
     "publication summary must split attribution cleanup into unchanged/changed routing"
   );
+  assertCheckChirho(
+    outputChirho.includes("Raw Hebrew attention triage:") &&
+      outputChirho.includes("overlapping signals") &&
+      outputChirho.includes("pre-review notes") &&
+      outputChirho.includes("uncovered attention") &&
+      outputChirho.includes("reason gaps"),
+    "publication summary must surface raw Hebrew triage and pre-review coverage"
+  );
 }
 
 async function mainChirho(): Promise<void> {
