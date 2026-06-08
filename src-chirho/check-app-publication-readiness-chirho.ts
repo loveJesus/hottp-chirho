@@ -274,8 +274,16 @@ function printNextReviewLinksChirho(statusChirho: CertificationStatusSummaryChir
     ["Latin/symbol script/sigla symbols", reviewStartLinkChirho(statusChirho, "latinSymbolSiglumSymbolChirho")],
     ["Latin/symbol nontrivial symbols", reviewStartLinkChirho(statusChirho, "latinSymbolNontrivialSymbolChirho")],
     ["Expert blank Syriac", reviewStartLinkChirho(statusChirho, "expertSyriacBlankChirho")],
+    ["Expert Syriac nonblank", reviewStartLinkChirho(statusChirho, "expertSyriacNonblankChirho")],
+    ["Expert Syriac Pass-C", reviewStartLinkChirho(statusChirho, "expertSyriacPassCOcrSourceChirho")],
+    ["Expert Arabic", reviewStartLinkChirho(statusChirho, "expertArabicChirho")],
+    ["Expert Arabic explicit", reviewStartLinkChirho(statusChirho, "expertArabicExplicitSpanSourceChirho")],
     ["Expert Hebrew/WLC", reviewStartLinkChirho(statusChirho, "expertHebrewChirho")],
+    ["Expert Hebrew explicit", reviewStartLinkChirho(statusChirho, "expertHebrewExplicitSpanSourceChirho")],
+    ["Expert Hebrew D1", reviewStartLinkChirho(statusChirho, "expertHebrewD1DerivedSourceChirho")],
     ["Expert Greek", reviewStartLinkChirho(statusChirho, "expertGreekChirho")],
+    ["Expert Greek explicit", reviewStartLinkChirho(statusChirho, "expertGreekExplicitSpanSourceChirho")],
+    ["Expert Greek Pass-C", reviewStartLinkChirho(statusChirho, "expertGreekPassCOcrSourceChirho")],
   ].filter((entryChirho): entryChirho is [string, string] => entryChirho[1] !== null);
   if (linksChirho.length === 0) return;
   console.log(`[${MODULE_CHIRHO}] Next review links:`);

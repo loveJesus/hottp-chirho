@@ -227,6 +227,17 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
       outputChirho.includes("Latin/symbol nontrivial symbols:"),
     "publication summary must link the actionable Latin/symbol script and risk lanes"
   );
+  assertCheckChirho(
+    outputChirho.includes("Expert Syriac nonblank:") &&
+      outputChirho.includes("Expert Syriac Pass-C:") &&
+      outputChirho.includes("Expert Arabic:") &&
+      outputChirho.includes("Expert Arabic explicit:") &&
+      outputChirho.includes("Expert Hebrew explicit:") &&
+      outputChirho.includes("Expert Hebrew D1:") &&
+      outputChirho.includes("Expert Greek explicit:") &&
+      outputChirho.includes("Expert Greek Pass-C:"),
+    "publication summary must link the actionable expert script and source lanes"
+  );
 }
 
 async function mainChirho(): Promise<void> {
