@@ -248,6 +248,21 @@ function assertProductionPathCountsChirho(
   const expertCountChirho = numberFieldChirho(visionTierChirho, "remainingConfirmationCountChirho", "visionTierChirho");
   const latinSymbolCountChirho = numberFieldChirho(latinSymbolChirho, "remainingDecisionCountChirho", "latinSymbolVisionChirho");
   const attributionBlockedCountChirho = numberFieldChirho(humanValidationDbChirho, "genericReviewerRowsChirho", "humanValidationDbChirho");
+  const attributionUnchangedCountChirho = numberFieldChirho(
+    humanValidationDbChirho,
+    "genericReviewerLiveTextMatchRowsChirho",
+    "humanValidationDbChirho"
+  );
+  const attributionChangedCountChirho = numberFieldChirho(
+    humanValidationDbChirho,
+    "genericReviewerLiveTextMismatchRowsChirho",
+    "humanValidationDbChirho"
+  );
+  const attributionUnknownCountChirho = numberFieldChirho(
+    humanValidationDbChirho,
+    "genericReviewerLiveTextUnknownRowsChirho",
+    "humanValidationDbChirho"
+  );
   const expertHebrewCountChirho = countMapValueChirho(visionTierChirho, "pendingVisionCountsChirho", "hebrew-chirho", "visionTierChirho");
   const expertGreekCountChirho = countMapValueChirho(visionTierChirho, "pendingVisionCountsChirho", "greek-chirho", "visionTierChirho");
   const expertSyriacCountChirho = countMapValueChirho(visionTierChirho, "pendingVisionCountsChirho", "syriac-chirho", "visionTierChirho");
@@ -285,6 +300,8 @@ function assertProductionPathCountsChirho(
     `| Non-Latin expert items | **${expertCountChirho}** (Hebrew ${expertHebrewCountChirho} · Greek ${expertGreekCountChirho} · Syriac ${expertSyriacCountChirho} · Arabic ${expertArabicCountChirho}) |`,
     `| Latin/symbol vision decisions | **${latinSymbolCountChirho} remaining**`,
     `${attributionBlockedCountChirho} current Pass-C human validation rows use the generic reviewer id \`human-chirho\``,
+    `${attributionUnchangedCountChirho} still match the currently live text, ${attributionChangedCountChirho} have changed since the original review, and ${attributionUnknownCountChirho} are currently unknown`,
+    `The ${attributionUnchangedCountChirho} unchanged-live-text rows are the only normal reattribution candidates; the ${attributionChangedCountChirho} changed-live-text rows should go through Attribution re-review`,
     "The public app URLs currently respond, but app availability is separate from the certified-text gate",
     "does not prove the current working corpus is published or certified.",
     "**Review app release readiness:** `bun run check-app-publication-readiness-chirho`",
