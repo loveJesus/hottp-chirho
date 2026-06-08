@@ -2546,7 +2546,7 @@ function pageHtmlChirho(): string {
             ? "Live text changed since this generic row was recorded. Use Attribution re-review by default; reattribute only after rechecking the current live text against the print."
             : reviewStateFilterChirho === "attribution-rereview-chirho"
             ? "Attribution re-review mode appends a fresh explicit human review that supersedes the generic row. Use this only when the old row is not genuinely attributable to one named reviewer."
-            : "Attribution-blocked row shown read-only. Inspect the crop; reattribute only if this existing row is genuinely attributable to the named human reviewer."
+            : "Attribution-blocked row shown read-only. Inspect the Target crop - red box is the item and Full line - red box in context panels; reattribute only if this existing row is genuinely attributable to the named human reviewer."
         }));
         sideChirho.appendChild(elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
           elChirho("div", { textChirho: "Attribution text state" }),

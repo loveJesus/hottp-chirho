@@ -37,7 +37,7 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Review server source:",
   "Hebrew letter alef",
   "Hebrew letter qof",
-  "Attribution-blocked row shown read-only. Inspect the crop; reattribute only if this existing row is genuinely attributable to the named human reviewer.",
+  "Attribution-blocked row shown read-only. Inspect the Target crop - red box is the item and Full line - red box in context panels; reattribute only if this existing row is genuinely attributable to the named human reviewer.",
   "Attribution re-review mode appends a fresh explicit human review that supersedes the generic row.",
   "Live text changed since this generic row was recorded. Use Attribution re-review by default; reattribute only after rechecking the current live text against the print.",
   "Attribution text state",
