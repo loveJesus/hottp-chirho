@@ -219,6 +219,13 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
     "publication summary must surface review workload by volume"
   );
   assertCheckChirho(
+    outputChirho.includes("Strict-blind scan evidence:") &&
+      outputChirho.includes("Candidate queues: hidden Hebrew 0 line(s), non-Latin residue 0 line(s)") &&
+      outputChirho.includes("Scanner freshness:") &&
+      outputChirho.includes("Strict-blind scans are heuristic evidence only"),
+    "publication summary must surface strict-blind scanner evidence without implying certification"
+  );
+  assertCheckChirho(
     outputChirho.includes("Raw Hebrew low confidence:") &&
       outputChirho.includes("Raw Hebrew multi-token:") &&
       outputChirho.includes("Raw Hebrew delimiter/damaged text:") &&

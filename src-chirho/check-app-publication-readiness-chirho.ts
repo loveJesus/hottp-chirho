@@ -141,6 +141,33 @@ interface CertificationStatusSummaryChirho {
     genericReviewerLiveTextMismatchRowsChirho?: unknown;
     genericReviewerLiveTextUnknownRowsChirho?: unknown;
   };
+  strictBlindScansChirho?: {
+    hiddenHebrewChirho?: {
+      reportExistsChirho?: unknown;
+      reportShapeOkChirho?: unknown;
+      scannerSourceFingerprintMatchesCurrentChirho?: unknown;
+      spanSourceFingerprintMatchesCurrentChirho?: unknown;
+      candidateLineCountChirho?: unknown;
+      summaryCountsMatchRenderedCandidatesChirho?: unknown;
+    };
+    nonLatinResidueChirho?: {
+      reportExistsChirho?: unknown;
+      reportShapeOkChirho?: unknown;
+      scannerSourceFingerprintMatchesCurrentChirho?: unknown;
+      spanSourceFingerprintMatchesCurrentChirho?: unknown;
+      candidateLineCountChirho?: unknown;
+      summaryCountsMatchRenderedCandidatesChirho?: unknown;
+    };
+    hebrewDelimiterOrderChirho?: {
+      reportExistsChirho?: unknown;
+      reportShapeOkChirho?: unknown;
+      scannerSourceFingerprintMatchesCurrentChirho?: unknown;
+      spanSourceFingerprintMatchesCurrentChirho?: unknown;
+      closeBeforeOpenSuspectCountChirho?: unknown;
+      neighborUnbalancedUncoveredByReviewCountChirho?: unknown;
+      summaryCountsMatchRenderedRowsChirho?: unknown;
+    };
+  };
 }
 
 function commandTextChirho(commandChirho: CommandChirho): string {
@@ -284,6 +311,10 @@ function sumNumbersChirho(valuesChirho: Array<number | null>): number | null {
 
 function numberTextChirho(valueChirho: number | null): string {
   return valueChirho === null ? "unknown" : String(valueChirho);
+}
+
+function booleanTextChirho(valueChirho: unknown): string {
+  return typeof valueChirho === "boolean" ? String(valueChirho) : "unknown";
 }
 
 function stringOrUnknownChirho(valueChirho: unknown): string {
@@ -514,6 +545,44 @@ function printReviewRoutingSummaryChirho(statusChirho: CertificationStatusSummar
   );
 }
 
+function printStrictBlindScanSummaryChirho(statusChirho: CertificationStatusSummaryChirho): void {
+  const hiddenHebrewChirho = statusChirho.strictBlindScansChirho?.hiddenHebrewChirho;
+  const nonLatinResidueChirho = statusChirho.strictBlindScansChirho?.nonLatinResidueChirho;
+  const delimiterOrderChirho = statusChirho.strictBlindScansChirho?.hebrewDelimiterOrderChirho;
+  if (
+    hiddenHebrewChirho === undefined &&
+    nonLatinResidueChirho === undefined &&
+    delimiterOrderChirho === undefined
+  ) {
+    return;
+  }
+  console.log(`[${MODULE_CHIRHO}] Strict-blind scan evidence:`);
+  console.log(
+    `- Candidate queues: hidden Hebrew ${numberOrUnknownChirho(hiddenHebrewChirho?.candidateLineCountChirho)} line(s), ` +
+      `non-Latin residue ${numberOrUnknownChirho(nonLatinResidueChirho?.candidateLineCountChirho)} line(s), ` +
+      `Hebrew delimiter close-before-open ${numberOrUnknownChirho(delimiterOrderChirho?.closeBeforeOpenSuspectCountChirho)}, ` +
+      `uncovered delimiter-neighbor rows ${numberOrUnknownChirho(delimiterOrderChirho?.neighborUnbalancedUncoveredByReviewCountChirho)}`
+  );
+  console.log(
+    `- Scanner freshness: hidden Hebrew exists=${booleanTextChirho(hiddenHebrewChirho?.reportExistsChirho)} ` +
+      `shape=${booleanTextChirho(hiddenHebrewChirho?.reportShapeOkChirho)} ` +
+      `source=${booleanTextChirho(hiddenHebrewChirho?.scannerSourceFingerprintMatchesCurrentChirho)} ` +
+      `spans=${booleanTextChirho(hiddenHebrewChirho?.spanSourceFingerprintMatchesCurrentChirho)} ` +
+      `rendered=${booleanTextChirho(hiddenHebrewChirho?.summaryCountsMatchRenderedCandidatesChirho)}; ` +
+      `non-Latin residue exists=${booleanTextChirho(nonLatinResidueChirho?.reportExistsChirho)} ` +
+      `shape=${booleanTextChirho(nonLatinResidueChirho?.reportShapeOkChirho)} ` +
+      `source=${booleanTextChirho(nonLatinResidueChirho?.scannerSourceFingerprintMatchesCurrentChirho)} ` +
+      `spans=${booleanTextChirho(nonLatinResidueChirho?.spanSourceFingerprintMatchesCurrentChirho)} ` +
+      `rendered=${booleanTextChirho(nonLatinResidueChirho?.summaryCountsMatchRenderedCandidatesChirho)}; ` +
+      `delimiter exists=${booleanTextChirho(delimiterOrderChirho?.reportExistsChirho)} ` +
+      `shape=${booleanTextChirho(delimiterOrderChirho?.reportShapeOkChirho)} ` +
+      `source=${booleanTextChirho(delimiterOrderChirho?.scannerSourceFingerprintMatchesCurrentChirho)} ` +
+      `spans=${booleanTextChirho(delimiterOrderChirho?.spanSourceFingerprintMatchesCurrentChirho)} ` +
+      `rendered=${booleanTextChirho(delimiterOrderChirho?.summaryCountsMatchRenderedRowsChirho)}`
+  );
+  console.log("- Strict-blind scans are heuristic evidence only; certification still requires the listed human/expert review gates.");
+}
+
 function printReadinessSummaryChirho(
   statusChirho: CertificationStatusSummaryChirho,
   appBuildCheckedChirho: boolean
@@ -541,6 +610,7 @@ function printReadinessSummaryChirho(
       console.log(`- ${itemChirho}`);
     }
     printReviewRoutingSummaryChirho(statusChirho);
+    printStrictBlindScanSummaryChirho(statusChirho);
     printNextReviewLinksChirho(statusChirho);
     printVolumeReviewLinksChirho(statusChirho);
     printBlankTextHandoffsChirho(statusChirho);
