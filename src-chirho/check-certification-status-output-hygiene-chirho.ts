@@ -1333,6 +1333,38 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
     assertMarkdownContainsChirho(markdownChirho, "- Guarded WLC correction commands: none pending", "empty guarded WLC command line");
   }
 
+  assertMarkdownContainsChirho(markdownChirho, "## Human Review Session Checklist", "human review session checklist heading");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "- This checklist is a triage aid only; it does not certify text, apply corrections, or decrement any gate.",
+    "human review checklist non-certifying warning"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    `- 1. Attribution cleanup (${numberFieldChirho(humanDbChirho, "genericReviewerRowsChirho", "humanValidationDbChirho")} row(s)):`,
+    "human review checklist attribution cleanup"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "- 2. Raw Hebrew certification: start with the primary unvalidated lane and inspect the crop plus full line before any clean save. Clean saves need the clean-certification checkbox; dots inside letters are vowels/niqqud, while cantillation/meteg are accent/meteg issues.",
+    "human review checklist raw Hebrew"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "- 3. Hebrew/Greek expert confirmations: confirm only exact letters, marks, punctuation, spacing, and crop against the print; use Report issue or Skip when uncertain.",
+    "human review checklist Hebrew Greek"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "- 4. External script handoff: Syriac and Arabic exact letters/dots require qualified readers.",
+    "human review checklist external script handoff"
+  );
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "- 5. Latin/symbol proofing: after script-critical work, review French, Latin, witness sigla, references, and nontrivial symbols against the print; witness sigla and references are not blanket-safe.",
+    "human review checklist Latin symbol"
+  );
+
   assertMarkdownContainsChirho(markdownChirho, "## Suggested Review Routing", "suggested review routing heading");
   assertMarkdownContainsChirho(
     markdownChirho,
