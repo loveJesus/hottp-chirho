@@ -818,7 +818,7 @@ function htmlChirho(): string {
       const cleanAcceptInputChirho = elChirho("input", { id: "accept-clean-chirho", type: "checkbox" });
       formChirho.appendChild(elChirho("label", { classChirho: "clean-accept-option-chirho", for: "accept-clean-chirho" }, [
         cleanAcceptInputChirho,
-        textNodeChirho("I checked the target crop and full line against the print; if no issue flags are checked, this item is intentionally accepted clean.")
+        textNodeChirho("I checked the Target crop - red box is the item and Full line - red box in context panels against the print; if no issue flags are checked, this item is intentionally accepted clean.")
       ]));
       formChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Notes" }));
       const notesChirho = elChirho("textarea", { classChirho: "notes-chirho", id: "notes-chirho" });

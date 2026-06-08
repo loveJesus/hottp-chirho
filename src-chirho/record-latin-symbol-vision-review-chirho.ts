@@ -74,7 +74,7 @@ function usageChirho(): string {
   return [
     `Usage: bun run ${MODULE_CHIRHO} --id=<packet-item-id> --verdict=<accepted-clean|reviewed-issues> --reviewer=<reviewer-chirho> (--expected-text-chirho=<text> | --expected-text-hash-chirho=<sha256>) [--accept-clean-chirho] [--issue-flags=a,b] [--notes=text]`,
     "",
-    "Accepted-clean writes require --accept-clean-chirho after checking the target crop and full line against the print.",
+    "Accepted-clean writes require --accept-clean-chirho after checking the Target crop - red box is the item and Full line - red box in context panels against the print.",
     "Reviewed-issues writes require at least one --issue-flags value and non-empty --notes explaining the problem.",
     "Every review write requires --expected-text-chirho or --expected-text-hash-chirho for the exact live item text being reviewed.",
     "Use --export-backup[=path] to write a committable JSON backup of current review rows.",
@@ -164,7 +164,7 @@ function mainChirho(): void {
   const issueFlagsChirho = parseIssueFlagsChirho(parseArgValueChirho(argsChirho, "issue-flags"));
   if (verdictChirho === "accepted-clean-chirho" && !argsChirho.includes("--accept-clean-chirho")) {
     dbChirho.close();
-    throw new Error("--accept-clean-chirho is required for accepted-clean after checking the target crop and full line against the print");
+    throw new Error("--accept-clean-chirho is required for accepted-clean after checking the Target crop - red box is the item and Full line - red box in context panels against the print");
   }
   assertExpectedTextGuardChirho(argsChirho, liveItemChirho);
   const reviewerChirho = requiredArgValueChirho(argsChirho, "reviewer");

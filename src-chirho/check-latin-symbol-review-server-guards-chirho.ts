@@ -36,7 +36,7 @@ const LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "volume-chirho=vol-5-chirho",
   "A clean acceptance requires the checkbox below.",
   "Check a flag and write a note for any wrong letter/digit/siglum, punctuation, spacing, crop, split, missing text, or extra text.",
-  "I checked the target crop and full line against the print; if no issue flags are checked, this item is intentionally accepted clean.",
+  "I checked the Target crop - red box is the item and Full line - red box in context panels against the print; if no issue flags are checked, this item is intentionally accepted clean.",
   "clean acceptance checkbox required",
   "issue review cannot carry the clean-acceptance checkbox",
   "clean acceptance covers only this target crop and current text, with exact letters/digits/sigla, punctuation, spacing, and segmentation checked against the full line.",

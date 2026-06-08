@@ -144,7 +144,7 @@ function mainChirho(): void {
     }
     if (!acceptCleanChirho) {
       throw new Error(
-        "--accept-clean-chirho is required for accepted policy after checking every selected item crop and full line against the print"
+        "--accept-clean-chirho is required for accepted policy after checking every selected item's Target crop - red box is the item and Full line - red box in context panels against the print"
       );
     }
   }
