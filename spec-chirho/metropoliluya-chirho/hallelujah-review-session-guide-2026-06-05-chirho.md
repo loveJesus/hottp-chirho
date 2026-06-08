@@ -18,7 +18,7 @@ This is a live-review workflow aid, not a certification record. It does not decr
 - Raw Hebrew: use `http://localhost:8766/`.
 - Hebrew/WLC expert lane: use `http://localhost:8771/?script-chirho=hebrew-chirho`.
 - Greek expert lane: use `http://localhost:8771/?script-chirho=greek-chirho`.
-- Attribution cleanup: use `http://localhost:8766/?review-state-chirho=attribution-blocked-chirho` only for rows you can honestly identify as yours. Otherwise use `http://localhost:8766/?review-state-chirho=attribution-rereview-chirho`.
+- Attribution cleanup: start with `http://localhost:8766/?review-state-chirho=attribution-blocked-chirho&attribution-text-chirho=unchanged-chirho` for rows whose live text still matches the original review. Reattribute only rows you can honestly identify as yours. Use `http://localhost:8766/?review-state-chirho=attribution-rereview-chirho&attribution-text-chirho=changed-chirho` for rows whose live text changed, unless you recheck the current print text and deliberately choose the guarded changed-text reattribution path.
 
 Do not confirm Syriac, Arabic, or exact Hebrew-script Aramaic/Targum vocalization unless you are competent for that script or tradition. You may still report crop, source, wrong-lane, or segmentation problems.
 
@@ -83,7 +83,8 @@ For expert-lane items, `Confirm` means the current text already exactly matches 
 
 Attribution cleanup is not a shortcut around review. Reattribute a row only when you can honestly say the existing decision was made by the named reviewer and the current live text has been checked as needed.
 
-- If the status report says live text changed, prefer re-review.
+- If the status report says live text changed, prefer re-review. Changed rows should not be bulk-reattributed from memory.
+- If the status report says live text is unchanged, reattribute only after confirming the old decision is genuinely attributable to the named human reviewer.
 - If you reattribute, run the dry-run command first and inspect the output before applying.
 - If you are not sure who made the original decision, re-review instead of reattributing.
 
