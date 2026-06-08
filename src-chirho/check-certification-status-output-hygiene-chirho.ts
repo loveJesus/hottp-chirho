@@ -36,7 +36,7 @@ const STATUS_BUN_RUN_COMMAND_RE_CHIRHO = /\bbun run\s+([^\s`]+)/g;
 const REVIEW_SERVER_PORTS_CHIRHO = new Set([8766, 8770, 8771]);
 const REVIEW_VOLUMES_CHIRHO = [1, 2, 3, 4, 5] as const;
 const RAW_HEBREW_CLEAN_CERTIFICATION_STATUS_LINE_CHIRHO =
-  "- Raw Hebrew clean certification: leave issue boxes unchecked only when letters, vowels/marks, accents/meteg, punctuation, spacing, maqqef, word boundaries, script, and the red box all match the print, then check the clean-certification acknowledgement before saving as clean.";
+  "- Raw Hebrew clean certification: leave issue boxes unchecked only when letters, vowels/marks, accents/meteg, punctuation, spacing, maqqef, word boundaries, script, and the `Target crop - red box is the item` plus `Full line - red box in context` panels all match the print, then check the clean-certification acknowledgement before saving as clean.";
 const ATTRIBUTION_HANDOFF_MARKDOWN_HEADER_CHIRHO =
   "<!-- For God so loved the world that he gave his only begotten Son, that whoever believes in him should not perish but have eternal life. John 3:16 -->";
 
@@ -1346,12 +1346,12 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
   );
   assertMarkdownContainsChirho(
     markdownChirho,
-    "- 2. Raw Hebrew certification: start with the primary unvalidated lane and inspect the crop plus full line before any clean save. Clean saves need the clean-certification checkbox; dots inside letters are vowels/niqqud, while cantillation/meteg are accent/meteg issues.",
+    "- 2. Raw Hebrew certification: start with the primary unvalidated lane and inspect the `Target crop - red box is the item` and `Full line - red box in context` panels before any clean save. Clean saves need the clean-certification checkbox; dots inside letters are vowels/niqqud, while cantillation/meteg are accent/meteg issues.",
     "human review checklist raw Hebrew"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
-    "- 3. Hebrew/Greek expert confirmations: confirm only exact letters, marks, punctuation, spacing, and crop against the print; use Report issue or Skip when uncertain.",
+    "- 3. Hebrew/Greek expert confirmations: use the `Target crop - red box is the item` panel as the exact boundary; confirm only exact letters, marks, punctuation, and spacing against the print; use Report issue or Skip when uncertain.",
     "human review checklist Hebrew Greek"
   );
   assertMarkdownContainsChirho(
@@ -1361,7 +1361,7 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
   );
   assertMarkdownContainsChirho(
     markdownChirho,
-    "- 5. Latin/symbol proofing: after script-critical work, review French, Latin, witness sigla, references, and nontrivial symbols against the print; witness sigla and references are not blanket-safe.",
+    "- 5. Latin/symbol proofing: after script-critical work, review French, Latin, witness sigla, references, and nontrivial symbols in the `Target crop - red box is the item` and `Full line - red box in context` panels; witness sigla and references are not blanket-safe.",
     "human review checklist Latin symbol"
   );
 
