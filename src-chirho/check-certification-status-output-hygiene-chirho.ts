@@ -1341,13 +1341,13 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
   );
   assertMarkdownContainsChirho(
     markdownChirho,
-    `- 1. Attribution cleanup (${numberFieldChirho(humanDbChirho, "genericReviewerRowsChirho", "humanValidationDbChirho")} row(s)):`,
-    "human review checklist attribution cleanup"
+    "- 1. Raw Hebrew certification: start with the primary unvalidated lane and inspect the `Target crop - red box is the item` and `Full line - red box in context` panels before any clean save. Clean saves need the clean-certification checkbox; dots inside letters are vowels/niqqud, while cantillation/meteg are accent/meteg issues.",
+    "human review checklist raw Hebrew"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
-    "- 2. Raw Hebrew certification: start with the primary unvalidated lane and inspect the `Target crop - red box is the item` and `Full line - red box in context` panels before any clean save. Clean saves need the clean-certification checkbox; dots inside letters are vowels/niqqud, while cantillation/meteg are accent/meteg issues.",
-    "human review checklist raw Hebrew"
+    `- 2. Attribution cleanup (${numberFieldChirho(humanDbChirho, "genericReviewerRowsChirho", "humanValidationDbChirho")} row(s)):`,
+    "human review checklist attribution cleanup"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
