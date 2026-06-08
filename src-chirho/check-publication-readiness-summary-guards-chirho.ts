@@ -213,6 +213,12 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
     "publication summary must surface raw Hebrew triage and pre-review coverage"
   );
   assertCheckChirho(
+    outputChirho.includes("Raw Hebrew by volume:") &&
+      outputChirho.includes("Expert review by volume:") &&
+      outputChirho.includes("Latin/symbol by volume:"),
+    "publication summary must surface review workload by volume"
+  );
+  assertCheckChirho(
     outputChirho.includes("Raw Hebrew low confidence:") &&
       outputChirho.includes("Raw Hebrew multi-token:") &&
       outputChirho.includes("Raw Hebrew delimiter/damaged text:") &&

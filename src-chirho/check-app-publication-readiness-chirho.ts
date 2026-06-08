@@ -67,6 +67,13 @@ const HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "hallelujah-review-session-guide-2026-06-05-chirho.md"
 );
+const REVIEW_VOLUME_KEYS_CHIRHO = [
+  "vol-1-chirho",
+  "vol-2-chirho",
+  "vol-3-chirho",
+  "vol-4-chirho",
+  "vol-5-chirho",
+] as const;
 
 interface CommandChirho {
   labelChirho: string;
@@ -82,6 +89,7 @@ interface CertificationStatusSummaryChirho {
   reviewStartLinksChirho?: Record<string, unknown>;
   rawHebrewChirho?: {
     livePendingSpanCountChirho?: unknown;
+    livePendingVolumeCountsChirho?: Record<string, unknown>;
     triageChirho?: {
       attentionItemCountChirho?: unknown;
       lowConfidenceItemCountChirho?: unknown;
@@ -104,10 +112,12 @@ interface CertificationStatusSummaryChirho {
     remainingConfirmationCountChirho?: unknown;
     pendingVisionCountsChirho?: Record<string, unknown>;
     pendingBlankTextCountsChirho?: Record<string, unknown>;
+    pendingVolumeCountsChirho?: Record<string, unknown>;
   };
   latinSymbolVisionChirho?: {
     remainingDecisionCountChirho?: unknown;
     pendingDecisionCountsChirho?: Record<string, unknown>;
+    pendingDecisionVolumeCountsChirho?: Record<string, unknown>;
     pendingMixedScriptSymbolItemCountChirho?: unknown;
     pendingNontrivialSymbolItemCountChirho?: unknown;
     pendingTrivialPunctuationSymbolItemCountChirho?: unknown;
@@ -221,6 +231,33 @@ function finiteNumberChirho(valueChirho: unknown): number | null {
 
 function recordNumberChirho(recordChirho: Record<string, unknown> | undefined, keyChirho: string): number | null {
   return finiteNumberChirho(recordChirho?.[keyChirho]);
+}
+
+function reviewVolumeLabelChirho(volumeKeyChirho: string): string {
+  const matchChirho = /^vol-(\d+)-chirho$/.exec(volumeKeyChirho);
+  return matchChirho === null ? volumeKeyChirho : `vol ${matchChirho[1]}`;
+}
+
+function reviewVolumeCountsTextChirho(volumeCountsChirho: Record<string, unknown> | undefined): string {
+  if (volumeCountsChirho === undefined) return "unknown";
+  const orderedKeySetChirho = new Set<string>(REVIEW_VOLUME_KEYS_CHIRHO);
+  const entriesChirho: string[] = [];
+  for (const volumeKeyChirho of REVIEW_VOLUME_KEYS_CHIRHO) {
+    const countChirho = finiteNumberChirho(volumeCountsChirho[volumeKeyChirho]);
+    if (countChirho !== null && countChirho > 0) {
+      entriesChirho.push(`${reviewVolumeLabelChirho(volumeKeyChirho)} ${countChirho}`);
+    }
+  }
+  const extraKeysChirho = Object.keys(volumeCountsChirho)
+    .filter((volumeKeyChirho) => !orderedKeySetChirho.has(volumeKeyChirho))
+    .sort();
+  for (const volumeKeyChirho of extraKeysChirho) {
+    const countChirho = finiteNumberChirho(volumeCountsChirho[volumeKeyChirho]);
+    if (countChirho !== null && countChirho > 0) {
+      entriesChirho.push(`${reviewVolumeLabelChirho(volumeKeyChirho)} ${countChirho}`);
+    }
+  }
+  return entriesChirho.length === 0 ? "none" : entriesChirho.join(", ");
 }
 
 function sumNumbersChirho(valuesChirho: Array<number | null>): number | null {
@@ -341,6 +378,15 @@ function printReviewRoutingSummaryChirho(statusChirho: CertificationStatusSummar
   const rawWithoutPreReviewNotesChirho = finiteNumberChirho(rawTriageChirho?.withoutPreReviewNoteItemCountChirho);
   const rawUncoveredAttentionChirho = finiteNumberChirho(rawTriageChirho?.preReviewUncoveredAttentionItemCountChirho);
   const rawReasonGapAttentionChirho = finiteNumberChirho(rawTriageChirho?.preReviewReasonGapAttentionItemCountChirho);
+  const rawVolumeCountsTextChirho = reviewVolumeCountsTextChirho(
+    statusChirho.rawHebrewChirho?.livePendingVolumeCountsChirho
+  );
+  const expertVolumeCountsTextChirho = reviewVolumeCountsTextChirho(
+    statusChirho.visionTierChirho?.pendingVolumeCountsChirho
+  );
+  const latinSymbolVolumeCountsTextChirho = reviewVolumeCountsTextChirho(
+    statusChirho.latinSymbolVisionChirho?.pendingDecisionVolumeCountsChirho
+  );
 
   console.log(`[${MODULE_CHIRHO}] Review routing summary:`);
   console.log(
@@ -361,11 +407,13 @@ function printReviewRoutingSummaryChirho(statusChirho: CertificationStatusSummar
       `uncovered attention ${numberTextChirho(rawUncoveredAttentionChirho)}, ` +
       `reason gaps ${numberTextChirho(rawReasonGapAttentionChirho)}`
   );
+  console.log(`- Raw Hebrew by volume: ${rawVolumeCountsTextChirho}`);
   console.log(
     `- External script-expert lanes: ${numberTextChirho(externalScriptTargetsChirho)} item(s) = ` +
       `Syriac ${numberTextChirho(expertSyriacChirho)} + Arabic ${numberTextChirho(expertArabicChirho)}; ` +
       `blank Syriac handoff ${numberTextChirho(blankSyriacChirho)}`
   );
+  console.log(`- Expert review by volume: ${expertVolumeCountsTextChirho}`);
   console.log(
     `- Latin/symbol proofing: ${numberOrUnknownChirho(statusChirho.latinSymbolVisionChirho?.remainingDecisionCountChirho)} item(s) = ` +
       `French ${numberTextChirho(frenchChirho)} + ` +
@@ -375,6 +423,7 @@ function printReviewRoutingSummaryChirho(statusChirho: CertificationStatusSummar
       `${numberOrUnknownChirho(statusChirho.latinSymbolVisionChirho?.pendingNontrivialSymbolItemCountChirho)} nontrivial, ` +
       `${numberOrUnknownChirho(statusChirho.latinSymbolVisionChirho?.pendingTrivialPunctuationSymbolItemCountChirho)} trivial pending)`
   );
+  console.log(`- Latin/symbol by volume: ${latinSymbolVolumeCountsTextChirho}`);
   console.log(
     `- Attribution cleanup: ${numberOrUnknownChirho(statusChirho.humanValidationDbChirho?.genericReviewerRowsChirho)} row(s); ` +
       `unchanged ${numberOrUnknownChirho(statusChirho.humanValidationDbChirho?.genericReviewerLiveTextMatchRowsChirho)}, ` +
