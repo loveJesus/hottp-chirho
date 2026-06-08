@@ -3174,11 +3174,21 @@ function assertCoreRemainingWorkCoverageChirho(
     "remainingDecisionCountChirho",
     "latinSymbolVisionChirho"
   );
+  const issueCodeCountsChirho = countMapFieldChirho(
+    structuralChirho,
+    "issueCodeCountsChirho",
+    "structuralChirho"
+  );
+  const issueCodeSummaryChirho = countMapDisplayChirho(issueCodeCountsChirho);
+  const structuralStrictBlockerChirho =
+    issueCodeSummaryChirho === "none"
+      ? "structural export strict gate is not clean"
+      : `structural export strict gate is not clean (issue codes: ${issueCodeSummaryChirho})`;
 
   assertRemainingWorkToggleChirho(
     remainingWorkChirho,
     !strictPassedChirho || issueCountChirho !== 0,
-    "structural export strict gate is not clean",
+    structuralStrictBlockerChirho,
     "structural export strict gate is not clean"
   );
   assertRemainingWorkToggleChirho(

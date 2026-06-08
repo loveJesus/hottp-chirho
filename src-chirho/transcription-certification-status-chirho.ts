@@ -4575,8 +4575,15 @@ function buildStatusChirho(dbPathChirho: string, optionsChirho: BuildStatusOptio
   ) {
     remainingWorkChirho.push("strict export report D1 audit fingerprint does not match current D1 witness rows; regenerate export-markdown-chirho --all --strict");
   }
+  const structuralIssueCodeSummaryChirho = Object.entries(structuralChirho.issueCodeCountsChirho)
+    .map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`)
+    .join(", ");
   if (!structuralChirho.strictPassedChirho || structuralChirho.issueCountChirho !== 0) {
-    remainingWorkChirho.push("structural export strict gate is not clean");
+    remainingWorkChirho.push(
+      structuralIssueCodeSummaryChirho.length === 0
+        ? "structural export strict gate is not clean"
+        : `structural export strict gate is not clean (issue codes: ${structuralIssueCodeSummaryChirho})`
+    );
   }
   if (structuralChirho.unknownSpanCountChirho !== 0) {
     remainingWorkChirho.push(`${structuralChirho.unknownSpanCountChirho} unknown span(s) remain`);
