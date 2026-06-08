@@ -73,6 +73,24 @@ const ATTRIBUTION_CLEANUP_HANDOFF_PATH_CHIRHO = join(
   "certification-status-chirho",
   "attribution-cleanup-handoff-chirho.md"
 );
+const RAW_HEBREW_REPEAT_CLUSTERS_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "certification-status-chirho",
+  "raw-hebrew-repeat-clusters-chirho.md"
+);
+const EXPERT_REPEAT_CLUSTERS_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "certification-status-chirho",
+  "expert-repeat-clusters-chirho.md"
+);
+const LATIN_SYMBOL_REPEAT_CLUSTERS_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "workspace-chirho",
+  "certification-status-chirho",
+  "latin-symbol-repeat-clusters-chirho.md"
+);
 const REVIEW_VOLUME_KEYS_CHIRHO = [
   "vol-1-chirho",
   "vol-2-chirho",
@@ -88,6 +106,13 @@ interface CommandChirho {
   envChirho?: Record<string, string>;
 }
 
+interface RepeatSummaryChirho {
+  duplicateTextGroupCountChirho?: unknown;
+  duplicateTextItemCountChirho?: unknown;
+  duplicateTextItemCountsByValidationStatusChirho?: Record<string, unknown>;
+  duplicateTextItemCountsByScriptChirho?: Record<string, unknown>;
+}
+
 interface CertificationStatusSummaryChirho {
   generatedAtChirho?: unknown;
   certificationCompleteChirho?: unknown;
@@ -96,6 +121,7 @@ interface CertificationStatusSummaryChirho {
   rawHebrewChirho?: {
     livePendingSpanCountChirho?: unknown;
     livePendingVolumeCountsChirho?: Record<string, unknown>;
+    repeatSummaryChirho?: RepeatSummaryChirho;
     triageChirho?: {
       attentionItemCountChirho?: unknown;
       lowConfidenceItemCountChirho?: unknown;
@@ -132,6 +158,7 @@ interface CertificationStatusSummaryChirho {
     pendingVisionCountsChirho?: Record<string, unknown>;
     pendingBlankTextCountsChirho?: Record<string, unknown>;
     pendingVolumeCountsChirho?: Record<string, unknown>;
+    repeatSummaryChirho?: RepeatSummaryChirho;
   };
   latinSymbolVisionChirho?: {
     remainingDecisionCountChirho?: unknown;
@@ -140,6 +167,7 @@ interface CertificationStatusSummaryChirho {
     pendingMixedScriptSymbolItemCountChirho?: unknown;
     pendingNontrivialSymbolItemCountChirho?: unknown;
     pendingTrivialPunctuationSymbolItemCountChirho?: unknown;
+    repeatSummaryChirho?: RepeatSummaryChirho;
   };
   humanValidationDbChirho?: {
     genericReviewerRowsChirho?: unknown;
@@ -309,6 +337,17 @@ function reviewVolumeCountsTextChirho(volumeCountsChirho: Record<string, unknown
     }
   }
   return entriesChirho.length === 0 ? "none" : entriesChirho.join(", ");
+}
+
+function recordCountsTextChirho(countsChirho: Record<string, unknown> | undefined): string {
+  if (countsChirho === undefined) return "unknown";
+  const entriesChirho = Object.entries(countsChirho)
+    .map(([keyChirho, valueChirho]) => [keyChirho, finiteNumberChirho(valueChirho)] as const)
+    .filter((entryChirho): entryChirho is readonly [string, number] => entryChirho[1] !== null)
+    .sort(([leftKeyChirho], [rightKeyChirho]) => leftKeyChirho.localeCompare(rightKeyChirho));
+  return entriesChirho.length === 0
+    ? "none"
+    : entriesChirho.map(([keyChirho, valueChirho]) => `${keyChirho}=${valueChirho}`).join(", ");
 }
 
 function sumNumbersChirho(valuesChirho: Array<number | null>): number | null {
@@ -607,6 +646,36 @@ function printStrictBlindScanSummaryChirho(statusChirho: CertificationStatusSumm
   console.log("- Strict-blind scans are heuristic evidence only; certification still requires the listed human/expert review gates.");
 }
 
+function printRepeatClusterHandoffsChirho(statusChirho: CertificationStatusSummaryChirho): void {
+  const rawRepeatChirho = statusChirho.rawHebrewChirho?.repeatSummaryChirho;
+  const expertRepeatChirho = statusChirho.visionTierChirho?.repeatSummaryChirho;
+  const latinRepeatChirho = statusChirho.latinSymbolVisionChirho?.repeatSummaryChirho;
+  if (rawRepeatChirho === undefined && expertRepeatChirho === undefined && latinRepeatChirho === undefined) return;
+
+  console.log(`[${MODULE_CHIRHO}] Repeat-cluster handoffs:`);
+  console.log(
+    `- Raw Hebrew repeat clusters: ${numberOrUnknownChirho(rawRepeatChirho?.duplicateTextGroupCountChirho)} duplicate group(s), ` +
+      `${numberOrUnknownChirho(rawRepeatChirho?.duplicateTextItemCountChirho)} duplicate item(s); ` +
+      `items by status ${recordCountsTextChirho(rawRepeatChirho?.duplicateTextItemCountsByValidationStatusChirho)}; ` +
+      `handoff ${relativeProjectPathChirho(RAW_HEBREW_REPEAT_CLUSTERS_PATH_CHIRHO)}`
+  );
+  console.log(
+    `- Expert repeat clusters: ${numberOrUnknownChirho(expertRepeatChirho?.duplicateTextGroupCountChirho)} duplicate group(s), ` +
+      `${numberOrUnknownChirho(expertRepeatChirho?.duplicateTextItemCountChirho)} duplicate item(s); ` +
+      `items by script ${recordCountsTextChirho(expertRepeatChirho?.duplicateTextItemCountsByScriptChirho)}; ` +
+      `handoff ${relativeProjectPathChirho(EXPERT_REPEAT_CLUSTERS_PATH_CHIRHO)}`
+  );
+  console.log(
+    `- Latin/symbol repeat clusters: ${numberOrUnknownChirho(latinRepeatChirho?.duplicateTextGroupCountChirho)} duplicate group(s), ` +
+      `${numberOrUnknownChirho(latinRepeatChirho?.duplicateTextItemCountChirho)} duplicate item(s); ` +
+      `items by script ${recordCountsTextChirho(latinRepeatChirho?.duplicateTextItemCountsByScriptChirho)}; ` +
+      `handoff ${relativeProjectPathChirho(LATIN_SYMBOL_REPEAT_CLUSTERS_PATH_CHIRHO)}`
+  );
+  console.log(
+    "- Repeat clusters are planning aids only; every item still needs exact print review, confirmation, or policy decision."
+  );
+}
+
 function printAttributionCleanupHandoffChirho(statusChirho: CertificationStatusSummaryChirho): void {
   const genericRowCountChirho = finiteNumberChirho(statusChirho.humanValidationDbChirho?.genericReviewerRowsChirho);
   if (genericRowCountChirho === null || genericRowCountChirho === 0) return;
@@ -659,6 +728,7 @@ function printReadinessSummaryChirho(
     }
     printReviewRoutingSummaryChirho(statusChirho);
     printStrictBlindScanSummaryChirho(statusChirho);
+    printRepeatClusterHandoffsChirho(statusChirho);
     printNextReviewLinksChirho(statusChirho);
     printVolumeReviewLinksChirho(statusChirho);
     printBlankTextHandoffsChirho(statusChirho);

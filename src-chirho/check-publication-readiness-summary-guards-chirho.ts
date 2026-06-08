@@ -226,6 +226,19 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
     "publication summary must surface strict-blind scanner evidence without implying certification"
   );
   assertCheckChirho(
+    outputChirho.includes("Repeat-cluster handoffs:") &&
+      outputChirho.includes("Raw Hebrew repeat clusters:") &&
+      outputChirho.includes("duplicate group(s)") &&
+      outputChirho.includes("duplicate item(s)") &&
+      outputChirho.includes("raw-hebrew-repeat-clusters-chirho.md") &&
+      outputChirho.includes("Expert repeat clusters:") &&
+      outputChirho.includes("expert-repeat-clusters-chirho.md") &&
+      outputChirho.includes("Latin/symbol repeat clusters:") &&
+      outputChirho.includes("latin-symbol-repeat-clusters-chirho.md") &&
+      outputChirho.includes("Repeat clusters are planning aids only"),
+    "publication summary must surface repeat-cluster handoffs without implying certification"
+  );
+  assertCheckChirho(
     outputChirho.includes("Raw Hebrew low confidence:") &&
       outputChirho.includes("Raw Hebrew multi-token:") &&
       outputChirho.includes("Raw Hebrew delimiter/damaged text:") &&
