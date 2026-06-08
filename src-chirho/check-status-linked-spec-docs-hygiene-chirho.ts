@@ -33,6 +33,7 @@ const STATUS_SPEC_DOC_RE_CHIRHO = /`(spec-chirho\/metropoliluya-chirho\/[^`\n]+\
 const MARKDOWN_IMAGE_RE_CHIRHO = /!\[[^\]\n]*\]\(([^)\n]+)\)/g;
 const BACKTICK_RE_CHIRHO = /`([^`\n]+)`/g;
 const RAW_HEBREW_QUICKSTART_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/raw-hebrew-human-certification-quickstart-2026-06-05-chirho.md";
+const EXPERT_QUICKSTART_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/vision-tier-expert-confirmation-quickstart-2026-06-05-chirho.md";
 const HALLELUJAH_SESSION_GUIDE_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/hallelujah-review-session-guide-2026-06-05-chirho.md";
 const REVIEWER_SCOPE_PRIMER_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/reviewer-scope-and-primer-2026-06-02-chirho.md";
 const TRANSCRIPTION_STATUS_PRODUCTION_PATH_DOC_CHIRHO =
@@ -54,6 +55,14 @@ const RAW_HEBREW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "If the row is not clearly attributable to you, do not reattribute it.",
   "If the current live text no longer matches the row's originally reviewed text, use Attribution re-review by default.",
   "When uncertain, skip or save an issue. Do not use a clean review to express \"probably right.\"",
+] as const;
+const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
+  "Use the `Target crop` panel as the exact review boundary.",
+  "The red box marks the span being reviewed",
+  "For blank items, supply only the exact script text inside the red box.",
+  "Do not include surrounding context just because it appears in the full printed line.",
+  "Confirm only if you are competent for the displayed script and the current text exactly matches the printed scanline.",
+  "Blank items are known content holes. Do not confirm a blank item.",
 ] as const;
 const HALLELUJAH_SESSION_GUIDE_SNIPPETS_CHIRHO = [
   "Run `bun run publication-readiness-summary-chirho` for the current first-pending links and blocker counts.",
@@ -315,6 +324,9 @@ function checkSpecDocChirho(docPathChirho: string, statusChirho: StatusLinkedSpe
 
   if (docPathChirho === RAW_HEBREW_QUICKSTART_DOC_CHIRHO) {
     assertDocContainsSnippetsChirho(docPathChirho, textChirho, RAW_HEBREW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO);
+  }
+  if (docPathChirho === EXPERT_QUICKSTART_DOC_CHIRHO) {
+    assertDocContainsSnippetsChirho(docPathChirho, textChirho, EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO);
   }
   if (docPathChirho === HALLELUJAH_SESSION_GUIDE_DOC_CHIRHO) {
     assertDocContainsSnippetsChirho(docPathChirho, textChirho, HALLELUJAH_SESSION_GUIDE_SNIPPETS_CHIRHO);

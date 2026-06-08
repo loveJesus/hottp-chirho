@@ -15,6 +15,12 @@ The Source filter changes review order only; it does not change what confirmatio
 - `pass-c-ocr-span-chirho`: non-Hebrew Pass-C OCR spans routed into the expert lane. These often already have text, but still need exact script-reader confirmation against the scanline.
 - `d1-derived-chirho`: non-Latin D1 word-derived items. Confirm them only from the displayed scanline and crop, not from the database source alone.
 
+## Target Crop
+
+Use the `Target crop` panel as the exact review boundary. The red box marks the span being reviewed; neighboring punctuation, French text, or other script text outside that box belongs to adjacent spans unless the printed mark is actually inside the red box.
+
+For blank items, supply only the exact script text inside the red box. Do not include surrounding context just because it appears in the full printed line.
+
 ## Confirm Only If
 
 Confirm only if you are competent for the displayed script and the current text exactly matches the printed scanline.
