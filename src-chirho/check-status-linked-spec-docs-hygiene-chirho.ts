@@ -33,6 +33,7 @@ const STATUS_SPEC_DOC_RE_CHIRHO = /`(spec-chirho\/metropoliluya-chirho\/[^`\n]+\
 const MARKDOWN_IMAGE_RE_CHIRHO = /!\[[^\]\n]*\]\(([^)\n]+)\)/g;
 const BACKTICK_RE_CHIRHO = /`([^`\n]+)`/g;
 const RAW_HEBREW_QUICKSTART_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/raw-hebrew-human-certification-quickstart-2026-06-05-chirho.md";
+const LATIN_SYMBOL_QUICKSTART_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/latin-symbol-human-review-quickstart-2026-06-05-chirho.md";
 const EXPERT_QUICKSTART_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/vision-tier-expert-confirmation-quickstart-2026-06-05-chirho.md";
 const HALLELUJAH_SESSION_GUIDE_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/hallelujah-review-session-guide-2026-06-05-chirho.md";
 const REVIEWER_SCOPE_PRIMER_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/reviewer-scope-and-primer-2026-06-02-chirho.md";
@@ -47,6 +48,7 @@ const LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
 const RAW_HEBREW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Before a review session, run `bun run publication-readiness-summary-chirho` for the current first-pending raw Hebrew links",
   "The summary is a live triage aid only; it does not certify text",
+  "`Target crop - red box is the item` and `Full line - red box in context` panels",
   "If no issue boxes are selected, a save is clean only when the clean-certification acknowledgement is checked.",
   "A dot inside a Hebrew letter is dagesh, mappiq, or shuruk, so classify it under Vowels/niqqud.",
   "Several Hebrew words in one span are acceptable only when the box intentionally covers exactly those words",
@@ -55,6 +57,13 @@ const RAW_HEBREW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "If the row is not clearly attributable to you, do not reattribute it.",
   "If the current live text no longer matches the row's originally reviewed text, use Attribution re-review by default.",
   "When uncertain, skip or save an issue. Do not use a clean review to express \"probably right.\"",
+] as const;
+const LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
+  "Accept as clean only when the `Target crop - red box is the item`, `Full line - red box in context`, current text, codepoints, script, and box all match the print exactly.",
+  "Witness sigla matter.",
+  "Digits and references matter.",
+  "The displayed image path and crop are part of the review.",
+  "When uncertain, skip or save an issue. Do not use clean review to express \"probably right.\"",
 ] as const;
 const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Use the `Target crop - red box is the item` panel as the exact review boundary.",
@@ -342,6 +351,9 @@ function checkSpecDocChirho(docPathChirho: string, statusChirho: StatusLinkedSpe
 
   if (docPathChirho === RAW_HEBREW_QUICKSTART_DOC_CHIRHO) {
     assertDocContainsSnippetsChirho(docPathChirho, textChirho, RAW_HEBREW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO);
+  }
+  if (docPathChirho === LATIN_SYMBOL_QUICKSTART_DOC_CHIRHO) {
+    assertDocContainsSnippetsChirho(docPathChirho, textChirho, LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO);
   }
   if (docPathChirho === EXPERT_QUICKSTART_DOC_CHIRHO) {
     assertDocContainsSnippetsChirho(docPathChirho, textChirho, EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO);

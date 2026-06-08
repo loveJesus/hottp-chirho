@@ -7,19 +7,19 @@ This is a reviewer aid for the Pass-C Hebrew lane. It is not a certification rec
 
 Use the live validator at http://localhost:8766/. Put an explicit human reviewer id in the Reviewer field, for example `hallelujah-chirho`; do not use `human-chirho`, role labels, template text, or a machine id.
 
-Before a review session, run `bun run publication-readiness-summary-chirho` for the current first-pending raw Hebrew links, attribution cleanup links, and blocker counts. The summary is a live triage aid only; it does not certify text and does not replace checking the crop and full line.
+Before a review session, run `bun run publication-readiness-summary-chirho` for the current first-pending raw Hebrew links, attribution cleanup links, and blocker counts. The summary is a live triage aid only; it does not certify text and does not replace checking the `Target crop - red box is the item` and `Full line - red box in context` panels.
 
 ## Fast Answers
 
 - Yes, use the validator for Hebrew and Greek you can actually read against the print. It is the certification UI. Skip or flag items outside your competence instead of clean-certifying them.
-- If no issue boxes are selected, a save is clean only when the clean-certification acknowledgement is checked. Without that checkbox, the UI and server reject the clean save. With it, you are certifying that exact span against the crop and full line.
+- If no issue boxes are selected, a save is clean only when the clean-certification acknowledgement is checked. Without that checkbox, the UI and server reject the clean save. With it, you are certifying that exact span against the `Target crop - red box is the item` and `Full line - red box in context` panels.
 - Several words in one red box can be correct. Certify it only if the box covers exactly those printed words and the stored text has the same logical reading order, spaces, maqqef, punctuation, and word boundaries as the print.
 - If words are wrongly lumped, split, spaced, maqqefed, clipped, or attached to neighboring punctuation, flag Segmentation. Add Missing Heb., Extra Latin, Hebrew punct., or Latin punct. when those describe the concrete problem too.
 - A dot inside a Hebrew letter is dagesh, mappiq, or shuruk, so classify it under Vowels/niqqud. Shin/sin dots also go under Vowels/niqqud. Accents/meteg is only for cantillation marks and meteg.
 
 ## Clean Review
 
-Save as clean only when all of these match the printed crop and full line:
+Save as clean only when all of these match the printed `Target crop - red box is the item` and `Full line - red box in context` panels:
 
 - Base letters and final forms.
 - Vowels/niqqud, including dagesh, mappiq, shuruk, and shin/sin dots.
@@ -66,7 +66,7 @@ Use the changed-live-text re-review lane for rows whose stored reviewed text no 
 
 Use that lane only when you can honestly identify who made the existing review:
 
-- Inspect the crop and full line again.
+- Inspect the `Target crop - red box is the item` and `Full line - red box in context` panels again.
 - If the row is genuinely yours, enter your explicit reviewer id and a rationale, copy the dry-run reattribution command, run it, inspect the output, then copy/run the apply command.
 - If the row is not clearly attributable to you, do not reattribute it. Use the Attribution re-review lane to append a fresh explicit review that supersedes the generic row.
 - Reattribution does not change the reviewed text, verdict, issue flags, or correction status. It only replaces the generic reviewer id with an explicit human attribution.

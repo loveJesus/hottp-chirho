@@ -9,7 +9,7 @@ Use the live reviewer at http://localhost:8770/. Put an explicit human reviewer 
 
 ## Clean Review
 
-Accept as clean only when the crop, full line, current text, codepoints, script, and box all match the print exactly.
+Accept as clean only when the `Target crop - red box is the item`, `Full line - red box in context`, current text, codepoints, script, and box all match the print exactly.
 
 - French and Latin words matter. Proper names, accents, ligatures, apostrophes, and case are transcription content.
 - Witness sigla matter. Fraktur/math letters such as M/G/V/S/T-style sigla can name different witnesses and must not be treated as decoration.
