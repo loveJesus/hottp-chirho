@@ -2399,7 +2399,7 @@ function pageHtmlChirho(): string {
       const leftChirho = elChirho("div", { classChirho: "line-panel-chirho" });
       const savedValidationChirho = validationsChirho.get(itemChirho.keyChirho);
       const savedIssueFlagsChirho = new Set(parseJsonArrayChirho(savedValidationChirho?.issue_flags_chirho));
-      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Target crop" }));
+      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Target crop - red box is the item" }));
       const targetWrapChirho = elChirho("div", { classChirho: "target-image-wrap-chirho" });
       const targetFrameChirho = elChirho("div", { classChirho: "target-image-frame-chirho" });
       targetFrameChirho.style.width = Math.min(itemChirho.zoomCropWidthPxChirho * 2, 1040) + "px";
@@ -2415,7 +2415,7 @@ function pageHtmlChirho(): string {
       leftChirho.appendChild(targetWrapChirho);
       leftChirho.appendChild(elChirho("div", { classChirho: "target-boundary-note-chirho", textChirho: targetBoundaryTextChirho(itemChirho) }));
 
-      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Full line" }));
+      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Full line - red box in context" }));
       const imageWrapChirho = elChirho("div", { classChirho: "line-image-wrap-chirho" });
       const imageFrameChirho = elChirho("div", { classChirho: "line-image-frame-chirho" });
       imageFrameChirho.style.width = "100%";

@@ -25,6 +25,8 @@ const LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "not equal sign",
   "Greek final sigma",
   "Dagesh/mappiq/shuruk",
+  "Target crop - red box is the item",
+  "Full line - red box in context",
   "Review server source:",
   "Quickstart",
   "/quickstart-chirho",

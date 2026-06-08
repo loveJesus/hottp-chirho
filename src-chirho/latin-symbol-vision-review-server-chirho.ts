@@ -739,12 +739,12 @@ function htmlChirho(): string {
       }
       const reviewChirho = reviewsChirho.get(itemChirho.idChirho);
       const leftChirho = elChirho("div", { classChirho: "panel-chirho" });
-      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Target crop" }));
+      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Target crop - red box is the item" }));
       const targetWrapChirho = elChirho("div", { classChirho: "image-wrap-chirho" });
       targetWrapChirho.appendChild(elChirho("img", { classChirho: "target-image-chirho", src: imageSrcChirho(itemChirho.targetMarkdownPathChirho), alt: "" }));
       leftChirho.appendChild(targetWrapChirho);
       leftChirho.appendChild(elChirho("div", { classChirho: "target-scope-note-chirho", textChirho: targetScopeTextChirho(itemChirho) }));
-      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Full line" }));
+      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Full line - red box in context" }));
       const lineWrapChirho = elChirho("div", { classChirho: "image-wrap-chirho" });
       lineWrapChirho.appendChild(elChirho("img", { classChirho: "line-image-chirho", src: imageSrcChirho(itemChirho.lineMarkdownPathChirho), alt: "" }));
       leftChirho.appendChild(lineWrapChirho);

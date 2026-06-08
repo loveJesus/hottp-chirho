@@ -21,6 +21,8 @@ const MODULE_CHIRHO = "check-pass-c-human-review-server-guards-chirho";
 const SOURCE_PROGRESS_DB_PATH_CHIRHO = join(PROJECT_ROOT_CHIRHO, "spec-chirho", "progress-chirho.sqlite");
 const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Clean certification means letters, marks, punctuation, spacing, maqqef, word boundaries, and the red box all match the print.",
+  "Target crop - red box is the item",
+  "Full line - red box in context",
   "Multiple Hebrew words in one box are fine only when the box intentionally covers exactly those words.",
   "Dots inside letters, mappiq, shuruk, and shin/sin dots are Vowels/niqqud",
   "cantillation/meteg are Accents/meteg",
