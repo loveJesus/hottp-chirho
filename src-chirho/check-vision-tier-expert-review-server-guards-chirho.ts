@@ -41,6 +41,8 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Copy command",
   "Quickstart",
   "/quickstart-chirho",
+  "Session guide",
+  "/session-guide-chirho",
   "Syriac blank handoff",
   "/syriac-blank-handoff-chirho",
   "Recommended expert lanes",
@@ -80,6 +82,13 @@ const EXPERT_QUICKSTART_SNIPPETS_CHIRHO = [
   "Report Issue",
   "Blank Text",
   "expert-supplied text",
+];
+const EXPERT_SESSION_GUIDE_SNIPPETS_CHIRHO = [
+  "Hallelujah Review Session Guide Chirho",
+  "Do not confirm Syriac, Arabic, or exact Hebrew-script Aramaic/Targum vocalization unless you are competent",
+  "For expert-lane items, `Confirm` means the current text already exactly matches the print.",
+  "When a source-filtered item is outside your competence, skip it or report a crop/segmentation/source issue.",
+  "A skipped item is safer than a clean review used to mean \"probably right.\"",
 ];
 const SYRIAC_BLANK_HANDOFF_SNIPPETS_CHIRHO = [
   "Syriac Blank Transcription Handoff Chirho",
@@ -264,6 +273,19 @@ async function assertExpertQuickstartEndpointChirho(portChirho: number): Promise
   }
 }
 
+async function assertExpertSessionGuideEndpointChirho(portChirho: number): Promise<void> {
+  const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/session-guide-chirho`);
+  const markdownChirho = await responseChirho.text();
+  assertCheckChirho(responseChirho.ok, `expert session guide request failed: ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, "expert session guide");
+  for (const snippetChirho of EXPERT_SESSION_GUIDE_SNIPPETS_CHIRHO) {
+    assertCheckChirho(
+      markdownChirho.includes(snippetChirho),
+      `expert session guide is missing snippet: ${snippetChirho}`
+    );
+  }
+}
+
 async function assertSyriacBlankHandoffEndpointChirho(portChirho: number): Promise<void> {
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/syriac-blank-handoff-chirho`);
   const markdownChirho = await responseChirho.text();
@@ -395,6 +417,7 @@ async function mainChirho(): Promise<void> {
     await waitForServerChirho(portChirho, processChirho);
     await assertExpertReviewGuidanceHtmlChirho(portChirho);
     await assertExpertQuickstartEndpointChirho(portChirho);
+    await assertExpertSessionGuideEndpointChirho(portChirho);
     await assertSyriacBlankHandoffEndpointChirho(portChirho);
     await assertSyriacBlankHandoffImagesChirho(portChirho);
     const itemChirho = await stateItemChirho(portChirho);

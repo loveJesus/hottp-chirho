@@ -68,6 +68,8 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Copy command",
   "Quickstart",
   "/quickstart-chirho",
+  "Session guide",
+  "/session-guide-chirho",
   "Recommended raw review order",
   "Vols 3-5 unvalidated",
   "Delimiter notation",
@@ -85,6 +87,13 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "attention-chirho=multi-token-chirho",
   "attention-chirho=delimiter-notation-chirho",
   "attention-chirho=no-direct-read-chirho",
+];
+const RAW_SESSION_GUIDE_SNIPPETS_CHIRHO = [
+  "Hallelujah Review Session Guide Chirho",
+  "A clean raw Hebrew save means the red-boxed printed content and stored text match exactly enough for certification",
+  "A dot inside a Hebrew letter is usually dagesh or mappiq",
+  "Flag `Segmentation` when the box or text has a wrong word boundary",
+  "A skipped item is safer than a clean review used to mean \"probably right.\"",
 ];
 
 interface RawReviewQueueItemChirho {
@@ -192,6 +201,19 @@ async function assertQuickstartEndpointChirho(portChirho: number): Promise<void>
     assertCheckChirho(
       textChirho.includes(snippetChirho),
       `quickstart endpoint is missing expected snippet: ${snippetChirho}`
+    );
+  }
+}
+
+async function assertSessionGuideEndpointChirho(portChirho: number): Promise<void> {
+  const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/session-guide-chirho`);
+  const textChirho = await responseChirho.text();
+  assertCheckChirho(responseChirho.ok, `session guide endpoint failed: HTTP ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, "session guide endpoint");
+  for (const snippetChirho of RAW_SESSION_GUIDE_SNIPPETS_CHIRHO) {
+    assertCheckChirho(
+      textChirho.includes(snippetChirho),
+      `session guide endpoint is missing expected snippet: ${snippetChirho}`
     );
   }
 }
@@ -356,6 +378,7 @@ async function mainChirho(): Promise<void> {
     assertRawReviewGuidanceHtmlChirho(pageHtmlChirho);
     assertPreReviewNotesLoadedChirho(pageHtmlChirho);
     await assertQuickstartEndpointChirho(portChirho);
+    await assertSessionGuideEndpointChirho(portChirho);
     const itemChirho = firstQueueItemFromHtmlChirho(pageHtmlChirho);
     await assertRawReviewImageEndpointsNoStoreChirho(portChirho, itemChirho);
     const attributionBlockedItemChirho = firstAttributionBlockedQueueItemFromHtmlChirho(pageHtmlChirho);
