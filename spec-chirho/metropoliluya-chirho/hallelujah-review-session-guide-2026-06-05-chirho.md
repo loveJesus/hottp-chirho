@@ -18,6 +18,7 @@ This is a live-review workflow aid, not a certification record. It does not decr
 - Raw Hebrew: use `http://localhost:8766/`.
 - Hebrew/WLC expert lane: use `http://localhost:8771/?script-chirho=hebrew-chirho`.
 - Greek expert lane: use `http://localhost:8771/?script-chirho=greek-chirho`.
+- Latin/symbol proofing: use `http://localhost:8770/` after script-critical work. French, Latin, witness sigla, references, and symbols still need exact print review.
 - Attribution cleanup: start with `http://localhost:8766/?review-state-chirho=attribution-blocked-chirho&attribution-text-chirho=unchanged-chirho` for rows whose live text still matches the original review. Reattribute only rows you can honestly identify as yours. Use `http://localhost:8766/?review-state-chirho=attribution-rereview-chirho&attribution-text-chirho=changed-chirho` for rows whose live text changed, unless you recheck the current print text and deliberately choose the guarded changed-text reattribution path.
 
 Do not confirm Syriac, Arabic, or exact Hebrew-script Aramaic/Targum vocalization unless you are competent for that script or tradition. You may still report crop, source, wrong-lane, or segmentation problems.
@@ -30,6 +31,7 @@ Do not confirm Syriac, Arabic, or exact Hebrew-script Aramaic/Targum vocalizatio
 4. Raw Hebrew all-token spot checks: `http://localhost:8766/?validation-status-chirho=all-token-validated-chirho&tier-chirho=spot-check-chirho`.
 5. Hebrew/WLC expert lane: `http://localhost:8771/?script-chirho=hebrew-chirho`.
 6. Greek expert lane: `http://localhost:8771/?script-chirho=greek-chirho`.
+7. Latin/symbol proofing: `http://localhost:8770/`.
 
 The attention lanes are useful when you want the riskiest raw Hebrew first: low confidence, multi-token, delimiter/damaged notation, and no-direct-read. They are triage signals, not verdicts.
 
@@ -78,6 +80,8 @@ Several words in one red box are acceptable when the box intentionally covers ex
 Flag `Segmentation` when the box or text has a wrong word boundary, even if the letters themselves are readable. If your suggested correction changes splits, spaces, maqqef, or punctuation attachment, record the issue with notes instead of clean-certifying the current span.
 
 For expert-lane items, `Confirm` means the current text already exactly matches the print. If the text is wrong, report an issue; do not confirm and hope a later correction fixes it.
+
+For Latin/symbol items, `Accept as clean` means the current text and the red-boxed print match exactly. Witness sigla, references, ornament guesses, digits, and apparatus operators are not blanket-safe. If the crop, language, spacing, punctuation, siglum, or digit is uncertain, save an issue or skip instead of accepting clean.
 
 ## Attribution Cleanup
 

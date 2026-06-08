@@ -30,6 +30,8 @@ const LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Review server source:",
   "Quickstart",
   "/quickstart-chirho",
+  "Session guide",
+  "/session-guide-chirho",
   "Recommended Latin/symbol lanes",
   "Witness sigla",
   "symbol-risk-chirho=nontrivial-symbol-chirho",
@@ -50,6 +52,13 @@ const LATIN_SYMBOL_QUICKSTART_SNIPPETS_CHIRHO = [
   "Symbol Risk",
   "Witness sigla matter",
   "When uncertain, skip or save an issue",
+];
+const LATIN_SYMBOL_SESSION_GUIDE_SNIPPETS_CHIRHO = [
+  "Hallelujah Review Session Guide Chirho",
+  "Latin/symbol proofing",
+  "French, Latin, witness sigla, references, and symbols still need exact print review.",
+  "Witness sigla, references, ornament guesses, digits, and apparatus operators are not blanket-safe.",
+  "For Latin/symbol items, `Accept as clean` means the current text and the red-boxed print match exactly.",
 ];
 
 interface LatinSymbolReviewStateItemChirho {
@@ -199,6 +208,19 @@ async function assertLatinSymbolQuickstartEndpointChirho(portChirho: number): Pr
   }
 }
 
+async function assertLatinSymbolSessionGuideEndpointChirho(portChirho: number): Promise<void> {
+  const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/session-guide-chirho`);
+  const markdownChirho = await responseChirho.text();
+  assertCheckChirho(responseChirho.ok, `Latin/symbol session guide request failed: ${responseChirho.status}`);
+  assertNoStoreResponseChirho(responseChirho, "Latin/symbol session guide");
+  for (const snippetChirho of LATIN_SYMBOL_SESSION_GUIDE_SNIPPETS_CHIRHO) {
+    assertCheckChirho(
+      markdownChirho.includes(snippetChirho),
+      `Latin/symbol session guide is missing snippet: ${snippetChirho}`
+    );
+  }
+}
+
 async function assertLatinSymbolAssetEndpointsNoStoreChirho(portChirho: number, itemChirho: LatinSymbolReviewStateItemChirho): Promise<void> {
   for (const [labelChirho, markdownPathChirho] of [
     ["Latin/symbol target image", itemChirho.targetMarkdownPathChirho],
@@ -285,6 +307,7 @@ async function mainChirho(): Promise<void> {
     await waitForServerChirho(portChirho, processChirho);
     await assertLatinSymbolReviewGuidanceHtmlChirho(portChirho);
     await assertLatinSymbolQuickstartEndpointChirho(portChirho);
+    await assertLatinSymbolSessionGuideEndpointChirho(portChirho);
     const itemChirho = await stateItemChirho(portChirho);
     await assertLatinSymbolAssetEndpointsNoStoreChirho(portChirho, itemChirho);
     const commonBodyChirho = {
