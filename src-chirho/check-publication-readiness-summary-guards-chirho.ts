@@ -220,6 +220,13 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
       outputChirho.includes("Raw Hebrew pre-review notes:"),
     "publication summary must link the actionable raw Hebrew attention lanes"
   );
+  assertCheckChirho(
+    outputChirho.includes("Latin/symbol French:") &&
+      outputChirho.includes("Latin/symbol Latin/non-French:") &&
+      outputChirho.includes("Latin/symbol script/sigla symbols:") &&
+      outputChirho.includes("Latin/symbol nontrivial symbols:"),
+    "publication summary must link the actionable Latin/symbol script and risk lanes"
+  );
 }
 
 async function mainChirho(): Promise<void> {
