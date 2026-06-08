@@ -517,6 +517,48 @@ function printReviewGuidePathsChirho(): void {
   }
 }
 
+function printHumanReviewSessionChecklistChirho(statusChirho: CertificationStatusSummaryChirho): void {
+  const rawPrimaryLinkChirho = reviewStartLinkChirho(statusChirho, "rawHebrewVols35UnvalidatedChirho");
+  const rawAttributionUnchangedLinkChirho =
+    reviewStartLinkChirho(statusChirho, "rawHebrewAttributionBlockedUnchangedChirho");
+  const rawAttributionRereviewLinkChirho =
+    reviewStartLinkChirho(statusChirho, "rawHebrewAttributionRereviewChangedChirho") ??
+    reviewStartLinkChirho(statusChirho, "rawHebrewAttributionRereviewChirho");
+  const expertHebrewLinkChirho = reviewStartLinkChirho(statusChirho, "expertHebrewChirho");
+  const expertGreekLinkChirho = reviewStartLinkChirho(statusChirho, "expertGreekChirho");
+  const expertSyriacBlankLinkChirho = reviewStartLinkChirho(statusChirho, "expertSyriacBlankChirho");
+  const latinSymbolLinkChirho = reviewStartLinkChirho(statusChirho, "latinSymbolAllChirho");
+  const genericRowsChirho = numberOrUnknownChirho(statusChirho.humanValidationDbChirho?.genericReviewerRowsChirho);
+  const unchangedRowsChirho =
+    numberOrUnknownChirho(statusChirho.humanValidationDbChirho?.genericReviewerLiveTextMatchRowsChirho);
+  const changedRowsChirho =
+    numberOrUnknownChirho(statusChirho.humanValidationDbChirho?.genericReviewerLiveTextMismatchRowsChirho);
+
+  console.log(`[${MODULE_CHIRHO}] Human review session checklist:`);
+  console.log(
+    "- This checklist is a triage aid only; it does not certify text, apply corrections, or decrement any gate."
+  );
+  console.log(
+    `- 1. Attribution cleanup (${genericRowsChirho} row(s)): use unchanged-live-text reattribution only for rows genuinely attributable to the named human reviewer (${unchangedRowsChirho} unchanged; ${changedRowsChirho} changed). ` +
+      `Unchanged lane: ${stringOrUnknownChirho(rawAttributionUnchangedLinkChirho)}; changed/re-review lane: ${stringOrUnknownChirho(rawAttributionRereviewLinkChirho)}`
+  );
+  console.log(
+    `- 2. Raw Hebrew certification: start with the primary unvalidated lane and inspect the crop plus full line before any clean save. ` +
+      `Clean saves need the clean-certification checkbox; dots inside letters are vowels/niqqud, while cantillation/meteg are accent/meteg issues. ` +
+      `Start: ${stringOrUnknownChirho(rawPrimaryLinkChirho)}`
+  );
+  console.log(
+    `- 3. Hebrew/Greek expert confirmations: confirm only exact letters, marks, punctuation, spacing, and crop against the print; use Report issue or Skip when uncertain. ` +
+      `Hebrew: ${stringOrUnknownChirho(expertHebrewLinkChirho)}; Greek: ${stringOrUnknownChirho(expertGreekLinkChirho)}`
+  );
+  console.log(
+    `- 4. External script handoff: Syriac and Arabic exact letters/dots require qualified readers. The blank Syriac item needs supplied text before it can be confirmed: ${stringOrUnknownChirho(expertSyriacBlankLinkChirho)}`
+  );
+  console.log(
+    `- 5. Latin/symbol proofing: after script-critical work, review French, Latin, witness sigla, references, and nontrivial symbols against the print; witness sigla and references are not blanket-safe. Start: ${stringOrUnknownChirho(latinSymbolLinkChirho)}`
+  );
+}
+
 function printReviewRoutingSummaryChirho(statusChirho: CertificationStatusSummaryChirho): void {
   const rawHebrewPendingChirho =
     finiteNumberChirho(statusChirho.rawHebrewChirho?.livePendingSpanCountChirho) ??
@@ -726,6 +768,7 @@ function printReadinessSummaryChirho(
     for (const itemChirho of remainingWorkLinesChirho(statusChirho)) {
       console.log(`- ${itemChirho}`);
     }
+    printHumanReviewSessionChecklistChirho(statusChirho);
     printReviewRoutingSummaryChirho(statusChirho);
     printStrictBlindScanSummaryChirho(statusChirho);
     printRepeatClusterHandoffsChirho(statusChirho);

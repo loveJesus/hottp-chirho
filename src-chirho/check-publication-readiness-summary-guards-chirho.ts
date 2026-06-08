@@ -205,6 +205,18 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
     "publication summary must split attribution cleanup into unchanged/changed routing"
   );
   assertCheckChirho(
+    outputChirho.includes("Human review session checklist:") &&
+      outputChirho.includes("triage aid only; it does not certify text") &&
+      outputChirho.includes("Attribution cleanup") &&
+      outputChirho.includes("Raw Hebrew certification") &&
+      outputChirho.includes("Clean saves need the clean-certification checkbox") &&
+      outputChirho.includes("dots inside letters are vowels/niqqud") &&
+      outputChirho.includes("Hebrew/Greek expert confirmations") &&
+      outputChirho.includes("External script handoff") &&
+      outputChirho.includes("Latin/symbol proofing"),
+    "publication summary must surface a non-certifying human review session checklist"
+  );
+  assertCheckChirho(
     outputChirho.includes("Raw Hebrew attention triage:") &&
       outputChirho.includes("overlapping signals") &&
       outputChirho.includes("pre-review notes") &&
