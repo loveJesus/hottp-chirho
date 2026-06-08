@@ -52,7 +52,8 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "script-chirho=syriac-chirho&source-chirho=pass-c-ocr-span-chirho",
   "script-chirho=arabic-chirho&source-chirho=explicit-span-chirho",
   "text-state-chirho=nonblank-chirho",
-  "Target crop",
+  "Target crop - red box is the item",
+  "Printed line - red box in context",
   "Target span",
   "Confirm only if you can certify this script's exact letters and relevant marks against the printed line.",
   "If this is outside your competence or uncertain, use Report issue for crop/source/segmentation problems or Skip.",
@@ -278,7 +279,8 @@ async function assertBlankItemPageTargetsSpanChirho(portChirho: number, itemChir
   assertCheckChirho(responseChirho.ok, `blank expert item page request failed: ${responseChirho.status}`);
   assertNoStoreResponseChirho(responseChirho, "blank expert item page");
   for (const snippetChirho of [
-    "Target crop",
+    "Target crop - red box is the item",
+    "Printed line - red box in context",
     "Target span",
     'Target span: x" + cropChirho.spanStartChirho + ".." + cropChirho.spanEndChirho + " of " + cropChirho.lineWidthChirho + "px',
     "blank text means supply only the script text inside the red box, not neighboring punctuation or context",

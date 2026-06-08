@@ -1357,7 +1357,7 @@ function htmlChirho(): string {
         return;
       }
       const leftChirho = elChirho("div");
-      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Target crop" }));
+      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Target crop - red box is the item" }));
       const targetCropWrapChirho = elChirho("div", { classChirho: "target-crop-wrap-chirho" });
       const targetCropFrameChirho = elChirho("div", { classChirho: "target-crop-frame-chirho" });
       targetCropFrameChirho.appendChild(elChirho("img", {
@@ -1374,7 +1374,7 @@ function htmlChirho(): string {
       targetCropWrapChirho.appendChild(targetCropFrameChirho);
       leftChirho.appendChild(targetCropWrapChirho);
       leftChirho.appendChild(elChirho("div", { classChirho: "target-boundary-note-chirho", textChirho: targetBoundaryTextChirho(itemChirho) }));
-      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Printed line" }));
+      leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Printed line - red box in context" }));
       const imageWrapChirho = elChirho("div", { classChirho: "image-wrap-chirho" });
       const imageFrameChirho = elChirho("div", { classChirho: "line-image-frame-chirho" });
       imageFrameChirho.appendChild(elChirho("img", { classChirho: "line-image-chirho", src: imageSrcChirho(itemChirho.markdownPathChirho), alt: "" }));
