@@ -2469,7 +2469,7 @@ function pageHtmlChirho(): string {
       if (itemChirho.attentionReasonsChirho.length > 0) {
         sideChirho.appendChild(elChirho("div", {
           classChirho: "warning-chirho",
-          textChirho: "Attention flags: " + itemChirho.attentionReasonsChirho.join("; ") + ". These are review-priority signals, not verdicts; inspect the crop and full line before any clean certification."
+          textChirho: "Attention flags: " + itemChirho.attentionReasonsChirho.join("; ") + ". These are review-priority signals, not verdicts; inspect the Target crop - red box is the item and Full line - red box in context panels before any clean certification."
         }));
       }
       if (typeof itemChirho.preReviewNoteChirho === "string" && itemChirho.preReviewNoteChirho.length > 0) {
@@ -2489,7 +2489,7 @@ function pageHtmlChirho(): string {
           ]),
           elChirho("div", {
             classChirho: "status-chirho",
-            textChirho: "This note is a machine-assisted visual aid only. It is not a verdict; certify only from the crop and printed line."
+            textChirho: "This note is a machine-assisted visual aid only. It is not a verdict; certify only from the Target crop - red box is the item and Full line - red box in context panels."
           })
         ]));
       }
@@ -2764,7 +2764,7 @@ function pageHtmlChirho(): string {
         const cleanCertifyInputChirho = elChirho("input", { id: "certify-clean-chirho", type: "checkbox" });
         sideChirho.appendChild(elChirho("label", { classChirho: "clean-certify-option-chirho", for: "certify-clean-chirho" }, [
           cleanCertifyInputChirho,
-          document.createTextNode("I checked the crop and full line against the print; if no issue boxes are checked and the text is unchanged, this exact span is intentionally reviewed clean.")
+          document.createTextNode("I checked the Target crop - red box is the item and Full line - red box in context panels against the print; if no issue boxes are checked and the text is unchanged, this exact span is intentionally reviewed clean.")
         ]));
         sideChirho.appendChild(elChirho("div", {
           classChirho: "warning-chirho",
