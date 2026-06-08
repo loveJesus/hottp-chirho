@@ -22,6 +22,7 @@ import {
   readLatinSymbolAcceptancePolicyFileChirho,
   summarizeLatinSymbolAcceptancePolicyChirho,
 } from "./latin-symbol-vision-acceptance-policy-chirho.ts";
+import { humanReviewSessionChecklistLinesChirho } from "./human-review-session-checklist-chirho.ts";
 import { exportMarkdownSourceFingerprintChirho } from "./export-markdown-source-fingerprint-chirho.ts";
 import {
   countByScriptChirho,
@@ -5840,12 +5841,18 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     "## Human Review Session Checklist",
     "",
-    "- This checklist is a triage aid only; it does not certify text, apply corrections, or decrement any gate.",
-    `- 1. Attribution cleanup (${statusChirho.humanValidationDbChirho.genericReviewerRowsChirho} row(s)): use unchanged-live-text reattribution only for rows genuinely attributable to the named human reviewer (${statusChirho.humanValidationDbChirho.genericReviewerLiveTextMatchRowsChirho} unchanged; ${statusChirho.humanValidationDbChirho.genericReviewerLiveTextMismatchRowsChirho} changed). Unchanged lane: ${rawHebrewAttributionUnchangedSessionUrlChirho}; changed/re-review lane: ${rawHebrewAttributionRereviewSessionUrlChirho}`,
-    `- 2. Raw Hebrew certification: start with the primary unvalidated lane and inspect the crop plus full line before any clean save. Clean saves need the clean-certification checkbox; dots inside letters are vowels/niqqud, while cantillation/meteg are accent/meteg issues. Start: ${rawHebrewPrimarySessionUrlChirho}`,
-    `- 3. Hebrew/Greek expert confirmations: confirm only exact letters, marks, punctuation, spacing, and crop against the print; use Report issue or Skip when uncertain. Hebrew: ${expertHebrewSessionUrlChirho}; Greek: ${expertGreekSessionUrlChirho}`,
-    `- 4. External script handoff: Syriac and Arabic exact letters/dots require qualified readers. The blank Syriac item needs supplied text before it can be confirmed: ${expertSyriacBlankSessionUrlChirho}`,
-    `- 5. Latin/symbol proofing: after script-critical work, review French, Latin, witness sigla, references, and nontrivial symbols against the print; witness sigla and references are not blanket-safe. Start: ${latinSymbolSessionUrlChirho}`,
+    ...humanReviewSessionChecklistLinesChirho({
+      attributionRowCountChirho: String(statusChirho.humanValidationDbChirho.genericReviewerRowsChirho),
+      attributionUnchangedRowCountChirho: String(statusChirho.humanValidationDbChirho.genericReviewerLiveTextMatchRowsChirho),
+      attributionChangedRowCountChirho: String(statusChirho.humanValidationDbChirho.genericReviewerLiveTextMismatchRowsChirho),
+      attributionUnchangedLaneUrlChirho: rawHebrewAttributionUnchangedSessionUrlChirho,
+      attributionRereviewLaneUrlChirho: rawHebrewAttributionRereviewSessionUrlChirho,
+      rawHebrewPrimaryLaneUrlChirho: rawHebrewPrimarySessionUrlChirho,
+      expertHebrewLaneUrlChirho: expertHebrewSessionUrlChirho,
+      expertGreekLaneUrlChirho: expertGreekSessionUrlChirho,
+      expertSyriacBlankLaneUrlChirho: expertSyriacBlankSessionUrlChirho,
+      latinSymbolLaneUrlChirho: latinSymbolSessionUrlChirho,
+    }),
     "",
     "## Suggested Review Routing",
     "",
