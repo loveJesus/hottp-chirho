@@ -259,6 +259,11 @@ function printNextReviewLinksChirho(statusChirho: CertificationStatusSummaryChir
   const linksChirho: Array<[string, string | null]> = [
     ["Raw Hebrew primary", reviewStartLinkChirho(statusChirho, "rawHebrewVols35UnvalidatedChirho")],
     ["Raw Hebrew confident disagreement", reviewStartLinkChirho(statusChirho, "rawHebrewConfidentDirectReadDisagreementChirho")],
+    ["Raw Hebrew low confidence", reviewStartLinkChirho(statusChirho, "rawHebrewLowConfidenceChirho")],
+    ["Raw Hebrew multi-token", reviewStartLinkChirho(statusChirho, "rawHebrewMultiTokenChirho")],
+    ["Raw Hebrew delimiter/damaged text", reviewStartLinkChirho(statusChirho, "rawHebrewDelimiterNotationChirho")],
+    ["Raw Hebrew no direct read", reviewStartLinkChirho(statusChirho, "rawHebrewNoDirectReadChirho")],
+    ["Raw Hebrew pre-review notes", reviewStartLinkChirho(statusChirho, "rawHebrewPreReviewNoteChirho")],
     ["Raw Hebrew attribution blocked", reviewStartLinkChirho(statusChirho, "rawHebrewAttributionBlockedChirho")],
     ["Raw Hebrew attribution unchanged", reviewStartLinkChirho(statusChirho, "rawHebrewAttributionBlockedUnchangedChirho")],
     ["Raw Hebrew attribution re-review", reviewStartLinkChirho(statusChirho, "rawHebrewAttributionRereviewChirho")],

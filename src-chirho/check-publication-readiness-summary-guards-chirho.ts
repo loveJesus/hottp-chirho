@@ -212,6 +212,14 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
       outputChirho.includes("reason gaps"),
     "publication summary must surface raw Hebrew triage and pre-review coverage"
   );
+  assertCheckChirho(
+    outputChirho.includes("Raw Hebrew low confidence:") &&
+      outputChirho.includes("Raw Hebrew multi-token:") &&
+      outputChirho.includes("Raw Hebrew delimiter/damaged text:") &&
+      outputChirho.includes("Raw Hebrew no direct read:") &&
+      outputChirho.includes("Raw Hebrew pre-review notes:"),
+    "publication summary must link the actionable raw Hebrew attention lanes"
+  );
 }
 
 async function mainChirho(): Promise<void> {
