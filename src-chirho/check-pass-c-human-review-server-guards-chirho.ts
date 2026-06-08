@@ -61,7 +61,7 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Rationale for command",
   "These helper fields only update the copied commands; they do not save, apply, or certify.",
   "bun run reattribute-pass-c-human-validations-chirho",
-  "--expected-live-text-chirho",
+  "--expected-live-text-hash-chirho",
   "Apply after dry run",
   "Copy command",
   "Quickstart",

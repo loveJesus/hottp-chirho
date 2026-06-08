@@ -2569,7 +2569,7 @@ function pageHtmlChirho(): string {
             "--validation-id-chirho=" + savedValidationChirho.id_chirho + " " +
             "--reviewer-chirho=" + shellArgOrPlaceholderChirho(fieldValueChirho("attribution-command-reviewer-chirho"), "<explicit-human-reviewer-id-chirho>") + " " +
             "--rationale-chirho=" + shellArgOrPlaceholderChirho(fieldValueChirho("attribution-command-rationale-chirho"), "<why this existing row is attributable to that reviewer>") + " " +
-            "--expected-live-text-chirho=" + shellSingleQuoteChirho(itemChirho.liveSpanTextChirho);
+            "--expected-live-text-hash-chirho=" + savedValidationChirho.id_chirho + ":" + itemChirho.originalTextHashChirho;
           const attributionReviewerInputChirho = elChirho("input", {
             id: "attribution-command-reviewer-chirho",
             classChirho: "reviewer-input-chirho",
