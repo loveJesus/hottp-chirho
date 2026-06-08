@@ -57,7 +57,8 @@ const RAW_HEBREW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "When uncertain, skip or save an issue. Do not use a clean review to express \"probably right.\"",
 ] as const;
 const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
-  "Use the `Target crop` panel as the exact review boundary.",
+  "Use the `Target crop - red box is the item` panel as the exact review boundary.",
+  "`Printed line - red box in context` panel shows neighboring text for orientation only.",
   "The red box marks the span being reviewed",
   "For blank items, supply only the exact script text inside the red box.",
   "Do not include surrounding context just because it appears in the full printed line.",

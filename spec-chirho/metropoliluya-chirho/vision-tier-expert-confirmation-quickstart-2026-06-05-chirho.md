@@ -17,7 +17,7 @@ The Source filter changes review order only; it does not change what confirmatio
 
 ## Target Crop
 
-Use the `Target crop` panel as the exact review boundary. The red box marks the span being reviewed; neighboring punctuation, French text, or other script text outside that box belongs to adjacent spans unless the printed mark is actually inside the red box.
+Use the `Target crop - red box is the item` panel as the exact review boundary. The `Printed line - red box in context` panel shows neighboring text for orientation only. The red box marks the span being reviewed; neighboring punctuation, French text, or other script text outside that box belongs to adjacent spans unless the printed mark is actually inside the red box.
 
 For blank items, supply only the exact script text inside the red box. Do not include surrounding context just because it appears in the full printed line.
 

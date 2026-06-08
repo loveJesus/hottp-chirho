@@ -2479,7 +2479,7 @@ function blankVisionTierHandoffRequiredDocumentSnippetsChirho(
     `- Expert item: \`${idChirho}\``,
     `- Required reviewer role: \`${expectedReviewerRoleChirho ?? "unknown-chirho"}\``,
     `- Live reviewer URL: \`${expertReviewUrlChirho}\``,
-    "If the page title is still `Vision-Tier Expert Review`, the page only starts at `Printed line`, or the Syriac is not visibly boxed, hard-refresh the browser tab or restart the stale review server before transcribing.",
+    "If the page title is still `Vision-Tier Expert Review`, the page does not show `Target crop - red box is the item` above `Printed line - red box in context`, or the Syriac is not visibly boxed, hard-refresh the browser tab or restart the stale review server before transcribing.",
   ];
   if (sourcePathChirho !== null) {
     snippetsChirho.push(`- Source scanline: \`${relativeProjectPathChirho(sourcePathChirho)}\``);
