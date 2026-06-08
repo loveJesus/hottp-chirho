@@ -251,6 +251,14 @@ function assertSummaryOnlyDoesNotBuildChirho(outputChirho: string): void {
       outputChirho.includes("Latin/symbol vol 5:"),
     "publication summary must link the actionable volume review lanes"
   );
+  assertCheckChirho(
+    outputChirho.includes("Blank text handoffs:") &&
+      outputChirho.includes("v3-p0151-l010-s3") &&
+      outputChirho.includes("syriac-blank-transcription-handoff") &&
+      outputChirho.includes("target crop:") &&
+      outputChirho.includes("context crop:"),
+    "publication summary must surface blank text handoff artifacts"
+  );
 }
 
 async function mainChirho(): Promise<void> {

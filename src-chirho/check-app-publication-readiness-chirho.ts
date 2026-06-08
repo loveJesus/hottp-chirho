@@ -107,6 +107,19 @@ interface CertificationStatusSummaryChirho {
   structuralChirho?: {
     strictPassedChirho?: unknown;
     passCOcrHebrewSpanCountChirho?: unknown;
+    blankVisionTierHandoffsChirho?: Array<{
+      idChirho?: unknown;
+      locationChirho?: unknown;
+      scriptChirho?: unknown;
+      expectedReviewerRoleChirho?: unknown;
+      expertReviewUrlChirho?: unknown;
+      handoffDocumentPathChirho?: unknown;
+      handoffDocumentExistsChirho?: unknown;
+      handoffTargetCropPathChirho?: unknown;
+      handoffTargetCropExistsChirho?: unknown;
+      handoffCropPathChirho?: unknown;
+      handoffCropExistsChirho?: unknown;
+    }>;
   };
   visionTierChirho?: {
     remainingConfirmationCountChirho?: unknown;
@@ -358,6 +371,45 @@ function printVolumeReviewLinksChirho(statusChirho: CertificationStatusSummaryCh
   }
 }
 
+function handoffPathTextChirho(pathChirho: unknown, existsChirho: unknown): string {
+  const pathTextChirho = typeof pathChirho === "string" && pathChirho.length > 0
+    ? relativeProjectPathChirho(pathChirho)
+    : "missing-path";
+  return `${pathTextChirho} (${existsChirho === true ? "present" : "missing"})`;
+}
+
+function printBlankTextHandoffsChirho(statusChirho: CertificationStatusSummaryChirho): void {
+  const handoffsChirho = statusChirho.structuralChirho?.blankVisionTierHandoffsChirho ?? [];
+  if (!Array.isArray(handoffsChirho) || handoffsChirho.length === 0) return;
+  console.log(`[${MODULE_CHIRHO}] Blank text handoffs:`);
+  for (const handoffChirho of handoffsChirho) {
+    const idChirho = stringOrUnknownChirho(handoffChirho.idChirho);
+    const locationChirho = stringOrUnknownChirho(handoffChirho.locationChirho);
+    const scriptChirho = stringOrUnknownChirho(handoffChirho.scriptChirho);
+    const roleChirho = stringOrUnknownChirho(handoffChirho.expectedReviewerRoleChirho);
+    const reviewUrlChirho = stringOrUnknownChirho(handoffChirho.expertReviewUrlChirho);
+    console.log(`- ${idChirho}: ${locationChirho}; script ${scriptChirho}; role ${roleChirho}; review ${reviewUrlChirho}`);
+    console.log(
+      `  handoff doc: ${handoffPathTextChirho(
+        handoffChirho.handoffDocumentPathChirho,
+        handoffChirho.handoffDocumentExistsChirho
+      )}`
+    );
+    console.log(
+      `  target crop: ${handoffPathTextChirho(
+        handoffChirho.handoffTargetCropPathChirho,
+        handoffChirho.handoffTargetCropExistsChirho
+      )}`
+    );
+    console.log(
+      `  context crop: ${handoffPathTextChirho(
+        handoffChirho.handoffCropPathChirho,
+        handoffChirho.handoffCropExistsChirho
+      )}`
+    );
+  }
+}
+
 function printReviewGuidePathsChirho(): void {
   const guidePathsChirho: Array<[string, string]> = [
     ["Raw Hebrew certification quickstart", RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO],
@@ -491,6 +543,7 @@ function printReadinessSummaryChirho(
     printReviewRoutingSummaryChirho(statusChirho);
     printNextReviewLinksChirho(statusChirho);
     printVolumeReviewLinksChirho(statusChirho);
+    printBlankTextHandoffsChirho(statusChirho);
     printReviewGuidePathsChirho();
   }
 }
