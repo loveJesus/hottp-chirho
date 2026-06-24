@@ -448,6 +448,7 @@ const indexHtmlChirho = String.raw`<!doctype html>
 // ===== Server =====
 Bun.serve({
   port: PORT_CHIRHO,
+  hostname: "127.0.0.1",
   async fetch(reqChirho: Request) {
     const urlChirho = new URL(reqChirho.url);
     if (urlChirho.pathname === "/") {

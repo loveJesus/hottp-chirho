@@ -1006,6 +1006,7 @@ function loadCurrentStateChirho(): {
 
 const serverChirho = Bun.serve({
   port: portChirho,
+  hostname: "127.0.0.1",
   async fetch(reqChirho) {
     const urlChirho = new URL(reqChirho.url);
     try {

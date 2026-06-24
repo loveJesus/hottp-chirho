@@ -239,6 +239,7 @@ async function verdictChirho(btnChirho, vChirho){
 
 Bun.serve({
   port: PORT_CHIRHO,
+  hostname: "127.0.0.1",
   async fetch(reqChirho) {
     const urlChirho = new URL(reqChirho.url);
     if (urlChirho.pathname === "/") {

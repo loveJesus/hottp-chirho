@@ -3027,6 +3027,7 @@ async function spanImageResponseChirho(itemChirho: QueueItemChirho): Promise<Res
 
 const serverChirho = Bun.serve({
   port: portChirho,
+  hostname: "127.0.0.1",
   async fetch(reqChirho: Request) {
     const urlChirho = new URL(reqChirho.url);
     if (urlChirho.pathname === "/") {

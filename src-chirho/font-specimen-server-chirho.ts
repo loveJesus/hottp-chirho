@@ -84,6 +84,7 @@ regenSpecimenChirho();
 
 Bun.serve({
   port: PORT_CHIRHO,
+  hostname: "127.0.0.1",
   async fetch(reqChirho) {
     const uChirho = new URL(reqChirho.url);
 
