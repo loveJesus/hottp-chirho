@@ -16,15 +16,17 @@
 import { json, error } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
+import { parseRequiredPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
 import { ocrSuggestionsChirho } from "$lib/server-chirho/schema-d1-chirho";
 import { eq, and, desc } from "drizzle-orm";
+
+const MAX_OCR_SUGGESTIONS_PER_PAGE_CHIRHO = 1000;
 
 export const GET: RequestHandler = async ({ url, platform }) => {
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
   const pageIdParamChirho = url.searchParams.get("page-id-chirho");
   if (!pageIdParamChirho) error(400, "page-id-chirho required");
-  const pageIdChirho = parseInt(pageIdParamChirho, 10);
-  if (Number.isNaN(pageIdChirho)) error(400, "page-id-chirho must be a number");
+  const pageIdChirho = parseRequiredPositiveIntParamChirho(pageIdParamChirho, "page-id-chirho");
   const bucketChirho = url.searchParams.get("bucket-chirho");
 
   const whereChirho = bucketChirho
@@ -47,7 +49,8 @@ export const GET: RequestHandler = async ({ url, platform }) => {
     })
     .from(ocrSuggestionsChirho)
     .where(whereChirho)
-    .orderBy(desc(ocrSuggestionsChirho.confidenceChirho));
+    .orderBy(desc(ocrSuggestionsChirho.confidenceChirho))
+    .limit(MAX_OCR_SUGGESTIONS_PER_PAGE_CHIRHO);
 
   return json({ suggestionsChirho: rowsChirho });
 };

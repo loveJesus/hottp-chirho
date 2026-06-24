@@ -4,6 +4,7 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
+import { parseRequiredPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
 import {
   segmentsChirho,
   scanlinesChirho,
@@ -18,12 +19,13 @@ export const GET: RequestHandler = async ({ url, platform }) => {
   const pageIdChirho = url.searchParams.get("page-id-chirho");
 
   if (scanlineIdChirho) {
+    const parsedScanlineIdChirho = parseRequiredPositiveIntParamChirho(scanlineIdChirho, "scanline-id-chirho");
     // Get segments for a specific scanline
     const resultChirho = await dbChirho
       .select()
       .from(segmentsChirho)
       .where(
-        eq(segmentsChirho.scanlineIdChirho, parseInt(scanlineIdChirho, 10))
+        eq(segmentsChirho.scanlineIdChirho, parsedScanlineIdChirho)
       )
       .orderBy(segmentsChirho.segmentIndexChirho);
 
@@ -31,6 +33,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
   }
 
   if (pageIdChirho) {
+    const parsedPageIdChirho = parseRequiredPositiveIntParamChirho(pageIdChirho, "page-id-chirho");
     // ONE JOIN: scanlines on this page → their segments. No N+1 loop.
     // Indexed by idx_scanlines_page_chirho + idx_segments_scanline_chirho.
     const allSegmentsChirho = await dbChirho
@@ -54,7 +57,7 @@ export const GET: RequestHandler = async ({ url, platform }) => {
         scanlinesChirho,
         eq(scanlinesChirho.idChirho, segmentsChirho.scanlineIdChirho)
       )
-      .where(eq(scanlinesChirho.pageIdChirho, parseInt(pageIdChirho, 10)))
+      .where(eq(scanlinesChirho.pageIdChirho, parsedPageIdChirho))
       .orderBy(scanlinesChirho.lineIndexChirho, segmentsChirho.segmentIndexChirho);
 
     return json(allSegmentsChirho);

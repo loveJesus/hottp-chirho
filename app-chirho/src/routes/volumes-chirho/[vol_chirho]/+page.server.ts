@@ -8,6 +8,7 @@
 
 import type { PageServerLoad } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
+import { parseRequiredPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
 import {
   pagesChirho,
   scanlinesChirho,
@@ -17,7 +18,7 @@ import { count, eq, sql, ne, and } from "drizzle-orm";
 
 export const load: PageServerLoad = async ({ params, platform }) => {
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
-  const volumeNumChirho = parseInt(params.vol_chirho, 10);
+  const volumeNumChirho = parseRequiredPositiveIntParamChirho(params.vol_chirho, "vol_chirho");
 
   const pageRowsChirho = await dbChirho
     .select()

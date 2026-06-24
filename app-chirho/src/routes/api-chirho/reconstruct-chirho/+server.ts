@@ -4,6 +4,7 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
+import { parseRequiredPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
 import {
   pagesChirho,
   scanlinesChirho,
@@ -33,8 +34,8 @@ export const GET: RequestHandler = async ({ url, platform }) => {
     );
   }
 
-  const volumeNumChirho = parseInt(volumeChirho, 10);
-  const pageNumChirho = parseInt(pageChirho, 10);
+  const volumeNumChirho = parseRequiredPositiveIntParamChirho(volumeChirho, "volume-chirho");
+  const pageNumChirho = parseRequiredPositiveIntParamChirho(pageChirho, "page-chirho");
 
   // Find the page
   const pageResultChirho = await dbChirho
@@ -126,18 +127,11 @@ export const GET: RequestHandler = async ({ url, platform }) => {
 
   const fullTextChirho = reconstructedLinesChirho.join("\n");
 
-  // Optionally save to page record
-  if (fullTextChirho.length > 0) {
-    await dbChirho
-      .update(pagesChirho)
-      .set({ reconstructedTextChirho: fullTextChirho })
-      .where(eq(pagesChirho.idChirho, pageDataChirho.idChirho));
-  }
-
   return json({
     volumeNumberChirho: volumeNumChirho,
     pageNumberChirho: pageNumChirho,
     reconstructedTextChirho: fullTextChirho,
     lineCountChirho: reconstructedLinesChirho.length,
+    persistedChirho: false,
   });
 };

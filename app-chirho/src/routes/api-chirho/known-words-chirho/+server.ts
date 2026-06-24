@@ -14,6 +14,7 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
+import { parseRequiredPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
 import { knownWordsChirho } from "$lib/server-chirho/schema-d1-chirho";
 import { and, eq } from "drizzle-orm";
 
@@ -100,8 +101,9 @@ export const DELETE: RequestHandler = async ({ url, platform }) => {
   if (!idStrChirho) {
     return json({ errorChirho: "id-chirho required" }, { status: 400 });
   }
+  const idChirho = parseRequiredPositiveIntParamChirho(idStrChirho, "id-chirho");
   await dbChirho
     .delete(knownWordsChirho)
-    .where(eq(knownWordsChirho.idChirho, parseInt(idStrChirho, 10)));
+    .where(eq(knownWordsChirho.idChirho, idChirho));
   return json({ successChirho: true });
 };

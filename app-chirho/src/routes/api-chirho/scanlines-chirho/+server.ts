@@ -4,6 +4,7 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
+import { parseRequiredPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
 import { scanlinesChirho } from "$lib/server-chirho/schema-d1-chirho";
 import { eq } from "drizzle-orm";
 
@@ -15,11 +16,12 @@ export const GET: RequestHandler = async ({ url, platform }) => {
   if (!pageIdChirho) {
     return json({ errorChirho: "Missing page-id-chirho" }, { status: 400 });
   }
+  const parsedPageIdChirho = parseRequiredPositiveIntParamChirho(pageIdChirho, "page-id-chirho");
 
   const resultChirho = await dbChirho
     .select()
     .from(scanlinesChirho)
-    .where(eq(scanlinesChirho.pageIdChirho, parseInt(pageIdChirho, 10)))
+    .where(eq(scanlinesChirho.pageIdChirho, parsedPageIdChirho))
     .orderBy(scanlinesChirho.lineIndexChirho);
 
   return json(resultChirho);

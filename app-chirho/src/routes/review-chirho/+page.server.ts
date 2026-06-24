@@ -6,11 +6,16 @@ import { drizzle } from "drizzle-orm/d1";
 import { eq, ne, sql } from "drizzle-orm";
 import { pagesChirho, scanlinesChirho, segmentsChirho } from "$lib/server-chirho/schema-d1-chirho";
 
+const REVIEW_FILTERS_CHIRHO = new Set(["all", "needs-review", "high-confidence"]);
+
 export const load: PageServerLoad = async ({ platform, url }) => {
   if (!platform?.env?.DB_CHIRHO) return { pagesChirho: [], filterChirho: "needs-review" };
   const dbChirho = drizzle(platform.env.DB_CHIRHO);
 
-  const filterChirho = url.searchParams.get("filter") ?? "needs-review";
+  const requestedFilterChirho = url.searchParams.get("filter") ?? "needs-review";
+  const filterChirho = REVIEW_FILTERS_CHIRHO.has(requestedFilterChirho)
+    ? requestedFilterChirho
+    : "needs-review";
 
   // Per-page rollup: counts of non-French segments grouped by confidence.
   const rollupChirho = await dbChirho

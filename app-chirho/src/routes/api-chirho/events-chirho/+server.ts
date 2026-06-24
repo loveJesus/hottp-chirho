@@ -16,6 +16,11 @@ import { json, error } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
 import {
+  parseBoundedNonnegativeIntParamChirho,
+  parseBoundedPositiveIntParamChirho,
+  parseOptionalPositiveIntParamChirho,
+} from "$lib/server-chirho/query-params-chirho";
+import {
   eventsChirho,
   wordsChirho,
 } from "$lib/server-chirho/schema-d1-chirho";
@@ -150,6 +155,9 @@ export const POST: RequestHandler = async ({ request, platform }) => {
   return json({ eventChirho: newEventChirho });
 };
 
+const DEFAULT_EVENT_LIMIT_CHIRHO = 1000;
+const MAX_EVENT_LIMIT_CHIRHO = 5000;
+
 /**
  * GET /api-chirho/events-chirho?page-id-chirho=N&since-seq-chirho=N
  * Returns events for a page above a cursor — used by the editor to merge
@@ -157,17 +165,30 @@ export const POST: RequestHandler = async ({ request, platform }) => {
  */
 export const GET: RequestHandler = async ({ url, platform }) => {
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
-  const pageIdChirho = url.searchParams.get("page-id-chirho");
-  const sinceSeqChirho = parseInt(url.searchParams.get("since-seq-chirho") ?? "0", 10);
-  const limitChirho = Math.min(parseInt(url.searchParams.get("limit-chirho") ?? "1000", 10), 5000);
+  const pageIdChirho = parseOptionalPositiveIntParamChirho(
+    url.searchParams.get("page-id-chirho"),
+    "page-id-chirho",
+  );
+  const sinceSeqChirho = parseBoundedNonnegativeIntParamChirho(
+    url.searchParams.get("since-seq-chirho"),
+    "since-seq-chirho",
+    0,
+    Number.MAX_SAFE_INTEGER,
+  );
+  const limitChirho = parseBoundedPositiveIntParamChirho(
+    url.searchParams.get("limit-chirho"),
+    "limit-chirho",
+    DEFAULT_EVENT_LIMIT_CHIRHO,
+    MAX_EVENT_LIMIT_CHIRHO,
+  );
 
-  if (pageIdChirho) {
+  if (pageIdChirho !== null) {
     const rowsChirho = await dbChirho
       .select()
       .from(eventsChirho)
       .where(
         and(
-          eq(eventsChirho.pageIdChirho, parseInt(pageIdChirho, 10)),
+          eq(eventsChirho.pageIdChirho, pageIdChirho),
           gt(eventsChirho.seqChirho, sinceSeqChirho),
         ),
       )

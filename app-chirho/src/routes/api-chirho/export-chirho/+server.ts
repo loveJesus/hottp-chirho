@@ -4,8 +4,11 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
+import { parseRequiredPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
 import { pagesChirho } from "$lib/server-chirho/schema-d1-chirho";
 import { eq } from "drizzle-orm";
+
+const MAX_EXPORT_PAGES_PER_VOLUME_CHIRHO = 5000;
 
 /** Export reconstructed page text for a volume as UTF-8 markdown. */
 export const GET: RequestHandler = async ({ url, platform }) => {
@@ -16,13 +19,14 @@ export const GET: RequestHandler = async ({ url, platform }) => {
     return json({ errorChirho: "Missing volume-chirho" }, { status: 400 });
   }
 
-  const volumeNumChirho = parseInt(volumeChirho, 10);
+  const volumeNumChirho = parseRequiredPositiveIntParamChirho(volumeChirho, "volume-chirho");
 
   const volumePagesChirho = await dbChirho
     .select()
     .from(pagesChirho)
     .where(eq(pagesChirho.volumeNumberChirho, volumeNumChirho))
-    .orderBy(pagesChirho.pageNumberChirho);
+    .orderBy(pagesChirho.pageNumberChirho)
+    .limit(MAX_EXPORT_PAGES_PER_VOLUME_CHIRHO);
 
   let missingReconstructedCountChirho = 0;
   let markdownChirho =

@@ -12,6 +12,7 @@
 
 import type { PageServerLoad } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
+import { parseRequiredPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
 import {
   pagesChirho,
   scanlinesChirho,
@@ -25,8 +26,8 @@ type ScanlineRowChirho = typeof scanlinesChirho.$inferSelect;
 
 export const load: PageServerLoad = async ({ params, platform }) => {
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
-  const volumeNumChirho = parseInt(params.vol_chirho, 10);
-  const pageNumChirho = parseInt(params.page_chirho, 10);
+  const volumeNumChirho = parseRequiredPositiveIntParamChirho(params.vol_chirho, "vol_chirho");
+  const pageNumChirho = parseRequiredPositiveIntParamChirho(params.page_chirho, "page_chirho");
 
   // Page lookup. Indexed by UNIQUE(volume_number_chirho, page_number_chirho).
   const pageRowsChirho = await dbChirho

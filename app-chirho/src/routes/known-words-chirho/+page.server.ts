@@ -15,22 +15,33 @@
 
 import type { PageServerLoad } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
+import {
+  parseBoundedNonnegativeIntParamChirho,
+  parseOptionalPositiveIntParamChirho,
+} from "$lib/server-chirho/query-params-chirho";
 import { knownWordsChirho } from "$lib/server-chirho/schema-d1-chirho";
 import { and, desc, eq, sql } from "drizzle-orm";
 
 const PAGE_SIZE_CHIRHO = 50;
+const MAX_KNOWN_WORDS_OFFSET_CHIRHO = 5000;
 
 export const load: PageServerLoad = async ({ url, platform }) => {
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
 
   const statusChirho = url.searchParams.get("status-chirho") ?? "";
   const volumeStrChirho = url.searchParams.get("volume-chirho") ?? "";
-  const offsetChirho = parseInt(url.searchParams.get("offset-chirho") ?? "0", 10);
+  const volumeNumberChirho = parseOptionalPositiveIntParamChirho(volumeStrChirho, "volume-chirho");
+  const offsetChirho = parseBoundedNonnegativeIntParamChirho(
+    url.searchParams.get("offset-chirho"),
+    "offset-chirho",
+    0,
+    MAX_KNOWN_WORDS_OFFSET_CHIRHO,
+  );
 
   const filtersChirho = [];
   if (statusChirho) filtersChirho.push(eq(knownWordsChirho.statusChirho, statusChirho));
-  if (volumeStrChirho) {
-    filtersChirho.push(eq(knownWordsChirho.volumeNumberChirho, parseInt(volumeStrChirho, 10)));
+  if (volumeNumberChirho !== null) {
+    filtersChirho.push(eq(knownWordsChirho.volumeNumberChirho, volumeNumberChirho));
   }
   const whereChirho = filtersChirho.length === 0 ? undefined : filtersChirho.length === 1 ? filtersChirho[0] : and(...filtersChirho);
 

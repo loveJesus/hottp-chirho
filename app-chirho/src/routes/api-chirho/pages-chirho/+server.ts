@@ -4,27 +4,35 @@
 import { json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
+import { parseOptionalPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
 import { pagesChirho } from "$lib/server-chirho/schema-d1-chirho";
-import { eq, sql } from "drizzle-orm";
+import { eq } from "drizzle-orm";
+
+const MAX_PAGE_LIST_CHIRHO = 5000;
 
 /** Get pages for a volume, or all pages */
 export const GET: RequestHandler = async ({ url, platform }) => {
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
 
-  const volumeChirho = url.searchParams.get("volume-chirho");
+  const volumeChirho = parseOptionalPositiveIntParamChirho(
+    url.searchParams.get("volume-chirho"),
+    "volume-chirho",
+  );
 
   let queryChirho;
-  if (volumeChirho) {
+  if (volumeChirho !== null) {
     queryChirho = dbChirho
       .select()
       .from(pagesChirho)
-      .where(eq(pagesChirho.volumeNumberChirho, parseInt(volumeChirho, 10)))
-      .orderBy(pagesChirho.pageNumberChirho);
+      .where(eq(pagesChirho.volumeNumberChirho, volumeChirho))
+      .orderBy(pagesChirho.pageNumberChirho)
+      .limit(MAX_PAGE_LIST_CHIRHO);
   } else {
     queryChirho = dbChirho
       .select()
       .from(pagesChirho)
-      .orderBy(pagesChirho.volumeNumberChirho, pagesChirho.pageNumberChirho);
+      .orderBy(pagesChirho.volumeNumberChirho, pagesChirho.pageNumberChirho)
+      .limit(MAX_PAGE_LIST_CHIRHO);
   }
 
   const resultChirho = await queryChirho;
