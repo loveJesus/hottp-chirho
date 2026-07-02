@@ -1,7 +1,7 @@
 // For God so loved the world that he gave his only begotten Son,
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, statSync } from "fs";
 import { connect } from "net";
 import { resolve, sep } from "path";
 
@@ -11,6 +11,8 @@ const MODULE_CHIRHO = "sync-human-review-vps-chirho";
 const DEFAULT_REMOTE_USER_CHIRHO = "hottp-review-chirho";
 const DEFAULT_REMOTE_PATH_CHIRHO = "/srv/hottp-review-chirho/current/";
 const LOCAL_PORT_CHECK_TIMEOUT_MS_CHIRHO = 500;
+const PROGRESS_DB_WAL_PATH_CHIRHO = resolve(PROJECT_ROOT_CHIRHO, "spec-chirho", "progress-chirho.sqlite-wal");
+const PROGRESS_DB_JOURNAL_PATH_CHIRHO = resolve(PROJECT_ROOT_CHIRHO, "spec-chirho", "progress-chirho.sqlite-journal");
 
 const WRITE_CAPABLE_LOCAL_PORTS_CHIRHO = [
   { labelChirho: "raw Hebrew review server", portChirho: 8766 },
@@ -27,8 +29,17 @@ const WRITE_CAPABLE_REMOTE_SERVICES_CHIRHO = [
 const EXCLUDES_CHIRHO = [
   ".git/",
   ".env",
+  ".env.*",
+  ".wrangler/",
+  "**/.wrangler/",
   "node_modules/",
   "app-chirho/.svelte-kit/",
+  "spec-chirho/*.sqlite-wal",
+  "spec-chirho/*.sqlite-shm",
+  "spec-chirho/*.sqlite-journal",
+  "**/spec-chirho/*.sqlite-wal",
+  "**/spec-chirho/*.sqlite-shm",
+  "**/spec-chirho/*.sqlite-journal",
 ] as const;
 
 interface ProvisioningDecisionForSyncChirho {
@@ -183,6 +194,20 @@ function assertWriteLeaseApprovalReferenceForApplyChirho(
   }
 }
 
+function assertProgressDbCheckpointedForApplyChirho(argsChirho: string[]): void {
+  if (!argsChirho.includes("--apply-chirho")) return;
+  const unsafeSidecarsChirho = [
+    { labelChirho: "progress DB WAL", pathChirho: PROGRESS_DB_WAL_PATH_CHIRHO },
+    { labelChirho: "progress DB rollback journal", pathChirho: PROGRESS_DB_JOURNAL_PATH_CHIRHO },
+  ].filter((sidecarChirho) => existsSync(sidecarChirho.pathChirho) && statSync(sidecarChirho.pathChirho).size > 0);
+  if (unsafeSidecarsChirho.length > 0) {
+    failChirho(
+      "--apply-chirho requires the progress DB to be checkpointed before sync-out; non-empty sidecar(s): " +
+        unsafeSidecarsChirho.map((sidecarChirho) => sidecarChirho.labelChirho).join(", ")
+    );
+  }
+}
+
 function shellQuoteChirho(valueChirho: string): string {
   return `'${valueChirho.replace(/'/g, "'\"'\"'")}'`;
 }
@@ -263,6 +288,7 @@ async function mainChirho(): Promise<void> {
   const approvalReferenceChirho = !printOnlyChirho ? completedDecisionApprovalReferenceForApplyChirho(argsChirho, hostChirho) : null;
   if (!printOnlyChirho) assertWriteLeaseForApplyChirho(argsChirho, hostChirho);
   if (!printOnlyChirho) assertWriteLeaseApprovalReferenceForApplyChirho(argsChirho, approvalReferenceChirho);
+  if (!printOnlyChirho) assertProgressDbCheckpointedForApplyChirho(argsChirho);
   if (!printOnlyChirho) await assertLocalWritePortsStoppedForApplyChirho(argsChirho);
   if (!printOnlyChirho) assertRemoteWriteServicesStoppedForApplyChirho(argsChirho, hostChirho);
   const rsyncArgsValueChirho = rsyncArgsChirho(argsChirho);

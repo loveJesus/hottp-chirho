@@ -104,6 +104,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       decision whose selected host matches the sync host.
 - [x] Bind real sync-out `--apply-chirho` to the write lease whose owner
       approval reference matches the completed provisioning decision.
+- [x] Have sync-out exclude secret env patterns, Wrangler local state, and
+      SQLite sidecars, and refuse a non-empty progress DB WAL before rsync.
 - [x] Add a dry-run-default commit-back pull helper for the canonical DB and
       review artifacts, with explicit optional flags for draft repair proposals,
       expert-supplied backups, and live span JSON.

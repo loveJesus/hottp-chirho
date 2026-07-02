@@ -267,6 +267,8 @@ function assertSyncHelperChirho(): void {
     "check-human-review-vps-write-lease-chirho.ts",
     "--apply-chirho requires --write-lease-chirho=... so write ownership is explicit before sync-out",
     "write lease owner approval reference does not match provisioning decision approval reference",
+    "PROGRESS_DB_WAL_PATH_CHIRHO",
+    "progress DB to be checkpointed before sync-out",
     "WRITE_CAPABLE_LOCAL_PORTS_CHIRHO",
     "local write-capable review servers to be stopped before sync-out",
     "127.0.0.1",
@@ -280,8 +282,14 @@ function assertSyncHelperChirho(): void {
     "remote write-capable review services must be stopped before sync-out",
     ".git/",
     ".env",
+    ".env.*",
+    ".wrangler/",
+    "**/.wrangler/",
     "node_modules/",
     "app-chirho/.svelte-kit/",
+    "spec-chirho/*.sqlite-wal",
+    "spec-chirho/*.sqlite-shm",
+    "spec-chirho/*.sqlite-journal",
   ]) {
     if (!sourceChirho.includes(snippetChirho)) {
       failChirho(`VPS sync helper missing guard snippet: ${snippetChirho}`);
