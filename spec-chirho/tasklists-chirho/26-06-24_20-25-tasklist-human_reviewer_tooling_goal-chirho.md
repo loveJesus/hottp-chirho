@@ -126,6 +126,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
 - [x] Add a machine-checkable provisioning decision template/verifier so owner
       approval, host choice, DNS plan, budget posture, and single-writer safety
       are explicit before real VPS work starts.
+- [x] Require explicit owner DNS-change approval in the provisioning decision,
+      matching the DNS create/update plan before any host smoke can complete.
 - [x] Add a first-smoke completion checker that requires a completed
       provisioning decision and completed raw-Hebrew smoke evidence to agree on
       host, raw-review DNS name, station, and blocked direct port.

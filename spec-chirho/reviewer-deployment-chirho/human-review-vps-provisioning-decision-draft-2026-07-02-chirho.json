@@ -10,6 +10,7 @@
     "approval_reference_chirho": "pending-owner-approval-reference-chirho",
     "approved_scope_chirho": "reuse-existing-host-chirho",
     "creates_billable_resources_chirho": false,
+    "dns_changes_approved_chirho": false,
     "monthly_budget_usd_chirho": 0
   },
   "selected_host_chirho": {

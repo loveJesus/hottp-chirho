@@ -126,6 +126,7 @@ function assertShapeChirho(decisionChirho: ProvisioningDecisionChirho): void {
   const scopeChirho = stringFieldChirho(approvalChirho, "approved_scope_chirho", "owner_approval_chirho");
   if (!SCOPES_CHIRHO.has(scopeChirho)) failChirho(`unsupported approved scope: ${scopeChirho}`);
   booleanFieldChirho(approvalChirho, "creates_billable_resources_chirho", "owner_approval_chirho");
+  booleanFieldChirho(approvalChirho, "dns_changes_approved_chirho", "owner_approval_chirho");
   numberFieldChirho(approvalChirho, "monthly_budget_usd_chirho", "owner_approval_chirho");
   const hostChirho = recordChirho(rootChirho.selected_host_chirho, "selected_host_chirho");
   const providerChirho = stringFieldChirho(hostChirho, "provider_chirho", "selected_host_chirho");
@@ -175,6 +176,11 @@ function assertCompletedDecisionChirho(decisionChirho: ProvisioningDecisionChirh
     "creates_billable_resources_chirho",
     "owner_approval_chirho"
   );
+  const dnsChangesApprovedChirho = booleanFieldChirho(
+    approvalChirho,
+    "dns_changes_approved_chirho",
+    "owner_approval_chirho"
+  );
   const budgetChirho = numberFieldChirho(approvalChirho, "monthly_budget_usd_chirho", "owner_approval_chirho");
   if (budgetChirho < 0) failChirho("monthly_budget_usd_chirho cannot be negative");
   if (createsBillableChirho && budgetChirho <= 0) {
@@ -193,6 +199,10 @@ function assertCompletedDecisionChirho(decisionChirho: ProvisioningDecisionChirh
     failChirho("create-new-host-chirho must acknowledge creates_billable_resources_chirho=true");
   }
   const dnsChirho = recordChirho(rootChirho.dns_plan_chirho, "dns_plan_chirho");
+  const createOrUpdateDnsChirho = booleanFieldChirho(dnsChirho, "create_or_update_records_chirho", "dns_plan_chirho");
+  if (createOrUpdateDnsChirho !== dnsChangesApprovedChirho) {
+    failChirho("owner_approval_chirho.dns_changes_approved_chirho must match dns_plan_chirho.create_or_update_records_chirho");
+  }
   for (const [keyChirho, expectedChirho] of Object.entries(REQUIRED_DNS_CHIRHO)) {
     const actualChirho = stringFieldChirho(dnsChirho, keyChirho, "dns_plan_chirho");
     if (actualChirho !== expectedChirho) {

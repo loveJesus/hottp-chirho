@@ -32,6 +32,7 @@ continue. The completed provisioning decision must fill:
 - `owner_approval_chirho.approved_chirho: true`
 - `owner_approval_chirho.approved_by_chirho`
 - `owner_approval_chirho.approval_reference_chirho`
+- `owner_approval_chirho.dns_changes_approved_chirho`
 - `selected_host_chirho.host_name_chirho`
 - `selected_host_chirho.host_address_chirho`
 - all `safety_acknowledgements_chirho` values as `true`
