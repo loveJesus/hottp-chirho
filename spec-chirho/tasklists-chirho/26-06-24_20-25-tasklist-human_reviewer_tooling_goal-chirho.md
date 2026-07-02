@@ -106,6 +106,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       approval reference matches the completed provisioning decision.
 - [x] Have sync-out exclude secret env patterns, Wrangler local state, and
       SQLite sidecars, and refuse a non-empty progress DB WAL before rsync.
+- [x] Have sync-out exclude local `backups-chirho/` quarantine artifacts from
+      the remote live tree.
 - [x] Add a dry-run-default commit-back pull helper for the canonical DB and
       review artifacts, with explicit optional flags for draft repair proposals,
       expert-supplied backups, and live span JSON.

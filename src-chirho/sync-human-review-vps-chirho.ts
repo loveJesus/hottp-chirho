@@ -34,6 +34,7 @@ const EXCLUDES_CHIRHO = [
   "**/.wrangler/",
   "node_modules/",
   "app-chirho/.svelte-kit/",
+  "backups-chirho/",
   "spec-chirho/*.sqlite-wal",
   "spec-chirho/*.sqlite-shm",
   "spec-chirho/*.sqlite-journal",
