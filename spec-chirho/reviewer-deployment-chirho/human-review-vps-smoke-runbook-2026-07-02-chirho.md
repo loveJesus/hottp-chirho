@@ -14,6 +14,7 @@ Run this from the source workstation before copying anything:
 bun run check-human-review-vps-readiness-chirho
 bun run check-human-review-vps-deployment-templates-chirho
 bun run check-human-review-vps-smoke-evidence-chirho -- --template-ok-chirho
+bun run check-human-review-vps-provisioning-decision-chirho -- --template-ok-chirho
 bun run inventory-human-review-vps-candidates-chirho
 bun run check-certification-chirho
 git status --short
@@ -26,6 +27,20 @@ the host.
 The provider inventory command is read-only. It lists existing Hetzner servers,
 DigitalOcean droplets if the token is usable, and existing `bible.systems`
 review DNS records. It must not create a server or DNS record.
+
+Before provisioning or reusing a host, copy the provisioning decision template,
+fill the exact owner approval, host, DNS plan, inventory snapshot, and safety
+acknowledgements, then verify it:
+
+```bash
+cp spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-template-2026-07-02-chirho.json \
+  spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-YYYY-MM-DD-chirho.json
+bun run check-human-review-vps-provisioning-decision-chirho -- \
+  --decision-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-YYYY-MM-DD-chirho.json
+```
+
+Do not create a billable resource, reuse an existing host as write-owner, or add
+review DNS records unless the completed decision verifier passes.
 
 ## 1. Host Shape Chirho
 

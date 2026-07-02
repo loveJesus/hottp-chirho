@@ -1,0 +1,46 @@
+{
+  "schema_version_chirho": 1,
+  "completed_chirho": false,
+  "decision_id_chirho": "replace-with-YYYY-MM-DD-review-host-decision-chirho",
+  "recorded_at_chirho": "YYYY-MM-DDTHH:mm:ss.sssZ",
+  "recorded_by_chirho": "explicit-human-or-agent-id-chirho",
+  "owner_approval_chirho": {
+    "approved_chirho": false,
+    "approved_by_chirho": "explicit-owner-id-chirho",
+    "approval_reference_chirho": "metropoliluya-message-or-chat-reference-chirho",
+    "approved_scope_chirho": "reuse-existing-host-chirho",
+    "creates_billable_resources_chirho": false,
+    "monthly_budget_usd_chirho": 0
+  },
+  "selected_host_chirho": {
+    "provider_chirho": "hetzner-chirho",
+    "host_name_chirho": "REVIEW_HOST_CHIRHO",
+    "host_address_chirho": "REVIEW_HOST_CHIRHO",
+    "region_chirho": "provider-region-chirho",
+    "size_chirho": "provider-size-chirho",
+    "existing_host_chirho": true
+  },
+  "dns_plan_chirho": {
+    "raw_review_hostname_chirho": "raw-review.bible.systems",
+    "latin_review_hostname_chirho": "latin-review.bible.systems",
+    "expert_review_hostname_chirho": "expert-review.bible.systems",
+    "create_or_update_records_chirho": false,
+    "proxied_chirho": false
+  },
+  "safety_acknowledgements_chirho": {
+    "single_writer_host_chirho": false,
+    "no_cloudflare_workers_for_authoring_chirho": false,
+    "no_d1_authoring_database_chirho": false,
+    "secrets_outside_git_chirho": false,
+    "caddy_auth_required_chirho": false,
+    "direct_ports_blocked_chirho": false,
+    "workspace_assets_synced_explicitly_chirho": false
+  },
+  "inventory_snapshot_chirho": {
+    "inventory_recorded_at_chirho": "YYYY-MM-DDTHH:mm:ss.sssZ",
+    "hetzner_status_chirho": "copy-from-inventory-helper-chirho",
+    "digital_ocean_status_chirho": "copy-from-inventory-helper-chirho",
+    "cloudflare_review_dns_status_chirho": "copy-from-inventory-helper-chirho",
+    "notes_chirho": "Run bun run inventory-human-review-vps-candidates-chirho before completing this decision."
+  }
+}

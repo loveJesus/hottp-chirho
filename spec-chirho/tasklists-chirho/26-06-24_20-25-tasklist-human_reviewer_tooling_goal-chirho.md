@@ -109,6 +109,9 @@ server-authoritative, and the boundary/commit-back ritual is documented.
 - [x] Add a read-only provider inventory helper for existing Hetzner,
       DigitalOcean, and Cloudflare review-DNS state so provisioning starts from
       current infrastructure instead of assumptions.
+- [x] Add a machine-checkable provisioning decision template/verifier so owner
+      approval, host choice, DNS plan, budget posture, and single-writer safety
+      are explicit before real VPS work starts.
 - [ ] Provision one small authenticated VPS review host.
 - [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
 - [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;

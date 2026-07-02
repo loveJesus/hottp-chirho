@@ -33,6 +33,7 @@
     "src-chirho/check-export-markdown-output-hygiene-chirho.ts",
     "src-chirho/check-human-review-vps-deployment-templates-chirho.ts",
     "src-chirho/check-human-review-vps-host-preflight-chirho.ts",
+    "src-chirho/check-human-review-vps-provisioning-decision-chirho.ts",
     "src-chirho/check-human-review-vps-readiness-chirho.ts",
     "src-chirho/check-human-review-vps-smoke-evidence-chirho.ts",
     "src-chirho/check-human-suggested-correction-cli-guards-chirho.ts",
