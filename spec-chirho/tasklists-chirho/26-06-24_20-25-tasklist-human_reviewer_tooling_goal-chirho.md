@@ -142,6 +142,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       review service is active on the selected host.
 - [x] Have the commit-back pull helper refuse real rsync when any remote
       write-capable review service is active on the selected host.
+- [x] Have the commit-back pull helper refuse real rsync when the remote
+      progress DB has a non-empty WAL or rollback journal.
 - [x] Have the Pass-C replay helper require an explicit backup output path on
       `--apply` so pulled rows update the intended committable artifact.
 - [x] Add live-probe mode to smoke evidence checks so real host smoke verifies

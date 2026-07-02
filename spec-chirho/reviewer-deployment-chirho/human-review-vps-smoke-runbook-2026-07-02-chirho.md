@@ -255,8 +255,11 @@ remote `hottp-raw-review-chirho.service`,
 `hottp-latin-symbol-review-chirho.service`, and
 `hottp-expert-review-chirho.service` units before copying state back; if any
 are active, pull-back aborts so copied artifacts come from a stopped review
-host. A real pull-back also requires a completed provisioning decision, and the
-pull host must match that decision's selected host name or address. The write lease
+host. It also refuses a non-empty remote
+`spec-chirho/progress-chirho.sqlite-wal` or rollback journal before pulling the
+quarantined SQLite snapshot, so the copied main file is not known-stale relative
+to an ignored sidecar. A real pull-back also requires a completed provisioning
+decision, and the pull host must match that decision's selected host name or address. The write lease
 `owner_approval_reference_chirho` must match the provisioning decision
 `owner_approval_chirho.approval_reference_chirho`.
 

@@ -339,6 +339,37 @@ function assertRemoteWriteServicesStoppedForApplyChirho(argsChirho: string[], ho
   }
 }
 
+function remoteProgressDbCheckpointedScriptChirho(remotePathValueChirho: string): string {
+  const remoteDbPathChirho = `${remotePathValueChirho}${REMOTE_PROGRESS_DB_PATH_CHIRHO}`;
+  return [
+    "set -euo pipefail",
+    "unsafe_sidecars_chirho=''",
+    `if [ -s ${shellQuoteChirho(`${remoteDbPathChirho}-wal`)} ]; then unsafe_sidecars_chirho="$unsafe_sidecars_chirho progress-db-wal"; fi`,
+    `if [ -s ${shellQuoteChirho(`${remoteDbPathChirho}-journal`)} ]; then unsafe_sidecars_chirho="$unsafe_sidecars_chirho progress-db-journal"; fi`,
+    "if [ -n \"$unsafe_sidecars_chirho\" ]; then",
+    "  printf '%s\\n' \"remote progress DB must be checkpointed before pull-back; non-empty sidecar(s):$unsafe_sidecars_chirho\" >&2",
+    "  exit 46",
+    "fi",
+  ].join("\n");
+}
+
+function assertRemoteProgressDbCheckpointedForApplyChirho(argsChirho: string[], hostChirho: string): void {
+  if (!argsChirho.includes("--apply-chirho")) return;
+  const remoteUserValueChirho = remoteUserChirho(argsChirho);
+  const remotePathValueChirho = remotePathChirho(
+    parseArgValueChirho(argsChirho, "remote-path-chirho") ?? DEFAULT_REMOTE_PATH_CHIRHO
+  );
+  const commandChirho = ["ssh", `${remoteUserValueChirho}@${hostChirho}`, "bash", "-s"];
+  const resultChirho = Bun.spawnSync(commandChirho, {
+    stdin: new TextEncoder().encode(remoteProgressDbCheckpointedScriptChirho(remotePathValueChirho)),
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+  if (resultChirho.exitCode !== 0) {
+    failChirho("remote progress DB must be checkpointed before pull-back");
+  }
+}
+
 async function mainChirho(): Promise<void> {
   const argsChirho = process.argv.slice(2);
   const printOnlyChirho = argsChirho.includes("--print-command-chirho");
@@ -350,6 +381,7 @@ async function mainChirho(): Promise<void> {
   if (!printOnlyChirho) assertWriteLeaseApprovalReferenceForApplyChirho(argsChirho, approvalReferenceChirho);
   if (!printOnlyChirho) await assertLocalWritePortsStoppedForApplyChirho(argsChirho);
   if (!printOnlyChirho) assertRemoteWriteServicesStoppedForApplyChirho(argsChirho, hostChirho);
+  if (!printOnlyChirho) assertRemoteProgressDbCheckpointedForApplyChirho(argsChirho, hostChirho);
   for (const commandChirho of commandsValueChirho) {
     console.log(`[${MODULE_CHIRHO}] ${commandChirho.map(shellQuoteChirho).join(" ")}`);
   }
