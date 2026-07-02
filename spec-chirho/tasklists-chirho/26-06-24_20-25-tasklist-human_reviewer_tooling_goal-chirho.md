@@ -131,6 +131,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       remote write proof is measured from an artifact, not only self-attested.
 - [x] Pin the trusted reviewer header for the Caddy VPS path and have host
       preflight verify the installed Caddyfile strips spoofable identity headers.
+- [x] Have host preflight verify trusted-header strip/inject lines inside each
+      review `reverse_proxy` block, not only by whole-file counts.
 - [x] Add a write-lease verifier and require it for real VPS pull-back apply so
       local/remote write ownership is explicit before commit-back.
 - [x] Have the commit-back pull helper measure local write-capable review ports

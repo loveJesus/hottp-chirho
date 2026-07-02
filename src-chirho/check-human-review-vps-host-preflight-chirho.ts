@@ -4,6 +4,50 @@
 const MODULE_CHIRHO = "check-human-review-vps-host-preflight-chirho";
 const DEFAULT_REMOTE_USER_CHIRHO = "hottp-review-chirho";
 
+const CADDY_TRUSTED_HEADER_BLOCK_CHECK_CHIRHO = String.raw`awk '
+BEGIN {
+  expected_chirho["8766"] = 1
+  expected_chirho["8770"] = 1
+  expected_chirho["8771"] = 1
+}
+{
+  line_chirho = $0
+  sub(/^[ \t]+/, "", line_chirho)
+  if (line_chirho ~ /^#/) next
+  if (line_chirho ~ /^reverse_proxy[ \t]+127[.]0[.]0[.]1:(8766|8770|8771)[ \t]*[{][ \t]*$/) {
+    split(line_chirho, host_parts_chirho, ":")
+    split(host_parts_chirho[2], port_parts_chirho, /[ \t{]/)
+    current_port_chirho = port_parts_chirho[1]
+    in_proxy_chirho = 1
+    strip_cf_chirho = 0
+    strip_webauth_chirho = 0
+    inject_webauth_chirho = 0
+    next
+  }
+  if (in_proxy_chirho == 1) {
+    if (line_chirho == "header_up -Cf-Access-Authenticated-User-Email") strip_cf_chirho = 1
+    if (line_chirho == "header_up -X-Webauth-User") strip_webauth_chirho = 1
+    if (line_chirho == "header_up X-Webauth-User {http.auth.user.id}") inject_webauth_chirho = 1
+    if (line_chirho ~ /^[}][ \t]*$/) {
+      if (strip_cf_chirho != 1 || strip_webauth_chirho != 1 || inject_webauth_chirho != 1) {
+        printf("reverse_proxy 127.0.0.1:%s lacks trusted reviewer header strip/inject lines\n", current_port_chirho) > "/dev/stderr"
+        exit 1
+      }
+      seen_chirho[current_port_chirho] = 1
+      in_proxy_chirho = 0
+    }
+  }
+}
+END {
+  for (port_chirho in expected_chirho) {
+    if (seen_chirho[port_chirho] != 1) {
+      printf("missing reverse_proxy trusted-header block for 127.0.0.1:%s\n", port_chirho) > "/dev/stderr"
+      exit 1
+    }
+  }
+}
+' /etc/caddy/Caddyfile`;
+
 const HOST_CHECK_COMMANDS_CHIRHO = [
   "command -v bun",
   "bun --version",
@@ -22,9 +66,7 @@ const HOST_CHECK_COMMANDS_CHIRHO = [
   "test -f /etc/caddy/Caddyfile",
   "test -f /etc/systemd/system/caddy.service.d/hottp-review-chirho.conf",
   "sudo caddy validate --envfile /etc/hottp-review-chirho.env --config /etc/caddy/Caddyfile",
-  "test \"$(grep -c 'header_up -Cf-Access-Authenticated-User-Email' /etc/caddy/Caddyfile)\" -ge 3",
-  "test \"$(grep -c 'header_up -X-Webauth-User' /etc/caddy/Caddyfile)\" -ge 3",
-  "test \"$(grep -c 'header_up X-Webauth-User {http.auth.user.id}' /etc/caddy/Caddyfile)\" -ge 3",
+  CADDY_TRUSTED_HEADER_BLOCK_CHECK_CHIRHO,
   "test -f /etc/systemd/system/hottp-raw-review-chirho.service",
   "systemctl is-enabled hottp-raw-review-chirho.service >/dev/null",
   "systemctl is-active hottp-raw-review-chirho.service >/dev/null",

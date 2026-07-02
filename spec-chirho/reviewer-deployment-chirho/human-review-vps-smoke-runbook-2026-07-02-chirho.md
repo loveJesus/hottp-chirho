@@ -204,9 +204,10 @@ curl --connect-timeout 3 http://REVIEW_HOST_CHIRHO:8766/ || true
 
 The localhost health request should succeed. The direct public-port request
 should fail or be blocked; public traffic must go through Caddy.
-The host preflight also checks that the installed `/etc/caddy/Caddyfile` strips
-both incoming identity headers and injects `X-Webauth-User` from the
-authenticated Caddy user before proxying to the review server.
+The host preflight also checks that every review `reverse_proxy` block in the
+installed `/etc/caddy/Caddyfile` strips both incoming identity headers and
+injects `X-Webauth-User` from the authenticated Caddy user before proxying to
+its localhost review server.
 
 ## 6. Remote Reviewer Smoke Chirho
 

@@ -384,9 +384,12 @@ function assertHostPreflightHelperChirho(): void {
     "test -f /etc/hottp-review-chirho.env",
     "grep -q '^HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO=x-webauth-user$' /etc/hottp-review-chirho.env",
     "sudo caddy validate --envfile /etc/hottp-review-chirho.env --config /etc/caddy/Caddyfile",
+    "CADDY_TRUSTED_HEADER_BLOCK_CHECK_CHIRHO",
     "header_up -Cf-Access-Authenticated-User-Email",
     "header_up -X-Webauth-User",
     "header_up X-Webauth-User {http.auth.user.id}",
+    "lacks trusted reviewer header strip/inject lines",
+    "missing reverse_proxy trusted-header block",
     "systemctl is-active hottp-raw-review-chirho.service >/dev/null",
     "curl -fsS http://127.0.0.1:8766/api-chirho/server-health-chirho >/dev/null",
   ]) {
