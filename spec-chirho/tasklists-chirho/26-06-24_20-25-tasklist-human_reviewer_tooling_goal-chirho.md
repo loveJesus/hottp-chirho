@@ -33,12 +33,12 @@ certification gate.
 
 ## Phase 2 — Single Reviewer Launchpad Chirho
 
-- [ ] Add a browser launchpad that links every review lane from one place:
+- [x] Add a browser launchpad that links every review lane from one place:
       raw Hebrew, Latin/symbol, expert non-Latin, saved issues, and status.
-- [ ] Show role-specific first-pending links and counts without exposing unsafe
+- [x] Show role-specific first-pending links and counts without exposing unsafe
       write actions.
-- [ ] Add short lane-specific guidance directly near each launch button.
-- [ ] Make the launchpad read from the same status/gate sources as the existing
+- [x] Add short lane-specific guidance directly near each launch button.
+- [x] Make the launchpad read from the same status/gate sources as the existing
       report so counts cannot drift.
 
 ## Phase 3 — No-Command Expert And Issue Workflows Chirho

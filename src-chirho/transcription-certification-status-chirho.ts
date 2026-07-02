@@ -85,6 +85,10 @@ import {
 } from "./raw-hebrew-review-tier-chirho.ts";
 import { isBlockedCertificationReviewerAttributionChirho } from "./reviewer-attribution-chirho.ts";
 import {
+  REVIEWER_LAUNCHPAD_FILENAME_CHIRHO,
+  reviewerLaunchpadHtmlChirho,
+} from "./reviewer-launchpad-chirho.ts";
+import {
   sourceFingerprintForPathsChirho,
   spanLinePathsForTargetsChirho,
   spanSourceFingerprintForTargetsChirho,
@@ -5777,9 +5781,10 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     "",
     "## Review Entry Points",
     "",
+    `- Reviewer launchpad: \`${REVIEWER_LAUNCHPAD_FILENAME_CHIRHO}\` (browser entry point generated from this status object)`,
     "- Certification verification bundle: `bun run check-certification-chirho` (runs focused typecheck, regenerates this status report, and checks review server health)",
     "- All review stations launcher/check: `bun run review-servers-chirho` (starts missing standard-port servers on 8766/8770/8771 with real DB/backup paths; use `bun run review-servers-chirho -- --check-chirho` to check only; use `bun run review-servers-chirho -- --restart-stale-chirho` only to replace a stale same-service review server)",
-    "- Certification-affecting saves require the Reviewer field to name the explicit human reviewer; generic `human-chirho`, role-only labels, template placeholders, and machine IDs are rejected.",
+    "- Certification-affecting saves use the trusted server-side reviewer identity (`Cf-Access-Authenticated-User-Email`, `X-Webauth-User`, or local `--reviewer` fallback); the browser reviewer field is display-only for stored attribution.",
     "- Raw Hebrew clean certification: leave issue boxes unchecked only when letters, vowels/marks, accents/meteg, punctuation, spacing, maqqef, word boundaries, script, and the `Target crop - red box is the item` plus `Full line - red box in context` panels all match the print, then check the clean-certification acknowledgement before saving as clean.",
     `- Raw Hebrew live validator: http://localhost:8766/ (${statusChirho.rawHebrewChirho.livePendingSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.reportSpanCountChirho} report span(s); command: \`bun run pass-c-human-validate-chirho\`${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewAllChirho)})`,
     `- Raw Hebrew unvalidated lane: ${rawHebrewReviewUrlChirho("unvalidated-chirho")} (${statusChirho.rawHebrewChirho.livePendingUnvalidatedSpanCountChirho} pending of ${statusChirho.rawHebrewChirho.unvalidatedSpanCountChirho} report span(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.rawHebrewUnvalidatedChirho)})`,
@@ -6514,6 +6519,10 @@ function mainChirho(): void {
   });
   writeJsonAtomicChirho(join(outDirChirho, "status-chirho.json"), statusChirho);
   writeTextAtomicChirho(join(outDirChirho, "status-chirho.md"), markdownChirho(statusChirho));
+  writeTextAtomicChirho(
+    join(outDirChirho, REVIEWER_LAUNCHPAD_FILENAME_CHIRHO),
+    reviewerLaunchpadHtmlChirho(statusChirho)
+  );
   writeTextAtomicChirho(
     join(outDirChirho, EXPERT_REPEAT_CLUSTER_REPORT_FILENAME_CHIRHO),
     expertRepeatClusterMarkdownChirho(statusChirho)

@@ -44,6 +44,7 @@
     "check-review-packet-output-hygiene-chirho": "bun run src-chirho/check-review-packet-output-hygiene-chirho.ts",
     "check-status-linked-spec-docs-hygiene-chirho": "bun run src-chirho/check-status-linked-spec-docs-hygiene-chirho.ts",
     "check-status-review-links-live-chirho": "bun run src-chirho/check-status-review-links-live-chirho.ts",
+    "check-reviewer-launchpad-output-chirho": "bun run src-chirho/check-reviewer-launchpad-output-chirho.ts",
     "check-review-server-health-source-coverage-chirho": "bun run src-chirho/check-review-server-health-source-coverage-chirho.ts",
     "check-certification-strict-status-chirho": "bun run src-chirho/check-certification-strict-status-chirho.ts",
     "check-reviewer-attribution-chirho": "bun run src-chirho/check-reviewer-attribution-chirho.ts",
