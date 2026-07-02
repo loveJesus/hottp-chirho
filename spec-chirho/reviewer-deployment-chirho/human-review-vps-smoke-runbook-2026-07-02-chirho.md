@@ -12,6 +12,7 @@ Run this from the source workstation before copying anything:
 
 ```bash
 bun run check-human-review-vps-readiness-chirho
+bun run check-human-review-vps-deployment-templates-chirho
 bun run check-human-review-vps-smoke-evidence-chirho -- --template-ok-chirho
 bun run check-certification-chirho
 git status --short
@@ -75,45 +76,44 @@ Provision `/etc/hottp-review-chirho.env` outside git. It should contain only
 host-local settings such as the fallback reviewer id and any service path
 overrides. Do not put secrets in committed files.
 
+Use the committed template as the starting point:
+
+```bash
+sudo install -m 0600 spec-chirho/reviewer-deployment-chirho/human-review-vps-env-template-2026-07-02-chirho.env \
+  /etc/hottp-review-chirho.env
+sudo editor /etc/hottp-review-chirho.env
+```
+
+Generate the Caddy password hash on the host:
+
+```bash
+caddy hash-password
+```
+
 ## 4. Caddy Boundary Chirho
 
-Use separate hostnames so each review app remains mounted at `/`.
+Use separate hostnames so each review app remains mounted at `/`. Start from the
+committed Caddyfile template:
 
-```caddyfile
-# For God so loved the world, that he gave his only begotten Son,
-# that whosoever believeth in him should not perish, but have everlasting life. — John 3:16 (KJV)
-
-(hottp_review_auth_chirho) {
-  basic_auth {
-    {$HOTTP_REVIEW_USER_CHIRHO} {$HOTTP_REVIEW_PASSWORD_HASH_CHIRHO}
-  }
-}
-
-raw-review.example-chirho.org {
-  import hottp_review_auth_chirho
-  reverse_proxy 127.0.0.1:8766 {
-    header_up X-Webauth-User {http.auth.user.id}
-  }
-}
-
-latin-review.example-chirho.org {
-  import hottp_review_auth_chirho
-  reverse_proxy 127.0.0.1:8770 {
-    header_up X-Webauth-User {http.auth.user.id}
-  }
-}
-
-expert-review.example-chirho.org {
-  import hottp_review_auth_chirho
-  reverse_proxy 127.0.0.1:8771 {
-    header_up X-Webauth-User {http.auth.user.id}
-  }
-}
+```bash
+sudo install -m 0644 spec-chirho/reviewer-deployment-chirho/human-review-vps-caddyfile-template-2026-07-02-chirho.caddyfile \
+  /etc/caddy/Caddyfile
+sudo mkdir -p /etc/systemd/system/caddy.service.d
+sudo install -m 0644 spec-chirho/reviewer-deployment-chirho/human-review-caddy-env-2026-07-02-chirho.conf \
+  /etc/systemd/system/caddy.service.d/hottp-review-chirho.conf
+sudo editor /etc/caddy/Caddyfile
+sudo systemctl daemon-reload
+sudo caddy validate --envfile /etc/hottp-review-chirho.env --config /etc/caddy/Caddyfile
+sudo systemctl restart caddy
 ```
 
 If Cloudflare Access is used instead of Caddy basic auth, the trusted header is
 `Cf-Access-Authenticated-User-Email`. Do not let arbitrary public clients set
-either trusted header directly.
+either trusted header directly. The basic-auth template strips both trusted
+identity headers from incoming clients before injecting `X-Webauth-User` from
+Caddy's authenticated user. The checked template uses `basic_auth`,
+`header_up -Cf-Access-Authenticated-User-Email`, `header_up -X-Webauth-User`,
+and `header_up X-Webauth-User {http.auth.user.id}`.
 
 ## 5. Start Raw Hebrew First Chirho
 
@@ -121,7 +121,11 @@ Start only raw Hebrew for the first smoke:
 
 ```bash
 cd /srv/hottp-review-chirho/current
-bun run pass-c-human-validate-chirho -- --reviewer=server-fallback-reviewer-chirho
+sudo install -m 0644 spec-chirho/reviewer-deployment-chirho/human-review-raw-hebrew-2026-07-02-chirho.service \
+  /etc/systemd/system/hottp-raw-review-chirho.service
+sudo systemctl daemon-reload
+sudo systemctl start hottp-raw-review-chirho
+sudo systemctl status hottp-raw-review-chirho --no-pager
 ```
 
 Before opening the public hostname, prove the raw server is localhost-bound:

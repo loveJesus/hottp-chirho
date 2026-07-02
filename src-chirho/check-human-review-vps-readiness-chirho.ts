@@ -34,6 +34,7 @@ const REQUIRED_PACKAGE_SCRIPTS_CHIRHO = [
   "check-latin-symbol-review-server-guards-chirho",
   "check-vision-tier-expert-review-server-guards-chirho",
   "check-certification-chirho",
+  "check-human-review-vps-deployment-templates-chirho",
 ] as const;
 
 const LOCALHOST_SERVER_FILES_CHIRHO: RequiredServerChirho[] = [
@@ -57,6 +58,10 @@ const REQUIRED_PATHS_CHIRHO: RequiredPathChirho[] = [
   { labelChirho: "VPS boundary doc", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-boundary-2026-07-02-chirho.md", kindChirho: "file-chirho" },
   { labelChirho: "VPS smoke runbook", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-runbook-2026-07-02-chirho.md", kindChirho: "file-chirho" },
   { labelChirho: "VPS smoke evidence template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-template-2026-07-02-chirho.json", kindChirho: "file-chirho" },
+  { labelChirho: "VPS Caddyfile template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-caddyfile-template-2026-07-02-chirho.caddyfile", kindChirho: "file-chirho" },
+  { labelChirho: "VPS env template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-env-template-2026-07-02-chirho.env", kindChirho: "file-chirho" },
+  { labelChirho: "VPS Caddy env drop-in", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-caddy-env-2026-07-02-chirho.conf", kindChirho: "file-chirho" },
+  { labelChirho: "VPS raw Hebrew service template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-raw-hebrew-2026-07-02-chirho.service", kindChirho: "file-chirho" },
   { labelChirho: "span source assets", relativePathChirho: "workspace-chirho/spans-chirho", kindChirho: "directory-chirho", mustBeNonEmptyChirho: true },
   { labelChirho: "scanline assets", relativePathChirho: "workspace-chirho/scanlines-chirho", kindChirho: "directory-chirho", mustBeNonEmptyChirho: true },
   { labelChirho: "segment crop assets", relativePathChirho: "workspace-chirho/segments-chirho", kindChirho: "directory-chirho", mustBeNonEmptyChirho: true },
@@ -77,9 +82,11 @@ const BOUNDARY_SNIPPETS_CHIRHO = [
 
 const SMOKE_RUNBOOK_SNIPPETS_CHIRHO = [
   "bun run check-human-review-vps-readiness-chirho",
+  "bun run check-human-review-vps-deployment-templates-chirho",
   "rsync -a --delete --dry-run",
   "basic_auth",
   "header_up X-Webauth-User {http.auth.user.id}",
+  "caddy validate --envfile /etc/hottp-review-chirho.env --config /etc/caddy/Caddyfile",
   "Start only raw Hebrew for the first smoke",
   "curl -fsS http://127.0.0.1:8766/api-chirho/server-health-chirho",
   "public traffic must go through Caddy",

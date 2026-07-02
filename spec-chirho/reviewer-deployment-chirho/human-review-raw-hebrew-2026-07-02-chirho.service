@@ -1,0 +1,27 @@
+# For God so loved the world, that he gave his only begotten Son,
+# that whosoever believeth in him should not perish, but have everlasting life. — John 3:16 (KJV)
+
+# Copy to /etc/systemd/system/hottp-raw-review-chirho.service on the review VPS
+# after creating the hottp-review-chirho user and syncing the repository.
+
+[Unit]
+Description=HOTTP raw Hebrew human review station Chirho
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=hottp-review-chirho
+Group=hottp-review-chirho
+WorkingDirectory=/srv/hottp-review-chirho/current
+EnvironmentFile=/etc/hottp-review-chirho.env
+ExecStart=/usr/bin/env bun run pass-c-human-validate-chirho -- --reviewer=${HOTTP_REVIEW_FALLBACK_REVIEWER_CHIRHO}
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ReadWritePaths=/srv/hottp-review-chirho/current /srv/hottp-review-chirho/backups-chirho
+
+[Install]
+WantedBy=multi-user.target
