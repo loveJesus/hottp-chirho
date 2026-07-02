@@ -8,13 +8,17 @@ does not start a stopped host, and does not create DNS records.
 ## Current Inventory Chirho
 
 Read-only inventory from `bun run inventory-human-review-vps-candidates-chirho`
-at `2026-07-02T10:42:04.884Z`:
+at `2026-07-02T12:11:57.749Z`:
 
 - Hetzner: `ok - found 4 server(s)`.
-- `ubuntu-16gb-ash-1-chirho`: off, `cpx42`, IPv4 `46.224.142.19`.
-- `perffection-api-chirho`: running, `cx22`, IPv4 `88.99.82.23`.
-- `global-bible-tools-chirho`: running, `cpx32`, IPv4 `46.224.100.134`.
-- `cairn-chirho`: running, `cax11`, IPv4 `167.235.194.27`.
+- `ubuntu-16gb-ash-1-chirho`: off, `cpx42`, `unknown-location`, IPv4
+  `46.224.142.19`.
+- `perffection-api-chirho`: running, `cx22`, `unknown-location`, IPv4
+  `88.99.82.23`.
+- `global-bible-tools-chirho`: running, `cpx32`, `unknown-location`, IPv4
+  `46.224.100.134`.
+- `cairn-chirho`: running, `cax11`, `unknown-location`, IPv4
+  `167.235.194.27`.
 - DigitalOcean: `not-ok - HTTP 401`.
 - Cloudflare review DNS: `ok - found 0 review DNS record(s)` for
   `raw-review.bible.systems`, `latin-review.bible.systems`, and
