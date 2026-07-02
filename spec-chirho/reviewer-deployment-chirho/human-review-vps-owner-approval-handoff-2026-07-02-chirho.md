@@ -8,7 +8,7 @@ does not start a stopped host, and does not create DNS records.
 ## Current Inventory Chirho
 
 Read-only inventory from `bun run inventory-human-review-vps-candidates-chirho`
-at `2026-07-02T12:11:57.749Z`:
+at `2026-07-02T12:38:16.509Z`:
 
 - Hetzner: `ok - found 4 server(s)`.
 - `ubuntu-16gb-ash-1-chirho`: off, `cpx42`, `unknown-location`, IPv4

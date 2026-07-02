@@ -2,7 +2,7 @@
   "schema_version_chirho": 1,
   "completed_chirho": false,
   "decision_id_chirho": "draft-2026-07-02-review-host-decision-chirho",
-  "recorded_at_chirho": "2026-07-02T12:11:57.749Z",
+  "recorded_at_chirho": "2026-07-02T12:38:16.509Z",
   "recorded_by_chirho": "codex-chirho",
   "owner_approval_chirho": {
     "approved_chirho": false,
@@ -38,7 +38,7 @@
     "workspace_assets_synced_explicitly_chirho": false
   },
   "inventory_snapshot_chirho": {
-    "inventory_recorded_at_chirho": "2026-07-02T12:11:57.749Z",
+    "inventory_recorded_at_chirho": "2026-07-02T12:38:16.509Z",
     "hetzner_status_chirho": "ok - found 4 server(s): ubuntu-16gb-ash-1-chirho off cpx42 unknown-location 46.224.142.19; perffection-api-chirho running cx22 unknown-location 88.99.82.23; global-bible-tools-chirho running cpx32 unknown-location 46.224.100.134; cairn-chirho running cax11 unknown-location 167.235.194.27",
     "digital_ocean_status_chirho": "not-ok - HTTP 401",
     "cloudflare_review_dns_status_chirho": "ok - found 0 review DNS record(s) for raw-review.bible.systems, latin-review.bible.systems, expert-review.bible.systems",
