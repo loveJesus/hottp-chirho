@@ -117,6 +117,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       host, raw-review DNS name, station, and blocked direct port.
 - [x] Quarantine remote `progress-chirho.sqlite` snapshots during commit-back
       so local agent log rows cannot be clobbered by binary SQLite overwrite.
+- [x] Bind first-smoke evidence to a pulled-back Pass-C backup row so the
+      remote write proof is measured from an artifact, not only self-attested.
 - [ ] Provision one small authenticated VPS review host.
 - [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
 - [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;

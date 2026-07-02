@@ -39,6 +39,7 @@ const REQUIRED_PACKAGE_SCRIPTS_CHIRHO = [
   "check-human-review-vps-host-preflight-chirho",
   "inventory-human-review-vps-candidates-chirho",
   "check-human-review-vps-provisioning-decision-chirho",
+  "check-human-review-vps-smoke-evidence-chirho",
   "check-human-review-vps-first-smoke-completion-chirho",
   "check-human-review-vps-deployment-templates-chirho",
 ] as const;
@@ -114,6 +115,9 @@ const SMOKE_RUNBOOK_SNIPPETS_CHIRHO = [
   "Do not clean-certify a real item merely for smoke.",
   "Commit-Back Proof Chirho",
   "bun run pull-human-review-vps-state-chirho -- --host-chirho=REVIEW_HOST_CHIRHO --apply-chirho",
+  "validation id",
+  "gateway reviewer identity",
+  "--pass-c-backup-chirho=spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json",
   "check-human-review-vps-smoke-evidence-chirho",
   "check-human-review-vps-first-smoke-completion-chirho",
 ] as const;
@@ -324,11 +328,32 @@ function assertProvisioningDecisionHelperChirho(): void {
   }
 }
 
+function assertSmokeEvidenceHelperChirho(): void {
+  const sourceChirho = readFileSync(absolutePathChirho("src-chirho/check-human-review-vps-smoke-evidence-chirho.ts"), "utf8");
+  for (const snippetChirho of [
+    "reviewed-issues-chirho",
+    "validation_id_chirho",
+    "expected_reviewer_chirho",
+    "saved_after_chirho",
+    "saved_before_chirho",
+    "first write smoke must be a reviewed-issues row, not a clean certification",
+  ]) {
+    if (!sourceChirho.includes(snippetChirho)) {
+      failChirho(`VPS smoke evidence helper missing guard snippet: ${snippetChirho}`);
+    }
+  }
+}
+
 function assertFirstSmokeCompletionHelperChirho(): void {
   const sourceChirho = readFileSync(absolutePathChirho("src-chirho/check-human-review-vps-first-smoke-completion-chirho.ts"), "utf8");
   for (const snippetChirho of [
+    "DEFAULT_PASS_C_BACKUP_PATH_CHIRHO",
     "check-human-review-vps-provisioning-decision-chirho.ts",
     "check-human-review-vps-smoke-evidence-chirho.ts",
+    "Pass-C backup lacks smoke validation id",
+    "Pass-C backup smoke row reviewer does not match gateway identity evidence",
+    "updatedAt is outside the evidence time window",
+    "pass-c-backup-chirho",
     "smoke host",
     "raw-hebrew-chirho",
     "raw review hostname",
@@ -368,6 +393,7 @@ function mainChirho(): void {
   assertHostPreflightHelperChirho();
   assertProviderInventoryHelperChirho();
   assertProvisioningDecisionHelperChirho();
+  assertSmokeEvidenceHelperChirho();
   assertFirstSmokeCompletionHelperChirho();
   assertReviewServerFingerprintsChirho();
   console.log(

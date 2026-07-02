@@ -92,7 +92,7 @@ function nonPlaceholderChirho(valueChirho: string, labelChirho: string): string 
   const trimmedChirho = valueChirho.trim();
   if (
     trimmedChirho.length === 0 ||
-    /\b(?:replace|example|REVIEW_HOST|YYYY|explicit-human-or-agent-id)\b/i.test(trimmedChirho)
+    /\b(?:replace|example|REVIEW_HOST|YYYY|explicit-human-or-agent-id|gateway-authenticated-reviewer)\b/i.test(trimmedChirho)
   ) {
     failChirho(`${labelChirho} is still a placeholder`);
   }
@@ -150,6 +150,10 @@ function assertShapeChirho(evidenceChirho: SmokeEvidenceChirho): void {
   booleanFieldChirho(writeChirho, "performed_chirho", "write_smoke_chirho");
   stringFieldChirho(writeChirho, "action_chirho", "write_smoke_chirho");
   stringFieldChirho(writeChirho, "item_id_chirho", "write_smoke_chirho");
+  numberFieldChirho(writeChirho, "validation_id_chirho", "write_smoke_chirho");
+  stringFieldChirho(writeChirho, "expected_reviewer_chirho", "write_smoke_chirho");
+  stringFieldChirho(writeChirho, "saved_after_chirho", "write_smoke_chirho");
+  stringFieldChirho(writeChirho, "saved_before_chirho", "write_smoke_chirho");
   booleanFieldChirho(writeChirho, "reversible_chirho", "write_smoke_chirho");
   stringFieldChirho(writeChirho, "notes_chirho", "write_smoke_chirho");
   const commitBackChirho = recordChirho(rootChirho.commit_back_chirho, "commit_back_chirho");
@@ -209,10 +213,27 @@ function assertCompletedEvidenceChirho(evidenceChirho: SmokeEvidenceChirho): voi
   if (booleanFieldChirho(writeChirho, "performed_chirho", "write_smoke_chirho") !== true) {
     failChirho("write smoke must perform a harmless reversible write");
   }
+  if (stringFieldChirho(writeChirho, "action_chirho", "write_smoke_chirho") !== "reviewed-issues-chirho") {
+    failChirho("first write smoke must be a reviewed-issues row, not a clean certification");
+  }
   if (booleanFieldChirho(writeChirho, "reversible_chirho", "write_smoke_chirho") !== true) {
     failChirho("write smoke must be reversible");
   }
   nonPlaceholderChirho(stringFieldChirho(writeChirho, "item_id_chirho", "write_smoke_chirho"), "write smoke item id");
+  if (numberFieldChirho(writeChirho, "validation_id_chirho", "write_smoke_chirho") <= 0) {
+    failChirho("write smoke validation_id_chirho must be positive");
+  }
+  nonPlaceholderChirho(
+    stringFieldChirho(writeChirho, "expected_reviewer_chirho", "write_smoke_chirho"),
+    "write smoke expected reviewer"
+  );
+  const savedAfterChirho = stringFieldChirho(writeChirho, "saved_after_chirho", "write_smoke_chirho");
+  const savedBeforeChirho = stringFieldChirho(writeChirho, "saved_before_chirho", "write_smoke_chirho");
+  if (Number.isNaN(Date.parse(savedAfterChirho))) failChirho("write smoke saved_after_chirho must parse as a date");
+  if (Number.isNaN(Date.parse(savedBeforeChirho))) failChirho("write smoke saved_before_chirho must parse as a date");
+  if (Date.parse(savedAfterChirho) > Date.parse(savedBeforeChirho)) {
+    failChirho("write smoke saved_after_chirho must be <= saved_before_chirho");
+  }
   const commitBackChirho = recordChirho(rootChirho.commit_back_chirho, "commit_back_chirho");
   for (const keyChirho of [
     "db_copied_back_chirho",

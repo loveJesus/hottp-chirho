@@ -30,10 +30,14 @@
   },
   "write_smoke_chirho": {
     "performed_chirho": false,
-    "action_chirho": "draft-segment-repair-proposal-chirho",
+    "action_chirho": "reviewed-issues-chirho",
     "item_id_chirho": "",
+    "validation_id_chirho": 0,
+    "expected_reviewer_chirho": "gateway-authenticated-reviewer-chirho",
+    "saved_after_chirho": "YYYY-MM-DDTHH:mm:ss.sssZ",
+    "saved_before_chirho": "YYYY-MM-DDTHH:mm:ss.sssZ",
     "reversible_chirho": false,
-    "notes_chirho": "Use a harmless owner-approved issue or draft proposal. Do not clean-certify a real item merely for smoke."
+    "notes_chirho": "Use a harmless owner-approved issue flag. Do not clean-certify a real item merely for smoke."
   },
   "commit_back_chirho": {
     "db_copied_back_chirho": false,

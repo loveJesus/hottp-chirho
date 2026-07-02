@@ -179,8 +179,10 @@ From the reviewer browser:
 3. Open one item and verify target crop, full line, issue flags, clean
    acknowledgement, and segment repair proposal panel are visible.
 4. Do not clean-certify a real item merely for smoke.
-5. For a write smoke, prefer a deliberately reversible issue or draft repair
-   proposal chosen by the project owner. Record the item id before saving.
+5. For the first write smoke, use a deliberately reversible issue flag chosen
+   by the project owner. Record the item id, validation id, gateway reviewer
+   identity, and the saved-after/saved-before timestamp window before copying
+   state back.
 
 After any write smoke, stop the server and copy state back before continuing.
 
@@ -238,12 +240,15 @@ bun run check-human-review-vps-smoke-evidence-chirho -- \
   --evidence-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-YYYY-MM-DD-chirho.json
 bun run check-human-review-vps-first-smoke-completion-chirho -- \
   --decision-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-YYYY-MM-DD-chirho.json \
-  --evidence-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-YYYY-MM-DD-chirho.json
+  --evidence-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-YYYY-MM-DD-chirho.json \
+  --pass-c-backup-chirho=spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json
 ```
 
 Do not mark the first VPS smoke complete unless both completed evidence checks
 pass. The cross-check proves the decision host and raw-review DNS name match the
-actual smoke evidence.
+actual smoke evidence, and that the named smoke validation row exists in the
+pulled-back Pass-C backup with the gateway reviewer identity and timestamp
+window recorded in the evidence.
 
 ## 8. Add Other Stations Chirho
 
