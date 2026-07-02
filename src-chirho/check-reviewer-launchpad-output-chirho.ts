@@ -7,7 +7,7 @@
  */
 
 import { existsSync, readFileSync } from "fs";
-import { join } from "path";
+import { join, resolve, sep } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
@@ -43,6 +43,13 @@ const CRITICAL_REVIEW_START_LINK_KEYS_CHIRHO = [
 ] as const;
 const FORBIDDEN_INTERACTIVE_TAG_RE_CHIRHO = /<(?:form|input|button|textarea|select|script)\b/iu;
 const REVIEW_HREF_RE_CHIRHO = /href="(http:\/\/localhost:(?:8766|8770|8771)\/[^"]*|status-chirho\.md)"/gu;
+const GUIDANCE_HREFS_CHIRHO = [
+  "../../spec-chirho/metropoliluya-chirho/script-reviewer-quickstarts-2026-07-02-chirho.md",
+  "../../spec-chirho/workflows-chirho/raw-review-workflow-chirho.md",
+  "../../spec-chirho/workflows-chirho/expert-confirmation-workflow-chirho.md",
+  "../../spec-chirho/workflows-chirho/expert-supplied-blank-text-workflow-chirho.md",
+  "../../spec-chirho/workflows-chirho/segment-repair-proposal-workflow-chirho.md",
+] as const;
 
 function escapeHtmlAttrChirho(valueChirho: string): string {
   return valueChirho
@@ -60,6 +67,16 @@ function readStatusChirho(): ReviewerLaunchpadStatusChirho {
 
 function hrefsChirho(htmlChirho: string): string[] {
   return [...htmlChirho.matchAll(REVIEW_HREF_RE_CHIRHO)].map((matchChirho) => matchChirho[1]!);
+}
+
+function assertGuidanceHrefExistsChirho(hrefChirho: string): void {
+  const projectRootChirho = resolve(PROJECT_ROOT_CHIRHO);
+  const resolvedChirho = resolve(STATUS_DIR_CHIRHO, hrefChirho);
+  assertGeneratedCheckChirho(
+    resolvedChirho === projectRootChirho || resolvedChirho.startsWith(`${projectRootChirho}${sep}`),
+    `${LAUNCHPAD_PATH_CHIRHO} guidance link escapes project root: ${hrefChirho}`
+  );
+  assertGeneratedCheckChirho(existsSync(resolvedChirho), `${LAUNCHPAD_PATH_CHIRHO} guidance link is missing: ${hrefChirho}`);
 }
 
 function mainChirho(): void {
@@ -80,6 +97,17 @@ function mainChirho(): void {
     actualHtmlChirho.includes('href="status-chirho.md"'),
     `${LAUNCHPAD_PATH_CHIRHO} does not link the certification status report`
   );
+  assertGeneratedCheckChirho(
+    actualHtmlChirho.includes("Script reviewer quickstarts"),
+    `${LAUNCHPAD_PATH_CHIRHO} does not include reviewer guidance links`
+  );
+  for (const guidanceHrefChirho of GUIDANCE_HREFS_CHIRHO) {
+    assertGeneratedCheckChirho(
+      actualHtmlChirho.includes(`href="${escapeHtmlAttrChirho(guidanceHrefChirho)}"`),
+      `${LAUNCHPAD_PATH_CHIRHO} is missing guidance link ${guidanceHrefChirho}`
+    );
+    assertGuidanceHrefExistsChirho(guidanceHrefChirho);
+  }
   for (const keyChirho of CRITICAL_REVIEW_START_LINK_KEYS_CHIRHO) {
     const linkChirho = statusChirho.reviewStartLinksChirho?.[keyChirho];
     if (typeof linkChirho !== "string" || linkChirho.length === 0) continue;

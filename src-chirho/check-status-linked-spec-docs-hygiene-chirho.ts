@@ -29,16 +29,23 @@ const STATUS_JSON_PATH_CHIRHO = join(
   "certification-status-chirho",
   "status-chirho.json"
 );
-const STATUS_SPEC_DOC_RE_CHIRHO = /`(spec-chirho\/metropoliluya-chirho\/[^`\n]+\.md)`/g;
+const STATUS_SPEC_DOC_RE_CHIRHO = /`(spec-chirho\/(?:metropoliluya-chirho|workflows-chirho)\/[^`\n]+\.md)`/g;
 const MARKDOWN_IMAGE_RE_CHIRHO = /!\[[^\]\n]*\]\(([^)\n]+)\)/g;
 const BACKTICK_RE_CHIRHO = /`([^`\n]+)`/g;
 const RAW_HEBREW_QUICKSTART_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/raw-hebrew-human-certification-quickstart-2026-06-05-chirho.md";
 const LATIN_SYMBOL_QUICKSTART_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/latin-symbol-human-review-quickstart-2026-06-05-chirho.md";
 const EXPERT_QUICKSTART_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/vision-tier-expert-confirmation-quickstart-2026-06-05-chirho.md";
 const HALLELUJAH_SESSION_GUIDE_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/hallelujah-review-session-guide-2026-06-05-chirho.md";
+const SCRIPT_REVIEWER_QUICKSTARTS_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/script-reviewer-quickstarts-2026-07-02-chirho.md";
 const REVIEWER_SCOPE_PRIMER_DOC_CHIRHO = "spec-chirho/metropoliluya-chirho/reviewer-scope-and-primer-2026-06-02-chirho.md";
 const TRANSCRIPTION_STATUS_PRODUCTION_PATH_DOC_CHIRHO =
   "spec-chirho/metropoliluya-chirho/transcription-status-and-production-path-2026-06-03-chirho.md";
+const RAW_REVIEW_WORKFLOW_DOC_CHIRHO = "spec-chirho/workflows-chirho/raw-review-workflow-chirho.md";
+const EXPERT_CONFIRMATION_WORKFLOW_DOC_CHIRHO = "spec-chirho/workflows-chirho/expert-confirmation-workflow-chirho.md";
+const EXPERT_SUPPLIED_BLANK_TEXT_WORKFLOW_DOC_CHIRHO =
+  "spec-chirho/workflows-chirho/expert-supplied-blank-text-workflow-chirho.md";
+const SEGMENT_REPAIR_PROPOSAL_WORKFLOW_DOC_CHIRHO =
+  "spec-chirho/workflows-chirho/segment-repair-proposal-workflow-chirho.md";
 const LOCAL_ARTIFACT_PREFIXES_CHIRHO = [
   "workspace-chirho/",
   "spec-chirho/",
@@ -96,6 +103,40 @@ const REVIEWER_SCOPE_PRIMER_SNIPPETS_CHIRHO = [
   "These notes are only for orientation and triage. They do not make a non-reader competent to certify the scripts.",
   "Exact letters, joined forms, dots, vowels, punctuation, word spacing",
   "Confirm only when the printed line and stored text agree at the level the queue is asking for.",
+] as const;
+const SCRIPT_REVIEWER_QUICKSTART_SNIPPETS_CHIRHO = [
+  "Confirm only exact printed text inside the red target box.",
+  "Hebrew/WLC Reviewer",
+  "Greek Reviewer",
+  "Syriac Reader",
+  "Arabic Reviewer",
+  "Latin/Symbol Reviewer",
+  "Supplying text fills the hole only; it is not a confirmation.",
+  "A saved repair proposal is draft-only",
+] as const;
+const RAW_REVIEW_WORKFLOW_SNIPPETS_CHIRHO = [
+  "flowchart TD",
+  "Inspect target crop, full line, current text, codepoints, flags, and witnesses",
+  "Save draft segment repair proposal",
+  "Certification status recomputes from live rows and freshness guards",
+] as const;
+const EXPERT_CONFIRMATION_WORKFLOW_SNIPPETS_CHIRHO = [
+  "flowchart TD",
+  "Current text blank?",
+  "Confirm with exact-certification acknowledgement",
+  "Status validates policy shape, role lane, hash freshness, image/path freshness, and issue override",
+] as const;
+const EXPERT_SUPPLIED_BLANK_TEXT_WORKFLOW_SNIPPETS_CHIRHO = [
+  "flowchart TD",
+  "Supplying text is not confirmation.",
+  "Qualified script reader enters exact printed text inside target box",
+  "Item remains vision-chirho and pending expert confirmation",
+] as const;
+const SEGMENT_REPAIR_PROPOSAL_WORKFLOW_SNIPPETS_CHIRHO = [
+  "flowchart TD",
+  "A proposal records a candidate repair; it does not edit live span files and does not certify text.",
+  "Rows are positive-width, contiguous, and cover full line?",
+  "Save draft repair proposal",
 ] as const;
 
 interface StatusLinkedSpecDocsStatusChirho {
@@ -361,11 +402,26 @@ function checkSpecDocChirho(docPathChirho: string, statusChirho: StatusLinkedSpe
   if (docPathChirho === HALLELUJAH_SESSION_GUIDE_DOC_CHIRHO) {
     assertDocContainsSnippetsChirho(docPathChirho, textChirho, HALLELUJAH_SESSION_GUIDE_SNIPPETS_CHIRHO);
   }
+  if (docPathChirho === SCRIPT_REVIEWER_QUICKSTARTS_DOC_CHIRHO) {
+    assertDocContainsSnippetsChirho(docPathChirho, textChirho, SCRIPT_REVIEWER_QUICKSTART_SNIPPETS_CHIRHO);
+  }
   if (docPathChirho === REVIEWER_SCOPE_PRIMER_DOC_CHIRHO) {
     assertDocContainsSnippetsChirho(docPathChirho, textChirho, REVIEWER_SCOPE_PRIMER_SNIPPETS_CHIRHO);
   }
   if (docPathChirho === TRANSCRIPTION_STATUS_PRODUCTION_PATH_DOC_CHIRHO) {
     assertProductionPathCountsChirho(docPathChirho, textChirho, statusChirho);
+  }
+  if (docPathChirho === RAW_REVIEW_WORKFLOW_DOC_CHIRHO) {
+    assertDocContainsSnippetsChirho(docPathChirho, textChirho, RAW_REVIEW_WORKFLOW_SNIPPETS_CHIRHO);
+  }
+  if (docPathChirho === EXPERT_CONFIRMATION_WORKFLOW_DOC_CHIRHO) {
+    assertDocContainsSnippetsChirho(docPathChirho, textChirho, EXPERT_CONFIRMATION_WORKFLOW_SNIPPETS_CHIRHO);
+  }
+  if (docPathChirho === EXPERT_SUPPLIED_BLANK_TEXT_WORKFLOW_DOC_CHIRHO) {
+    assertDocContainsSnippetsChirho(docPathChirho, textChirho, EXPERT_SUPPLIED_BLANK_TEXT_WORKFLOW_SNIPPETS_CHIRHO);
+  }
+  if (docPathChirho === SEGMENT_REPAIR_PROPOSAL_WORKFLOW_DOC_CHIRHO) {
+    assertDocContainsSnippetsChirho(docPathChirho, textChirho, SEGMENT_REPAIR_PROPOSAL_WORKFLOW_SNIPPETS_CHIRHO);
   }
 }
 

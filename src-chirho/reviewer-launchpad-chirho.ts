@@ -3,6 +3,16 @@
 
 export const REVIEWER_LAUNCHPAD_FILENAME_CHIRHO = "review-launchpad-chirho.html";
 
+const SCRIPT_REVIEWER_QUICKSTART_HREF_CHIRHO =
+  "../../spec-chirho/metropoliluya-chirho/script-reviewer-quickstarts-2026-07-02-chirho.md";
+const RAW_REVIEW_WORKFLOW_HREF_CHIRHO = "../../spec-chirho/workflows-chirho/raw-review-workflow-chirho.md";
+const EXPERT_CONFIRMATION_WORKFLOW_HREF_CHIRHO =
+  "../../spec-chirho/workflows-chirho/expert-confirmation-workflow-chirho.md";
+const EXPERT_SUPPLIED_BLANK_TEXT_WORKFLOW_HREF_CHIRHO =
+  "../../spec-chirho/workflows-chirho/expert-supplied-blank-text-workflow-chirho.md";
+const SEGMENT_REPAIR_PROPOSAL_WORKFLOW_HREF_CHIRHO =
+  "../../spec-chirho/workflows-chirho/segment-repair-proposal-workflow-chirho.md";
+
 interface ReviewerLaunchpadRawHebrewStatusChirho {
   livePendingSpanCountChirho?: number;
   reportSpanCountChirho?: number;
@@ -127,6 +137,42 @@ function reviewerLaunchpadSectionsChirho(statusChirho: ReviewerLaunchpadStatusCh
     statusChirho.structuralChirho?.issueCodeCountsChirho?.["blank-span-text-chirho"]
   );
   return [
+    {
+      titleChirho: "Reviewer Guidance",
+      summaryChirho: "Concise role quickstarts and workflow diagrams for human review sessions.",
+      lanesChirho: [
+        laneChirho(
+          "Script reviewer quickstarts",
+          SCRIPT_REVIEWER_QUICKSTART_HREF_CHIRHO,
+          "guide",
+          "Role-specific boundaries for Hebrew/WLC, Greek, Syriac, Arabic, and Latin/symbol reviewers."
+        ),
+        laneChirho(
+          "Raw review workflow",
+          RAW_REVIEW_WORKFLOW_HREF_CHIRHO,
+          "workflow",
+          "DAG for clean saves, issue saves, skips, and draft segment repair proposals."
+        ),
+        laneChirho(
+          "Expert confirmation workflow",
+          EXPERT_CONFIRMATION_WORKFLOW_HREF_CHIRHO,
+          "workflow",
+          "DAG for script-expert confirmation, issue reporting, and role boundaries."
+        ),
+        laneChirho(
+          "Blank expert text workflow",
+          EXPERT_SUPPLIED_BLANK_TEXT_WORKFLOW_HREF_CHIRHO,
+          "workflow",
+          "DAG for supplying text to a blank span without certifying it."
+        ),
+        laneChirho(
+          "Segment repair workflow",
+          SEGMENT_REPAIR_PROPOSAL_WORKFLOW_HREF_CHIRHO,
+          "workflow",
+          "DAG for drafting split, merge, rebox, script, text, or punctuation repair proposals."
+        ),
+      ],
+    },
     {
       titleChirho: "All Review Stations",
       summaryChirho: "Open the guarded browser queues. The review servers still own all save and confirmation behavior.",

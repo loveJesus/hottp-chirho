@@ -66,14 +66,14 @@ certification gate.
 
 ## Phase 5 — Reviewer Documentation And Workflows Chirho
 
-- [ ] Create concise quickstarts for Hebrew/WLC, Greek, Syriac, Arabic, and
+- [x] Create concise quickstarts for Hebrew/WLC, Greek, Syriac, Arabic, and
       Latin/symbol reviewers.
-- [ ] Add competence-boundary language: confirm only exact letters/marks within
+- [x] Add competence-boundary language: confirm only exact letters/marks within
       the reviewer lane; otherwise flag or skip.
-- [ ] Add Mermaid workflow diagrams under `spec-chirho/workflows-chirho/` for
+- [x] Add Mermaid workflow diagrams under `spec-chirho/workflows-chirho/` for
       raw review, expert confirmation, expert-supplied blank text, and segment
       repair.
-- [ ] Link the quickstarts and workflows from the launchpad and status report.
+- [x] Link the quickstarts and workflows from the launchpad and status report.
 
 ## Phase 6 — VPS Smoke Deployment Chirho
 

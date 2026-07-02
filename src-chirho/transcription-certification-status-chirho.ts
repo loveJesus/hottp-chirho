@@ -166,6 +166,12 @@ const HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO = join(
   "metropoliluya-chirho",
   "hallelujah-review-session-guide-2026-06-05-chirho.md"
 );
+const SCRIPT_REVIEWER_QUICKSTARTS_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "script-reviewer-quickstarts-2026-07-02-chirho.md"
+);
 const TRANSCRIPTION_STATUS_PRODUCTION_PATH_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -221,6 +227,30 @@ const SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_TARGET_CROP_PATH_CHIRHO = join(
   "spec-chirho",
   "metropoliluya-chirho",
   "syriac-v3-p0151-l010-s3-target-crop-2026-06-05-chirho.png"
+);
+const RAW_REVIEW_WORKFLOW_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "workflows-chirho",
+  "raw-review-workflow-chirho.md"
+);
+const EXPERT_CONFIRMATION_WORKFLOW_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "workflows-chirho",
+  "expert-confirmation-workflow-chirho.md"
+);
+const EXPERT_SUPPLIED_BLANK_TEXT_WORKFLOW_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "workflows-chirho",
+  "expert-supplied-blank-text-workflow-chirho.md"
+);
+const SEGMENT_REPAIR_PROPOSAL_WORKFLOW_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "workflows-chirho",
+  "segment-repair-proposal-workflow-chirho.md"
 );
 const EXPERT_SUPPLIED_VISION_TEXT_BACKUP_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
@@ -5761,6 +5791,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Raw Hebrew image packet: \`${relativeProjectPathChirho(RAW_HEBREW_PACK_INDEX_PATH_CHIRHO)}\``,
     `- Raw Hebrew human certification quickstart: \`${relativeProjectPathChirho(RAW_HEBREW_HUMAN_CERTIFICATION_QUICKSTART_PATH_CHIRHO)}\``,
     `- Hallelujah review session guide: \`${relativeProjectPathChirho(HALLELUJAH_REVIEW_SESSION_GUIDE_PATH_CHIRHO)}\``,
+    `- Script reviewer quickstarts: \`${relativeProjectPathChirho(SCRIPT_REVIEWER_QUICKSTARTS_PATH_CHIRHO)}\``,
     `- Status and production path handoff: \`${relativeProjectPathChirho(TRANSCRIPTION_STATUS_PRODUCTION_PATH_PATH_CHIRHO)}\``,
     `- Raw Hebrew pre-review notes: \`${relativeProjectPathChirho(RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO)}\` (non-certifying; current/superseded notes only)`,
     `- Raw Hebrew repeat-cluster handoff: \`${RAW_HEBREW_REPEAT_CLUSTER_REPORT_RELATIVE_PATH_CHIRHO}\``,
@@ -5804,6 +5835,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Reviewer scope and primer guide: \`${relativeProjectPathChirho(REVIEWER_SCOPE_GUIDE_PATH_CHIRHO)}\``,
     `- Syriac blank transcription handoff: \`${relativeProjectPathChirho(SYRIAC_BLANK_TRANSCRIPTION_HANDOFF_PATH_CHIRHO)}\` (for v3-p0151-l010-s3; no proposed text)`,
     `- Resolved Zechariah historical aid: \`${relativeProjectPathChirho(ZECHARIAH_TIPCHA_CONFIRMATION_AID_PATH_CHIRHO)}\``,
+    `- Reviewer workflow docs: \`${relativeProjectPathChirho(RAW_REVIEW_WORKFLOW_PATH_CHIRHO)}\`, \`${relativeProjectPathChirho(EXPERT_CONFIRMATION_WORKFLOW_PATH_CHIRHO)}\`, \`${relativeProjectPathChirho(EXPERT_SUPPLIED_BLANK_TEXT_WORKFLOW_PATH_CHIRHO)}\`, \`${relativeProjectPathChirho(SEGMENT_REPAIR_PROPOSAL_WORKFLOW_PATH_CHIRHO)}\``,
     ...guardedWlcCorrectionCommandLinesChirho,
     "",
     "## Human Review Session Checklist",
