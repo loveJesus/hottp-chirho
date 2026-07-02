@@ -94,6 +94,9 @@ server-authoritative, and the boundary/commit-back ritual is documented.
 - [x] Add checked Caddy, environment, systemd, and raw-review service templates
       so the VPS setup copies reviewed artifacts instead of hand-transcribing
       proxy/header/service assumptions from prose.
+- [x] Add a dry-run-default sync helper for copying the full working tree,
+      including ignored `workspace-chirho/` assets, to the review host with
+      explicit excludes for `.git/`, `.env`, `node_modules/`, and build output.
 - [ ] Provision one small authenticated VPS review host.
 - [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
 - [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;

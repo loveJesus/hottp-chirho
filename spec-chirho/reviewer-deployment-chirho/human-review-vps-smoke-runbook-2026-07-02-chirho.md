@@ -37,30 +37,28 @@ Exactly one host owns write-capable review servers at a time.
 
 ## 2. Sync Chirho
 
-Run a dry-run first:
+Print the reviewed rsync command shape first:
 
 ```bash
-rsync -a --delete --dry-run \
-  --exclude '.git/' \
-  --exclude '.env' \
-  --exclude 'node_modules/' \
-  --exclude 'app-chirho/.svelte-kit/' \
-  ./ hottp-review-chirho@REVIEW_HOST_CHIRHO:/srv/hottp-review-chirho/current/
+bun run sync-human-review-vps-chirho -- --print-command-chirho
 ```
 
-Then run the real sync only after inspecting the dry-run:
+Then run a host-targeted dry-run and inspect its output:
 
 ```bash
-rsync -a --delete \
-  --exclude '.git/' \
-  --exclude '.env' \
-  --exclude 'node_modules/' \
-  --exclude 'app-chirho/.svelte-kit/' \
-  ./ hottp-review-chirho@REVIEW_HOST_CHIRHO:/srv/hottp-review-chirho/current/
+bun run sync-human-review-vps-chirho -- --host-chirho=REVIEW_HOST_CHIRHO
+```
+
+Run the real sync only after inspecting the dry-run:
+
+```bash
+bun run sync-human-review-vps-chirho -- --host-chirho=REVIEW_HOST_CHIRHO --apply-chirho
 ```
 
 This copies ignored `workspace-chirho/` assets intentionally. A git clone alone
-is not enough for the review stations.
+is not enough for the review stations. The helper excludes `.git/`, `.env`,
+`node_modules/`, and `app-chirho/.svelte-kit/`, and refuses a non-dry-run sync
+unless `--apply-chirho` is explicit.
 
 ## 3. Host Install Chirho
 
