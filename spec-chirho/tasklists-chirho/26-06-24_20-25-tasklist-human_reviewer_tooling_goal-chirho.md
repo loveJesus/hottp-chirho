@@ -85,6 +85,9 @@ server-authoritative, and the boundary/commit-back ritual is documented.
 - [x] Add and pass `bun run check-human-review-vps-readiness-chirho` as a
       source-local preflight for localhost binding, trusted attribution headers,
       required assets, review packets, package scripts, and commit-back docs.
+- [x] Add a concrete VPS smoke runbook covering rsync dry-run, Caddy trusted
+      header proxying, raw-Hebrew-first startup, direct-port rejection, remote
+      browser smoke, and commit-back proof.
 - [ ] Provision one small authenticated VPS review host.
 - [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
 - [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;

@@ -55,6 +55,7 @@ const REQUIRED_PATHS_CHIRHO: RequiredPathChirho[] = [
   { labelChirho: "Latin/symbol acceptance policy", relativePathChirho: "spec-chirho/metropoliluya-chirho/latin-symbol-vision-acceptance-policy-2026-06-01-chirho.json", kindChirho: "file-chirho" },
   { labelChirho: "expert confirmation policy", relativePathChirho: "spec-chirho/metropoliluya-chirho/vision-tier-expert-confirmations-2026-06-01-chirho.json", kindChirho: "file-chirho" },
   { labelChirho: "VPS boundary doc", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-boundary-2026-07-02-chirho.md", kindChirho: "file-chirho" },
+  { labelChirho: "VPS smoke runbook", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-runbook-2026-07-02-chirho.md", kindChirho: "file-chirho" },
   { labelChirho: "span source assets", relativePathChirho: "workspace-chirho/spans-chirho", kindChirho: "directory-chirho", mustBeNonEmptyChirho: true },
   { labelChirho: "scanline assets", relativePathChirho: "workspace-chirho/scanlines-chirho", kindChirho: "directory-chirho", mustBeNonEmptyChirho: true },
   { labelChirho: "segment crop assets", relativePathChirho: "workspace-chirho/segments-chirho", kindChirho: "directory-chirho", mustBeNonEmptyChirho: true },
@@ -71,6 +72,18 @@ const BOUNDARY_SNIPPETS_CHIRHO = [
   "Only one box owns human-review writes at a time.",
   "`workspace-chirho/` bulk assets are gitignored",
   "Commit-Back Ritual Chirho",
+] as const;
+
+const SMOKE_RUNBOOK_SNIPPETS_CHIRHO = [
+  "bun run check-human-review-vps-readiness-chirho",
+  "rsync -a --delete --dry-run",
+  "basic_auth",
+  "header_up X-Webauth-User {http.auth.user.id}",
+  "Start only raw Hebrew for the first smoke",
+  "curl -fsS http://127.0.0.1:8766/api-chirho/server-health-chirho",
+  "public traffic must go through Caddy",
+  "Do not clean-certify a real item merely for smoke.",
+  "Commit-Back Proof Chirho",
 ] as const;
 
 const REVIEW_SERVER_KEYS_CHIRHO: ReviewServerKeyChirho[] = [
@@ -168,6 +181,18 @@ function assertBoundaryDocChirho(): void {
   }
 }
 
+function assertSmokeRunbookChirho(): void {
+  const docChirho = readFileSync(
+    absolutePathChirho("spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-runbook-2026-07-02-chirho.md"),
+    "utf8"
+  );
+  for (const snippetChirho of SMOKE_RUNBOOK_SNIPPETS_CHIRHO) {
+    if (!docChirho.includes(snippetChirho)) {
+      failChirho(`VPS smoke runbook missing required snippet: ${snippetChirho}`);
+    }
+  }
+}
+
 function assertReviewServerFingerprintsChirho(): void {
   for (const keyChirho of REVIEW_SERVER_KEYS_CHIRHO) {
     const filesChirho = reviewServerSourceFilesChirho(keyChirho);
@@ -190,6 +215,7 @@ function mainChirho(): void {
   for (const serverChirho of LOCALHOST_SERVER_FILES_CHIRHO) assertServerBindsLocalhostChirho(serverChirho);
   assertTrustedReviewerIdentityChirho();
   assertBoundaryDocChirho();
+  assertSmokeRunbookChirho();
   assertReviewServerFingerprintsChirho();
   console.log(
     `[${MODULE_CHIRHO}] VPS readiness preflight passed: localhost-bound servers, trusted reviewer headers, assets, DB, packets, scripts, and commit-back docs are present`
