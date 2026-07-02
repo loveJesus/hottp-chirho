@@ -26,6 +26,14 @@ const RAW_SERVICE_TEMPLATE_PATH_CHIRHO = join(
   TEMPLATE_DIR_CHIRHO,
   "human-review-raw-hebrew-2026-07-02-chirho.service"
 );
+const LATIN_SYMBOL_SERVICE_TEMPLATE_PATH_CHIRHO = join(
+  TEMPLATE_DIR_CHIRHO,
+  "human-review-latin-symbol-2026-07-02-chirho.service"
+);
+const EXPERT_SERVICE_TEMPLATE_PATH_CHIRHO = join(
+  TEMPLATE_DIR_CHIRHO,
+  "human-review-expert-non-latin-2026-07-02-chirho.service"
+);
 
 const REVIEW_UPSTREAMS_CHIRHO = [
   { hostChirho: "raw-review.example-chirho.org", portChirho: 8766 },
@@ -37,6 +45,27 @@ const REQUIRED_ENV_KEYS_CHIRHO = [
   "HOTTP_REVIEW_USER_CHIRHO",
   "HOTTP_REVIEW_PASSWORD_HASH_CHIRHO",
   "HOTTP_REVIEW_FALLBACK_REVIEWER_CHIRHO",
+] as const;
+
+const REVIEW_SERVICE_TEMPLATES_CHIRHO = [
+  {
+    labelChirho: "raw review systemd service",
+    pathChirho: RAW_SERVICE_TEMPLATE_PATH_CHIRHO,
+    commandChirho: "bun run pass-c-human-validate-chirho",
+    forbiddenCommandsChirho: ["latin-symbol-vision-review-chirho", "vision-tier-expert-review-chirho"],
+  },
+  {
+    labelChirho: "Latin/symbol review systemd service",
+    pathChirho: LATIN_SYMBOL_SERVICE_TEMPLATE_PATH_CHIRHO,
+    commandChirho: "bun run latin-symbol-vision-review-chirho",
+    forbiddenCommandsChirho: ["pass-c-human-validate-chirho", "vision-tier-expert-review-chirho"],
+  },
+  {
+    labelChirho: "expert review systemd service",
+    pathChirho: EXPERT_SERVICE_TEMPLATE_PATH_CHIRHO,
+    commandChirho: "bun run vision-tier-expert-review-chirho",
+    forbiddenCommandsChirho: ["pass-c-human-validate-chirho", "latin-symbol-vision-review-chirho"],
+  },
 ] as const;
 
 function failChirho(messageChirho: string): never {
@@ -91,17 +120,26 @@ function assertCaddyDropinChirho(sourceChirho: string): void {
   assertIncludesChirho(sourceChirho, "EnvironmentFile=/etc/hottp-review-chirho.env", "Caddy systemd drop-in");
 }
 
-function assertRawServiceTemplateChirho(sourceChirho: string): void {
-  assertIncludesChirho(sourceChirho, "[Service]", "raw review systemd service");
-  assertIncludesChirho(sourceChirho, "User=hottp-review-chirho", "raw review systemd service");
-  assertIncludesChirho(sourceChirho, "WorkingDirectory=/srv/hottp-review-chirho/current", "raw review systemd service");
-  assertIncludesChirho(sourceChirho, "EnvironmentFile=/etc/hottp-review-chirho.env", "raw review systemd service");
-  assertIncludesChirho(sourceChirho, "bun run pass-c-human-validate-chirho", "raw review systemd service");
-  assertIncludesChirho(sourceChirho, "--reviewer=${HOTTP_REVIEW_FALLBACK_REVIEWER_CHIRHO}", "raw review systemd service");
-  assertIncludesChirho(sourceChirho, "Restart=on-failure", "raw review systemd service");
-  assertIncludesChirho(sourceChirho, "ReadWritePaths=/srv/hottp-review-chirho/current /srv/hottp-review-chirho/backups-chirho", "raw review systemd service");
-  if (sourceChirho.includes("latin-symbol-vision-review-chirho") || sourceChirho.includes("vision-tier-expert-review-chirho")) {
-    failChirho("raw review systemd service must start only the raw Hebrew station");
+function assertReviewServiceTemplateChirho(
+  sourceChirho: string,
+  serviceChirho: (typeof REVIEW_SERVICE_TEMPLATES_CHIRHO)[number]
+): void {
+  assertIncludesChirho(sourceChirho, "[Service]", serviceChirho.labelChirho);
+  assertIncludesChirho(sourceChirho, "User=hottp-review-chirho", serviceChirho.labelChirho);
+  assertIncludesChirho(sourceChirho, "WorkingDirectory=/srv/hottp-review-chirho/current", serviceChirho.labelChirho);
+  assertIncludesChirho(sourceChirho, "EnvironmentFile=/etc/hottp-review-chirho.env", serviceChirho.labelChirho);
+  assertIncludesChirho(sourceChirho, serviceChirho.commandChirho, serviceChirho.labelChirho);
+  assertIncludesChirho(sourceChirho, "--reviewer=${HOTTP_REVIEW_FALLBACK_REVIEWER_CHIRHO}", serviceChirho.labelChirho);
+  assertIncludesChirho(sourceChirho, "Restart=on-failure", serviceChirho.labelChirho);
+  assertIncludesChirho(
+    sourceChirho,
+    "ReadWritePaths=/srv/hottp-review-chirho/current /srv/hottp-review-chirho/backups-chirho",
+    serviceChirho.labelChirho
+  );
+  for (const forbiddenCommandChirho of serviceChirho.forbiddenCommandsChirho) {
+    if (sourceChirho.includes(forbiddenCommandChirho)) {
+      failChirho(`${serviceChirho.labelChirho} must not start ${forbiddenCommandChirho}`);
+    }
   }
 }
 
@@ -109,7 +147,9 @@ function mainChirho(): void {
   assertCaddyTemplateChirho(readRequiredFileChirho(CADDY_TEMPLATE_PATH_CHIRHO));
   assertEnvTemplateChirho(readRequiredFileChirho(ENV_TEMPLATE_PATH_CHIRHO));
   assertCaddyDropinChirho(readRequiredFileChirho(CADDY_ENV_DROPIN_PATH_CHIRHO));
-  assertRawServiceTemplateChirho(readRequiredFileChirho(RAW_SERVICE_TEMPLATE_PATH_CHIRHO));
+  for (const serviceChirho of REVIEW_SERVICE_TEMPLATES_CHIRHO) {
+    assertReviewServiceTemplateChirho(readRequiredFileChirho(serviceChirho.pathChirho), serviceChirho);
+  }
   console.log(`[${MODULE_CHIRHO}] deployment templates passed`);
 }
 

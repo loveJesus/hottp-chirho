@@ -188,8 +188,15 @@ Do not mark Phase 6 complete unless this completed evidence check passes.
 Add `:8770` and `:8771` only after the raw Hebrew commit-back proof works:
 
 ```bash
-bun run latin-symbol-vision-review-chirho -- --reviewer=server-fallback-reviewer-chirho
-bun run vision-tier-expert-review-chirho -- --reviewer=server-fallback-reviewer-chirho
+sudo install -m 0644 spec-chirho/reviewer-deployment-chirho/human-review-latin-symbol-2026-07-02-chirho.service \
+  /etc/systemd/system/hottp-latin-symbol-review-chirho.service
+sudo install -m 0644 spec-chirho/reviewer-deployment-chirho/human-review-expert-non-latin-2026-07-02-chirho.service \
+  /etc/systemd/system/hottp-expert-review-chirho.service
+sudo systemctl daemon-reload
+sudo systemctl start hottp-latin-symbol-review-chirho
+sudo systemctl start hottp-expert-review-chirho
+sudo systemctl status hottp-latin-symbol-review-chirho --no-pager
+sudo systemctl status hottp-expert-review-chirho --no-pager
 bun run review-servers-chirho -- --check-chirho
 ```
 

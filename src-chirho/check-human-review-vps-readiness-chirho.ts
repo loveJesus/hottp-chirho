@@ -64,6 +64,8 @@ const REQUIRED_PATHS_CHIRHO: RequiredPathChirho[] = [
   { labelChirho: "VPS env template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-env-template-2026-07-02-chirho.env", kindChirho: "file-chirho" },
   { labelChirho: "VPS Caddy env drop-in", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-caddy-env-2026-07-02-chirho.conf", kindChirho: "file-chirho" },
   { labelChirho: "VPS raw Hebrew service template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-raw-hebrew-2026-07-02-chirho.service", kindChirho: "file-chirho" },
+  { labelChirho: "VPS Latin/symbol service template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-latin-symbol-2026-07-02-chirho.service", kindChirho: "file-chirho" },
+  { labelChirho: "VPS expert service template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-expert-non-latin-2026-07-02-chirho.service", kindChirho: "file-chirho" },
   { labelChirho: "span source assets", relativePathChirho: "workspace-chirho/spans-chirho", kindChirho: "directory-chirho", mustBeNonEmptyChirho: true },
   { labelChirho: "scanline assets", relativePathChirho: "workspace-chirho/scanlines-chirho", kindChirho: "directory-chirho", mustBeNonEmptyChirho: true },
   { labelChirho: "segment crop assets", relativePathChirho: "workspace-chirho/segments-chirho", kindChirho: "directory-chirho", mustBeNonEmptyChirho: true },

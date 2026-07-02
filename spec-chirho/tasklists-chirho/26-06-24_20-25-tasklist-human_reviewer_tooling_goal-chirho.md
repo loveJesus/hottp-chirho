@@ -94,6 +94,9 @@ server-authoritative, and the boundary/commit-back ritual is documented.
 - [x] Add checked Caddy, environment, systemd, and raw-review service templates
       so the VPS setup copies reviewed artifacts instead of hand-transcribing
       proxy/header/service assumptions from prose.
+- [x] Add checked systemd templates for the later Latin/symbol and expert
+      review stations, while keeping the runbook raw-Hebrew-first until the
+      first remote smoke and commit-back proof pass.
 - [x] Add a dry-run-default sync helper for copying the full working tree,
       including ignored `workspace-chirho/` assets, to the review host with
       explicit excludes for `.git/`, `.env`, `node_modules/`, and build output.
