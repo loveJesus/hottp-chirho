@@ -194,12 +194,31 @@ After any write smoke, stop the server and copy state back before continuing.
 
 ## 7. Commit-Back Proof Chirho
 
-On the host, stop or pause the server, then copy the review state back:
+On the host, stop or pause the server, then record a write lease before copying
+state back:
+
+```bash
+cp spec-chirho/reviewer-deployment-chirho/human-review-vps-write-lease-template-2026-07-02-chirho.json \
+  spec-chirho/reviewer-deployment-chirho/human-review-vps-write-lease-YYYY-MM-DD-chirho.json
+bun run check-human-review-vps-write-lease-chirho -- \
+  --lease-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-write-lease-YYYY-MM-DD-chirho.json \
+  --host-chirho=REVIEW_HOST_CHIRHO
+```
+
+The completed lease must state that the VPS is the canonical writer, local
+write-capable review servers are paused, the remote review server is stopped
+before pull-back, and the SQLite snapshot is quarantine-only with JSON replay.
+Do not run pull-back `--apply-chirho` without a passing lease.
+
+Then copy the review state back:
 
 ```bash
 bun run pull-human-review-vps-state-chirho -- --print-command-chirho
 bun run pull-human-review-vps-state-chirho -- --host-chirho=REVIEW_HOST_CHIRHO
-bun run pull-human-review-vps-state-chirho -- --host-chirho=REVIEW_HOST_CHIRHO --apply-chirho
+bun run pull-human-review-vps-state-chirho -- \
+  --host-chirho=REVIEW_HOST_CHIRHO \
+  --write-lease-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-write-lease-YYYY-MM-DD-chirho.json \
+  --apply-chirho
 bun run check-pass-c-human-review-server-guards-chirho
 bun run transcription-certification-status-chirho
 bun run check-certification-strict-status-chirho

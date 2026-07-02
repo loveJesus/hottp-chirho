@@ -164,15 +164,36 @@ function commandsChirho(argsChirho: string[]): string[][] {
   );
 }
 
+function assertWriteLeaseForApplyChirho(argsChirho: string[], hostChirho: string): void {
+  if (!argsChirho.includes("--apply-chirho")) return;
+  const leasePathChirho = parseArgValueChirho(argsChirho, "write-lease-chirho");
+  if (leasePathChirho === null) {
+    failChirho("--apply-chirho requires --write-lease-chirho=... so write ownership is explicit before pull-back");
+  }
+  const resultChirho = Bun.spawnSync(
+    [
+      "bun",
+      "run",
+      "src-chirho/check-human-review-vps-write-lease-chirho.ts",
+      `--lease-chirho=${leasePathChirho}`,
+      `--host-chirho=${hostChirho}`,
+    ],
+    { cwd: PROJECT_ROOT_CHIRHO, stdout: "inherit", stderr: "inherit" }
+  );
+  if (resultChirho.exitCode !== 0) failChirho(`write lease check exited with code ${resultChirho.exitCode}`);
+}
+
 function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const printOnlyChirho = argsChirho.includes("--print-command-chirho");
   const commandsValueChirho = commandsChirho(argsChirho);
+  const applyChirho = argsChirho.includes("--apply-chirho");
+  const hostChirho = assertSafeTokenChirho(parseArgValueChirho(argsChirho, "host-chirho") ?? "REVIEW_HOST_CHIRHO", "host-chirho");
+  if (!printOnlyChirho) assertWriteLeaseForApplyChirho(argsChirho, hostChirho);
   for (const commandChirho of commandsValueChirho) {
     console.log(`[${MODULE_CHIRHO}] ${commandChirho.map(shellQuoteChirho).join(" ")}`);
   }
   if (printOnlyChirho) return;
-  const applyChirho = argsChirho.includes("--apply-chirho");
   for (const commandChirho of commandsValueChirho) {
     const localPathChirho = commandChirho[commandChirho.length - 1]!;
     const targetDirChirho = localPathChirho.endsWith("/") ? localPathChirho : dirname(localPathChirho);

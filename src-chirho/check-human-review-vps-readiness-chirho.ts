@@ -39,6 +39,7 @@ const REQUIRED_PACKAGE_SCRIPTS_CHIRHO = [
   "check-human-review-vps-host-preflight-chirho",
   "inventory-human-review-vps-candidates-chirho",
   "check-human-review-vps-provisioning-decision-chirho",
+  "check-human-review-vps-write-lease-chirho",
   "check-human-review-vps-smoke-evidence-chirho",
   "check-human-review-vps-first-smoke-completion-chirho",
   "check-human-review-vps-deployment-templates-chirho",
@@ -65,11 +66,13 @@ const REQUIRED_PATHS_CHIRHO: RequiredPathChirho[] = [
   { labelChirho: "VPS boundary doc", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-boundary-2026-07-02-chirho.md", kindChirho: "file-chirho" },
   { labelChirho: "VPS smoke runbook", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-runbook-2026-07-02-chirho.md", kindChirho: "file-chirho" },
   { labelChirho: "VPS smoke evidence template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-template-2026-07-02-chirho.json", kindChirho: "file-chirho" },
+  { labelChirho: "VPS write lease template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-write-lease-template-2026-07-02-chirho.json", kindChirho: "file-chirho" },
   { labelChirho: "VPS sync helper", relativePathChirho: "src-chirho/sync-human-review-vps-chirho.ts", kindChirho: "file-chirho" },
   { labelChirho: "VPS commit-back pull helper", relativePathChirho: "src-chirho/pull-human-review-vps-state-chirho.ts", kindChirho: "file-chirho" },
   { labelChirho: "VPS host preflight helper", relativePathChirho: "src-chirho/check-human-review-vps-host-preflight-chirho.ts", kindChirho: "file-chirho" },
   { labelChirho: "VPS provider inventory helper", relativePathChirho: "src-chirho/inventory-human-review-vps-candidates-chirho.ts", kindChirho: "file-chirho" },
   { labelChirho: "VPS provisioning decision helper", relativePathChirho: "src-chirho/check-human-review-vps-provisioning-decision-chirho.ts", kindChirho: "file-chirho" },
+  { labelChirho: "VPS write lease helper", relativePathChirho: "src-chirho/check-human-review-vps-write-lease-chirho.ts", kindChirho: "file-chirho" },
   { labelChirho: "VPS first-smoke completion helper", relativePathChirho: "src-chirho/check-human-review-vps-first-smoke-completion-chirho.ts", kindChirho: "file-chirho" },
   { labelChirho: "VPS provisioning decision template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-template-2026-07-02-chirho.json", kindChirho: "file-chirho" },
   { labelChirho: "VPS Caddyfile template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-caddyfile-template-2026-07-02-chirho.caddyfile", kindChirho: "file-chirho" },
@@ -117,7 +120,11 @@ const SMOKE_RUNBOOK_SNIPPETS_CHIRHO = [
   "public traffic must go through Caddy",
   "Do not clean-certify a real item merely for smoke.",
   "Commit-Back Proof Chirho",
-  "bun run pull-human-review-vps-state-chirho -- --host-chirho=REVIEW_HOST_CHIRHO --apply-chirho",
+  "check-human-review-vps-write-lease-chirho",
+  "human-review-vps-write-lease-template-2026-07-02-chirho.json",
+  "write-capable review servers are paused",
+  "--write-lease-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-write-lease-YYYY-MM-DD-chirho.json",
+  "--apply-chirho",
   "validation id",
   "gateway reviewer identity",
   "--pass-c-backup-chirho=spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json",
@@ -265,6 +272,8 @@ function assertPullHelperChirho(): void {
     "--include-segment-repair-proposals-chirho",
     "--include-expert-supplied-backup-chirho",
     "--include-workspace-spans-chirho",
+    "--write-lease-chirho",
+    "check-human-review-vps-write-lease-chirho.ts",
   ]) {
     if (!sourceChirho.includes(snippetChirho)) {
       failChirho(`VPS commit-back pull helper missing guard snippet: ${snippetChirho}`);
@@ -272,6 +281,22 @@ function assertPullHelperChirho(): void {
   }
   if (!sourceChirho.includes("REMOTE_PROGRESS_DB_PATH_CHIRHO") || !sourceChirho.includes("QUARANTINE_PROGRESS_DB_PATH_CHIRHO")) {
     failChirho("VPS commit-back pull helper must keep remote progress DB path separate from quarantine target");
+  }
+}
+
+function assertWriteLeaseHelperChirho(): void {
+  const sourceChirho = readFileSync(absolutePathChirho("src-chirho/check-human-review-vps-write-lease-chirho.ts"), "utf8");
+  for (const snippetChirho of [
+    "vps-human-review-chirho",
+    "local_writes_paused_chirho",
+    "remote_review_servers_stopped_chirho",
+    "stopped-review-servers-chirho",
+    "json-replay-with-quarantined-sqlite-chirho",
+    "write lease has expired",
+  ]) {
+    if (!sourceChirho.includes(snippetChirho)) {
+      failChirho(`VPS write lease helper missing guard snippet: ${snippetChirho}`);
+    }
   }
 }
 
@@ -414,6 +439,7 @@ function mainChirho(): void {
   assertSmokeRunbookChirho();
   assertSyncHelperChirho();
   assertPullHelperChirho();
+  assertWriteLeaseHelperChirho();
   assertHostPreflightHelperChirho();
   assertProviderInventoryHelperChirho();
   assertProvisioningDecisionHelperChirho();
