@@ -77,12 +77,22 @@ Then run a host-targeted dry-run and inspect its output:
 bun run sync-human-review-vps-chirho -- --host-chirho=REVIEW_HOST_CHIRHO
 ```
 
+Before the real sync, record the write lease that makes the VPS the canonical
+writer and proves local review writers are paused:
+
+```bash
+bun run check-human-review-vps-write-lease-chirho -- \
+  --lease-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-write-lease-YYYY-MM-DD-chirho.json \
+  --host-chirho=REVIEW_HOST_CHIRHO
+```
+
 Run the real sync only after inspecting the dry-run:
 
 ```bash
 bun run sync-human-review-vps-chirho -- \
   --host-chirho=REVIEW_HOST_CHIRHO \
   --decision-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-YYYY-MM-DD-chirho.json \
+  --write-lease-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-write-lease-YYYY-MM-DD-chirho.json \
   --apply-chirho
 ```
 
@@ -91,11 +101,13 @@ is not enough for the review stations. The helper excludes `.git/`, `.env`,
 `node_modules/`, and `app-chirho/.svelte-kit/`, and refuses a non-dry-run sync
 unless `--apply-chirho` is explicit. A real sync also requires a completed
 provisioning decision, and the sync host must match that decision's selected
-host name or address. Before a real sync starts, the helper also checks local
-`127.0.0.1` ports `8766`, `8770`, and `8771`; if any write-capable review
-server is still listening locally, sync-out aborts before rsync starts so the
-canonical SQLite snapshot is not copied while local writes can race it. It also
-checks the remote `hottp-raw-review-chirho.service`,
+host name or address. It also requires the completed write lease to match the
+sync host and owner approval reference before copying the canonical DB to the
+VPS. Before a real sync starts, the helper also checks local `127.0.0.1` ports
+`8766`, `8770`, and `8771`; if any write-capable review server is still
+listening locally, sync-out aborts before rsync starts so the canonical SQLite
+snapshot is not copied while local writes can race it. It also checks the remote
+`hottp-raw-review-chirho.service`,
 `hottp-latin-symbol-review-chirho.service`, and
 `hottp-expert-review-chirho.service` units before rsync; if any are active,
 sync-out aborts so the remote live tree is not overwritten under a running
@@ -218,8 +230,8 @@ After any write smoke, stop the server and copy state back before continuing.
 
 ## 7. Commit-Back Proof Chirho
 
-On the host, stop or pause the server, then record a write lease before copying
-state back:
+On the host, stop or pause the server, then re-check the write lease before
+copying state back:
 
 ```bash
 cp spec-chirho/reviewer-deployment-chirho/human-review-vps-write-lease-template-2026-07-02-chirho.json \

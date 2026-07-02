@@ -102,6 +102,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       explicit excludes for `.git/`, `.env`, `node_modules/`, and build output.
 - [x] Require real sync-out `--apply-chirho` to cite a completed provisioning
       decision whose selected host matches the sync host.
+- [x] Bind real sync-out `--apply-chirho` to the write lease whose owner
+      approval reference matches the completed provisioning decision.
 - [x] Add a dry-run-default commit-back pull helper for the canonical DB and
       review artifacts, with explicit optional flags for draft repair proposals,
       expert-supplied backups, and live span JSON.
