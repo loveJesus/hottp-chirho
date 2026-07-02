@@ -56,6 +56,7 @@ import {
   reviewNotesLookPlaceholderChirho,
 } from "./template-placeholder-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
+import { trustedReviewerIdentityChirho } from "./trusted-reviewer-identity-chirho.ts";
 
 const MODULE_CHIRHO = "pass-c-human-validate-server-chirho";
 const SERVER_HEALTH_CHIRHO = reviewServerStartupHealthChirho("raw-hebrew-chirho");
@@ -3184,9 +3185,7 @@ const serverChirho = Bun.serve({
           errorChirho: "notesChirho must explain the issue, not a template placeholder",
         }, 400);
       }
-      const effectiveReviewerChirho = typeof bodyChirho.reviewerChirho === "string" && bodyChirho.reviewerChirho.trim().length > 0
-        ? bodyChirho.reviewerChirho.trim()
-        : reviewerChirho;
+      const effectiveReviewerChirho = trustedReviewerIdentityChirho(reqChirho.headers, reviewerChirho);
       if (effectiveReviewerChirho.length === 0) {
         return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
       }

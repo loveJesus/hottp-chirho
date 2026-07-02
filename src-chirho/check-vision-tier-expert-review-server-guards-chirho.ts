@@ -219,11 +219,12 @@ function assertUsableSpanMarkerChirho(itemChirho: ExpertReviewStateItemChirho, l
 async function postJsonChirho(
   portChirho: number,
   pathChirho: string,
-  bodyChirho: Record<string, unknown>
+  bodyChirho: Record<string, unknown>,
+  headersChirho: Record<string, string> = {}
 ): Promise<{ responseChirho: Response; dataChirho: ExpertReviewPostResponseChirho }> {
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}${pathChirho}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...headersChirho },
     body: JSON.stringify(bodyChirho),
   });
   const dataChirho = (await responseChirho.json()) as ExpertReviewPostResponseChirho;
@@ -405,6 +406,7 @@ async function mainChirho(): Promise<void> {
       "src-chirho/vision-tier-expert-review-server-chirho.ts",
       `--port=${portChirho}`,
       `--policy=${policyPathChirho}`,
+      "--reviewer=dr-smith-human-reviewer-chirho",
     ],
     {
       cwd: PROJECT_ROOT_CHIRHO,
@@ -492,19 +494,6 @@ async function mainChirho(): Promise<void> {
       policyPathChirho,
       expectedErrorChirho: "reviewerRoleChirho must be",
     });
-    const genericConfirmResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
-      ...commonBodyChirho,
-      reviewerChirho: "human-chirho",
-      rationaleChirho: "server guard check should reject generic expert confirmation reviewer",
-      certifyExactChirho: true,
-    });
-    assertRejectedWithoutPolicyChirho({
-      labelChirho: "generic confirm reviewer",
-      responseChirho: genericConfirmResultChirho.responseChirho,
-      dataChirho: genericConfirmResultChirho.dataChirho,
-      policyPathChirho,
-      expectedErrorChirho: "must identify the explicit reviewer, not generic human-chirho",
-    });
     const confirmWithIssueFlagsResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
       ...commonBodyChirho,
       rationaleChirho: "server guard check should reject confirming while issue flags are present",
@@ -517,19 +506,6 @@ async function mainChirho(): Promise<void> {
       dataChirho: confirmWithIssueFlagsResultChirho.dataChirho,
       policyPathChirho,
       expectedErrorChirho: "confirm-chirho cannot include issue flags",
-    });
-    const genericIssueResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
-      ...commonBodyChirho,
-      reviewerChirho: "human-chirho",
-      rationaleChirho: "server guard check should reject generic expert issue reviewer",
-      issueFlagsChirho: ["uncertain-chirho"],
-    });
-    assertRejectedWithoutPolicyChirho({
-      labelChirho: "generic issue reviewer",
-      responseChirho: genericIssueResultChirho.responseChirho,
-      dataChirho: genericIssueResultChirho.dataChirho,
-      policyPathChirho,
-      expectedErrorChirho: "must identify the explicit reviewer, not generic human-chirho",
     });
     const confirmResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
       ...commonBodyChirho,
@@ -620,6 +596,7 @@ async function mainChirho(): Promise<void> {
     assertCheckChirho(!existsSync(policyPathChirho), "stale issue display wrote a policy file");
     const validConfirmResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
       ...commonBodyChirho,
+      reviewerChirho: "codex-gpt5-chirho",
       rationaleChirho: "server guard check confirms one exact non-Latin item in a disposable policy file",
       certifyExactChirho: true,
     });
@@ -634,10 +611,17 @@ async function mainChirho(): Promise<void> {
       policyFileAfterConfirmChirho.policiesChirho?.[0]?.decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_CONFIRMED_CHIRHO,
       "valid confirm POST did not write a confirmed policy"
     );
+    assertCheckChirho(
+      policyFileAfterConfirmChirho.policiesChirho?.[0]?.reviewerChirho === "dr-smith-human-reviewer-chirho",
+      "valid confirm POST stored client-supplied reviewer instead of server reviewer"
+    );
     const validIssueResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
       ...commonBodyChirho,
+      reviewerChirho: "human-chirho",
       rationaleChirho: "server guard check records an uncertainty issue with a concrete non-template reason",
       issueFlagsChirho: ["uncertain-chirho"],
+    }, {
+      "X-Webauth-User": "dr-expert-header-reviewer-chirho",
     });
     assertCheckChirho(
       validIssueResultChirho.responseChirho.ok,
@@ -649,6 +633,10 @@ async function mainChirho(): Promise<void> {
     assertCheckChirho(
       policyFileAfterIssueChirho.policiesChirho?.[0]?.decisionChirho === VISION_TIER_EXPERT_CONFIRMATION_REVIEWED_ISSUES_CHIRHO,
       "valid issue POST did not supersede the earlier confirmation with an issue"
+    );
+    assertCheckChirho(
+      policyFileAfterIssueChirho.policiesChirho?.[0]?.reviewerChirho === "dr-expert-header-reviewer-chirho",
+      "valid issue POST did not store trusted proxy reviewer"
     );
     const validReconfirmResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
       ...commonBodyChirho,

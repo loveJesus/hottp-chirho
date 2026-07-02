@@ -157,6 +157,21 @@ function reviewRowCountChirho(dbPathChirho: string): number {
   }
 }
 
+function latestReviewReviewerChirho(dbPathChirho: string): string {
+  const dbChirho = new Database(dbPathChirho, { readonly: true });
+  try {
+    const rowChirho = dbChirho
+      .query<{ reviewerChirho: string }, []>(
+        "SELECT reviewer_chirho AS reviewerChirho FROM latin_symbol_vision_reviews_chirho ORDER BY id_chirho DESC LIMIT 1"
+      )
+      .get();
+    if (rowChirho === null) throw new Error("no Latin/symbol review row found");
+    return rowChirho.reviewerChirho;
+  } finally {
+    dbChirho.close();
+  }
+}
+
 async function stateItemChirho(portChirho: number): Promise<LatinSymbolReviewStateItemChirho> {
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/state-chirho`);
   const dataChirho = (await responseChirho.json()) as LatinSymbolReviewStateResponseChirho;
@@ -252,11 +267,12 @@ function displayGuardForItemChirho(itemChirho: LatinSymbolReviewStateItemChirho)
 
 async function postReviewChirho(
   portChirho: number,
-  bodyChirho: Record<string, unknown>
+  bodyChirho: Record<string, unknown>,
+  headersChirho: Record<string, string> = {}
 ): Promise<{ responseChirho: Response; dataChirho: LatinSymbolReviewPostResponseChirho }> {
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/review-chirho`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...headersChirho },
     body: JSON.stringify(bodyChirho),
   });
   const dataChirho = (await responseChirho.json()) as LatinSymbolReviewPostResponseChirho;
@@ -295,6 +311,7 @@ async function mainChirho(): Promise<void> {
       `--db=${dbPathChirho}`,
       `--backup=${backupPathChirho}`,
       `--policy=${policyPathChirho}`,
+      "--reviewer=dr-latin-symbol-server-guard-chirho",
     ],
     {
       cwd: PROJECT_ROOT_CHIRHO,
@@ -393,54 +410,6 @@ async function mainChirho(): Promise<void> {
       String(issueWithCleanAckResultChirho.dataChirho.errorChirho ?? "").includes("acceptCleanChirho cannot be true when issueFlagsChirho are present"),
       `issue with accepted-clean acknowledgement failed for wrong reason: ${String(issueWithCleanAckResultChirho.dataChirho.errorChirho ?? "")}`
     );
-    const machineCleanResultChirho = await postReviewChirho(portChirho, {
-      ...commonBodyChirho,
-      issueFlagsChirho: [],
-      reviewerChirho: "codex-gpt5-chirho",
-      acceptCleanChirho: true,
-    });
-    assertReviewRejectedChirho({
-      labelChirho: "machine accepted-clean",
-      responseChirho: machineCleanResultChirho.responseChirho,
-      dataChirho: machineCleanResultChirho.dataChirho,
-      dbPathChirho,
-    });
-    assertCheckChirho(
-      String(machineCleanResultChirho.dataChirho.errorChirho ?? "").includes("machine reviewer codex-gpt5-chirho cannot certify"),
-      `machine accepted-clean failed for wrong reason: ${String(machineCleanResultChirho.dataChirho.errorChirho ?? "")}`
-    );
-    const genericCleanResultChirho = await postReviewChirho(portChirho, {
-      ...commonBodyChirho,
-      issueFlagsChirho: [],
-      reviewerChirho: "human-chirho",
-      acceptCleanChirho: true,
-    });
-    assertReviewRejectedChirho({
-      labelChirho: "generic accepted-clean",
-      responseChirho: genericCleanResultChirho.responseChirho,
-      dataChirho: genericCleanResultChirho.dataChirho,
-      dbPathChirho,
-    });
-    assertCheckChirho(
-      String(genericCleanResultChirho.dataChirho.errorChirho ?? "").includes("must identify the explicit reviewer, not generic human-chirho"),
-      `generic accepted-clean failed for wrong reason: ${String(genericCleanResultChirho.dataChirho.errorChirho ?? "")}`
-    );
-    const genericIssueResultChirho = await postReviewChirho(portChirho, {
-      ...commonBodyChirho,
-      issueFlagsChirho: ["punctuation-chirho"],
-      reviewerChirho: "human-chirho",
-      notesChirho: "server guard check should reject generic reviewer before persistence",
-    });
-    assertReviewRejectedChirho({
-      labelChirho: "generic issue reviewer",
-      responseChirho: genericIssueResultChirho.responseChirho,
-      dataChirho: genericIssueResultChirho.dataChirho,
-      dbPathChirho,
-    });
-    assertCheckChirho(
-      String(genericIssueResultChirho.dataChirho.errorChirho ?? "").includes("must identify the explicit reviewer, not generic human-chirho"),
-      `generic issue reviewer failed for wrong reason: ${String(genericIssueResultChirho.dataChirho.errorChirho ?? "")}`
-    );
     const placeholderResultChirho = await postReviewChirho(portChirho, {
       ...commonBodyChirho,
       issueFlagsChirho: ["punctuation-chirho"],
@@ -474,6 +443,7 @@ async function mainChirho(): Promise<void> {
     const validCleanResultChirho = await postReviewChirho(portChirho, {
       ...commonBodyChirho,
       issueFlagsChirho: [],
+      reviewerChirho: "codex-gpt5-chirho",
       acceptCleanChirho: true,
     });
     assertCheckChirho(
@@ -481,16 +451,27 @@ async function mainChirho(): Promise<void> {
       `valid accepted-clean POST failed: ${validCleanResultChirho.responseChirho.status} ${String(validCleanResultChirho.dataChirho.errorChirho ?? "")}`
     );
     assertCheckChirho(reviewRowCountChirho(dbPathChirho) === 1, "valid accepted-clean POST did not write one disposable row");
+    assertCheckChirho(
+      latestReviewReviewerChirho(dbPathChirho) === "dr-latin-symbol-server-guard-chirho",
+      "valid accepted-clean POST stored client-supplied reviewer instead of server reviewer"
+    );
     const validIssueResultChirho = await postReviewChirho(portChirho, {
       ...commonBodyChirho,
       issueFlagsChirho: ["punctuation-chirho"],
+      reviewerChirho: "human-chirho",
       notesChirho: "server guard check records a concrete punctuation concern for a disposable review row",
+    }, {
+      "X-Webauth-User": "dr-latin-symbol-header-reviewer-chirho",
     });
     assertCheckChirho(
       validIssueResultChirho.responseChirho.ok,
       `valid issue POST failed: ${validIssueResultChirho.responseChirho.status} ${String(validIssueResultChirho.dataChirho.errorChirho ?? "")}`
     );
     assertCheckChirho(reviewRowCountChirho(dbPathChirho) === 2, "valid issue POST did not append one disposable row");
+    assertCheckChirho(
+      latestReviewReviewerChirho(dbPathChirho) === "dr-latin-symbol-header-reviewer-chirho",
+      "valid issue POST did not store trusted proxy reviewer"
+    );
     assertCheckChirho(existsSync(backupPathChirho), "valid issue POST did not refresh disposable backup");
     JSON.parse(readFileSync(backupPathChirho, "utf8"));
   } catch (errorChirho) {

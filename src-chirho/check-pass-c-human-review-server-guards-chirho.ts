@@ -345,6 +345,19 @@ SELECT id_chirho, volume_chirho, page_chirho, line_index_chirho, segment_index_c
   }
 }
 
+function latestValidationReviewerChirho(dbPathChirho: string): string {
+  const dbChirho = new Database(dbPathChirho, { readonly: true });
+  try {
+    const rowChirho = dbChirho
+      .query("SELECT reviewer_chirho FROM pass_c_human_validations_chirho ORDER BY id_chirho DESC LIMIT 1")
+      .get() as { reviewer_chirho: string } | undefined;
+    if (rowChirho === undefined) throw new Error("no validation row found");
+    return rowChirho.reviewer_chirho;
+  } finally {
+    dbChirho.close();
+  }
+}
+
 async function mainChirho(): Promise<void> {
   const tempDirChirho = mkdtempSync(join(tmpdir(), "pass-c-human-review-guard-chirho-"));
   const dbPathChirho = join(tempDirChirho, "review-guard-chirho.sqlite");
@@ -361,6 +374,7 @@ async function mainChirho(): Promise<void> {
       `--port=${portChirho}`,
       `--db=${dbPathChirho}`,
       `--backup=${backupPathChirho}`,
+      "--reviewer=dr-pass-c-server-reviewer-chirho",
     ],
     {
       cwd: PROJECT_ROOT_CHIRHO,
@@ -391,7 +405,7 @@ async function mainChirho(): Promise<void> {
         correctedTextChirho: attributionBlockedItemChirho.liveSpanTextChirho,
         notesChirho: "",
         scriptVerdictChirho: "",
-        reviewerChirho: "hallelujah-chirho",
+        reviewerChirho: "codex-gpt5-chirho",
         certifyCleanChirho: true,
         ...displayGuardForItemChirho(attributionBlockedItemChirho),
       }),
@@ -610,124 +624,6 @@ async function mainChirho(): Promise<void> {
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
       "issue with clean acknowledgement persisted a row"
     );
-    const machineCleanResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        keyChirho: itemChirho.keyChirho,
-        issueFlagsChirho: [],
-        correctedTextChirho: itemChirho.liveSpanTextChirho,
-        notesChirho: "",
-        scriptVerdictChirho: "",
-        reviewerChirho: "codex-gpt5-chirho",
-        certifyCleanChirho: true,
-        ...displayGuardForItemChirho(itemChirho),
-      }),
-    });
-    const machineCleanDataChirho = (await machineCleanResponseChirho.json()) as {
-      okChirho?: boolean;
-      errorChirho?: string;
-    };
-    assertCheckChirho(
-      machineCleanResponseChirho.status === 400,
-      `expected machine-clean HTTP 400, got ${machineCleanResponseChirho.status}`
-    );
-    assertCheckChirho(machineCleanDataChirho.okChirho === false, "machine clean POST unexpectedly returned ok");
-    assertCheckChirho(
-      String(machineCleanDataChirho.errorChirho ?? "").includes("machine reviewer codex-gpt5-chirho cannot certify"),
-      `machine clean POST failed for the wrong reason: ${String(machineCleanDataChirho.errorChirho ?? "")}`
-    );
-    assertCheckChirho(
-      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
-      "machine clean POST persisted a row"
-    );
-    const genericCleanResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        keyChirho: itemChirho.keyChirho,
-        issueFlagsChirho: [],
-        correctedTextChirho: itemChirho.liveSpanTextChirho,
-        notesChirho: "",
-        scriptVerdictChirho: "",
-        reviewerChirho: "human-chirho",
-        certifyCleanChirho: true,
-        ...displayGuardForItemChirho(itemChirho),
-      }),
-    });
-    const genericCleanDataChirho = (await genericCleanResponseChirho.json()) as {
-      okChirho?: boolean;
-      errorChirho?: string;
-    };
-    assertCheckChirho(
-      genericCleanResponseChirho.status === 400,
-      `expected generic-clean HTTP 400, got ${genericCleanResponseChirho.status}`
-    );
-    assertCheckChirho(genericCleanDataChirho.okChirho === false, "generic clean POST unexpectedly returned ok");
-    assertCheckChirho(
-      String(genericCleanDataChirho.errorChirho ?? "").includes("must identify the explicit reviewer, not generic human-chirho"),
-      `generic clean POST failed for the wrong reason: ${String(genericCleanDataChirho.errorChirho ?? "")}`
-    );
-    assertCheckChirho(
-      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
-      "generic clean POST persisted a row"
-    );
-    const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        keyChirho: itemChirho.keyChirho,
-        issueFlagsChirho: ["letters-chirho"],
-        correctedTextChirho: itemChirho.liveSpanTextChirho,
-        notesChirho: "guard check should be rejected before persistence",
-        scriptVerdictChirho: "",
-        reviewerChirho: "codex-gpt5-chirho",
-        certifyCleanChirho: false,
-        ...displayGuardForItemChirho(itemChirho),
-      }),
-    });
-    const dataChirho = (await responseChirho.json()) as { okChirho?: boolean; errorChirho?: string };
-    assertCheckChirho(responseChirho.status === 400, `expected HTTP 400, got ${responseChirho.status}`);
-    assertCheckChirho(dataChirho.okChirho === false, "machine reviewer issue POST unexpectedly returned ok");
-    assertCheckChirho(
-      String(dataChirho.errorChirho ?? "").includes("machine reviewer codex-gpt5-chirho cannot certify"),
-      `machine reviewer issue POST failed for the wrong reason: ${String(dataChirho.errorChirho ?? "")}`
-    );
-    assertCheckChirho(
-      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
-      "machine reviewer issue POST persisted a row"
-    );
-    const genericIssueResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        keyChirho: itemChirho.keyChirho,
-        issueFlagsChirho: ["letters-chirho"],
-        correctedTextChirho: itemChirho.liveSpanTextChirho,
-        notesChirho: "guard check should reject generic reviewer before persistence",
-        scriptVerdictChirho: "",
-        reviewerChirho: "human-chirho",
-        certifyCleanChirho: false,
-        ...displayGuardForItemChirho(itemChirho),
-      }),
-    });
-    const genericIssueDataChirho = (await genericIssueResponseChirho.json()) as {
-      okChirho?: boolean;
-      errorChirho?: string;
-    };
-    assertCheckChirho(
-      genericIssueResponseChirho.status === 400,
-      `expected generic-issue HTTP 400, got ${genericIssueResponseChirho.status}`
-    );
-    assertCheckChirho(genericIssueDataChirho.okChirho === false, "generic reviewer issue POST unexpectedly returned ok");
-    assertCheckChirho(
-      String(genericIssueDataChirho.errorChirho ?? "").includes("must identify the explicit reviewer, not generic human-chirho"),
-      `generic reviewer issue POST failed for the wrong reason: ${String(genericIssueDataChirho.errorChirho ?? "")}`
-    );
-    assertCheckChirho(
-      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
-      "generic reviewer issue POST persisted a row"
-    );
     const editedNoIssueResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -847,16 +743,20 @@ async function mainChirho(): Promise<void> {
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho + 1,
       "valid clean POST did not append one row"
     );
+    assertCheckChirho(
+      latestValidationReviewerChirho(dbPathChirho) === "dr-pass-c-server-reviewer-chirho",
+      "valid clean POST stored client-supplied reviewer instead of server reviewer"
+    );
     const validIssueResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", "X-Webauth-User": "dr-pass-c-header-reviewer-chirho" },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         issueFlagsChirho: ["letters-chirho"],
         correctedTextChirho: itemChirho.liveSpanTextChirho,
         notesChirho: "server guard check records a concrete issue for disposable Pass-C review state",
         scriptVerdictChirho: "",
-        reviewerChirho: "hallelujah-chirho",
+        reviewerChirho: "human-chirho",
         certifyCleanChirho: false,
         ...displayGuardForItemChirho(itemChirho),
       }),
@@ -872,6 +772,10 @@ async function mainChirho(): Promise<void> {
     assertCheckChirho(
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho + 2,
       "valid issue POST did not append one row"
+    );
+    assertCheckChirho(
+      latestValidationReviewerChirho(dbPathChirho) === "dr-pass-c-header-reviewer-chirho",
+      "valid issue POST did not store trusted proxy reviewer"
     );
     assertCheckChirho(
       currentNonUndoValidationRowCountChirho(dbPathChirho) === currentNonUndoRowsBeforeChirho + 1,

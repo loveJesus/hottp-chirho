@@ -54,6 +54,7 @@ import {
   visionTierExpertLiveItemsChirho,
   type VisionTierExpertLiveItemChirho,
 } from "./vision-tier-expert-live-items-chirho.ts";
+import { trustedReviewerIdentityChirho } from "./trusted-reviewer-identity-chirho.ts";
 
 const MODULE_CHIRHO = "vision-tier-expert-review-server-chirho";
 const SERVER_HEALTH_CHIRHO = reviewServerStartupHealthChirho("expert-non-latin-chirho");
@@ -1746,6 +1747,7 @@ function htmlChirho(): string {
 const argsChirho = process.argv.slice(2);
 const portChirho = parsePortChirho(argsChirho);
 const policyPathChirho = parseArgValueChirho(argsChirho, "policy") ?? VISION_TIER_EXPERT_CONFIRMATION_POLICY_PATH_CHIRHO;
+const serverReviewerChirho = parseArgValueChirho(argsChirho, "reviewer")?.trim() ?? "";
 
 const serverChirho = Bun.serve({
   port: portChirho,
@@ -1822,7 +1824,7 @@ const serverChirho = Bun.serve({
         if (staleServerResponseChirho !== null) return staleServerResponseChirho;
         const bodyChirho = (await reqChirho.json()) as ConfirmRequestChirho;
         const itemIdChirho = nonEmptyTrimmedChirho(bodyChirho.idChirho);
-        const reviewerChirho = nonEmptyTrimmedChirho(bodyChirho.reviewerChirho);
+        const reviewerChirho = nonEmptyTrimmedChirho(trustedReviewerIdentityChirho(reqChirho.headers, serverReviewerChirho));
         const reviewerRoleChirho = nonEmptyTrimmedChirho(bodyChirho.reviewerRoleChirho);
         const rationaleChirho = nonEmptyTrimmedChirho(bodyChirho.rationaleChirho);
         if (itemIdChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "missing idChirho" }, 400);
@@ -1890,7 +1892,7 @@ const serverChirho = Bun.serve({
         if (staleServerResponseChirho !== null) return staleServerResponseChirho;
         const bodyChirho = (await reqChirho.json()) as IssueRequestChirho;
         const itemIdChirho = nonEmptyTrimmedChirho(bodyChirho.idChirho);
-        const reviewerChirho = nonEmptyTrimmedChirho(bodyChirho.reviewerChirho);
+        const reviewerChirho = nonEmptyTrimmedChirho(trustedReviewerIdentityChirho(reqChirho.headers, serverReviewerChirho));
         const reviewerRoleChirho = nonEmptyTrimmedChirho(bodyChirho.reviewerRoleChirho);
         const rationaleChirho = nonEmptyTrimmedChirho(bodyChirho.rationaleChirho);
         let issueFlagsChirho: string[];
