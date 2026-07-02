@@ -1,6 +1,9 @@
 // For God so loved the world that he gave his only begotten Son,
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
+import { existsSync, readFileSync } from "fs";
+import { resolve, sep } from "path";
+
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
 const MODULE_CHIRHO = "sync-human-review-vps-chirho";
@@ -14,6 +17,13 @@ const EXCLUDES_CHIRHO = [
   "app-chirho/.svelte-kit/",
 ] as const;
 
+interface ProvisioningDecisionForSyncChirho {
+  selected_host_chirho?: {
+    host_name_chirho?: unknown;
+    host_address_chirho?: unknown;
+  };
+}
+
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | null {
   const prefixChirho = `--${nameChirho}=`;
   const matchChirho = argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho));
@@ -22,6 +32,16 @@ function parseArgValueChirho(argsChirho: string[], nameChirho: string): string |
 
 function failChirho(messageChirho: string): never {
   throw new Error(messageChirho);
+}
+
+function projectPathChirho(pathChirho: string, labelChirho: string): string {
+  const resolvedChirho = resolve(PROJECT_ROOT_CHIRHO, pathChirho);
+  const rootChirho = resolve(PROJECT_ROOT_CHIRHO);
+  if (!(resolvedChirho === rootChirho || resolvedChirho.startsWith(`${rootChirho}${sep}`))) {
+    failChirho(`${labelChirho} escapes project root: ${pathChirho}`);
+  }
+  if (!existsSync(resolvedChirho)) failChirho(`${labelChirho} missing: ${pathChirho}`);
+  return resolvedChirho;
 }
 
 function assertSafeTokenChirho(valueChirho: string, labelChirho: string): string {
@@ -71,6 +91,38 @@ function rsyncArgsChirho(argsChirho: string[]): string[] {
   return outputChirho;
 }
 
+function stringValueChirho(valueChirho: unknown, labelChirho: string): string {
+  if (typeof valueChirho !== "string" || valueChirho.trim().length === 0) {
+    failChirho(`${labelChirho} must be a non-empty string`);
+  }
+  return valueChirho.trim();
+}
+
+function assertCompletedDecisionForApplyChirho(argsChirho: string[], hostChirho: string): void {
+  if (!argsChirho.includes("--apply-chirho")) return;
+  const decisionArgChirho = parseArgValueChirho(argsChirho, "decision-chirho");
+  if (decisionArgChirho === null) {
+    failChirho("--apply-chirho requires --decision-chirho=... so sync-out is tied to explicit owner approval");
+  }
+  const decisionPathChirho = projectPathChirho(decisionArgChirho, "provisioning decision");
+  const resultChirho = Bun.spawnSync(
+    [
+      "bun",
+      "run",
+      "src-chirho/check-human-review-vps-provisioning-decision-chirho.ts",
+      `--decision-chirho=${decisionArgChirho}`,
+    ],
+    { cwd: PROJECT_ROOT_CHIRHO, stdout: "inherit", stderr: "inherit" }
+  );
+  if (resultChirho.exitCode !== 0) failChirho(`provisioning decision check exited with code ${resultChirho.exitCode}`);
+  const decisionChirho = JSON.parse(readFileSync(decisionPathChirho, "utf8")) as ProvisioningDecisionForSyncChirho;
+  const hostNameChirho = stringValueChirho(decisionChirho.selected_host_chirho?.host_name_chirho, "selected host name");
+  const hostAddressChirho = stringValueChirho(decisionChirho.selected_host_chirho?.host_address_chirho, "selected host address");
+  if (hostChirho !== hostNameChirho && hostChirho !== hostAddressChirho) {
+    failChirho(`sync host ${hostChirho} does not match selected host name or address from provisioning decision`);
+  }
+}
+
 function shellQuoteChirho(valueChirho: string): string {
   return `'${valueChirho.replace(/'/g, "'\"'\"'")}'`;
 }
@@ -78,6 +130,8 @@ function shellQuoteChirho(valueChirho: string): string {
 function mainChirho(): void {
   const argsChirho = process.argv.slice(2);
   const printOnlyChirho = argsChirho.includes("--print-command-chirho");
+  const hostChirho = assertSafeTokenChirho(parseArgValueChirho(argsChirho, "host-chirho") ?? "REVIEW_HOST_CHIRHO", "host-chirho");
+  if (!printOnlyChirho) assertCompletedDecisionForApplyChirho(argsChirho, hostChirho);
   const rsyncArgsValueChirho = rsyncArgsChirho(argsChirho);
   console.log(
     `[${MODULE_CHIRHO}] ${["rsync", ...rsyncArgsValueChirho].map(shellQuoteChirho).join(" ")}`

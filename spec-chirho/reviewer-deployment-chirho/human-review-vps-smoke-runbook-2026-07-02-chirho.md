@@ -80,13 +80,18 @@ bun run sync-human-review-vps-chirho -- --host-chirho=REVIEW_HOST_CHIRHO
 Run the real sync only after inspecting the dry-run:
 
 ```bash
-bun run sync-human-review-vps-chirho -- --host-chirho=REVIEW_HOST_CHIRHO --apply-chirho
+bun run sync-human-review-vps-chirho -- \
+  --host-chirho=REVIEW_HOST_CHIRHO \
+  --decision-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-YYYY-MM-DD-chirho.json \
+  --apply-chirho
 ```
 
 This copies ignored `workspace-chirho/` assets intentionally. A git clone alone
 is not enough for the review stations. The helper excludes `.git/`, `.env`,
 `node_modules/`, and `app-chirho/.svelte-kit/`, and refuses a non-dry-run sync
-unless `--apply-chirho` is explicit.
+unless `--apply-chirho` is explicit. A real sync also requires a completed
+provisioning decision, and the sync host must match that decision's selected
+host name or address.
 
 ## 3. Host Install Chirho
 

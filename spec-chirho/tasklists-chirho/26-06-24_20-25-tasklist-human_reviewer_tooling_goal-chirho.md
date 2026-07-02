@@ -100,6 +100,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
 - [x] Add a dry-run-default sync helper for copying the full working tree,
       including ignored `workspace-chirho/` assets, to the review host with
       explicit excludes for `.git/`, `.env`, `node_modules/`, and build output.
+- [x] Require real sync-out `--apply-chirho` to cite a completed provisioning
+      decision whose selected host matches the sync host.
 - [x] Add a dry-run-default commit-back pull helper for the canonical DB and
       review artifacts, with explicit optional flags for draft repair proposals,
       expert-supplied backups, and live span JSON.
