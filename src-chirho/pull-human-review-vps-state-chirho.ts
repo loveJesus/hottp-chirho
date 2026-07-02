@@ -1,8 +1,8 @@
 // For God so loved the world that he gave his only begotten Son,
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
-import { dirname, join } from "path";
-import { existsSync, mkdirSync } from "fs";
+import { dirname, join, resolve, sep } from "path";
+import { existsSync, mkdirSync, readFileSync } from "fs";
 import { connect } from "net";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
@@ -19,6 +19,13 @@ const WRITE_CAPABLE_LOCAL_PORTS_CHIRHO = [
   { labelChirho: "Latin/symbol review server", portChirho: 8770 },
   { labelChirho: "expert non-Latin review server", portChirho: 8771 },
 ] as const;
+
+interface ProvisioningDecisionForPullChirho {
+  selected_host_chirho?: {
+    host_name_chirho?: unknown;
+    host_address_chirho?: unknown;
+  };
+}
 
 const STATION_VALUES_CHIRHO = new Set([
   "raw-hebrew-chirho",
@@ -72,6 +79,16 @@ function parseArgValueChirho(argsChirho: string[], nameChirho: string): string |
 
 function failChirho(messageChirho: string): never {
   throw new Error(messageChirho);
+}
+
+function projectPathChirho(pathChirho: string, labelChirho: string): string {
+  const resolvedChirho = resolve(PROJECT_ROOT_CHIRHO, pathChirho);
+  const rootChirho = resolve(PROJECT_ROOT_CHIRHO);
+  if (!(resolvedChirho === rootChirho || resolvedChirho.startsWith(`${rootChirho}${sep}`))) {
+    failChirho(`${labelChirho} escapes project root: ${pathChirho}`);
+  }
+  if (!existsSync(resolvedChirho)) failChirho(`${labelChirho} missing: ${pathChirho}`);
+  return resolvedChirho;
 }
 
 function assertSafeTokenChirho(valueChirho: string, labelChirho: string): string {
@@ -191,6 +208,38 @@ function assertWriteLeaseForApplyChirho(argsChirho: string[], hostChirho: string
   if (resultChirho.exitCode !== 0) failChirho(`write lease check exited with code ${resultChirho.exitCode}`);
 }
 
+function stringValueChirho(valueChirho: unknown, labelChirho: string): string {
+  if (typeof valueChirho !== "string" || valueChirho.trim().length === 0) {
+    failChirho(`${labelChirho} must be a non-empty string`);
+  }
+  return valueChirho.trim();
+}
+
+function assertCompletedDecisionForApplyChirho(argsChirho: string[], hostChirho: string): void {
+  if (!argsChirho.includes("--apply-chirho")) return;
+  const decisionArgChirho = parseArgValueChirho(argsChirho, "decision-chirho");
+  if (decisionArgChirho === null) {
+    failChirho("--apply-chirho requires --decision-chirho=... so pull-back is tied to explicit owner approval");
+  }
+  const decisionPathChirho = projectPathChirho(decisionArgChirho, "provisioning decision");
+  const resultChirho = Bun.spawnSync(
+    [
+      "bun",
+      "run",
+      "src-chirho/check-human-review-vps-provisioning-decision-chirho.ts",
+      `--decision-chirho=${decisionArgChirho}`,
+    ],
+    { cwd: PROJECT_ROOT_CHIRHO, stdout: "inherit", stderr: "inherit" }
+  );
+  if (resultChirho.exitCode !== 0) failChirho(`provisioning decision check exited with code ${resultChirho.exitCode}`);
+  const decisionChirho = JSON.parse(readFileSync(decisionPathChirho, "utf8")) as ProvisioningDecisionForPullChirho;
+  const hostNameChirho = stringValueChirho(decisionChirho.selected_host_chirho?.host_name_chirho, "selected host name");
+  const hostAddressChirho = stringValueChirho(decisionChirho.selected_host_chirho?.host_address_chirho, "selected host address");
+  if (hostChirho !== hostNameChirho && hostChirho !== hostAddressChirho) {
+    failChirho(`pull host ${hostChirho} does not match selected host name or address from provisioning decision`);
+  }
+}
+
 async function localPortAcceptsConnectionChirho(portChirho: number): Promise<boolean> {
   return await new Promise((resolveChirho) => {
     const socketChirho = connect({ host: "127.0.0.1", port: portChirho });
@@ -230,6 +279,7 @@ async function mainChirho(): Promise<void> {
   const commandsValueChirho = commandsChirho(argsChirho);
   const applyChirho = argsChirho.includes("--apply-chirho");
   const hostChirho = assertSafeTokenChirho(parseArgValueChirho(argsChirho, "host-chirho") ?? "REVIEW_HOST_CHIRHO", "host-chirho");
+  if (!printOnlyChirho) assertCompletedDecisionForApplyChirho(argsChirho, hostChirho);
   if (!printOnlyChirho) assertWriteLeaseForApplyChirho(argsChirho, hostChirho);
   if (!printOnlyChirho) await assertLocalWritePortsStoppedForApplyChirho(argsChirho);
   for (const commandChirho of commandsValueChirho) {

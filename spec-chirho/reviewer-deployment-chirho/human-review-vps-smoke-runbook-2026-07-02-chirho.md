@@ -224,7 +224,9 @@ before pull-back, and the SQLite snapshot is quarantine-only with JSON replay.
 Do not run pull-back `--apply-chirho` without a passing lease. The pull helper
 also measures local `127.0.0.1` ports `8766`, `8770`, and `8771` during
 `--apply-chirho`; if raw Hebrew, Latin/symbol, or expert review is still
-listening locally, pull-back aborts before rsync starts.
+listening locally, pull-back aborts before rsync starts. A real pull-back also
+requires a completed provisioning decision, and the pull host must match that
+decision's selected host name or address.
 
 Then copy the review state back:
 
@@ -233,6 +235,7 @@ bun run pull-human-review-vps-state-chirho -- --print-command-chirho
 bun run pull-human-review-vps-state-chirho -- --host-chirho=REVIEW_HOST_CHIRHO
 bun run pull-human-review-vps-state-chirho -- \
   --host-chirho=REVIEW_HOST_CHIRHO \
+  --decision-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-YYYY-MM-DD-chirho.json \
   --write-lease-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-write-lease-YYYY-MM-DD-chirho.json \
   --apply-chirho
 bun run check-pass-c-human-review-server-guards-chirho
