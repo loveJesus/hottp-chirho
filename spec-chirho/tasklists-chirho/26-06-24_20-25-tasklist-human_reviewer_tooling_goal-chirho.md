@@ -103,6 +103,9 @@ server-authoritative, and the boundary/commit-back ritual is documented.
 - [x] Add a dry-run-default commit-back pull helper for the canonical DB and
       review artifacts, with explicit optional flags for draft repair proposals,
       expert-supplied backups, and live span JSON.
+- [x] Add a dry-run-default SSH host preflight helper for installed host checks:
+      Bun, Caddy, rsync, directories, env permissions, Caddy validation, raw
+      service status, and localhost server health.
 - [ ] Provision one small authenticated VPS review host.
 - [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
 - [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;

@@ -33,6 +33,7 @@
     "review-servers-chirho": "bun run src-chirho/review-servers-chirho.ts",
     "sync-human-review-vps-chirho": "bun run src-chirho/sync-human-review-vps-chirho.ts",
     "pull-human-review-vps-state-chirho": "bun run src-chirho/pull-human-review-vps-state-chirho.ts",
+    "check-human-review-vps-host-preflight-chirho": "bun run src-chirho/check-human-review-vps-host-preflight-chirho.ts",
     "check-certification-chirho": "bun run src-chirho/check-certification-chirho.ts",
     "check-app-publication-readiness-chirho": "bun run src-chirho/check-app-publication-readiness-chirho.ts",
     "publication-readiness-summary-chirho": "bun run src-chirho/check-app-publication-readiness-chirho.ts --summary-only-chirho",

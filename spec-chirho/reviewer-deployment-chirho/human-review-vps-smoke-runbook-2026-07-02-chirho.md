@@ -70,6 +70,12 @@ bun install --frozen-lockfile
 bun run check-human-review-vps-readiness-chirho
 ```
 
+From the source workstation, print the host preflight command shape:
+
+```bash
+bun run check-human-review-vps-host-preflight-chirho -- --print-command-chirho
+```
+
 Provision `/etc/hottp-review-chirho.env` outside git. It should contain only
 host-local settings such as the fallback reviewer id and any service path
 overrides. Do not put secrets in committed files.
@@ -129,6 +135,7 @@ sudo systemctl status hottp-raw-review-chirho --no-pager
 Before opening the public hostname, prove the raw server is localhost-bound:
 
 ```bash
+bun run check-human-review-vps-host-preflight-chirho -- --host-chirho=REVIEW_HOST_CHIRHO
 curl -fsS http://127.0.0.1:8766/api-chirho/server-health-chirho
 curl --connect-timeout 3 http://REVIEW_HOST_CHIRHO:8766/ || true
 ```
