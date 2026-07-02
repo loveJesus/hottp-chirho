@@ -94,7 +94,12 @@ provisioning decision, and the sync host must match that decision's selected
 host name or address. Before a real sync starts, the helper also checks local
 `127.0.0.1` ports `8766`, `8770`, and `8771`; if any write-capable review
 server is still listening locally, sync-out aborts before rsync starts so the
-canonical SQLite snapshot is not copied while local writes can race it.
+canonical SQLite snapshot is not copied while local writes can race it. It also
+checks the remote `hottp-raw-review-chirho.service`,
+`hottp-latin-symbol-review-chirho.service`, and
+`hottp-expert-review-chirho.service` units before rsync; if any are active,
+sync-out aborts so the remote live tree is not overwritten under a running
+review server.
 
 ## 3. Host Install Chirho
 
