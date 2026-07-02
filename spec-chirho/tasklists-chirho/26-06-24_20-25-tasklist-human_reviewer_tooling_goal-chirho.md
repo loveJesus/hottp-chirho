@@ -53,15 +53,15 @@ certification gate.
 
 ## Phase 4 — Segment Repair Assistant Chirho
 
-- [ ] Build a guarded browser workflow for proposing segment repairs:
+- [x] Build a guarded browser workflow for proposing segment repairs:
       split, merge, rebox, edit script, edit provisional text, and preview line.
-- [ ] Require every proposed repair to show target crop, full line, old segments,
+- [x] Require every proposed repair to show target crop, full line, old segments,
       new segments, and exact geometry.
-- [ ] Store repair proposals as reviewable/draft records first; do not auto-
+- [x] Store repair proposals as reviewable/draft records first; do not auto-
       certify repaired text.
-- [ ] Add explicit issue types for segmentation, missing script, wrong script,
+- [x] Add explicit issue types for segmentation, missing script, wrong script,
       punctuation attachment, and unreadable script.
-- [ ] Add guard checks that repaired tiling is contiguous, positive-width, and
+- [x] Add guard checks that repaired tiling is contiguous, positive-width, and
       line-covering before any apply path can run.
 
 ## Phase 5 — Reviewer Documentation And Workflows Chirho

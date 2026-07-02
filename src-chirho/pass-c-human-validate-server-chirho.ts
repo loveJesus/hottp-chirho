@@ -50,6 +50,18 @@ import {
   reviewServerSourceStaleErrorChirho,
   reviewServerStartupHealthChirho,
 } from "./review-server-health-chirho.ts";
+import {
+  SEGMENT_REPAIR_PROPOSAL_SCHEMA_VERSION_CHIRHO,
+  SEGMENT_REPAIR_PROPOSAL_STATUS_DRAFT_CHIRHO,
+  SEGMENT_REPAIR_KIND_VALUES_CHIRHO,
+  SEGMENT_REPAIR_SCRIPT_VALUES_CHIRHO,
+  appendSegmentRepairProposalChirho,
+  isSegmentRepairScriptChirho,
+  parseSegmentRepairKindChirho,
+  validateSegmentRepairProposalSpansChirho,
+  type SegmentRepairProposalRecordChirho,
+  type SegmentRepairProposalSpanChirho,
+} from "./segment-repair-proposals-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import {
   REVIEW_NOTES_PLACEHOLDER_VALUES_CHIRHO,
@@ -94,6 +106,12 @@ const RAW_HEBREW_PRE_REVIEW_NOTES_PATH_CHIRHO = join(
   "spec-chirho",
   "metropoliluya-chirho",
   "codex-pre-review-raw-hebrew-2026-06-04-chirho.md"
+);
+const DEFAULT_SEGMENT_REPAIR_PROPOSALS_PATH_CHIRHO = join(
+  PROJECT_ROOT_CHIRHO,
+  "spec-chirho",
+  "metropoliluya-chirho",
+  "segment-repair-proposals-2026-07-02-chirho.json"
 );
 
 interface TokenWitnessChirho {
@@ -159,6 +177,7 @@ interface ValidationReportChirho {
 interface SpanLineFileChirho {
   lineWidthPxChirho: number;
   lineHeightPxChirho: number;
+  lineTextOrderChirho?: string;
   spansChirho: Array<{
     segmentIndexChirho: number;
     xMinPxChirho: number;
@@ -213,6 +232,8 @@ interface QueueItemChirho extends ReportSpanChirho {
   lineImageHashChirho: string | null;
   lineImageWidthPxChirho: number;
   lineImageHeightPxChirho: number;
+  lineSegmentsChirho: SegmentRepairProposalSpanChirho[];
+  lineTextOrderChirho?: string;
   zoomCropXMinPxChirho: number;
   zoomCropYMinPxChirho: number;
   zoomCropWidthPxChirho: number;
@@ -261,6 +282,15 @@ interface RawReviewSubmitRequestChirho extends RawReviewDisplayGuardChirho {
   reviewerChirho?: unknown;
   certifyCleanChirho?: unknown;
   supersedeAttributionBlockedChirho?: unknown;
+}
+
+interface RawSegmentRepairProposalRequestChirho extends RawReviewDisplayGuardChirho {
+  keyChirho?: unknown;
+  reviewStateChirho?: unknown;
+  repairKindChirho?: unknown;
+  proposedSpansChirho?: unknown;
+  rationaleChirho?: unknown;
+  reviewerChirho?: unknown;
 }
 
 interface RawReviewUndoRequestChirho {
@@ -338,13 +368,16 @@ const ISSUE_FLAG_OPTIONS_CHIRHO = [
   { valueChirho: "hebrew-punctuation-chirho", labelChirho: "Hebrew punct.", helpChirho: "Maqqef, sof pasuq, Hebrew-side quotes, or Hebrew citation punctuation." },
   { valueChirho: "latin-punctuation-chirho", labelChirho: "Latin punct.", helpChirho: "French/Latin-side comma, period, parentheses, brackets, or spacing punctuation." },
   { valueChirho: "missing-hebrew-chirho", labelChirho: "Missing Heb.", helpChirho: "Printed Hebrew is absent from the stored span text." },
+  { valueChirho: "missing-script-chirho", labelChirho: "Missing script", helpChirho: "A printed non-Latin/script run is absent from the stored segments." },
   { valueChirho: "extra-latin-chirho", labelChirho: "Extra Latin", helpChirho: "Latin/OCR garbage is included where the span should be non-Latin." },
   { valueChirho: "wrong-script-chirho", labelChirho: "Wrong script", helpChirho: "The stored script class is wrong for the printed content." },
+  { valueChirho: "unreadable-script-chirho", labelChirho: "Unreadable script", helpChirho: "A script is visibly present but exact letters need another reader." },
   { valueChirho: "garbled-text-chirho", labelChirho: "Garbled text", helpChirho: "The stored text is unreadable or not the printed content." },
   { valueChirho: "missing-greek-chirho", labelChirho: "Missing Greek", helpChirho: "Printed Greek is absent from the stored span text." },
   { valueChirho: "extra-symbol-chirho", labelChirho: "Extra symbol", helpChirho: "Symbol/reference/operator is extra or misclassified." },
   { valueChirho: "wrong-language-chirho", labelChirho: "Wrong lang.", helpChirho: "The language/script family is correct enough to render, but the content belongs to another review lane." },
   { valueChirho: "segmentation-chirho", labelChirho: "Segmentation", helpChirho: "Wrong split/merge/box or word boundary: multiple words lumped incorrectly, one word split, spaces/maqqef wrong, or punctuation attached to the wrong span." },
+  { valueChirho: "punctuation-attachment-chirho", labelChirho: "Punct. attach", helpChirho: "Punctuation is attached to the wrong neighboring segment or needs its own segment." },
 ];
 const ISSUE_FLAG_VALUES_CHIRHO = new Set(ISSUE_FLAG_OPTIONS_CHIRHO.map((optionChirho) => optionChirho.valueChirho));
 const SCRIPT_VERDICT_OPTIONS_CHIRHO = [
@@ -662,6 +695,18 @@ function lineTextFromSpanLineChirho(lineChirho: SpanLineFileChirho): string {
   return renderSpanLineTextChirho(lineChirho);
 }
 
+function lineSegmentsForProposalChirho(lineChirho: SpanLineFileChirho): SegmentRepairProposalSpanChirho[] {
+  return [...lineChirho.spansChirho]
+    .sort((aChirho, bChirho) => aChirho.segmentIndexChirho - bChirho.segmentIndexChirho)
+    .map((spanChirho, indexChirho) => ({
+      segmentIndexChirho: indexChirho,
+      xMinPxChirho: spanChirho.xMinPxChirho,
+      widthPxChirho: spanChirho.widthPxChirho,
+      scriptChirho: isSegmentRepairScriptChirho(spanChirho.scriptChirho) ? spanChirho.scriptChirho : "unknown-script-chirho",
+      utf8TextChirho: normalizeTextForStorageChirho(spanChirho.utf8TextChirho),
+    }));
+}
+
 function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): QueueItemChirho[] {
   const preReviewNotesChirho = loadPreReviewNotesChirho();
   return spansChirho
@@ -726,6 +771,8 @@ function queueItemsFromReportSpansChirho(spansChirho: ReportSpanChirho[]): Queue
         lineImageHashChirho,
         lineImageWidthPxChirho: lineImageSizeChirho.widthChirho,
         lineImageHeightPxChirho: lineImageSizeChirho.heightChirho,
+        lineSegmentsChirho: lineSegmentsForProposalChirho(lineChirho),
+        lineTextOrderChirho: lineChirho.lineTextOrderChirho,
         zoomCropXMinPxChirho: zoomChirho.cropXMinPxChirho,
         zoomCropYMinPxChirho: zoomChirho.cropYMinPxChirho,
         zoomCropWidthPxChirho: zoomChirho.cropWidthPxChirho,
@@ -842,6 +889,53 @@ function rawDisplayMismatchChirho(
     return "expectedLineImageHashChirho no longer matches current queue item";
   }
   return null;
+}
+
+function segmentRepairProposalRecordChirho(paramsChirho: {
+  itemChirho: QueueItemChirho;
+  reviewerChirho: string;
+  repairKindChirho: unknown;
+  proposedSpansChirho: unknown;
+  rationaleChirho: string;
+}): SegmentRepairProposalRecordChirho {
+  const repairKindChirho = parseSegmentRepairKindChirho(paramsChirho.repairKindChirho);
+  const { proposedSpansChirho, lineTextPreviewChirho } = validateSegmentRepairProposalSpansChirho(
+    paramsChirho.proposedSpansChirho,
+    paramsChirho.itemChirho.lineWidthPxChirho,
+    paramsChirho.itemChirho.lineTextOrderChirho
+  );
+  const createdAtChirho = new Date().toISOString();
+  const proposalHashChirho = createHashChirho("sha256")
+    .update([
+      paramsChirho.itemChirho.keyChirho,
+      createdAtChirho,
+      repairKindChirho,
+      paramsChirho.rationaleChirho,
+      lineTextPreviewChirho,
+    ].join("\0"))
+    .digest("hex")
+    .slice(0, 16);
+  return {
+    schemaVersionChirho: SEGMENT_REPAIR_PROPOSAL_SCHEMA_VERSION_CHIRHO,
+    proposalIdChirho: `segment-repair-${createdAtChirho.replace(/[:.]/g, "-")}-${proposalHashChirho}-chirho`,
+    statusChirho: SEGMENT_REPAIR_PROPOSAL_STATUS_DRAFT_CHIRHO,
+    repairKindChirho,
+    reviewerChirho: paramsChirho.reviewerChirho,
+    rationaleChirho: paramsChirho.rationaleChirho,
+    createdAtChirho,
+    itemKeyChirho: paramsChirho.itemChirho.keyChirho,
+    volumeChirho: paramsChirho.itemChirho.volumeChirho,
+    pageChirho: paramsChirho.itemChirho.pageChirho,
+    lineIndexChirho: paramsChirho.itemChirho.lineIndexChirho,
+    targetSegmentIndexChirho: paramsChirho.itemChirho.segmentIndexChirho,
+    lineWidthPxChirho: paramsChirho.itemChirho.lineWidthPxChirho,
+    lineTextBeforeChirho: paramsChirho.itemChirho.lineTextChirho,
+    lineTextPreviewChirho,
+    lineImageHashChirho: paramsChirho.itemChirho.lineImageHashChirho ?? "missing-line-image-hash-chirho",
+    oldSpansChirho: paramsChirho.itemChirho.lineSegmentsChirho,
+    proposedSpansChirho,
+    notesChirho: "Draft browser segment repair proposal only; live span files and certification rows are unchanged.",
+  };
 }
 
 function latestValidationMismatchChirho(
@@ -989,6 +1083,8 @@ const queueModeChirho = parseQueueModeChirho(parseArgValueChirho(argsChirho, "qu
 const portChirho = defaultPortForQueueChirho(queueModeChirho, parseArgValueChirho(argsChirho, "port"));
 const dbPathChirho = parseArgValueChirho(argsChirho, "db") ?? DEFAULT_DB_PATH_CHIRHO;
 const backupPathChirho = parseArgValueChirho(argsChirho, "backup");
+const segmentRepairProposalsPathChirho =
+  parseArgValueChirho(argsChirho, "segment-repair-proposals-chirho") ?? DEFAULT_SEGMENT_REPAIR_PROPOSALS_PATH_CHIRHO;
 const reviewerChirho = parseArgValueChirho(argsChirho, "reviewer")?.trim() ?? "";
 const dbChirho = new Database(dbPathChirho);
 
@@ -1379,6 +1475,11 @@ function pageHtmlChirho(): string {
     .copy-command-chirho { border: 1px solid #aab1b9; background: white; padding: 7px 9px; cursor: pointer; font-size: 12px; }
     .copy-command-chirho:hover { background: #edf1f4; }
     .command-helper-note-chirho { font-size: 12px; color: #59636f; }
+    .segment-repair-grid-chirho { display: grid; grid-template-columns: 42px 72px 72px 132px minmax(180px, 1fr) 34px; gap: 6px; align-items: stretch; margin-top: 8px; }
+    .segment-repair-row-chirho { display: contents; }
+    .segment-repair-grid-chirho input, .segment-repair-grid-chirho select, .segment-repair-grid-chirho textarea { width: 100%; box-sizing: border-box; border: 1px solid #b8bec7; padding: 5px; min-height: 32px; }
+    .segment-repair-grid-chirho textarea { resize: vertical; min-height: 34px; unicode-bidi: plaintext; }
+    .segment-repair-preview-chirho { border: 1px solid #d6d9dd; background: #f8fafb; padding: 8px; min-height: 34px; unicode-bidi: plaintext; }
     .codepoints-chirho { font-size: 12px; color: #3d4650; direction: ltr; overflow-wrap: anywhere; white-space: pre-wrap; }
     .candidate-words-chirho { overflow-wrap: anywhere; }
     .witness-list-chirho { display: flex; flex-direction: column; gap: 6px; font-size: 13px; margin-top: 8px; }
@@ -1512,6 +1613,8 @@ function pageHtmlChirho(): string {
     const queueModeChirho = ${scriptJsonChirho(queueModeChirho)};
     const issueFlagOptionsChirho = ${scriptJsonChirho(ISSUE_FLAG_OPTIONS_CHIRHO)};
     const scriptVerdictOptionsChirho = ${scriptJsonChirho(SCRIPT_VERDICT_OPTIONS_CHIRHO)};
+    const segmentRepairKindOptionsChirho = ${scriptJsonChirho(SEGMENT_REPAIR_KIND_VALUES_CHIRHO)};
+    const segmentRepairScriptOptionsChirho = ${scriptJsonChirho(SEGMENT_REPAIR_SCRIPT_VALUES_CHIRHO)};
     const serverReviewerChirho = ${scriptJsonChirho(reviewerChirho)};
     const genericReviewerIdsChirho = new Set(${scriptJsonChirho([...GENERIC_REVIEWER_IDS_CHIRHO])});
     const machineReviewerIdReChirho = new RegExp(
@@ -2377,6 +2480,164 @@ function pageHtmlChirho(): string {
       }
       return wrapChirho;
     }
+    function normalizedRepairRowsChirho(rowsChirho) {
+      return rowsChirho.map((rowChirho, indexChirho) => ({
+        segmentIndexChirho: indexChirho,
+        xMinPxChirho: Number.parseInt(rowChirho.xMinPxChirho, 10),
+        widthPxChirho: Number.parseInt(rowChirho.widthPxChirho, 10),
+        scriptChirho: String(rowChirho.scriptChirho || "unknown-script-chirho"),
+        utf8TextChirho: String(rowChirho.utf8TextChirho ?? "").normalize("NFC")
+      }));
+    }
+    function repairLinePreviewChirho(rowsChirho) {
+      return rowsChirho
+        .map((rowChirho) => String(rowChirho.utf8TextChirho ?? "").normalize("NFC").trim())
+        .filter((valueChirho) => valueChirho.length > 0)
+        .join(" ");
+    }
+    function repairGeometryMessageChirho(rowsChirho, lineWidthChirho) {
+      let cursorChirho = 0;
+      for (let indexChirho = 0; indexChirho < rowsChirho.length; indexChirho++) {
+        const rowChirho = rowsChirho[indexChirho];
+        if (!Number.isInteger(rowChirho.xMinPxChirho) || !Number.isInteger(rowChirho.widthPxChirho)) return "Geometry invalid: x and width must be integers.";
+        if (rowChirho.widthPxChirho <= 0) return "Geometry invalid: every width must be positive.";
+        if (rowChirho.xMinPxChirho !== cursorChirho) return "Geometry invalid: row " + indexChirho + " starts at " + rowChirho.xMinPxChirho + ", expected " + cursorChirho + ".";
+        cursorChirho += rowChirho.widthPxChirho;
+      }
+      if (cursorChirho !== lineWidthChirho) return "Geometry invalid: rows end at " + cursorChirho + ", expected " + lineWidthChirho + ".";
+      return "Geometry OK: contiguous positive-width tiling covers 0.." + lineWidthChirho + ".";
+    }
+    function repairRowsFromGridChirho(gridChirho) {
+      return normalizedRepairRowsChirho(Array.from(gridChirho.querySelectorAll(".segment-repair-row-chirho")).map((rowChirho) => ({
+        xMinPxChirho: rowChirho.querySelector(".repair-x-chirho").value,
+        widthPxChirho: rowChirho.querySelector(".repair-width-chirho").value,
+        scriptChirho: rowChirho.querySelector(".repair-script-chirho").value,
+        utf8TextChirho: rowChirho.querySelector(".repair-text-chirho").value
+      })));
+    }
+    function repairRowChirho(spanChirho, updateChirho) {
+      const rowChirho = elChirho("div", { classChirho: "segment-repair-row-chirho" });
+      rowChirho.appendChild(elChirho("div", { classChirho: "mono-chirho repair-index-chirho", textChirho: String(spanChirho.segmentIndexChirho) }));
+      const xInputChirho = elChirho("input", { classChirho: "repair-x-chirho", type: "number", min: "0", step: "1", value: String(spanChirho.xMinPxChirho) });
+      const widthInputChirho = elChirho("input", { classChirho: "repair-width-chirho", type: "number", min: "1", step: "1", value: String(spanChirho.widthPxChirho) });
+      const scriptSelectChirho = elChirho("select", { classChirho: "repair-script-chirho" });
+      for (const scriptChirho of segmentRepairScriptOptionsChirho) {
+        const optionChirho = elChirho("option", { value: scriptChirho, textChirho: scriptChirho });
+        if (scriptChirho === spanChirho.scriptChirho) optionChirho.selected = true;
+        scriptSelectChirho.appendChild(optionChirho);
+      }
+      const textInputChirho = elChirho("textarea", { classChirho: "repair-text-chirho" });
+      textInputChirho.value = spanChirho.utf8TextChirho ?? "";
+      const deleteButtonChirho = elChirho("button", { type: "button", textChirho: "X", "aria-label": "Delete segment row" });
+      deleteButtonChirho.addEventListener("click", () => {
+        rowChirho.remove();
+        updateChirho();
+      });
+      for (const inputChirho of [xInputChirho, widthInputChirho, scriptSelectChirho, textInputChirho]) {
+        inputChirho.addEventListener("input", updateChirho);
+        inputChirho.addEventListener("change", updateChirho);
+      }
+      rowChirho.appendChild(xInputChirho);
+      rowChirho.appendChild(widthInputChirho);
+      rowChirho.appendChild(scriptSelectChirho);
+      rowChirho.appendChild(textInputChirho);
+      rowChirho.appendChild(deleteButtonChirho);
+      return rowChirho;
+    }
+    function renderRepairRowsChirho(gridChirho, rowsChirho, updateChirho) {
+      clearChirho(gridChirho);
+      for (const labelChirho of ["#", "x", "w", "script", "text", ""]) {
+        gridChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: labelChirho }));
+      }
+      rowsChirho.forEach((rowChirho, indexChirho) => {
+        gridChirho.appendChild(repairRowChirho({ ...rowChirho, segmentIndexChirho: indexChirho }, updateChirho));
+      });
+    }
+    function reindexRepairGridChirho(gridChirho) {
+      Array.from(gridChirho.querySelectorAll(".repair-index-chirho")).forEach((nodeChirho, indexChirho) => {
+        nodeChirho.textContent = String(indexChirho);
+      });
+    }
+    function segmentRepairProposalBoxChirho(itemChirho) {
+      const boxChirho = elChirho("div", { classChirho: "box-chirho" });
+      boxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Segment repair proposal" }));
+      const kindSelectChirho = elChirho("select", { id: "segment-repair-kind-chirho" });
+      for (const kindChirho of segmentRepairKindOptionsChirho) {
+        kindSelectChirho.appendChild(elChirho("option", { value: kindChirho, textChirho: kindChirho }));
+      }
+      const rationaleChirho = elChirho("textarea", { id: "segment-repair-rationale-chirho", placeholder: "what split, merge, rebox, script, punctuation, or unreadable-script repair is needed" });
+      const gridChirho = elChirho("div", { classChirho: "segment-repair-grid-chirho" });
+      const previewChirho = elChirho("div", { classChirho: "segment-repair-preview-chirho" });
+      const geometryChirho = elChirho("div", { classChirho: "label-chirho" });
+      const resultChirho = elChirho("div", { classChirho: "mono-chirho codepoints-chirho" });
+      const saveButtonChirho = elChirho("button", { type: "button", textChirho: "Save draft repair proposal" });
+      const updateChirho = () => {
+        reindexRepairGridChirho(gridChirho);
+        const rowsChirho = repairRowsFromGridChirho(gridChirho);
+        previewChirho.textContent = repairLinePreviewChirho(rowsChirho);
+        const geometryTextChirho = repairGeometryMessageChirho(rowsChirho, itemChirho.lineWidthPxChirho);
+        geometryChirho.textContent = geometryTextChirho;
+        saveButtonChirho.disabled = !geometryTextChirho.startsWith("Geometry OK") || rationaleChirho.value.trim().length === 0;
+      };
+      renderRepairRowsChirho(gridChirho, itemChirho.lineSegmentsChirho, updateChirho);
+      const actionRowChirho = elChirho("div", { classChirho: "actions-chirho" });
+      const splitButtonChirho = elChirho("button", { type: "button", textChirho: "Split target row" });
+      const addButtonChirho = elChirho("button", { type: "button", textChirho: "Add row" });
+      splitButtonChirho.addEventListener("click", () => {
+        const rowsChirho = repairRowsFromGridChirho(gridChirho);
+        const targetIndexChirho = rowsChirho.findIndex((rowChirho) =>
+          rowChirho.xMinPxChirho === itemChirho.spanXMinPxChirho && rowChirho.widthPxChirho === itemChirho.spanWidthPxChirho
+        );
+        if (targetIndexChirho < 0) {
+          setStatusChirho("Target row not found in proposal grid.");
+          return;
+        }
+        const targetChirho = rowsChirho[targetIndexChirho];
+        if (targetChirho.widthPxChirho < 2) {
+          setStatusChirho("Target row is too narrow to split.");
+          return;
+        }
+        const leftWidthChirho = Math.floor(targetChirho.widthPxChirho / 2);
+        const rightWidthChirho = targetChirho.widthPxChirho - leftWidthChirho;
+        rowsChirho.splice(
+          targetIndexChirho,
+          1,
+          { ...targetChirho, widthPxChirho: leftWidthChirho },
+          { ...targetChirho, xMinPxChirho: targetChirho.xMinPxChirho + leftWidthChirho, widthPxChirho: rightWidthChirho, utf8TextChirho: "" }
+        );
+        renderRepairRowsChirho(gridChirho, rowsChirho, updateChirho);
+        updateChirho();
+      });
+      addButtonChirho.addEventListener("click", () => {
+        const rowsChirho = repairRowsFromGridChirho(gridChirho);
+        const endChirho = rowsChirho.reduce((cursorChirho, rowChirho) => Math.max(cursorChirho, rowChirho.xMinPxChirho + rowChirho.widthPxChirho), 0);
+        rowsChirho.push({ segmentIndexChirho: rowsChirho.length, xMinPxChirho: endChirho, widthPxChirho: 1, scriptChirho: "unknown-script-chirho", utf8TextChirho: "" });
+        renderRepairRowsChirho(gridChirho, rowsChirho, updateChirho);
+        updateChirho();
+      });
+      saveButtonChirho.addEventListener("click", () => saveSegmentRepairProposalChirho(itemChirho, kindSelectChirho, rationaleChirho, gridChirho, resultChirho));
+      rationaleChirho.addEventListener("input", updateChirho);
+      actionRowChirho.appendChild(splitButtonChirho);
+      actionRowChirho.appendChild(addButtonChirho);
+      boxChirho.appendChild(elChirho("div", { classChirho: "meta-grid-chirho" }, [
+        elChirho("div", { textChirho: "Kind" }),
+        kindSelectChirho,
+        elChirho("div", { textChirho: "Rationale" }),
+        rationaleChirho,
+        elChirho("div", { textChirho: "Old line" }),
+        elChirho("div", { classChirho: "line-text-chirho", textChirho: itemChirho.lineTextChirho }),
+        elChirho("div", { textChirho: "Preview" }),
+        previewChirho,
+        elChirho("div", { textChirho: "Geometry" }),
+        geometryChirho
+      ]));
+      boxChirho.appendChild(actionRowChirho);
+      boxChirho.appendChild(gridChirho);
+      boxChirho.appendChild(elChirho("div", { classChirho: "actions-chirho" }, [saveButtonChirho]));
+      boxChirho.appendChild(resultChirho);
+      updateChirho();
+      return boxChirho;
+    }
     function targetBoundaryTextChirho(itemChirho) {
       const spanStartChirho = Number(itemChirho.spanXMinPxChirho);
       const spanWidthChirho = Number(itemChirho.spanWidthPxChirho);
@@ -2454,6 +2715,9 @@ function pageHtmlChirho(): string {
       targetRowChirho.appendChild(editCodepointsChirho);
       targetRowChirho.appendChild(typewriterChirho());
       leftChirho.appendChild(targetRowChirho);
+      if (reviewStateAllowsSubmitChirho()) {
+        leftChirho.appendChild(segmentRepairProposalBoxChirho(itemChirho));
+      }
 
       const sideChirho = elChirho("aside", { classChirho: "side-chirho" });
       if (queueModeChirho === "hebrew-chirho") {
@@ -2831,6 +3095,30 @@ function pageHtmlChirho(): string {
       appChirho.appendChild(leftChirho);
       appChirho.appendChild(sideChirho);
     }
+    async function saveSegmentRepairProposalChirho(itemChirho, kindSelectChirho, rationaleChirho, gridChirho, resultChirho) {
+      const rowsChirho = repairRowsFromGridChirho(gridChirho);
+      const responseChirho = await fetch("/api-chirho/segment-repair-proposal-chirho", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          keyChirho: itemChirho.keyChirho,
+          reviewStateChirho: reviewStateFilterChirho,
+          repairKindChirho: kindSelectChirho.value,
+          proposedSpansChirho: rowsChirho,
+          rationaleChirho: rationaleChirho.value,
+          reviewerChirho: currentReviewerChirho(),
+          ...displayGuardForItemChirho(itemChirho)
+        })
+      });
+      const dataChirho = await responseChirho.json();
+      if (!dataChirho.okChirho) {
+        setStatusChirho(dataChirho.errorChirho || "Segment repair proposal failed");
+        resultChirho.textContent = dataChirho.errorChirho || "Segment repair proposal failed";
+        return;
+      }
+      setStatusChirho("Saved draft segment repair proposal " + dataChirho.proposalChirho.proposalIdChirho + "; no live span text was changed.");
+      resultChirho.textContent = JSON.stringify(dataChirho.proposalChirho, null, 2);
+    }
     async function submitReviewChirho() {
       if (!reviewStateAllowsSubmitChirho()) {
         setStatusChirho(reviewStateIsAttributionModeChirho() ? "Attribution-blocked view is read-only" : "Saved issue view is read-only");
@@ -3072,6 +3360,69 @@ const serverChirho = Bun.serve({
     }
     if (urlChirho.pathname === "/api-chirho/validations-chirho") {
       return jsonResponseChirho({ validationsChirho: validationsChirho() });
+    }
+    if (urlChirho.pathname === "/api-chirho/segment-repair-proposal-chirho" && reqChirho.method === "POST") {
+      const staleServerResponseChirho = staleReviewServerWriteResponseChirho();
+      if (staleServerResponseChirho !== null) return staleServerResponseChirho;
+      const bodyChirho = (await reqChirho.json()) as RawSegmentRepairProposalRequestChirho;
+      if (typeof bodyChirho.keyChirho !== "string") {
+        return jsonResponseChirho({ okChirho: false, errorChirho: "keyChirho is required" }, 400);
+      }
+      if (
+        bodyChirho.reviewStateChirho !== "pending-chirho" &&
+        bodyChirho.reviewStateChirho !== "attribution-rereview-chirho"
+      ) {
+        return jsonResponseChirho({ okChirho: false, errorChirho: "segment repair proposals require a write-capable review state" }, 400);
+      }
+      const itemChirho = queueByKeyChirho.get(bodyChirho.keyChirho);
+      if (!itemChirho) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown key" }, 404);
+      try {
+        assertQueueItemStillLiveChirho(itemChirho);
+      } catch (errorChirho) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+        }, 409);
+      }
+      const staleDisplayChirho = rawDisplayMismatchChirho(bodyChirho, itemChirho);
+      if (staleDisplayChirho !== null) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: `Raw Hebrew repair proposal item is stale: ${staleDisplayChirho}; reload review state`,
+        }, 409);
+      }
+      const effectiveReviewerChirho = trustedReviewerIdentityChirho(reqChirho.headers, reviewerChirho);
+      if (effectiveReviewerChirho.length === 0) {
+        return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
+      }
+      const reviewerErrorChirho = certifyingReviewerAttributionErrorChirho(effectiveReviewerChirho);
+      if (reviewerErrorChirho !== null) {
+        return jsonResponseChirho({ okChirho: false, errorChirho: reviewerErrorChirho }, 400);
+      }
+      const rationaleChirho = typeof bodyChirho.rationaleChirho === "string" ? bodyChirho.rationaleChirho.trim() : "";
+      if (rationaleChirho.length === 0) {
+        return jsonResponseChirho({ okChirho: false, errorChirho: "rationaleChirho is required for segment repair proposals" }, 400);
+      }
+      if (reviewNotesLookPlaceholderChirho(rationaleChirho)) {
+        return jsonResponseChirho({ okChirho: false, errorChirho: "rationaleChirho must explain the segment repair proposal" }, 400);
+      }
+      let proposalChirho: SegmentRepairProposalRecordChirho;
+      try {
+        proposalChirho = segmentRepairProposalRecordChirho({
+          itemChirho,
+          reviewerChirho: effectiveReviewerChirho,
+          repairKindChirho: bodyChirho.repairKindChirho,
+          proposedSpansChirho: bodyChirho.proposedSpansChirho,
+          rationaleChirho,
+        });
+        appendSegmentRepairProposalChirho(segmentRepairProposalsPathChirho, proposalChirho);
+      } catch (errorChirho) {
+        return jsonResponseChirho({
+          okChirho: false,
+          errorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+        }, 400);
+      }
+      return jsonResponseChirho({ okChirho: true, proposalChirho });
     }
     if (urlChirho.pathname === "/api-chirho/submit-chirho" && reqChirho.method === "POST") {
       const staleServerResponseChirho = staleReviewServerWriteResponseChirho();

@@ -27,6 +27,13 @@ const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Dots inside letters, mappiq, shuruk, and shin/sin dots are Vowels/niqqud",
   "cantillation/meteg are Accents/meteg",
   "wrong splits, lumped words, spaces, or maqqef are Segmentation",
+  "Missing script",
+  "Unreadable script",
+  "Punct. attach",
+  "Segment repair proposal",
+  "Split target row",
+  "Save draft repair proposal",
+  "Geometry OK",
   "I checked the Target crop - red box is the item and Full line - red box in context panels against the print; if no issue boxes are checked and the text is unchanged, this exact span is intentionally reviewed clean.",
   "A clean save requires the checkbox above.",
   "issue review cannot carry the clean-certification checkbox",
@@ -111,6 +118,13 @@ interface RawReviewQueueItemChirho {
   lineImageHashChirho: string;
   lineImageWidthPxChirho: number;
   lineImageHeightPxChirho: number;
+  lineSegmentsChirho: Array<{
+    segmentIndexChirho: number;
+    xMinPxChirho: number;
+    widthPxChirho: number;
+    scriptChirho: string;
+    utf8TextChirho: string;
+  }>;
   preReviewNoteChirho: string | null;
 }
 
@@ -362,6 +376,7 @@ async function mainChirho(): Promise<void> {
   const tempDirChirho = mkdtempSync(join(tmpdir(), "pass-c-human-review-guard-chirho-"));
   const dbPathChirho = join(tempDirChirho, "review-guard-chirho.sqlite");
   const backupPathChirho = join(tempDirChirho, "review-guard-backup-chirho.json");
+  const segmentRepairProposalsPathChirho = join(tempDirChirho, "segment-repair-proposals-chirho.json");
   copyProgressDbSnapshotChirho(dbPathChirho);
   const validationRowsBeforeChirho = validationRowCountChirho(dbPathChirho);
   const currentNonUndoRowsBeforeChirho = currentNonUndoValidationRowCountChirho(dbPathChirho);
@@ -374,6 +389,7 @@ async function mainChirho(): Promise<void> {
       `--port=${portChirho}`,
       `--db=${dbPathChirho}`,
       `--backup=${backupPathChirho}`,
+      `--segment-repair-proposals-chirho=${segmentRepairProposalsPathChirho}`,
       "--reviewer=dr-pass-c-server-reviewer-chirho",
     ],
     {
@@ -496,6 +512,108 @@ async function mainChirho(): Promise<void> {
     assertCheckChirho(
       validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
       "stale-display POST persisted a row"
+    );
+    const validProposalSpansChirho = itemChirho.lineSegmentsChirho.map((spanChirho, indexChirho) => ({
+      segmentIndexChirho: indexChirho,
+      xMinPxChirho: spanChirho.xMinPxChirho,
+      widthPxChirho: spanChirho.widthPxChirho,
+      scriptChirho: spanChirho.scriptChirho,
+      utf8TextChirho: spanChirho.utf8TextChirho,
+    }));
+    const invalidGeometryProposalResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/segment-repair-proposal-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        reviewStateChirho: "pending-chirho",
+        repairKindChirho: "rebox-chirho",
+        proposedSpansChirho: validProposalSpansChirho.map((spanChirho, indexChirho) =>
+          indexChirho === 0 ? { ...spanChirho, widthPxChirho: spanChirho.widthPxChirho + 1 } : spanChirho
+        ),
+        rationaleChirho: "guard check proves bad tiling cannot be stored as a draft repair",
+        reviewerChirho: "hallelujah-chirho",
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const invalidGeometryProposalDataChirho = (await invalidGeometryProposalResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      invalidGeometryProposalResponseChirho.status === 400,
+      `expected invalid repair proposal HTTP 400, got ${invalidGeometryProposalResponseChirho.status}`
+    );
+    assertCheckChirho(invalidGeometryProposalDataChirho.okChirho === false, "invalid repair proposal unexpectedly returned ok");
+    assertCheckChirho(
+      String(invalidGeometryProposalDataChirho.errorChirho ?? "").includes("expected"),
+      `invalid repair proposal failed for the wrong reason: ${String(invalidGeometryProposalDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(!existsSync(segmentRepairProposalsPathChirho), "invalid repair proposal wrote a proposal file");
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "invalid repair proposal persisted a validation row"
+    );
+    const readOnlyStateProposalResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/segment-repair-proposal-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        reviewStateChirho: "saved-issues-chirho",
+        repairKindChirho: "rebox-chirho",
+        proposedSpansChirho: validProposalSpansChirho,
+        rationaleChirho: "guard check proves saved issue mode cannot write repair proposals",
+        reviewerChirho: "hallelujah-chirho",
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const readOnlyStateProposalDataChirho = (await readOnlyStateProposalResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      readOnlyStateProposalResponseChirho.status === 400,
+      `expected read-only-state repair proposal HTTP 400, got ${readOnlyStateProposalResponseChirho.status}`
+    );
+    assertCheckChirho(readOnlyStateProposalDataChirho.okChirho === false, "read-only-state repair proposal unexpectedly returned ok");
+    assertCheckChirho(
+      String(readOnlyStateProposalDataChirho.errorChirho ?? "").includes("write-capable review state"),
+      `read-only-state repair proposal failed for the wrong reason: ${String(readOnlyStateProposalDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(!existsSync(segmentRepairProposalsPathChirho), "read-only-state repair proposal wrote a proposal file");
+    const validProposalResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/segment-repair-proposal-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Webauth-User": "dr-pass-c-header-reviewer-chirho" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        reviewStateChirho: "pending-chirho",
+        repairKindChirho: "script-text-chirho",
+        proposedSpansChirho: validProposalSpansChirho,
+        rationaleChirho: "guard check stores a draft proposal without certifying or mutating span files",
+        reviewerChirho: "hallelujah-chirho",
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const validProposalDataChirho = (await validProposalResponseChirho.json()) as {
+      okChirho?: boolean;
+      proposalChirho?: { statusChirho?: string; reviewerChirho?: string; proposedSpansChirho?: unknown[] };
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      validProposalResponseChirho.ok,
+      `valid repair proposal failed: ${validProposalResponseChirho.status} ${String(validProposalDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(validProposalDataChirho.proposalChirho?.statusChirho === "draft-chirho", "valid repair proposal was not stored as draft");
+    assertCheckChirho(
+      validProposalDataChirho.proposalChirho?.reviewerChirho === "dr-pass-c-header-reviewer-chirho",
+      "valid repair proposal did not store trusted proxy reviewer"
+    );
+    const proposalStoreChirho = JSON.parse(readFileSync(segmentRepairProposalsPathChirho, "utf8")) as {
+      proposalsChirho?: unknown[];
+    };
+    assertCheckChirho(proposalStoreChirho.proposalsChirho?.length === 1, "valid repair proposal did not write one proposal");
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "valid repair proposal persisted a validation row"
     );
     const missingCleanAckResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
