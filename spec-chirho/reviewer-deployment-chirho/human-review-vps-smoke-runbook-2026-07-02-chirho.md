@@ -232,9 +232,13 @@ before pull-back, and the SQLite snapshot is quarantine-only with JSON replay.
 Do not run pull-back `--apply-chirho` without a passing lease. The pull helper
 also measures local `127.0.0.1` ports `8766`, `8770`, and `8771` during
 `--apply-chirho`; if raw Hebrew, Latin/symbol, or expert review is still
-listening locally, pull-back aborts before rsync starts. A real pull-back also
-requires a completed provisioning decision, and the pull host must match that
-decision's selected host name or address. The write lease
+listening locally, pull-back aborts before rsync starts. It also checks the
+remote `hottp-raw-review-chirho.service`,
+`hottp-latin-symbol-review-chirho.service`, and
+`hottp-expert-review-chirho.service` units before copying state back; if any
+are active, pull-back aborts so copied artifacts come from a stopped review
+host. A real pull-back also requires a completed provisioning decision, and the
+pull host must match that decision's selected host name or address. The write lease
 `owner_approval_reference_chirho` must match the provisioning decision
 `owner_approval_chirho.approval_reference_chirho`.
 

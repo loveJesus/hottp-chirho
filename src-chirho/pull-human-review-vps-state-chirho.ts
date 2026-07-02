@@ -20,6 +20,12 @@ const WRITE_CAPABLE_LOCAL_PORTS_CHIRHO = [
   { labelChirho: "expert non-Latin review server", portChirho: 8771 },
 ] as const;
 
+const WRITE_CAPABLE_REMOTE_SERVICES_CHIRHO = [
+  "hottp-raw-review-chirho.service",
+  "hottp-latin-symbol-review-chirho.service",
+  "hottp-expert-review-chirho.service",
+] as const;
+
 interface ProvisioningDecisionForPullChirho {
   owner_approval_chirho?: {
     approval_reference_chirho?: unknown;
@@ -118,6 +124,13 @@ function shellQuoteChirho(valueChirho: string): string {
   return `'${valueChirho.replace(/'/g, "'\"'\"'")}'`;
 }
 
+function remoteUserChirho(argsChirho: string[]): string {
+  return assertSafeTokenChirho(
+    parseArgValueChirho(argsChirho, "remote-user-chirho") ?? DEFAULT_REMOTE_USER_CHIRHO,
+    "remote-user-chirho"
+  );
+}
+
 function selectedStationChirho(argsChirho: string[]): string {
   const stationChirho = parseArgValueChirho(argsChirho, "station-chirho") ?? "raw-hebrew-chirho";
   if (!STATION_VALUES_CHIRHO.has(stationChirho)) {
@@ -173,10 +186,7 @@ function commandsChirho(argsChirho: string[]): string[][] {
   if (applyChirho && hostChirho === "REVIEW_HOST_CHIRHO") {
     failChirho("--apply-chirho requires a real --host-chirho value");
   }
-  const remoteUserChirho = assertSafeTokenChirho(
-    parseArgValueChirho(argsChirho, "remote-user-chirho") ?? DEFAULT_REMOTE_USER_CHIRHO,
-    "remote-user-chirho"
-  );
+  const remoteUserValueChirho = remoteUserChirho(argsChirho);
   const remotePathValueChirho = remotePathChirho(
     parseArgValueChirho(argsChirho, "remote-path-chirho") ?? DEFAULT_REMOTE_PATH_CHIRHO
   );
@@ -190,7 +200,7 @@ function commandsChirho(argsChirho: string[]): string[][] {
       artifactChirho,
       applyChirho,
       hostChirho,
-      remoteUserChirho,
+      remoteUserChirho: remoteUserValueChirho,
       remotePathChirho: remotePathValueChirho,
     })
   );
@@ -300,6 +310,35 @@ async function assertLocalWritePortsStoppedForApplyChirho(argsChirho: string[]):
   }
 }
 
+function remoteWriteServicesStoppedScriptChirho(): string {
+  return [
+    "set -euo pipefail",
+    "active_services_chirho=''",
+    ...WRITE_CAPABLE_REMOTE_SERVICES_CHIRHO.map(
+      (serviceChirho) =>
+        `if systemctl is-active --quiet ${shellQuoteChirho(serviceChirho)}; then active_services_chirho="$active_services_chirho ${serviceChirho}"; fi`
+    ),
+    "if [ -n \"$active_services_chirho\" ]; then",
+    "  printf '%s\\n' \"active write-capable review services:$active_services_chirho\" >&2",
+    "  exit 45",
+    "fi",
+  ].join("\n");
+}
+
+function assertRemoteWriteServicesStoppedForApplyChirho(argsChirho: string[], hostChirho: string): void {
+  if (!argsChirho.includes("--apply-chirho")) return;
+  const remoteUserValueChirho = remoteUserChirho(argsChirho);
+  const commandChirho = ["ssh", `${remoteUserValueChirho}@${hostChirho}`, "bash", "-s"];
+  const resultChirho = Bun.spawnSync(commandChirho, {
+    stdin: new TextEncoder().encode(remoteWriteServicesStoppedScriptChirho()),
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+  if (resultChirho.exitCode !== 0) {
+    failChirho("remote write-capable review services must be stopped before pull-back");
+  }
+}
+
 async function mainChirho(): Promise<void> {
   const argsChirho = process.argv.slice(2);
   const printOnlyChirho = argsChirho.includes("--print-command-chirho");
@@ -310,6 +349,7 @@ async function mainChirho(): Promise<void> {
   if (!printOnlyChirho) assertWriteLeaseForApplyChirho(argsChirho, hostChirho);
   if (!printOnlyChirho) assertWriteLeaseApprovalReferenceForApplyChirho(argsChirho, approvalReferenceChirho);
   if (!printOnlyChirho) await assertLocalWritePortsStoppedForApplyChirho(argsChirho);
+  if (!printOnlyChirho) assertRemoteWriteServicesStoppedForApplyChirho(argsChirho, hostChirho);
   for (const commandChirho of commandsValueChirho) {
     console.log(`[${MODULE_CHIRHO}] ${commandChirho.map(shellQuoteChirho).join(" ")}`);
   }

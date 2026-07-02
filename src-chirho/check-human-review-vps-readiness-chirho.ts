@@ -310,6 +310,11 @@ function assertPullHelperChirho(): void {
     "8766",
     "8770",
     "8771",
+    "WRITE_CAPABLE_REMOTE_SERVICES_CHIRHO",
+    "hottp-raw-review-chirho.service",
+    "hottp-latin-symbol-review-chirho.service",
+    "hottp-expert-review-chirho.service",
+    "remote write-capable review services must be stopped before pull-back",
   ]) {
     if (!sourceChirho.includes(snippetChirho)) {
       failChirho(`VPS commit-back pull helper missing guard snippet: ${snippetChirho}`);
