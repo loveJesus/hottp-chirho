@@ -127,6 +127,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       unauthenticated gateway denial and direct-port refusal itself.
 - [x] Add a non-completed provisioning decision draft from read-only provider
       inventory so owner approval starts from current host/DNS evidence.
+- [x] Add an owner approval handoff with current host/DNS inventory and the exact
+      approval sentence needed before any VPS or DNS action.
 - [ ] Provision one small authenticated VPS review host.
 - [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
 - [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;
