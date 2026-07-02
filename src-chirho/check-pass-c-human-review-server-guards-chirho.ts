@@ -18,6 +18,9 @@ import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { reviewServerHeadersHaveNoStoreChirho } from "./review-server-health-chirho.ts";
 
 const MODULE_CHIRHO = "check-pass-c-human-review-server-guards-chirho";
+const TRUSTED_REVIEWER_HEADERS_CHIRHO = {
+  "X-Webauth-User": "dr-pass-c-header-reviewer-chirho",
+} as const;
 const SOURCE_PROGRESS_DB_PATH_CHIRHO = join(PROJECT_ROOT_CHIRHO, "spec-chirho", "progress-chirho.sqlite");
 const RAW_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Clean certification means letters, marks, punctuation, spacing, maqqef, word boundaries, and the red box all match the print.",
@@ -412,10 +415,41 @@ async function mainChirho(): Promise<void> {
     await assertSessionGuideEndpointChirho(portChirho);
     const itemChirho = firstQueueItemFromHtmlChirho(pageHtmlChirho);
     await assertRawReviewImageEndpointsNoStoreChirho(portChirho, itemChirho);
+    const missingTrustedHeaderResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        keyChirho: itemChirho.keyChirho,
+        issueFlagsChirho: [],
+        correctedTextChirho: itemChirho.liveSpanTextChirho,
+        notesChirho: "",
+        scriptVerdictChirho: "",
+        reviewerChirho: "hallelujah-chirho",
+        certifyCleanChirho: true,
+        ...displayGuardForItemChirho(itemChirho),
+      }),
+    });
+    const missingTrustedHeaderDataChirho = (await missingTrustedHeaderResponseChirho.json()) as {
+      okChirho?: boolean;
+      errorChirho?: string;
+    };
+    assertCheckChirho(
+      missingTrustedHeaderResponseChirho.status === 400,
+      `expected missing trusted header HTTP 400, got ${missingTrustedHeaderResponseChirho.status}`
+    );
+    assertCheckChirho(missingTrustedHeaderDataChirho.okChirho === false, "missing trusted header unexpectedly returned ok");
+    assertCheckChirho(
+      String(missingTrustedHeaderDataChirho.errorChirho ?? "").includes("reviewerChirho is required"),
+      `missing trusted header failed for the wrong reason: ${String(missingTrustedHeaderDataChirho.errorChirho ?? "")}`
+    );
+    assertCheckChirho(
+      validationRowCountChirho(dbPathChirho) === validationRowsBeforeChirho,
+      "missing trusted header POST persisted a row"
+    );
     const attributionBlockedItemChirho = firstAttributionBlockedQueueItemFromHtmlChirho(pageHtmlChirho);
     const attributionBlockedSubmitResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: attributionBlockedItemChirho.keyChirho,
         issueFlagsChirho: [],
@@ -449,7 +483,7 @@ async function mainChirho(): Promise<void> {
     );
     const normalItemAttributionSupersedeResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         issueFlagsChirho: [],
@@ -484,7 +518,7 @@ async function mainChirho(): Promise<void> {
     );
     const staleDisplayResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         issueFlagsChirho: [],
@@ -523,7 +557,7 @@ async function mainChirho(): Promise<void> {
     }));
     const invalidGeometryProposalResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/segment-repair-proposal-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         reviewStateChirho: "pending-chirho",
@@ -556,7 +590,7 @@ async function mainChirho(): Promise<void> {
     );
     const readOnlyStateProposalResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/segment-repair-proposal-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         reviewStateChirho: "saved-issues-chirho",
@@ -622,7 +656,7 @@ async function mainChirho(): Promise<void> {
     );
     const missingCleanAckResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         issueFlagsChirho: [],
@@ -653,7 +687,7 @@ async function mainChirho(): Promise<void> {
     );
     const nonArrayIssueFlagsResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         issueFlagsChirho: "letters-chirho",
@@ -684,7 +718,7 @@ async function mainChirho(): Promise<void> {
     );
     const unknownIssueFlagResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         issueFlagsChirho: ["letters-typo-chirho"],
@@ -715,7 +749,7 @@ async function mainChirho(): Promise<void> {
     );
     const issueWithCleanAckResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         issueFlagsChirho: ["letters-chirho"],
@@ -749,7 +783,7 @@ async function mainChirho(): Promise<void> {
     );
     const editedNoIssueResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         issueFlagsChirho: [],
@@ -780,7 +814,7 @@ async function mainChirho(): Promise<void> {
     );
     const missingNotesResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         issueFlagsChirho: ["letters-chirho"],
@@ -811,7 +845,7 @@ async function mainChirho(): Promise<void> {
     );
     const placeholderNotesResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         issueFlagsChirho: ["letters-chirho"],
@@ -842,7 +876,7 @@ async function mainChirho(): Promise<void> {
     );
     const validCleanResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         issueFlagsChirho: [],
@@ -867,8 +901,8 @@ async function mainChirho(): Promise<void> {
       "valid clean POST did not append one row"
     );
     assertCheckChirho(
-      latestValidationReviewerChirho(dbPathChirho) === "dr-pass-c-server-reviewer-chirho",
-      "valid clean POST stored client-supplied reviewer instead of server reviewer"
+      latestValidationReviewerChirho(dbPathChirho) === "dr-pass-c-header-reviewer-chirho",
+      "valid clean POST stored client-supplied or fallback reviewer instead of trusted proxy reviewer"
     );
     const validIssueResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
@@ -911,7 +945,7 @@ async function mainChirho(): Promise<void> {
     const latestGuardChirho = latestValidationGuardFromDbChirho(dbPathChirho);
     const staleUndoResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/undo-last-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         ...latestGuardChirho,
         expectedLatestValidationIdChirho: latestGuardChirho.expectedLatestValidationIdChirho + 1000,
@@ -936,7 +970,7 @@ async function mainChirho(): Promise<void> {
     );
     const validUndoResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/undo-last-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify(latestGuardChirho),
     });
     const validUndoDataChirho = (await validUndoResponseChirho.json()) as {
@@ -957,7 +991,7 @@ async function mainChirho(): Promise<void> {
     );
     const validAttributionRereviewResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", ...TRUSTED_REVIEWER_HEADERS_CHIRHO },
       body: JSON.stringify({
         keyChirho: attributionBlockedItemChirho.keyChirho,
         issueFlagsChirho: [],

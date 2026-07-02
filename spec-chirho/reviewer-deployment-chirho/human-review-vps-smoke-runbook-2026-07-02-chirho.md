@@ -123,6 +123,9 @@ overrides. Do not put secrets in committed files.
 For the first Caddy basic-auth deployment, keep
 `HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO=x-webauth-user` so the servers ignore any
 forged `Cf-Access-Authenticated-User-Email` header.
+With that env var set, writes without the configured trusted header must fail;
+the local `--reviewer` fallback is only for trusted local/dev sessions where no
+production trusted-header env var is configured.
 
 Use the committed template as the starting point:
 

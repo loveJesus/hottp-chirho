@@ -5,8 +5,8 @@
  * Server-authoritative reviewer identity for browser review writes.
  *
  * Reviewer text submitted by the browser is display-only. Stored attribution
- * comes from a trusted reverse-proxy header, falling back to the server's
- * local-dev `--reviewer` value when no proxy header is present.
+ * comes from a trusted reverse-proxy header. The local-dev `--reviewer` value
+ * is used only when no production trusted header is configured.
  */
 
 export const CF_ACCESS_AUTHENTICATED_USER_EMAIL_HEADER_CHIRHO =
@@ -40,7 +40,7 @@ export function trustedReviewerIdentityChirho(
     if (configuredHeaderValueChirho !== undefined && configuredHeaderValueChirho.length > 0) {
       return configuredHeaderValueChirho;
     }
-    return serverReviewerChirho.trim();
+    return "";
   }
   for (const headerNameChirho of TRUSTED_REVIEWER_HEADER_NAMES_CHIRHO) {
     const headerValueChirho = headersChirho.get(headerNameChirho)?.trim();

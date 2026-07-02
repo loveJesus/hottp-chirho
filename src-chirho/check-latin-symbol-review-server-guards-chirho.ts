@@ -18,6 +18,9 @@ import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { reviewServerHeadersHaveNoStoreChirho } from "./review-server-health-chirho.ts";
 
 const MODULE_CHIRHO = "check-latin-symbol-review-server-guards-chirho";
+const TRUSTED_REVIEWER_HEADERS_CHIRHO = {
+  "X-Webauth-User": "dr-latin-symbol-header-reviewer-chirho",
+} as const;
 const LATIN_SYMBOL_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Current codepoints",
   "mathematical alphanumeric symbol",
@@ -268,7 +271,7 @@ function displayGuardForItemChirho(itemChirho: LatinSymbolReviewStateItemChirho)
 async function postReviewChirho(
   portChirho: number,
   bodyChirho: Record<string, unknown>,
-  headersChirho: Record<string, string> = {}
+  headersChirho: Record<string, string> = TRUSTED_REVIEWER_HEADERS_CHIRHO
 ): Promise<{ responseChirho: Response; dataChirho: LatinSymbolReviewPostResponseChirho }> {
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/review-chirho`, {
     method: "POST",
@@ -453,8 +456,8 @@ async function mainChirho(): Promise<void> {
     );
     assertCheckChirho(reviewRowCountChirho(dbPathChirho) === 1, "valid accepted-clean POST did not write one disposable row");
     assertCheckChirho(
-      latestReviewReviewerChirho(dbPathChirho) === "dr-latin-symbol-server-guard-chirho",
-      "valid accepted-clean POST stored client-supplied reviewer instead of server reviewer"
+      latestReviewReviewerChirho(dbPathChirho) === "dr-latin-symbol-header-reviewer-chirho",
+      "valid accepted-clean POST stored client-supplied or fallback reviewer instead of trusted proxy reviewer"
     );
     const validIssueResultChirho = await postReviewChirho(portChirho, {
       ...commonBodyChirho,

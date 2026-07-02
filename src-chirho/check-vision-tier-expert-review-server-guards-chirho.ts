@@ -22,6 +22,9 @@ import {
 } from "./vision-tier-expert-confirmation-policy-chirho.ts";
 
 const MODULE_CHIRHO = "check-vision-tier-expert-review-server-guards-chirho";
+const TRUSTED_REVIEWER_HEADERS_CHIRHO = {
+  "X-Webauth-User": "dr-expert-header-reviewer-chirho",
+} as const;
 const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Current codepoints",
   "Review server source:",
@@ -223,7 +226,7 @@ async function postJsonChirho(
   portChirho: number,
   pathChirho: string,
   bodyChirho: Record<string, unknown>,
-  headersChirho: Record<string, string> = {}
+  headersChirho: Record<string, string> = TRUSTED_REVIEWER_HEADERS_CHIRHO
 ): Promise<{ responseChirho: Response; dataChirho: ExpertReviewPostResponseChirho }> {
   const responseChirho = await fetch(`http://127.0.0.1:${portChirho}${pathChirho}`, {
     method: "POST",
@@ -686,8 +689,8 @@ async function mainChirho(): Promise<void> {
       "valid confirm POST did not write a confirmed policy"
     );
     assertCheckChirho(
-      policyFileAfterConfirmChirho.policiesChirho?.[0]?.reviewerChirho === "dr-smith-human-reviewer-chirho",
-      "valid confirm POST stored client-supplied reviewer instead of server reviewer"
+      policyFileAfterConfirmChirho.policiesChirho?.[0]?.reviewerChirho === "dr-expert-header-reviewer-chirho",
+      "valid confirm POST stored client-supplied or fallback reviewer instead of trusted proxy reviewer"
     );
     const validIssueResultChirho = await postJsonChirho(portChirho, "/api-chirho/issue-chirho", {
       ...commonBodyChirho,

@@ -210,6 +210,7 @@ function assertTrustedReviewerIdentityChirho(): void {
     "x-webauth-user",
     "HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO",
     "configuredTrustedReviewerHeaderChirho",
+    "return \"\"",
     "return serverReviewerChirho.trim()",
   ]) {
     if (!trustedSourceChirho.includes(snippetChirho)) {

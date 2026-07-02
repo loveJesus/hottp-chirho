@@ -29,10 +29,13 @@ Supported production header values are:
 1. `cf-access-authenticated-user-email`
 2. `x-webauth-user`
 
-If the configured trusted header is absent on a request, the server falls back
-to the local `--reviewer=...` identity for trusted local/dev sessions. If the
-environment variable is unset, the dual-header behavior is local-dev only and
-must not be used for the VPS deployment.
+If the configured trusted header is absent on a request, the server does not
+fall back to the local `--reviewer=...` identity. That makes a broken or
+bypassed VPS proxy fail closed instead of storing a CLI fallback reviewer. The
+local `--reviewer=...` fallback is available only when the environment variable
+is unset for trusted local/dev sessions. If the environment variable is unset,
+the dual-header behavior is local-dev only and must not be used for the VPS
+deployment.
 
 If the configured trusted header and local fallback are absent or generic,
 certification-affecting writes fail through the existing reviewer-attribution

@@ -151,6 +151,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       pinned `X-Webauth-User` trusted reviewer header.
 - [x] Have the real Phase 6 completion audit run SSH host preflight against the
       selected host before accepting smoke completion.
+- [x] Make configured trusted-header mode fail closed when the header is absent
+      so VPS writes cannot silently use the local CLI fallback reviewer.
 - [x] Have the smoke evidence verifier reject server fallback reviewer
       identities so the write proof must be gateway-attributed.
 - [x] Add a non-completed provisioning decision draft from read-only provider
