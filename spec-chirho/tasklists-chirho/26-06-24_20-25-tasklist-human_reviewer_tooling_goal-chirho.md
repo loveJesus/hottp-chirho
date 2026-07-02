@@ -141,6 +141,9 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       output so restore/commit-back proof is not only a boolean checkbox.
 - [x] Require completed first-smoke evidence to find the non-empty quarantined
       SQLite snapshot produced by pull-back.
+- [x] Keep the source-local completion fixture isolated from the real
+      `backups-chirho/` quarantine path while real smoke still uses the fixed
+      pull-back snapshot path.
 - [x] Pin the trusted reviewer header for the Caddy VPS path and have host
       preflight verify the installed Caddyfile strips spoofable identity headers.
 - [x] Have host preflight verify trusted-header strip/inject lines inside each

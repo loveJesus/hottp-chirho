@@ -9,6 +9,8 @@ import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 const MODULE_CHIRHO = "check-human-review-vps-smoke-evidence-chirho";
 const LIVE_PROBE_TIMEOUT_MS_CHIRHO = 5000;
 const QUARANTINE_PROGRESS_DB_PATH_CHIRHO = "backups-chirho/vps-snapshot-progress-chirho.sqlite";
+const SOURCE_LOCAL_FIXTURE_DIR_FRAGMENT_CHIRHO =
+  "spec-chirho/reviewer-deployment-chirho/.tmp-phase6-completion-fixture-chirho/";
 const DEFAULT_TEMPLATE_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -129,6 +131,23 @@ function assertProjectPathChirho(pathChirho: string): string {
   return resolvedChirho;
 }
 
+function quarantineDbPathChirho(argsChirho: string[]): { pathChirho: string; displayChirho: string } {
+  const fixturePathChirho = parseArgValueChirho(argsChirho, "source-local-fixture-quarantine-db-chirho");
+  if (fixturePathChirho === null) {
+    return {
+      pathChirho: join(PROJECT_ROOT_CHIRHO, QUARANTINE_PROGRESS_DB_PATH_CHIRHO),
+      displayChirho: QUARANTINE_PROGRESS_DB_PATH_CHIRHO,
+    };
+  }
+  if (!fixturePathChirho.includes(SOURCE_LOCAL_FIXTURE_DIR_FRAGMENT_CHIRHO)) {
+    failChirho("--source-local-fixture-quarantine-db-chirho must be under the Phase 6 fixture directory");
+  }
+  return {
+    pathChirho: assertProjectPathChirho(fixturePathChirho),
+    displayChirho: fixturePathChirho,
+  };
+}
+
 function readEvidenceChirho(pathChirho: string): SmokeEvidenceChirho {
   const resolvedChirho = pathChirho === DEFAULT_TEMPLATE_PATH_CHIRHO ? pathChirho : assertProjectPathChirho(pathChirho);
   if (!existsSync(resolvedChirho)) {
@@ -200,18 +219,20 @@ function currentGitStatusShortChirho(): string {
   return normalizeStatusTextChirho(resultChirho.stdout.toString());
 }
 
-function assertQuarantinedProgressDbExistsChirho(): void {
-  const dbPathChirho = join(PROJECT_ROOT_CHIRHO, QUARANTINE_PROGRESS_DB_PATH_CHIRHO);
-  if (!existsSync(dbPathChirho)) {
-    failChirho(`commit-back proof missing quarantined SQLite snapshot: ${QUARANTINE_PROGRESS_DB_PATH_CHIRHO}`);
+function assertQuarantinedProgressDbExistsChirho(quarantineChirho: { pathChirho: string; displayChirho: string }): void {
+  if (!existsSync(quarantineChirho.pathChirho)) {
+    failChirho(`commit-back proof missing quarantined SQLite snapshot: ${quarantineChirho.displayChirho}`);
   }
-  const statChirho = statSync(dbPathChirho);
+  const statChirho = statSync(quarantineChirho.pathChirho);
   if (!statChirho.isFile() || statChirho.size <= 0) {
-    failChirho(`quarantined SQLite snapshot must be a non-empty file: ${QUARANTINE_PROGRESS_DB_PATH_CHIRHO}`);
+    failChirho(`quarantined SQLite snapshot must be a non-empty file: ${quarantineChirho.displayChirho}`);
   }
 }
 
-function assertCompletedEvidenceChirho(evidenceChirho: SmokeEvidenceChirho): void {
+function assertCompletedEvidenceChirho(
+  evidenceChirho: SmokeEvidenceChirho,
+  quarantineChirho: { pathChirho: string; displayChirho: string }
+): void {
   const rootChirho = recordChirho(evidenceChirho, "evidence");
   if (rootChirho.completed_chirho !== true) failChirho("completed smoke evidence must set completed_chirho=true");
   nonPlaceholderChirho(stringFieldChirho(rootChirho, "evidence_id_chirho", "evidence"), "evidence_id_chirho");
@@ -292,7 +313,7 @@ function assertCompletedEvidenceChirho(evidenceChirho: SmokeEvidenceChirho): voi
       failChirho(`commit-back proof missing ${keyChirho}`);
     }
   }
-  assertQuarantinedProgressDbExistsChirho();
+  assertQuarantinedProgressDbExistsChirho(quarantineChirho);
   const guardsChirho = new Set(stringArrayFieldChirho(commitBackChirho, "guards_passed_chirho", "commit_back_chirho"));
   for (const guardChirho of REQUIRED_COMMIT_BACK_GUARDS_CHIRHO) {
     if (!guardsChirho.has(guardChirho)) failChirho(`commit-back proof missing guard: ${guardChirho}`);
@@ -345,9 +366,10 @@ async function mainChirho(): Promise<void> {
   const liveProbeChirho = argsChirho.includes("--live-probe-chirho");
   const evidencePathChirho = parseArgValueChirho(argsChirho, "evidence-chirho") ?? DEFAULT_TEMPLATE_PATH_CHIRHO;
   const evidenceChirho = readEvidenceChirho(evidencePathChirho);
+  const quarantineChirho = quarantineDbPathChirho(argsChirho);
   assertShapeChirho(evidenceChirho);
   if (!templateOkChirho) {
-    assertCompletedEvidenceChirho(evidenceChirho);
+    assertCompletedEvidenceChirho(evidenceChirho, quarantineChirho);
     if (liveProbeChirho) await assertLiveNetworkProbesChirho(evidenceChirho);
   }
   console.log(

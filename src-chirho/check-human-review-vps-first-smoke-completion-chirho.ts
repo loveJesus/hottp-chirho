@@ -173,6 +173,7 @@ function mainChirho(): void {
   const evidenceArgChirho = parseArgValueChirho(argsChirho, "evidence-chirho");
   const backupArgChirho = parseArgValueChirho(argsChirho, "pass-c-backup-chirho") ?? DEFAULT_PASS_C_BACKUP_PATH_CHIRHO;
   const liveProbeChirho = argsChirho.includes("--live-probe-chirho");
+  const quarantineDbArgChirho = parseArgValueChirho(argsChirho, "source-local-fixture-quarantine-db-chirho");
   if (decisionArgChirho === null || evidenceArgChirho === null) {
     failChirho("requires --decision-chirho=... and --evidence-chirho=...");
   }
@@ -192,6 +193,9 @@ function mainChirho(): void {
     `--evidence-chirho=${evidenceArgChirho}`,
   ];
   if (liveProbeChirho) smokeEvidenceVerifierCommandChirho.push("--live-probe-chirho");
+  if (quarantineDbArgChirho !== null) {
+    smokeEvidenceVerifierCommandChirho.push(`--source-local-fixture-quarantine-db-chirho=${quarantineDbArgChirho}`);
+  }
   runVerifierChirho(smokeEvidenceVerifierCommandChirho);
   assertCrossEvidenceChirho(decisionPathChirho, evidencePathChirho, backupPathChirho);
   console.log(`[${MODULE_CHIRHO}] first VPS smoke completion evidence passed`);

@@ -2,7 +2,7 @@
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
 import { existsSync, readFileSync } from "fs";
-import { resolve, sep } from "path";
+import { dirname, resolve, sep } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
@@ -150,6 +150,9 @@ function mainChirho(): void {
   const leasePathChirho = projectPathChirho(leaseArgChirho, "write lease");
   projectPathChirho(backupArgChirho, "Pass-C human validation backup");
   const hostNameChirho = selectedHostNameChirho(decisionPathChirho);
+  const fixtureQuarantineDbArgChirho = sourceLocalFixtureChirho
+    ? `${dirname(backupArgChirho)}/vps-snapshot-progress-chirho.sqlite`
+    : null;
 
   runVerifierChirho(["bun", "run", "src-chirho/check-human-review-vps-readiness-chirho.ts"]);
   runVerifierChirho(["bun", "run", "src-chirho/check-human-review-vps-deployment-templates-chirho.ts"]);
@@ -185,6 +188,9 @@ function mainChirho(): void {
     `--pass-c-backup-chirho=${backupArgChirho}`,
   ];
   if (liveProbeChirho) firstSmokeCommandChirho.push("--live-probe-chirho");
+  if (fixtureQuarantineDbArgChirho !== null) {
+    firstSmokeCommandChirho.push(`--source-local-fixture-quarantine-db-chirho=${fixtureQuarantineDbArgChirho}`);
+  }
   runVerifierChirho(firstSmokeCommandChirho);
   runVerifierChirho(["bun", "run", "src-chirho/check-pass-c-human-review-server-guards-chirho.ts"]);
   runVerifierChirho(["bun", "run", "src-chirho/transcription-certification-status-chirho.ts"]);
