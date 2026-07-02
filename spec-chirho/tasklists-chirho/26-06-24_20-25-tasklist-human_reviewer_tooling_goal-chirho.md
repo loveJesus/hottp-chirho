@@ -137,6 +137,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       so local agent log rows cannot be clobbered by binary SQLite overwrite.
 - [x] Bind first-smoke evidence to a pulled-back Pass-C backup row so the
       remote write proof is measured from an artifact, not only self-attested.
+- [x] Bind first-smoke restore evidence to the current `git status --short`
+      output so restore/commit-back proof is not only a boolean checkbox.
 - [x] Pin the trusted reviewer header for the Caddy VPS path and have host
       preflight verify the installed Caddyfile strips spoofable identity headers.
 - [x] Have host preflight verify trusted-header strip/inject lines inside each

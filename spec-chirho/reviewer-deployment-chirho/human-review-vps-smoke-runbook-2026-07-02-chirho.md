@@ -320,6 +320,10 @@ changed live span JSON.
 Stage only intentional review artifacts. If the smoke action was meant to be
 temporary, restore from the pre-smoke backup and prove `git status --short` no
 longer shows the smoke artifact.
+Record the exact post-restore or post-commit `git status --short` output in
+`commit_back_chirho.post_restore_git_status_chirho`; the evidence verifier
+compares that field to the current working tree so stale restore evidence cannot
+pass silently.
 
 Fill the evidence file and verify it:
 

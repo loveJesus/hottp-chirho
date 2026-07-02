@@ -471,6 +471,8 @@ function assertSmokeEvidenceHelperChirho(): void {
     "--live-probe-chirho",
     "expected unauthenticated gateway HTTP 401/403",
     "expected direct review port to refuse",
+    "post_restore_git_status_chirho",
+    "current git status --short does not match smoke evidence",
     "first write smoke must be a reviewed-issues row, not a clean certification",
   ]) {
     if (!sourceChirho.includes(snippetChirho)) {

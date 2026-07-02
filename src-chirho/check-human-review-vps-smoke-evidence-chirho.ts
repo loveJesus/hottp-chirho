@@ -94,6 +94,10 @@ function stringArrayFieldChirho(recordValueChirho: Record<string, unknown>, keyC
   return valueChirho;
 }
 
+function normalizeStatusTextChirho(valueChirho: string): string {
+  return valueChirho.replace(/\r\n/g, "\n").replace(/\n$/, "");
+}
+
 function nonPlaceholderChirho(valueChirho: string, labelChirho: string): string {
   const trimmedChirho = valueChirho.trim();
   if (
@@ -179,6 +183,20 @@ function assertShapeChirho(evidenceChirho: SmokeEvidenceChirho): void {
   booleanFieldChirho(commitBackChirho, "git_status_reviewed_chirho", "commit_back_chirho");
   booleanFieldChirho(commitBackChirho, "restore_test_passed_chirho", "commit_back_chirho");
   booleanFieldChirho(commitBackChirho, "committed_or_restored_chirho", "commit_back_chirho");
+  stringFieldChirho(commitBackChirho, "post_restore_git_status_chirho", "commit_back_chirho");
+}
+
+function currentGitStatusShortChirho(): string {
+  const resultChirho = Bun.spawnSync(["git", "status", "--short"], {
+    cwd: PROJECT_ROOT_CHIRHO,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  if (resultChirho.exitCode !== 0) {
+    const stderrChirho = resultChirho.stderr.toString().trim();
+    failChirho(`could not read current git status --short${stderrChirho.length > 0 ? `: ${stderrChirho}` : ""}`);
+  }
+  return normalizeStatusTextChirho(resultChirho.stdout.toString());
 }
 
 function assertCompletedEvidenceChirho(evidenceChirho: SmokeEvidenceChirho): void {
@@ -265,6 +283,13 @@ function assertCompletedEvidenceChirho(evidenceChirho: SmokeEvidenceChirho): voi
   const guardsChirho = new Set(stringArrayFieldChirho(commitBackChirho, "guards_passed_chirho", "commit_back_chirho"));
   for (const guardChirho of REQUIRED_COMMIT_BACK_GUARDS_CHIRHO) {
     if (!guardsChirho.has(guardChirho)) failChirho(`commit-back proof missing guard: ${guardChirho}`);
+  }
+  const expectedGitStatusChirho = normalizeStatusTextChirho(
+    stringFieldChirho(commitBackChirho, "post_restore_git_status_chirho", "commit_back_chirho")
+  );
+  const currentGitStatusChirho = currentGitStatusShortChirho();
+  if (currentGitStatusChirho !== expectedGitStatusChirho) {
+    failChirho("current git status --short does not match smoke evidence post_restore_git_status_chirho");
   }
 }
 

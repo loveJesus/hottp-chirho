@@ -45,6 +45,7 @@
     "guards_passed_chirho": [],
     "git_status_reviewed_chirho": false,
     "restore_test_passed_chirho": false,
-    "committed_or_restored_chirho": false
+    "committed_or_restored_chirho": false,
+    "post_restore_git_status_chirho": ""
   }
 }
