@@ -1,0 +1,46 @@
+{
+  "schema_version_chirho": 1,
+  "completed_chirho": false,
+  "decision_id_chirho": "draft-2026-07-02-review-host-decision-chirho",
+  "recorded_at_chirho": "2026-07-02T10:42:04.884Z",
+  "recorded_by_chirho": "codex-chirho",
+  "owner_approval_chirho": {
+    "approved_chirho": false,
+    "approved_by_chirho": "pending-owner-approval-chirho",
+    "approval_reference_chirho": "pending-owner-approval-reference-chirho",
+    "approved_scope_chirho": "reuse-existing-host-chirho",
+    "creates_billable_resources_chirho": false,
+    "monthly_budget_usd_chirho": 0
+  },
+  "selected_host_chirho": {
+    "provider_chirho": "hetzner-chirho",
+    "host_name_chirho": "pending-owner-host-choice-chirho",
+    "host_address_chirho": "pending-owner-host-address-chirho",
+    "region_chirho": "pending-owner-region-chirho",
+    "size_chirho": "pending-owner-size-chirho",
+    "existing_host_chirho": true
+  },
+  "dns_plan_chirho": {
+    "raw_review_hostname_chirho": "raw-review.bible.systems",
+    "latin_review_hostname_chirho": "latin-review.bible.systems",
+    "expert_review_hostname_chirho": "expert-review.bible.systems",
+    "create_or_update_records_chirho": false,
+    "proxied_chirho": false
+  },
+  "safety_acknowledgements_chirho": {
+    "single_writer_host_chirho": false,
+    "no_cloudflare_workers_for_authoring_chirho": false,
+    "no_d1_authoring_database_chirho": false,
+    "secrets_outside_git_chirho": false,
+    "caddy_auth_required_chirho": false,
+    "direct_ports_blocked_chirho": false,
+    "workspace_assets_synced_explicitly_chirho": false
+  },
+  "inventory_snapshot_chirho": {
+    "inventory_recorded_at_chirho": "2026-07-02T10:42:04.884Z",
+    "hetzner_status_chirho": "ok - found 4 server(s): ubuntu-16gb-ash-1-chirho off cpx42 46.224.142.19; perffection-api-chirho running cx22 88.99.82.23; global-bible-tools-chirho running cpx32 46.224.100.134; cairn-chirho running cax11 167.235.194.27",
+    "digital_ocean_status_chirho": "not-ok - HTTP 401",
+    "cloudflare_review_dns_status_chirho": "ok - found 0 review DNS record(s) for raw-review.bible.systems, latin-review.bible.systems, expert-review.bible.systems",
+    "notes_chirho": "Read-only inventory only. This draft is not owner approval, does not select a host, and does not authorize DNS or billable changes."
+  }
+}

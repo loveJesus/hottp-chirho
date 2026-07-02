@@ -39,6 +39,12 @@ bun run check-human-review-vps-provisioning-decision-chirho -- \
   --decision-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-YYYY-MM-DD-chirho.json
 ```
 
+An inventory-backed non-completed starter exists at
+`spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-draft-2026-07-02-chirho.json`.
+It records the current read-only provider inventory but is not approval and must
+not be passed off as a completed decision until the owner fills the approval,
+host, budget, DNS, and safety fields.
+
 Do not create a billable resource, reuse an existing host as write-owner, or add
 review DNS records unless the completed decision verifier passes.
 

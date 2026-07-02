@@ -125,6 +125,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       local/remote write ownership is explicit before commit-back.
 - [x] Add live-probe mode to smoke evidence checks so real host smoke verifies
       unauthenticated gateway denial and direct-port refusal itself.
+- [x] Add a non-completed provisioning decision draft from read-only provider
+      inventory so owner approval starts from current host/DNS evidence.
 - [ ] Provision one small authenticated VPS review host.
 - [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
 - [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;
