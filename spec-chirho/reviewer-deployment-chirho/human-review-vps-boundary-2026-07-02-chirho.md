@@ -96,7 +96,7 @@ Minimum sync set before starting review:
 
 For each review session:
 
-1. Stop or pause write-capable review servers.
+1. Stop write-capable review servers.
 2. Copy the canonical SQLite DB and generated backup artifacts from the writer
    box back into the repository working tree.
 3. Run the relevant guard scripts:

@@ -128,7 +128,7 @@ const SMOKE_RUNBOOK_SNIPPETS_CHIRHO = [
   "Commit-Back Proof Chirho",
   "check-human-review-vps-write-lease-chirho",
   "human-review-vps-write-lease-template-2026-07-02-chirho.json",
-  "write-capable review servers are paused",
+  "write-capable review servers are stopped",
   "--write-lease-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-write-lease-YYYY-MM-DD-chirho.json",
   "--apply-chirho",
   "validation id",

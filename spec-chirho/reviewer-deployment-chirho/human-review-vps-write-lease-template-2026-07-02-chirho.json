@@ -12,5 +12,5 @@
   "sqlite_checkpoint_or_stop_chirho": "stopped-review-servers-chirho",
   "pull_strategy_chirho": "json-replay-with-quarantined-sqlite-chirho",
   "expires_at_chirho": "YYYY-MM-DDTHH:mm:ss.sssZ",
-  "notes_chirho": "Complete this only after the owner chooses the write-owning host, local write-capable review servers are paused, and remote review services are stopped or checkpointed before sync-out or pull-back."
+  "notes_chirho": "Complete this only after the owner chooses the write-owning host, local write-capable review servers are stopped with no listening review ports, and remote review services are stopped before sync-out or pull-back."
 }

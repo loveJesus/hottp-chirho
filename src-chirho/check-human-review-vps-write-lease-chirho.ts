@@ -130,7 +130,7 @@ function assertCompletedLeaseChirho(leaseChirho: WriteLeaseChirho, expectedHostC
     failChirho("write lease canonical_writer_chirho must be vps-human-review-chirho");
   }
   if (booleanFieldChirho(rootChirho, "local_writes_paused_chirho", "write lease") !== true) {
-    failChirho("write lease must confirm local write-capable review servers are paused");
+    failChirho("write lease must confirm local write-capable review servers are stopped with no listening review ports");
   }
   if (booleanFieldChirho(rootChirho, "remote_review_servers_stopped_chirho", "write lease") !== true) {
     failChirho("write lease must confirm remote review services are stopped before pull-back");

@@ -78,7 +78,7 @@ bun run sync-human-review-vps-chirho -- --host-chirho=REVIEW_HOST_CHIRHO
 ```
 
 Before the real sync, record the write lease that makes the VPS the canonical
-writer and proves local review writers are paused:
+writer and proves local review writers are stopped:
 
 ```bash
 bun run check-human-review-vps-write-lease-chirho -- \
@@ -242,7 +242,7 @@ After any write smoke, stop the server and copy state back before continuing.
 
 ## 7. Commit-Back Proof Chirho
 
-On the host, stop or pause the server, then re-check the write lease before
+On the host, stop the server, then re-check the write lease before
 copying state back:
 
 ```bash
@@ -254,7 +254,7 @@ bun run check-human-review-vps-write-lease-chirho -- \
 ```
 
 The completed lease must state that the VPS is the canonical writer, local
-write-capable review servers are paused, the remote review server is stopped
+write-capable review servers are stopped, the remote review server is stopped
 before pull-back, and the SQLite snapshot is quarantine-only with JSON replay.
 Do not run pull-back `--apply-chirho` without a passing lease. The pull helper
 also measures local `127.0.0.1` ports `8766`, `8770`, and `8771` during
