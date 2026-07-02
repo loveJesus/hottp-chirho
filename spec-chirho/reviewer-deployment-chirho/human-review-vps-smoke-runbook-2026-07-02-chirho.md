@@ -99,7 +99,8 @@ bun run sync-human-review-vps-chirho -- \
 This copies ignored `workspace-chirho/` assets intentionally. A git clone alone
 is not enough for the review stations. The helper excludes `.git/`, `.env`,
 `.env.*`, Wrangler local state, `node_modules/`, `app-chirho/.svelte-kit/`,
-local `backups-chirho/` quarantine artifacts, and SQLite sidecar files
+local `backups-chirho/` quarantine artifacts, duplicate derived SQLite files
+outside the canonical `spec-chirho/` DB set, and SQLite sidecar files
 (`*.sqlite-wal`, `*.sqlite-shm`, `*.sqlite-journal`), and
 refuses a non-dry-run sync unless `--apply-chirho` is explicit. A real sync also requires a completed
 provisioning decision, and the sync host must match that decision's selected
