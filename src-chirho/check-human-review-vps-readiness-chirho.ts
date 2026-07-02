@@ -482,6 +482,7 @@ function assertPhase6CompletionHelperChirho(): void {
     "check-human-review-vps-readiness-chirho.ts",
     "check-human-review-vps-deployment-templates-chirho.ts",
     "check-human-review-vps-write-lease-chirho.ts",
+    "check-human-review-vps-host-preflight-chirho.ts",
     "check-human-review-vps-first-smoke-completion-chirho.ts",
     "check-pass-c-human-review-server-guards-chirho.ts",
     "transcription-certification-status-chirho.ts",

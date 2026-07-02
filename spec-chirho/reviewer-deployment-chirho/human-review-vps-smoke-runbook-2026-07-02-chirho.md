@@ -321,13 +321,15 @@ bun run check-human-review-vps-phase6-completion-chirho -- \
 ```
 
 Do not mark the first VPS smoke complete unless both completed evidence checks
-pass and the Phase 6 completion audit passes. The cross-check proves the
-decision host and raw-review DNS name match the actual smoke evidence, that the
-named smoke validation row exists in the pulled-back Pass-C backup with the
-gateway reviewer identity and timestamp window recorded in the evidence, and
-that the write lease matches the selected host and owner approval reference
-before pull-back. The live probe checks that the authenticated URL rejects
-unauthenticated requests and that the direct public review port does not answer.
+pass and the Phase 6 completion audit passes. In real mode, the completion audit
+also runs the SSH host preflight against the selected host before accepting the
+smoke result. The cross-check proves the decision host and raw-review DNS name
+match the actual smoke evidence, that the named smoke validation row exists in
+the pulled-back Pass-C backup with the gateway reviewer identity and timestamp
+window recorded in the evidence, and that the write lease matches the selected
+host and owner approval reference before pull-back. The live probe checks that
+the authenticated URL rejects unauthenticated requests and that the
+direct public review port does not answer.
 
 ## 8. Add Other Stations Chirho
 

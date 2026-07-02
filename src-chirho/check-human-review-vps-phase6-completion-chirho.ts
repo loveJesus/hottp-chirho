@@ -166,6 +166,14 @@ function mainChirho(): void {
     `--lease-chirho=${leaseArgChirho}`,
     `--host-chirho=${hostNameChirho}`,
   ]);
+  if (!sourceLocalFixtureChirho) {
+    runVerifierChirho([
+      "bun",
+      "run",
+      "src-chirho/check-human-review-vps-host-preflight-chirho.ts",
+      `--host-chirho=${hostNameChirho}`,
+    ]);
+  }
   assertWriteLeaseApprovalReferenceMatchesDecisionChirho(decisionPathChirho, leasePathChirho);
   assertSmokeEvidenceUsesPinnedTrustedHeaderChirho(evidencePathChirho);
   const firstSmokeCommandChirho = [
