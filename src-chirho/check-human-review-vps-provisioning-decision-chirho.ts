@@ -183,6 +183,9 @@ function assertCompletedDecisionChirho(decisionChirho: ProvisioningDecisionChirh
   );
   const budgetChirho = numberFieldChirho(approvalChirho, "monthly_budget_usd_chirho", "owner_approval_chirho");
   if (budgetChirho < 0) failChirho("monthly_budget_usd_chirho cannot be negative");
+  if (!createsBillableChirho && budgetChirho !== 0) {
+    failChirho("non-billable provisioning decisions must set monthly_budget_usd_chirho to 0");
+  }
   if (createsBillableChirho && budgetChirho <= 0) {
     failChirho("billable provisioning requires a positive monthly_budget_usd_chirho");
   }
