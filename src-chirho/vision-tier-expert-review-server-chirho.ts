@@ -11,6 +11,10 @@
 import { existsSync, readFileSync } from "fs";
 import { basename, join, resolve } from "path";
 
+import {
+  DEFAULT_EXPERT_SUPPLIED_VISION_TEXT_BACKUP_PATH_CHIRHO,
+  applyExpertSuppliedVisionTextChirho,
+} from "./apply-expert-supplied-vision-text-chirho.ts";
 import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
@@ -151,6 +155,8 @@ interface ConfirmRequestChirho {
   expectedSourcePathChirho?: string;
   expectedPacketPathChirho?: string;
   expectedMarkdownPathChirho?: string;
+  expectedSourceSha256Chirho?: string;
+  expectedPacketSha256Chirho?: string;
   expectedSpanXMinPxChirho?: number;
   expectedSpanWidthPxChirho?: number;
   expectedLineWidthPxChirho?: number;
@@ -158,6 +164,11 @@ interface ConfirmRequestChirho {
 
 interface IssueRequestChirho extends ConfirmRequestChirho {
   issueFlagsChirho?: unknown;
+}
+
+interface SupplyTextRequestChirho extends ConfirmRequestChirho {
+  suppliedTextChirho?: string;
+  applyChirho?: boolean;
 }
 
 interface ExpertOpenIssueChirho {
@@ -586,6 +597,8 @@ function staleDisplayMismatchChirho(
     ["expectedSourcePathChirho", packetItemChirho.sourcePathChirho],
     ["expectedPacketPathChirho", packetItemChirho.packetPathChirho],
     ["expectedMarkdownPathChirho", packetItemChirho.markdownPathChirho],
+    ["expectedSourceSha256Chirho", fileSha256Chirho(packetItemChirho.sourcePathChirho)],
+    ["expectedPacketSha256Chirho", fileSha256Chirho(packetItemChirho.packetPathChirho)],
   ] as const;
   for (const [fieldChirho, currentValueChirho] of comparisonsChirho) {
     const submittedValueChirho = requestChirho[fieldChirho];
@@ -603,6 +616,19 @@ function staleDisplayMismatchChirho(
     if (submittedValueChirho !== currentValueChirho) return `${fieldChirho} no longer matches current live span`;
   }
   return null;
+}
+
+function regenerateExpertPackChirho(): void {
+  const resultChirho = Bun.spawnSync([process.execPath, "run", "make-expert-confirm-pack-chirho"], {
+    cwd: PROJECT_ROOT_CHIRHO,
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  if (resultChirho.exitCode !== 0) {
+    const stdoutChirho = new TextDecoder().decode(resultChirho.stdout);
+    const stderrChirho = new TextDecoder().decode(resultChirho.stderr);
+    throw new Error(`make-expert-confirm-pack-chirho failed: ${[stdoutChirho, stderrChirho].filter(Boolean).join("\n")}`);
+  }
 }
 
 function htmlChirho(): string {
@@ -1309,6 +1335,18 @@ function htmlChirho(): string {
     function issueCanSubmitChirho() {
       return reviewerFieldsCompleteChirho() && currentIssueFlagsChirho().length > 0 && !certifyExactCheckedChirho();
     }
+    function suppliedTextValueChirho() {
+      return fieldValueChirho("supplied-text-chirho").normalize("NFC").trim();
+    }
+    function suppliedTextCanSubmitChirho(itemChirho) {
+      return itemTextIsBlankChirho(itemChirho) &&
+        suppliedTextValueChirho().length > 0 &&
+        !valueLooksTemplatePlaceholderChirho(suppliedTextValueChirho(), suppliedTextPlaceholderValuesChirho) &&
+        currentIssueFlagsChirho().length === 0 &&
+        certifyingReviewerAttributionErrorChirho(fieldValueChirho("reviewer-chirho")) === null &&
+        reviewerFieldsCompleteChirho() &&
+        reviewerRoleMatchesItemChirho(itemChirho);
+    }
     function saveReviewerFieldsChirho() {
       localStorage.setItem("expertReviewerChirho", fieldValueChirho("reviewer-chirho"));
       localStorage.setItem("expertReviewerRoleChirho", fieldValueChirho("reviewer-role-chirho"));
@@ -1466,12 +1504,12 @@ function htmlChirho(): string {
       if (itemTextIsBlankChirho(itemChirho)) {
         sideChirho.appendChild(elChirho("div", {
           classChirho: "warning-chirho",
-          textChirho: "This item has no current text. Do not confirm an empty transcription; use Report issue or the expert-supplied text dry-run/apply path after a script reader supplies the exact printed text."
+          textChirho: "This item has no current text. Do not confirm an empty transcription; use Report issue or the expert-supplied text form after a script reader supplies the exact printed text."
         }));
         const blankCommandBoxChirho = elChirho("div", { classChirho: "box-chirho" });
-        blankCommandBoxChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "supplied-text-command-chirho", textChirho: "Exact supplied text for command" }));
+        blankCommandBoxChirho.appendChild(elChirho("label", { classChirho: "label-chirho", for: "supplied-text-chirho", textChirho: "Exact supplied text" }));
         const suppliedTextCommandInputChirho = elChirho("textarea", {
-          id: "supplied-text-command-chirho",
+          id: "supplied-text-chirho",
           placeholder: "exact printed text"
         });
         blankCommandBoxChirho.appendChild(suppliedTextCommandInputChirho);
@@ -1483,16 +1521,31 @@ function htmlChirho(): string {
         blankCommandBoxChirho.appendChild(suppliedTextCodepointsChirho);
         blankCommandBoxChirho.appendChild(elChirho("div", {
           classChirho: "command-helper-note-chirho",
-          textChirho: "This helper field only updates the copied command; it does not save, apply, confirm, or certify."
+          textChirho: "Dry-run checks the server guards. Apply fills only the blank structural hole; it does not confirm or certify the item."
         }));
-        blankCommandBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Dry-run after exact script-reader transcription" }));
-        blankCommandBoxChirho.appendChild(commandRowChirho(() => expertSuppliedTextCommandChirho(itemChirho, false)));
-        blankCommandBoxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Apply after dry-run verification" }));
-        blankCommandBoxChirho.appendChild(commandRowChirho(() => expertSuppliedTextCommandChirho(itemChirho, true)));
+        const supplyActionsChirho = elChirho("div", { classChirho: "actions-chirho" });
+        const dryRunSupplyChirho = elChirho("button", { type: "button", textChirho: "Dry-run supplied text" });
+        const applySupplyChirho = elChirho("button", { classChirho: "confirm-chirho", type: "button", textChirho: "Apply supplied text" });
+        supplyActionsChirho.appendChild(dryRunSupplyChirho);
+        supplyActionsChirho.appendChild(applySupplyChirho);
+        blankCommandBoxChirho.appendChild(supplyActionsChirho);
+        const supplyResultChirho = elChirho("div", { classChirho: "text-box-chirho mono-chirho", textChirho: "" });
+        blankCommandBoxChirho.appendChild(supplyResultChirho);
+        function updateSupplyButtonsChirho() {
+          const suppliedTextChirho = suppliedTextValueChirho();
+          const canSupplyChirho = itemTextIsBlankChirho(itemChirho) &&
+            suppliedTextChirho.length > 0 &&
+            !valueLooksTemplatePlaceholderChirho(suppliedTextChirho, suppliedTextPlaceholderValuesChirho);
+          dryRunSupplyChirho.disabled = !canSupplyChirho;
+          applySupplyChirho.disabled = !canSupplyChirho;
+        }
         suppliedTextCommandInputChirho.addEventListener("input", () => {
           suppliedTextCodepointsChirho.textContent = codepointTextChirho(suppliedTextCommandInputChirho.value);
-          refreshCommandRowsChirho(blankCommandBoxChirho);
+          updateSupplyButtonsChirho();
         });
+        dryRunSupplyChirho.addEventListener("click", () => supplyExpertTextCurrentChirho(itemChirho, false, supplyResultChirho));
+        applySupplyChirho.addEventListener("click", () => supplyExpertTextCurrentChirho(itemChirho, true, supplyResultChirho));
+        updateSupplyButtonsChirho();
         sideChirho.appendChild(blankCommandBoxChirho);
       }
 
@@ -1628,6 +1681,8 @@ function htmlChirho(): string {
           expectedSourcePathChirho: itemChirho.sourcePathChirho,
           expectedPacketPathChirho: itemChirho.packetPathChirho,
           expectedMarkdownPathChirho: itemChirho.markdownPathChirho,
+          expectedSourceSha256Chirho: itemChirho.sourceSha256Chirho,
+          expectedPacketSha256Chirho: itemChirho.packetSha256Chirho,
           expectedSpanXMinPxChirho: itemChirho.spanXMinPxChirho,
           expectedSpanWidthPxChirho: itemChirho.spanWidthPxChirho,
           expectedLineWidthPxChirho: itemChirho.lineWidthPxChirho
@@ -1677,6 +1732,8 @@ function htmlChirho(): string {
           expectedSourcePathChirho: itemChirho.sourcePathChirho,
           expectedPacketPathChirho: itemChirho.packetPathChirho,
           expectedMarkdownPathChirho: itemChirho.markdownPathChirho,
+          expectedSourceSha256Chirho: itemChirho.sourceSha256Chirho,
+          expectedPacketSha256Chirho: itemChirho.packetSha256Chirho,
           expectedSpanXMinPxChirho: itemChirho.spanXMinPxChirho,
           expectedSpanWidthPxChirho: itemChirho.spanWidthPxChirho,
           expectedLineWidthPxChirho: itemChirho.lineWidthPxChirho
@@ -1691,6 +1748,54 @@ function htmlChirho(): string {
       indexChirho = Math.min(indexChirho + 1, Math.max(0, activeItemsChirho().length - 1));
       setStatusChirho("Recorded issue " + dataChirho.policyChirho.policyIdChirho + "; item remains pending until corrected/confirmed.");
       renderChirho();
+    }
+    async function supplyExpertTextCurrentChirho(itemChirho, applyChirho, supplyResultChirho) {
+      if (!suppliedTextCanSubmitChirho(itemChirho)) {
+        setStatusChirho("Supply text requires exact text, reviewer, role, rationale, matching role, and no issue flags.");
+        return;
+      }
+      saveReviewerFieldsChirho();
+      setStatusChirho(applyChirho ? "Applying supplied text..." : "Checking supplied text...");
+      const responseChirho = await fetch("/api-chirho/supply-text-chirho", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          idChirho: itemChirho.idChirho,
+          suppliedTextChirho: suppliedTextValueChirho(),
+          applyChirho,
+          reviewerChirho: fieldValueChirho("reviewer-chirho"),
+          reviewerRoleChirho: fieldValueChirho("reviewer-role-chirho"),
+          rationaleChirho: fieldValueChirho("rationale-chirho"),
+          expectedScriptChirho: itemChirho.scriptChirho,
+          expectedReviewerChirho: itemChirho.reviewerChirho,
+          expectedVisionSourceChirho: itemChirho.visionSourceChirho,
+          expectedCurrentTextChirho: itemChirho.currentTextChirho,
+          expectedSourcePathChirho: itemChirho.sourcePathChirho,
+          expectedPacketPathChirho: itemChirho.packetPathChirho,
+          expectedMarkdownPathChirho: itemChirho.markdownPathChirho,
+          expectedSourceSha256Chirho: itemChirho.sourceSha256Chirho,
+          expectedPacketSha256Chirho: itemChirho.packetSha256Chirho,
+          expectedSpanXMinPxChirho: itemChirho.spanXMinPxChirho,
+          expectedSpanWidthPxChirho: itemChirho.spanWidthPxChirho,
+          expectedLineWidthPxChirho: itemChirho.lineWidthPxChirho
+        })
+      });
+      const dataChirho = await responseChirho.json();
+      if (!dataChirho.okChirho) {
+        setStatusChirho(dataChirho.errorChirho || "Supply text failed");
+        if (supplyResultChirho) supplyResultChirho.textContent = dataChirho.errorChirho || "Supply text failed";
+        return;
+      }
+      const reportChirho = dataChirho.reportChirho;
+      if (supplyResultChirho) {
+        supplyResultChirho.textContent = JSON.stringify(reportChirho, null, 2);
+      }
+      if (applyChirho) {
+        setStatusChirho("Applied supplied text; item still needs explicit expert confirmation.");
+        await loadStateChirho();
+      } else {
+        setStatusChirho("Dry-run passed; apply only after exact script-reader transcription is settled.");
+      }
     }
     document.getElementById("script-filter-chirho").addEventListener("change", (eventChirho) => {
       scriptFilterChirho = eventChirho.target.value;
@@ -1817,6 +1922,80 @@ const serverChirho = Bun.serve({
             reviewedIssueIdsChirho,
             openIssueDetailsByIdChirho
           ),
+        });
+      }
+      if (urlChirho.pathname === "/api-chirho/supply-text-chirho" && reqChirho.method === "POST") {
+        const staleServerResponseChirho = staleReviewServerWriteResponseChirho();
+        if (staleServerResponseChirho !== null) return staleServerResponseChirho;
+        const bodyChirho = (await reqChirho.json()) as SupplyTextRequestChirho;
+        const itemIdChirho = nonEmptyTrimmedChirho(bodyChirho.idChirho);
+        const suppliedTextChirho = nonEmptyTrimmedChirho(bodyChirho.suppliedTextChirho);
+        const reviewerChirho = nonEmptyTrimmedChirho(trustedReviewerIdentityChirho(reqChirho.headers, serverReviewerChirho));
+        const reviewerRoleChirho = nonEmptyTrimmedChirho(bodyChirho.reviewerRoleChirho);
+        const rationaleChirho = nonEmptyTrimmedChirho(bodyChirho.rationaleChirho);
+        const applyChirho = bodyChirho.applyChirho === true;
+        if (itemIdChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "missing idChirho" }, 400);
+        if (suppliedTextChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "suppliedTextChirho is required" }, 400);
+        if (bodyChirho.certifyExactChirho === true) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: "supply-text-chirho cannot include certifyExactChirho=true; supplied text is not confirmation",
+          }, 400);
+        }
+        if (reviewerChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerChirho is required" }, 400);
+        const reviewerErrorChirho = certifyingReviewerAttributionErrorChirho(reviewerChirho);
+        if (reviewerErrorChirho !== null) return jsonResponseChirho({ okChirho: false, errorChirho: reviewerErrorChirho }, 400);
+        if (reviewerRoleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "reviewerRoleChirho is required" }, 400);
+        if (rationaleChirho === null) return jsonResponseChirho({ okChirho: false, errorChirho: "rationaleChirho is required" }, 400);
+        if (visionTierExpertRationaleLooksPlaceholderChirho(rationaleChirho)) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: "rationaleChirho must explain the exact supplied text, not a template placeholder",
+          }, 400);
+        }
+        const { manifestChirho, liveByIdChirho } = loadCurrentStateChirho(policyPathChirho);
+        const liveItemChirho = liveByIdChirho.get(itemIdChirho);
+        if (liveItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown item" }, 404);
+        const packetItemChirho = (manifestChirho.completeVisionItemsChirho ?? []).find((itemChirho) => itemChirho.idChirho === itemIdChirho);
+        if (packetItemChirho === undefined) return jsonResponseChirho({ okChirho: false, errorChirho: "unknown packet item" }, 404);
+        const staleDisplayChirho = staleDisplayMismatchChirho(bodyChirho, packetItemChirho, liveItemChirho);
+        if (staleDisplayChirho !== null) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: `Expert review item is stale: ${staleDisplayChirho}; reload review state`,
+          }, 409);
+        }
+        const roleErrorChirho = reviewerRoleErrorChirho(liveItemChirho, reviewerRoleChirho);
+        if (roleErrorChirho !== null) return jsonResponseChirho({ okChirho: false, errorChirho: roleErrorChirho }, 400);
+        let reportChirho;
+        try {
+          reportChirho = applyExpertSuppliedVisionTextChirho({
+            applyChirho,
+            itemIdChirho,
+            suppliedTextChirho,
+            reviewerChirho,
+            reviewerRoleChirho,
+            rationaleChirho,
+            backupPathChirho: DEFAULT_EXPERT_SUPPLIED_VISION_TEXT_BACKUP_PATH_CHIRHO,
+            expectedSourceSha256Chirho: bodyChirho.expectedSourceSha256Chirho ?? null,
+            expectedPacketSha256Chirho: bodyChirho.expectedPacketSha256Chirho ?? null,
+          });
+        } catch (errorChirho) {
+          return jsonResponseChirho({
+            okChirho: false,
+            errorChirho: errorChirho instanceof Error ? errorChirho.message : String(errorChirho),
+          }, 400);
+        }
+        if (reportChirho.statusChirho === "blocked-chirho") {
+          return jsonResponseChirho({ okChirho: false, errorChirho: reportChirho.messagesChirho.join("; "), reportChirho }, 400);
+        }
+        if (applyChirho && reportChirho.statusChirho === "applied-chirho") {
+          regenerateExpertPackChirho();
+        }
+        return jsonResponseChirho({
+          okChirho: true,
+          reportChirho,
+          packRegeneratedChirho: applyChirho && reportChirho.statusChirho === "applied-chirho",
         });
       }
       if (urlChirho.pathname === "/api-chirho/confirm-chirho" && reqChirho.method === "POST") {

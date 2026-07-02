@@ -404,10 +404,6 @@ function nestedCountMapValueChirho(
   return countChirho;
 }
 
-function shellSingleQuoteChirho(valueChirho: string): string {
-  return `'${valueChirho.normalize("NFC").replace(/'/g, "'\"'\"'")}'`;
-}
-
 function assertMarkdownContainsChirho(markdownChirho: string, expectedChirho: string, labelChirho: string): void {
   assertGeneratedCheckChirho(markdownChirho.includes(expectedChirho), `status Markdown missing ${labelChirho}: ${expectedChirho}`);
 }
@@ -1276,15 +1272,19 @@ function assertReviewEntryPointMarkdownCoverageChirho(markdownChirho: string, st
   );
   assertMarkdownContainsChirho(
     markdownChirho,
-    "- Expert-supplied blank-span dry-run path: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='<item-id-chirho>' --supplied-text-chirho='<exact printed text>'",
-    "expert-supplied dry-run template"
+    "- Expert-supplied blank-span workflow: use the blank-text handoff lane browser form; Dry-run supplied text checks server guards, Apply supplied text fills the blank only, and explicit expert confirmation is still required afterward.",
+    "expert-supplied browser workflow"
   );
   assertMarkdownContainsChirho(
     markdownChirho,
-    "- Expert-supplied blank-span apply path, only after dry-run verification: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='<item-id-chirho>' --supplied-text-chirho='<exact printed text>'",
-    "expert-supplied apply template"
+    "Browser workflow: open the Expert review URL, enter the exact supplied text in the blank-item form, run Dry-run supplied text, then Apply supplied text after the script reader verifies the dry-run.",
+    "expert-supplied blank handoff browser workflow"
   );
-  assertMarkdownContainsChirho(markdownChirho, "- Expert-supplied text commands reject copied template placeholders;", "expert-supplied placeholder warning");
+  assertMarkdownContainsChirho(
+    markdownChirho,
+    "Applying supplied text removes only the EMPTY-SPAN structural marker; it does not certify the item, which remains in the expert lane until explicit expert confirmation.",
+    "expert-supplied not-certification warning"
+  );
   assertMarkdownContainsChirho(
     markdownChirho,
     `- Expert Arabist lane: http://localhost:8771/?script-chirho=arabic-chirho (${expertPendingScriptChirho("arabic-chirho")} pending of ${expertScriptTotalChirho("arabic-chirho")} item(s)${reviewStartSuffixChirho(linksChirho, "expertArabicChirho")})`,
@@ -1488,26 +1488,6 @@ function reattributeBatchCommandFromFieldsChirho(
   return commandPartsChirho.join(" ");
 }
 
-function blankExpertSuppliedCommandTemplateChirho(handoffChirho: unknown, applyChirho: boolean): string {
-  const labelChirho = "structuralChirho.blankVisionTierHandoffsChirho[]";
-  const idChirho = stringFieldChirho(handoffChirho, "idChirho", labelChirho);
-  const expectedRoleChirho = nullableStringFieldChirho(handoffChirho, "expectedReviewerRoleChirho", labelChirho);
-  const sourceShaChirho = sha256OrNullFieldChirho(handoffChirho, "sourceSha256Chirho", labelChirho);
-  const packetShaChirho = sha256OrNullFieldChirho(handoffChirho, "packetSha256Chirho", labelChirho);
-  const commandPartsChirho = [
-    "bun run apply-expert-supplied-vision-text-chirho --",
-    `--id-chirho=${shellSingleQuoteChirho(idChirho)}`,
-    "--supplied-text-chirho='<exact printed text>'",
-    "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
-    `--reviewer-role-chirho=${shellSingleQuoteChirho(expectedRoleChirho ?? "<expected-script-role-chirho>")}`,
-    "--rationale-chirho='<why this exact text is supplied>'",
-    ...(sourceShaChirho === null ? [] : [`--expected-source-sha256-chirho=${sourceShaChirho}`]),
-    ...(packetShaChirho === null ? [] : [`--expected-packet-sha256-chirho=${packetShaChirho}`]),
-    ...(applyChirho ? ["--apply"] : []),
-  ];
-  return commandPartsChirho.join(" ");
-}
-
 function assertBlankExpertHandoffPathsChirho(markdownChirho: string, handoffChirho: unknown): void {
   const labelChirho = "structuralChirho.blankVisionTierHandoffsChirho[]";
   const sourcePathChirho = nullableStringFieldChirho(handoffChirho, "sourcePathChirho", labelChirho);
@@ -1626,19 +1606,9 @@ function assertBlankExpertHandoffCoverageChirho(markdownChirho: string, statusCh
     const scriptChirho = nullableStringFieldChirho(handoffChirho, "scriptChirho", labelChirho);
     const expectedRoleChirho = nullableStringFieldChirho(handoffChirho, "expectedReviewerRoleChirho", labelChirho);
     const expertReviewUrlChirho = stringFieldChirho(handoffChirho, "expertReviewUrlChirho", labelChirho);
-    const dryRunCommandChirho = stringFieldChirho(handoffChirho, "dryRunCommandTemplateChirho", labelChirho);
-    const applyCommandChirho = stringFieldChirho(handoffChirho, "applyCommandTemplateChirho", labelChirho);
     const manifestFreshChirho = booleanFieldChirho(handoffChirho, "manifestItemFreshChirho", labelChirho);
     const documentMatchesChirho = booleanFieldChirho(handoffChirho, "handoffDocumentMatchesCurrentChirho", labelChirho);
     const missingSnippetsChirho = stringArrayFieldChirho(handoffChirho, "handoffDocumentMissingSnippetsChirho", labelChirho);
-    assertGeneratedCheckChirho(
-      dryRunCommandChirho === blankExpertSuppliedCommandTemplateChirho(handoffChirho, false),
-      `${labelChirho}.dryRunCommandTemplateChirho does not match the handoff fields`
-    );
-    assertGeneratedCheckChirho(
-      applyCommandChirho === blankExpertSuppliedCommandTemplateChirho(handoffChirho, true),
-      `${labelChirho}.applyCommandTemplateChirho does not match the handoff fields`
-    );
     const urlChirho = new URL(expertReviewUrlChirho);
     assertGeneratedCheckChirho(urlChirho.protocol === "http:", `${labelChirho}.expertReviewUrlChirho must use http`);
     assertGeneratedCheckChirho(urlChirho.hostname === "localhost", `${labelChirho}.expertReviewUrlChirho must target localhost`);
@@ -1675,18 +1645,12 @@ function assertBlankExpertHandoffCoverageChirho(markdownChirho: string, statusCh
     );
     assertMarkdownContainsChirho(
       markdownChirho,
-      `Expert-supplied text dry-run after exact script-reader transcription: \`${dryRunCommandChirho}\``,
-      `blank expert handoff ${idChirho} dry-run command`
+      "Browser workflow: open the Expert review URL, enter the exact supplied text in the blank-item form, run Dry-run supplied text, then Apply supplied text after the script reader verifies the dry-run.",
+      `blank expert handoff ${idChirho} browser workflow`
     );
     assertMarkdownContainsChirho(
       markdownChirho,
-      `Expert-supplied text apply after dry-run verification: \`${applyCommandChirho}\``,
-      `blank expert handoff ${idChirho} apply command`
-    );
-    assertMarkdownContainsChirho(markdownChirho, "Replace every placeholder before running", `blank expert handoff ${idChirho} placeholder warning`);
-    assertMarkdownContainsChirho(
-      markdownChirho,
-      "Applying supplied text removes only the EMPTY-SPAN structural marker; the item remains in the expert lane until explicit expert confirmation.",
+      "Applying supplied text removes only the EMPTY-SPAN structural marker; it does not certify the item, which remains in the expert lane until explicit expert confirmation.",
       `blank expert handoff ${idChirho} no-over-cert warning`
     );
   }

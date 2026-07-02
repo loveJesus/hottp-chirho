@@ -43,13 +43,13 @@ certification gate.
 
 ## Phase 3 — No-Command Expert And Issue Workflows Chirho
 
-- [ ] Replace the Syriac expert-supplied-text command helper with a guarded
+- [x] Replace the Syriac expert-supplied-text command helper with a guarded
       browser form for authenticated script readers.
-- [ ] Keep supplied text distinct from expert confirmation: supply fills the
+- [x] Keep supplied text distinct from expert confirmation: supply fills the
       blank; confirmation remains a separate explicit expert action.
-- [ ] Ensure report-issue remains available to non-readers for crop/source/
+- [x] Ensure report-issue remains available to non-readers for crop/source/
       segmentation problems without certifying text.
-- [ ] Preserve current fail-closed behavior for stale pack text/images/paths.
+- [x] Preserve current fail-closed behavior for stale pack text/images/paths.
 
 ## Phase 4 — Segment Repair Assistant Chirho
 

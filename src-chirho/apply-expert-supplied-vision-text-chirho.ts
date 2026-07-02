@@ -46,7 +46,7 @@ const EXPERT_PACK_DIR_CHIRHO = join(
   "2026-05-31-chirho"
 );
 const EXPERT_PACK_MANIFEST_PATH_CHIRHO = join(EXPERT_PACK_DIR_CHIRHO, "manifest-chirho.json");
-const DEFAULT_BACKUP_PATH_CHIRHO = join(
+export const DEFAULT_EXPERT_SUPPLIED_VISION_TEXT_BACKUP_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
   "metropoliluya-chirho",
@@ -156,7 +156,7 @@ interface ParsedItemIdChirho {
   segmentIndexChirho: number;
 }
 
-interface ApplyOptionsChirho {
+export interface ApplyOptionsChirho {
   applyChirho: boolean;
   itemIdChirho: string;
   suppliedTextChirho: string;
@@ -168,7 +168,7 @@ interface ApplyOptionsChirho {
   expectedPacketSha256Chirho: string | null;
 }
 
-interface ApplyReportChirho {
+export interface ApplyReportChirho {
   moduleChirho: string;
   modeChirho: "dry-run-chirho" | "apply-chirho";
   statusChirho: "planned-chirho" | "applied-chirho" | "already-applied-chirho" | "blocked-chirho";
@@ -324,43 +324,79 @@ function loadReconciliationExpertPackItemChirho(
   ]);
 }
 
-function parseOptionsChirho(): ApplyOptionsChirho {
-  const argsChirho = process.argv.slice(2);
-  const applyChirho = argsChirho.includes("--apply");
-  const suppliedTextChirho = normalizeTextForStorageChirho(nonEmptyArgChirho(argsChirho, "supplied-text-chirho"));
+function normalizedSha256OptionChirho(valueChirho: string | null, nameChirho: string): string | null {
+  if (valueChirho === null) return null;
+  const trimmedChirho = valueChirho.trim();
+  if (!/^[a-f0-9]{64}$/.test(trimmedChirho)) {
+    throw new Error(`--${nameChirho} must be a lowercase sha256 hex digest`);
+  }
+  return trimmedChirho;
+}
+
+function validateApplyOptionsChirho(optionsChirho: ApplyOptionsChirho): ApplyOptionsChirho {
+  const itemIdChirho = optionsChirho.itemIdChirho.trim();
+  if (itemIdChirho.length === 0) throw new Error("--id-chirho is required");
+  const suppliedTextChirho = normalizeTextForStorageChirho(optionsChirho.suppliedTextChirho);
   if (suppliedTextChirho.trim().length === 0) throw new Error("--supplied-text-chirho must not normalize to empty text");
   if (valueLooksTemplatePlaceholderChirho(suppliedTextChirho, SUPPLIED_TEXT_PLACEHOLDER_VALUES_CHIRHO)) {
     throw new Error("--supplied-text-chirho must be the exact printed transcription, not a template placeholder");
   }
-  const reviewerChirho = nonEmptyArgChirho(argsChirho, "reviewer-chirho");
+  const reviewerChirho = optionsChirho.reviewerChirho.trim();
+  if (reviewerChirho.length === 0) throw new Error("--reviewer-chirho is required");
   assertCertifyingReviewerAttributionChirho(reviewerChirho, "--reviewer-chirho");
-  const rationaleChirho = nonEmptyArgChirho(argsChirho, "rationale-chirho");
+  const reviewerRoleChirho = optionsChirho.reviewerRoleChirho.trim();
+  if (reviewerRoleChirho.length === 0) throw new Error("--reviewer-role-chirho is required");
+  const rationaleChirho = optionsChirho.rationaleChirho.trim();
+  if (rationaleChirho.length === 0) throw new Error("--rationale-chirho is required");
   if (valueLooksTemplatePlaceholderChirho(rationaleChirho, RATIONALE_PLACEHOLDER_VALUES_CHIRHO)) {
     throw new Error("--rationale-chirho must explain why this exact text is supplied, not a template placeholder");
   }
-  const expectedSourceSha256Chirho = optionalSha256ArgChirho(argsChirho, "expected-source-sha256-chirho");
-  const expectedPacketSha256Chirho = optionalSha256ArgChirho(argsChirho, "expected-packet-sha256-chirho");
-  if (applyChirho && expectedSourceSha256Chirho === null) {
+  const expectedSourceSha256Chirho = normalizedSha256OptionChirho(
+    optionsChirho.expectedSourceSha256Chirho,
+    "expected-source-sha256-chirho"
+  );
+  const expectedPacketSha256Chirho = normalizedSha256OptionChirho(
+    optionsChirho.expectedPacketSha256Chirho,
+    "expected-packet-sha256-chirho"
+  );
+  if (optionsChirho.applyChirho && expectedSourceSha256Chirho === null) {
     throw new Error("--expected-source-sha256-chirho is required with --apply");
   }
-  if (applyChirho && expectedPacketSha256Chirho === null) {
+  if (optionsChirho.applyChirho && expectedPacketSha256Chirho === null) {
     throw new Error("--expected-packet-sha256-chirho is required with --apply");
   }
-  const backupPathChirho = parseArgValueChirho(argsChirho, "backup-chirho") ?? DEFAULT_BACKUP_PATH_CHIRHO;
-  if (applyChirho) {
+  const backupPathChirho = optionsChirho.backupPathChirho.trim();
+  if (backupPathChirho.length === 0) throw new Error("--backup-chirho must not be empty");
+  if (optionsChirho.applyChirho) {
     assertBackupFileWritableChirho(backupPathChirho);
   }
   return {
-    applyChirho,
-    itemIdChirho: nonEmptyArgChirho(argsChirho, "id-chirho"),
+    applyChirho: optionsChirho.applyChirho,
+    itemIdChirho,
     suppliedTextChirho,
     reviewerChirho,
-    reviewerRoleChirho: nonEmptyArgChirho(argsChirho, "reviewer-role-chirho"),
+    reviewerRoleChirho,
     rationaleChirho,
     backupPathChirho,
     expectedSourceSha256Chirho,
     expectedPacketSha256Chirho,
   };
+}
+
+function parseOptionsChirho(): ApplyOptionsChirho {
+  const argsChirho = process.argv.slice(2);
+  return validateApplyOptionsChirho({
+    applyChirho: argsChirho.includes("--apply"),
+    itemIdChirho: nonEmptyArgChirho(argsChirho, "id-chirho"),
+    suppliedTextChirho: nonEmptyArgChirho(argsChirho, "supplied-text-chirho"),
+    reviewerChirho: nonEmptyArgChirho(argsChirho, "reviewer-chirho"),
+    reviewerRoleChirho: nonEmptyArgChirho(argsChirho, "reviewer-role-chirho"),
+    rationaleChirho: nonEmptyArgChirho(argsChirho, "rationale-chirho"),
+    backupPathChirho:
+      parseArgValueChirho(argsChirho, "backup-chirho") ?? DEFAULT_EXPERT_SUPPLIED_VISION_TEXT_BACKUP_PATH_CHIRHO,
+    expectedSourceSha256Chirho: optionalSha256ArgChirho(argsChirho, "expected-source-sha256-chirho"),
+    expectedPacketSha256Chirho: optionalSha256ArgChirho(argsChirho, "expected-packet-sha256-chirho"),
+  });
 }
 
 function stateChirho(spanChirho: SpanChirho, optionsChirho: ApplyOptionsChirho): "pre-apply-chirho" | "already-applied-chirho" | "unknown-chirho" {
@@ -545,8 +581,8 @@ function reportChirho(paramsChirho: {
   };
 }
 
-function mainChirho(): void {
-  const optionsChirho = parseOptionsChirho();
+export function applyExpertSuppliedVisionTextChirho(rawOptionsChirho: ApplyOptionsChirho): ApplyReportChirho {
+  const optionsChirho = validateApplyOptionsChirho(rawOptionsChirho);
   const parsedChirho = parsedItemIdChirho(optionsChirho.itemIdChirho);
   const linePathChirho = spanLinePathChirho(parsedChirho);
   const lineChirho = loadJsonChirho<SpanLineChirho>(linePathChirho);
@@ -558,22 +594,14 @@ function mainChirho(): void {
     throw new Error(`${optionsChirho.itemIdChirho} is not in the live vision-tier expert queue`);
   }
   if (currentStateChirho === "unknown-chirho") {
-    console.log(
-      JSON.stringify(
-        reportChirho({
-          optionsChirho,
-          statusChirho: "blocked-chirho",
-          linePathChirho,
-          scriptChirho: spanChirho.scriptChirho,
-          previousTextChirho: spanChirho.utf8TextChirho,
-          messagesChirho: ["target span is neither an empty vision-tier item nor the already-applied expert-supplied text"],
-        }),
-        null,
-        2
-      )
-    );
-    process.exitCode = 1;
-    return;
+    return reportChirho({
+      optionsChirho,
+      statusChirho: "blocked-chirho",
+      linePathChirho,
+      scriptChirho: spanChirho.scriptChirho,
+      previousTextChirho: spanChirho.utf8TextChirho,
+      messagesChirho: ["target span is neither an empty vision-tier item nor the already-applied expert-supplied text"],
+    });
   }
   const liveItemPresentChirho = liveItemChirho;
   if (liveItemPresentChirho === undefined) {
@@ -611,25 +639,18 @@ function mainChirho(): void {
         new Date().toISOString()
       );
     }
-    console.log(
-      JSON.stringify(
-        reportChirho({
-          optionsChirho,
-          statusChirho: "already-applied-chirho",
-          linePathChirho,
-          scriptChirho: spanChirho.scriptChirho,
-          previousTextChirho: metadataChirho.previousTextChirho,
-          messagesChirho: [
-            optionsChirho.applyChirho
-              ? "expert-supplied text is already applied; durable backup record reconciled"
-              : "expert-supplied text is already applied",
-          ],
-        }),
-        null,
-        2
-      )
-    );
-    return;
+    return reportChirho({
+      optionsChirho,
+      statusChirho: "already-applied-chirho",
+      linePathChirho,
+      scriptChirho: spanChirho.scriptChirho,
+      previousTextChirho: metadataChirho.previousTextChirho,
+      messagesChirho: [
+        optionsChirho.applyChirho
+          ? "expert-supplied text is already applied; durable backup record reconciled"
+          : "expert-supplied text is already applied",
+      ],
+    });
   }
   const packItemChirho = loadFreshExpertPackItemChirho(optionsChirho.itemIdChirho, liveItemPresentChirho);
   assertExpectedImageHashesChirho(optionsChirho.itemIdChirho, packItemChirho, optionsChirho);
@@ -637,21 +658,14 @@ function mainChirho(): void {
     throw new Error(`${optionsChirho.itemIdChirho} is not empty; this tool only resolves blank expert transcription items`);
   }
   if (!optionsChirho.applyChirho) {
-    console.log(
-      JSON.stringify(
-        reportChirho({
-          optionsChirho,
-          statusChirho: "planned-chirho",
-          linePathChirho,
-          scriptChirho: spanChirho.scriptChirho,
-          previousTextChirho: spanChirho.utf8TextChirho,
-          messagesChirho: ["ready to apply expert-supplied text; add --apply after verifying the exact printed transcription"],
-        }),
-        null,
-        2
-      )
-    );
-    return;
+    return reportChirho({
+      optionsChirho,
+      statusChirho: "planned-chirho",
+      linePathChirho,
+      scriptChirho: spanChirho.scriptChirho,
+      previousTextChirho: spanChirho.utf8TextChirho,
+      messagesChirho: ["ready to apply expert-supplied text; add --apply after verifying the exact printed transcription"],
+    });
   }
 
   const appliedAtChirho = new Date().toISOString();
@@ -686,22 +700,22 @@ function mainChirho(): void {
     }),
     appliedAtChirho
   );
-  console.log(
-    JSON.stringify(
-      reportChirho({
-        optionsChirho,
-        statusChirho: "applied-chirho",
-        linePathChirho,
-        scriptChirho: spanChirho.scriptChirho,
-        previousTextChirho,
-        messagesChirho: [
-          "applied expert-supplied text and wrote durable backup record; item remains vision-chirho until explicit expert confirmation",
-        ],
-      }),
-      null,
-      2
-    )
-  );
+  return reportChirho({
+    optionsChirho,
+    statusChirho: "applied-chirho",
+    linePathChirho,
+    scriptChirho: spanChirho.scriptChirho,
+    previousTextChirho,
+    messagesChirho: [
+      "applied expert-supplied text and wrote durable backup record; item remains vision-chirho until explicit expert confirmation",
+    ],
+  });
+}
+
+function mainChirho(): void {
+  const reportResultChirho = applyExpertSuppliedVisionTextChirho(parseOptionsChirho());
+  console.log(JSON.stringify(reportResultChirho, null, 2));
+  if (reportResultChirho.statusChirho === "blocked-chirho") process.exitCode = 1;
 }
 
 if (import.meta.main) mainChirho();

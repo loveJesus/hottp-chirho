@@ -344,8 +344,6 @@ interface BlankVisionTierHandoffChirho {
   scriptChirho: string | null;
   expectedReviewerRoleChirho: string | null;
   expertReviewUrlChirho: string;
-  dryRunCommandTemplateChirho: string;
-  applyCommandTemplateChirho: string;
   sourcePathChirho: string | null;
   sourceSha256Chirho: string | null;
   packetPathChirho: string | null;
@@ -2266,31 +2264,6 @@ function withReviewStartTextChirho(urlChirho: string | null | undefined): string
   return urlChirho == null ? "" : `; first pending: ${urlChirho}`;
 }
 
-function blankVisionTierSuppliedTextCommandTemplateChirho(
-  idChirho: string,
-  expectedReviewerRoleChirho: string | null,
-  expectedSourceSha256Chirho: string | null,
-  expectedPacketSha256Chirho: string | null,
-  applyChirho: boolean
-): string {
-  const commandPartsChirho = [
-    "bun run apply-expert-supplied-vision-text-chirho --",
-    `--id-chirho=${shellSingleQuoteChirho(idChirho)}`,
-    "--supplied-text-chirho='<exact printed text>'",
-    "--reviewer-chirho='<explicit-human-reviewer-id-chirho>'",
-    `--reviewer-role-chirho=${shellSingleQuoteChirho(expectedReviewerRoleChirho ?? "<expected-script-role-chirho>")}`,
-    "--rationale-chirho='<why this exact text is supplied>'",
-  ];
-  if (expectedSourceSha256Chirho !== null) {
-    commandPartsChirho.push(`--expected-source-sha256-chirho=${expectedSourceSha256Chirho}`);
-  }
-  if (expectedPacketSha256Chirho !== null) {
-    commandPartsChirho.push(`--expected-packet-sha256-chirho=${expectedPacketSha256Chirho}`);
-  }
-  if (applyChirho) commandPartsChirho.push("--apply");
-  return commandPartsChirho.join(" ");
-}
-
 function blankVisionTierHandoffArtifactPathsChirho(
   idChirho: string,
   syriacBlankTranscriptionHandoffPathChirho: string,
@@ -2594,20 +2567,6 @@ function blankVisionTierHandoffsChirho(
         scriptChirho,
         expectedReviewerRoleChirho,
         expertReviewUrlChirho: expertReviewUrlResultChirho,
-        dryRunCommandTemplateChirho: blankVisionTierSuppliedTextCommandTemplateChirho(
-          idChirho,
-          expectedReviewerRoleChirho,
-          sourceSha256Chirho,
-          packetSha256Chirho,
-          false
-        ),
-        applyCommandTemplateChirho: blankVisionTierSuppliedTextCommandTemplateChirho(
-          idChirho,
-          expectedReviewerRoleChirho,
-          sourceSha256Chirho,
-          packetSha256Chirho,
-          true
-        ),
         sourcePathChirho: manifestItemChirho?.sourcePathChirho ?? null,
         sourceSha256Chirho,
         packetPathChirho: manifestItemChirho?.packetPathChirho ?? null,
@@ -5376,10 +5335,8 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
           `  - Dedicated handoff document matches current blank span: ${handoffChirho.handoffDocumentMatchesCurrentChirho}`,
           `  - Dedicated handoff missing snippet(s): ${handoffChirho.handoffDocumentMissingSnippetsChirho.length === 0 ? "none" : handoffChirho.handoffDocumentMissingSnippetsChirho.map(markdownInlineCodeChirho).join("; ")}`,
           `  - Manifest item fresh against live queue: ${handoffChirho.manifestItemFreshChirho}`,
-          `  - Expert-supplied text dry-run after exact script-reader transcription: \`${handoffChirho.dryRunCommandTemplateChirho}\``,
-          `  - Expert-supplied text apply after dry-run verification: \`${handoffChirho.applyCommandTemplateChirho}\``,
-          "  - Replace every placeholder before running; copied template values such as `<exact printed text>` are rejected by the CLI.",
-          "  - Applying supplied text removes only the EMPTY-SPAN structural marker; the item remains in the expert lane until explicit expert confirmation.",
+          "  - Browser workflow: open the Expert review URL, enter the exact supplied text in the blank-item form, run Dry-run supplied text, then Apply supplied text after the script reader verifies the dry-run.",
+          "  - Applying supplied text removes only the EMPTY-SPAN structural marker; it does not certify the item, which remains in the expert lane until explicit expert confirmation.",
         ]);
   const guardedWlcCorrectionCommandLinesChirho = statusChirho.structuralChirho.guardedWlcCorrectionCommandsChirho.length === 0
     ? ["- Guarded WLC correction commands: none pending"]
@@ -5838,9 +5795,7 @@ function markdownChirho(statusChirho: CertificationStatusChirho): string {
     `- Expert Syriac reader Pass-C OCR lane: ${expertReviewUrlChirho("syriac-chirho", undefined, undefined, undefined, undefined, "pass-c-ocr-span-chirho")} (${pendingExpertScriptSourceCountChirho("syriac-chirho", "pass-c-ocr-span-chirho")} pending of ${expertScriptSourceCountChirho("syriac-chirho", "pass-c-ocr-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacPassCOcrSourceChirho)})`,
     `- Expert Syriac reader has-text lane: ${expertReviewUrlChirho("syriac-chirho", undefined, undefined, undefined, "nonblank-chirho")} (${pendingExpertScriptNonblankCountChirho("syriac-chirho")} pending confirmation(s) with current text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacNonblankChirho)})`,
     `- Expert Syriac reader blank-text handoff lane: ${expertReviewUrlChirho("syriac-chirho", undefined, undefined, undefined, "blank-chirho")} (${pendingExpertScriptBlankCountChirho("syriac-chirho")} pending blank item(s) requiring supplied text${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertSyriacBlankChirho)})`,
-    "- Expert-supplied blank-span dry-run path: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='<item-id-chirho>' --supplied-text-chirho='<exact printed text>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>' --expected-source-sha256-chirho='<source-image-sha256-chirho>' --expected-packet-sha256-chirho='<packet-image-sha256-chirho>'`",
-    "- Expert-supplied blank-span apply path, only after dry-run verification: `bun run apply-expert-supplied-vision-text-chirho -- --id-chirho='<item-id-chirho>' --supplied-text-chirho='<exact printed text>' --reviewer-chirho='<explicit-human-reviewer-id-chirho>' --reviewer-role-chirho='Syriac reader' --rationale-chirho='<why this exact text is supplied>' --expected-source-sha256-chirho='<source-image-sha256-chirho>' --expected-packet-sha256-chirho='<packet-image-sha256-chirho>' --apply` (the item remains in the expert lane until explicitly confirmed)",
-    "- Expert-supplied text commands reject copied template placeholders; replace placeholders with the actual item id, exact printed UTF-8, reviewer id, and rationale.",
+    "- Expert-supplied blank-span workflow: use the blank-text handoff lane browser form; Dry-run supplied text checks server guards, Apply supplied text fills the blank only, and explicit expert confirmation is still required afterward.",
     `- Expert Arabist lane: ${expertReviewUrlChirho("arabic-chirho")} (${pendingExpertScriptCountChirho("arabic-chirho")} pending of ${expertScriptCountChirho("arabic-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertArabicChirho)})`,
     `- Expert Arabist explicit-span lane: ${expertReviewUrlChirho("arabic-chirho", undefined, undefined, undefined, undefined, "explicit-span-chirho")} (${pendingExpertScriptSourceCountChirho("arabic-chirho", "explicit-span-chirho")} pending of ${expertScriptSourceCountChirho("arabic-chirho", "explicit-span-chirho")} item(s)${withReviewStartTextChirho(statusChirho.reviewStartLinksChirho.expertArabicExplicitSpanSourceChirho)})`,
     ...expertVolumeLaneLinesChirho,

@@ -30,15 +30,11 @@ const EXPERT_REVIEW_GUIDANCE_SNIPPETS_CHIRHO = [
   "Greek final sigma",
   "Hebrew letter alef",
   "Dagesh/mappiq/shuruk",
-  "Dry-run after exact script-reader transcription",
-  "Apply after dry-run verification",
-  "Exact supplied text for command",
+  "Dry-run supplied text",
+  "Apply supplied text",
+  "Exact supplied text",
   "Supplied text codepoints",
-  "This helper field only updates the copied command; it does not save, apply, confirm, or certify.",
-  "bun run apply-expert-supplied-vision-text-chirho",
-  "--expected-source-sha256-chirho",
-  "--expected-packet-sha256-chirho",
-  "Copy command",
+  "Dry-run checks the server guards. Apply fills only the blank structural hole; it does not confirm or certify the item.",
   "Quickstart",
   "/quickstart-chirho",
   "Session guide",
@@ -113,6 +109,8 @@ interface ExpertReviewStateItemChirho {
   sourcePathChirho: string;
   packetPathChirho: string;
   markdownPathChirho: string;
+  sourceSha256Chirho: string;
+  packetSha256Chirho: string;
   spanXMinPxChirho: number;
   spanWidthPxChirho: number;
   lineWidthPxChirho: number;
@@ -130,6 +128,9 @@ interface ExpertReviewStateResponseChirho {
 interface ExpertReviewPostResponseChirho {
   okChirho?: boolean;
   errorChirho?: string;
+  reportChirho?: {
+    statusChirho?: string;
+  };
 }
 
 function assertCheckChirho(conditionChirho: boolean, messageChirho: string): void {
@@ -193,6 +194,8 @@ function displayGuardForItemChirho(itemChirho: ExpertReviewStateItemChirho): Rec
     expectedSourcePathChirho: itemChirho.sourcePathChirho,
     expectedPacketPathChirho: itemChirho.packetPathChirho,
     expectedMarkdownPathChirho: itemChirho.markdownPathChirho,
+    expectedSourceSha256Chirho: itemChirho.sourceSha256Chirho,
+    expectedPacketSha256Chirho: itemChirho.packetSha256Chirho,
     expectedSpanXMinPxChirho: itemChirho.spanXMinPxChirho,
     expectedSpanWidthPxChirho: itemChirho.spanWidthPxChirho,
     expectedLineWidthPxChirho: itemChirho.lineWidthPxChirho,
@@ -452,6 +455,76 @@ async function mainChirho(): Promise<void> {
         policyPathChirho,
         expectedErrorChirho: "blank currentTextChirho cannot be confirmed",
       });
+      const commonBlankSupplyBodyChirho = {
+        idChirho: blankItemChirho.idChirho,
+        reviewerChirho: "dr-smith-human-reviewer-chirho",
+        reviewerRoleChirho: blankItemChirho.reviewerChirho,
+        suppliedTextChirho: "ܡ",
+        rationaleChirho: "server guard dry-runs exact supplied text without certifying the blank item",
+        ...displayGuardForItemChirho(blankItemChirho),
+      };
+      const staleSupplyDisplayResultChirho = await postJsonChirho(portChirho, "/api-chirho/supply-text-chirho", {
+        ...commonBlankSupplyBodyChirho,
+        expectedCurrentTextChirho: "stale blank text",
+        applyChirho: false,
+      });
+      assertCheckChirho(
+        staleSupplyDisplayResultChirho.responseChirho.status === 409,
+        `stale supply display expected HTTP 409, got ${staleSupplyDisplayResultChirho.responseChirho.status}`
+      );
+      assertCheckChirho(staleSupplyDisplayResultChirho.dataChirho.okChirho === false, "stale supply display returned ok");
+      assertCheckChirho(!existsSync(policyPathChirho), "stale supply display wrote a policy file");
+      const supplyWithCertifyResultChirho = await postJsonChirho(portChirho, "/api-chirho/supply-text-chirho", {
+        ...commonBlankSupplyBodyChirho,
+        applyChirho: false,
+        certifyExactChirho: true,
+      });
+      assertRejectedWithoutPolicyChirho({
+        labelChirho: "supply with exact-certification acknowledgement",
+        responseChirho: supplyWithCertifyResultChirho.responseChirho,
+        dataChirho: supplyWithCertifyResultChirho.dataChirho,
+        policyPathChirho,
+        expectedErrorChirho: "supplied text is not confirmation",
+      });
+      const placeholderSupplyResultChirho = await postJsonChirho(portChirho, "/api-chirho/supply-text-chirho", {
+        ...commonBlankSupplyBodyChirho,
+        suppliedTextChirho: "<exact printed text>",
+        applyChirho: false,
+      });
+      assertRejectedWithoutPolicyChirho({
+        labelChirho: "placeholder supplied text",
+        responseChirho: placeholderSupplyResultChirho.responseChirho,
+        dataChirho: placeholderSupplyResultChirho.dataChirho,
+        policyPathChirho,
+        expectedErrorChirho: "template placeholder",
+      });
+      const wrongRoleSupplyResultChirho = await postJsonChirho(portChirho, "/api-chirho/supply-text-chirho", {
+        ...commonBlankSupplyBodyChirho,
+        reviewerRoleChirho: blankItemChirho.reviewerChirho === "Syriac reader" ? "Hebrew/WLC reviewer" : "Syriac reader",
+        applyChirho: false,
+      });
+      assertRejectedWithoutPolicyChirho({
+        labelChirho: "wrong supply reviewer role",
+        responseChirho: wrongRoleSupplyResultChirho.responseChirho,
+        dataChirho: wrongRoleSupplyResultChirho.dataChirho,
+        policyPathChirho,
+        expectedErrorChirho: "reviewerRoleChirho must be",
+      });
+      const validSupplyDryRunResultChirho = await postJsonChirho(portChirho, "/api-chirho/supply-text-chirho", {
+        ...commonBlankSupplyBodyChirho,
+        reviewerChirho: "codex-gpt5-chirho",
+        applyChirho: false,
+      });
+      assertCheckChirho(
+        validSupplyDryRunResultChirho.responseChirho.ok,
+        `valid supply dry-run failed: ${validSupplyDryRunResultChirho.responseChirho.status} ${String(validSupplyDryRunResultChirho.dataChirho.errorChirho ?? "")}`
+      );
+      assertCheckChirho(validSupplyDryRunResultChirho.dataChirho.okChirho === true, "valid supply dry-run returned not-ok");
+      assertCheckChirho(
+        validSupplyDryRunResultChirho.dataChirho.reportChirho?.statusChirho === "planned-chirho",
+        "valid supply dry-run did not return planned status"
+      );
+      assertCheckChirho(!existsSync(policyPathChirho), "valid supply dry-run wrote a policy file");
     }
     const staleDisplayResultChirho = await postJsonChirho(portChirho, "/api-chirho/confirm-chirho", {
       ...commonBodyChirho,
