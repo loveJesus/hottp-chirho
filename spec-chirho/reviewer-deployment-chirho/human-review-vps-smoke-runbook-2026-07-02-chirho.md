@@ -277,15 +277,22 @@ bun run check-human-review-vps-first-smoke-completion-chirho -- \
   --evidence-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-YYYY-MM-DD-chirho.json \
   --pass-c-backup-chirho=spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json \
   --live-probe-chirho
+bun run check-human-review-vps-phase6-completion-chirho -- \
+  --decision-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-YYYY-MM-DD-chirho.json \
+  --evidence-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-YYYY-MM-DD-chirho.json \
+  --write-lease-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-write-lease-YYYY-MM-DD-chirho.json \
+  --pass-c-backup-chirho=spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json \
+  --live-probe-chirho
 ```
 
 Do not mark the first VPS smoke complete unless both completed evidence checks
-pass. The cross-check proves the decision host and raw-review DNS name match the
-actual smoke evidence, and that the named smoke validation row exists in the
-pulled-back Pass-C backup with the gateway reviewer identity and timestamp
-window recorded in the evidence. The live probe checks that the authenticated
-URL rejects unauthenticated requests and that the direct public review port does
-not answer.
+pass and the Phase 6 completion audit passes. The cross-check proves the
+decision host and raw-review DNS name match the actual smoke evidence, that the
+named smoke validation row exists in the pulled-back Pass-C backup with the
+gateway reviewer identity and timestamp window recorded in the evidence, and
+that the write lease matches the selected host before pull-back. The live probe
+checks that the authenticated URL rejects unauthenticated requests and that the
+direct public review port does not answer.
 
 ## 8. Add Other Stations Chirho
 

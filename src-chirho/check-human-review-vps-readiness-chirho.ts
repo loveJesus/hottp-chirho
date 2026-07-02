@@ -42,6 +42,7 @@ const REQUIRED_PACKAGE_SCRIPTS_CHIRHO = [
   "check-human-review-vps-write-lease-chirho",
   "check-human-review-vps-smoke-evidence-chirho",
   "check-human-review-vps-first-smoke-completion-chirho",
+  "check-human-review-vps-phase6-completion-chirho",
   "check-human-review-vps-deployment-templates-chirho",
 ] as const;
 
@@ -74,6 +75,7 @@ const REQUIRED_PATHS_CHIRHO: RequiredPathChirho[] = [
   { labelChirho: "VPS provisioning decision helper", relativePathChirho: "src-chirho/check-human-review-vps-provisioning-decision-chirho.ts", kindChirho: "file-chirho" },
   { labelChirho: "VPS write lease helper", relativePathChirho: "src-chirho/check-human-review-vps-write-lease-chirho.ts", kindChirho: "file-chirho" },
   { labelChirho: "VPS first-smoke completion helper", relativePathChirho: "src-chirho/check-human-review-vps-first-smoke-completion-chirho.ts", kindChirho: "file-chirho" },
+  { labelChirho: "VPS Phase 6 completion helper", relativePathChirho: "src-chirho/check-human-review-vps-phase6-completion-chirho.ts", kindChirho: "file-chirho" },
   { labelChirho: "VPS provisioning decision template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-template-2026-07-02-chirho.json", kindChirho: "file-chirho" },
   { labelChirho: "VPS Caddyfile template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-caddyfile-template-2026-07-02-chirho.caddyfile", kindChirho: "file-chirho" },
   { labelChirho: "VPS env template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-env-template-2026-07-02-chirho.env", kindChirho: "file-chirho" },
@@ -133,6 +135,7 @@ const SMOKE_RUNBOOK_SNIPPETS_CHIRHO = [
   "rejects unauthenticated requests",
   "direct public review port",
   "check-human-review-vps-first-smoke-completion-chirho",
+  "check-human-review-vps-phase6-completion-chirho",
 ] as const;
 
 const REVIEW_SERVER_KEYS_CHIRHO: ReviewServerKeyChirho[] = [
@@ -421,6 +424,26 @@ function assertFirstSmokeCompletionHelperChirho(): void {
   }
 }
 
+function assertPhase6CompletionHelperChirho(): void {
+  const sourceChirho = readFileSync(absolutePathChirho("src-chirho/check-human-review-vps-phase6-completion-chirho.ts"), "utf8");
+  for (const snippetChirho of [
+    "check-human-review-vps-readiness-chirho.ts",
+    "check-human-review-vps-deployment-templates-chirho.ts",
+    "check-human-review-vps-write-lease-chirho.ts",
+    "check-human-review-vps-first-smoke-completion-chirho.ts",
+    "check-pass-c-human-review-server-guards-chirho.ts",
+    "transcription-certification-status-chirho.ts",
+    "check-certification-strict-status-chirho.ts",
+    "--live-probe-chirho",
+    "--source-local-fixture-chirho",
+    "Phase 6 completion requires --live-probe-chirho",
+  ]) {
+    if (!sourceChirho.includes(snippetChirho)) {
+      failChirho(`VPS Phase 6 completion helper missing guard snippet: ${snippetChirho}`);
+    }
+  }
+}
+
 function assertReviewServerFingerprintsChirho(): void {
   for (const keyChirho of REVIEW_SERVER_KEYS_CHIRHO) {
     const filesChirho = reviewServerSourceFilesChirho(keyChirho);
@@ -453,6 +476,7 @@ function mainChirho(): void {
   assertDeploymentTemplatesHelperChirho();
   assertSmokeEvidenceHelperChirho();
   assertFirstSmokeCompletionHelperChirho();
+  assertPhase6CompletionHelperChirho();
   assertReviewServerFingerprintsChirho();
   console.log(
     `[${MODULE_CHIRHO}] VPS readiness preflight passed: localhost-bound servers, trusted reviewer headers, assets, DB, packets, scripts, and commit-back docs are present`

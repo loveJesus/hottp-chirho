@@ -125,6 +125,9 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       local/remote write ownership is explicit before commit-back.
 - [x] Add live-probe mode to smoke evidence checks so real host smoke verifies
       unauthenticated gateway denial and direct-port refusal itself.
+- [x] Add a Phase 6 completion audit wrapper that composes the readiness,
+      deployment-template, provisioning, write-lease, first-smoke, Pass-C
+      backup-row, and certification guards into one final command.
 - [x] Add a non-completed provisioning decision draft from read-only provider
       inventory so owner approval starts from current host/DNS evidence.
 - [x] Add an owner approval handoff with current host/DNS inventory and the exact
