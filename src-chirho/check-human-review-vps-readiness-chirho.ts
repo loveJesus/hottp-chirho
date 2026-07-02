@@ -290,6 +290,7 @@ function assertPullHelperChirho(): void {
     "check-human-review-vps-provisioning-decision-chirho.ts",
     "pull host",
     "does not match selected host name or address",
+    "write lease owner approval reference does not match provisioning decision approval reference",
     "check-human-review-vps-write-lease-chirho.ts",
     "WRITE_CAPABLE_LOCAL_PORTS_CHIRHO",
     "local write-capable review servers to be stopped before pull-back",

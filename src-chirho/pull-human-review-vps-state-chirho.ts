@@ -21,10 +21,17 @@ const WRITE_CAPABLE_LOCAL_PORTS_CHIRHO = [
 ] as const;
 
 interface ProvisioningDecisionForPullChirho {
+  owner_approval_chirho?: {
+    approval_reference_chirho?: unknown;
+  };
   selected_host_chirho?: {
     host_name_chirho?: unknown;
     host_address_chirho?: unknown;
   };
+}
+
+interface WriteLeaseForPullChirho {
+  owner_approval_reference_chirho?: unknown;
 }
 
 const STATION_VALUES_CHIRHO = new Set([
@@ -215,8 +222,8 @@ function stringValueChirho(valueChirho: unknown, labelChirho: string): string {
   return valueChirho.trim();
 }
 
-function assertCompletedDecisionForApplyChirho(argsChirho: string[], hostChirho: string): void {
-  if (!argsChirho.includes("--apply-chirho")) return;
+function completedDecisionApprovalReferenceForApplyChirho(argsChirho: string[], hostChirho: string): string | null {
+  if (!argsChirho.includes("--apply-chirho")) return null;
   const decisionArgChirho = parseArgValueChirho(argsChirho, "decision-chirho");
   if (decisionArgChirho === null) {
     failChirho("--apply-chirho requires --decision-chirho=... so pull-back is tied to explicit owner approval");
@@ -237,6 +244,26 @@ function assertCompletedDecisionForApplyChirho(argsChirho: string[], hostChirho:
   const hostAddressChirho = stringValueChirho(decisionChirho.selected_host_chirho?.host_address_chirho, "selected host address");
   if (hostChirho !== hostNameChirho && hostChirho !== hostAddressChirho) {
     failChirho(`pull host ${hostChirho} does not match selected host name or address from provisioning decision`);
+  }
+  return stringValueChirho(
+    decisionChirho.owner_approval_chirho?.approval_reference_chirho,
+    "provisioning decision approval reference"
+  );
+}
+
+function assertWriteLeaseApprovalReferenceForApplyChirho(argsChirho: string[], approvalReferenceChirho: string | null): void {
+  if (approvalReferenceChirho === null) return;
+  const leasePathChirho = parseArgValueChirho(argsChirho, "write-lease-chirho");
+  if (leasePathChirho === null) {
+    failChirho("--apply-chirho requires --write-lease-chirho=... so write ownership is explicit before pull-back");
+  }
+  const leaseChirho = JSON.parse(readFileSync(projectPathChirho(leasePathChirho, "write lease"), "utf8")) as WriteLeaseForPullChirho;
+  const leaseApprovalReferenceChirho = stringValueChirho(
+    leaseChirho.owner_approval_reference_chirho,
+    "write lease owner approval reference"
+  );
+  if (leaseApprovalReferenceChirho !== approvalReferenceChirho) {
+    failChirho("write lease owner approval reference does not match provisioning decision approval reference");
   }
 }
 
@@ -279,8 +306,9 @@ async function mainChirho(): Promise<void> {
   const commandsValueChirho = commandsChirho(argsChirho);
   const applyChirho = argsChirho.includes("--apply-chirho");
   const hostChirho = assertSafeTokenChirho(parseArgValueChirho(argsChirho, "host-chirho") ?? "REVIEW_HOST_CHIRHO", "host-chirho");
-  if (!printOnlyChirho) assertCompletedDecisionForApplyChirho(argsChirho, hostChirho);
+  const approvalReferenceChirho = !printOnlyChirho ? completedDecisionApprovalReferenceForApplyChirho(argsChirho, hostChirho) : null;
   if (!printOnlyChirho) assertWriteLeaseForApplyChirho(argsChirho, hostChirho);
+  if (!printOnlyChirho) assertWriteLeaseApprovalReferenceForApplyChirho(argsChirho, approvalReferenceChirho);
   if (!printOnlyChirho) await assertLocalWritePortsStoppedForApplyChirho(argsChirho);
   for (const commandChirho of commandsValueChirho) {
     console.log(`[${MODULE_CHIRHO}] ${commandChirho.map(shellQuoteChirho).join(" ")}`);

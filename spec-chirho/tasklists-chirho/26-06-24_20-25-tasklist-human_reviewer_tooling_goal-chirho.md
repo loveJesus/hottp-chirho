@@ -107,6 +107,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       expert-supplied backups, and live span JSON.
 - [x] Require real commit-back pull `--apply-chirho` to cite a completed
       provisioning decision whose selected host matches the pull host.
+- [x] Bind real commit-back pull `--apply-chirho` to a write lease whose owner
+      approval reference matches the completed provisioning decision.
 - [x] Add a dry-run-default SSH host preflight helper for installed host checks:
       Bun, Caddy, rsync, directories, env permissions, Caddy validation, raw
       service status, and localhost server health.
