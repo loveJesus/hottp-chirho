@@ -91,7 +91,10 @@ is not enough for the review stations. The helper excludes `.git/`, `.env`,
 `node_modules/`, and `app-chirho/.svelte-kit/`, and refuses a non-dry-run sync
 unless `--apply-chirho` is explicit. A real sync also requires a completed
 provisioning decision, and the sync host must match that decision's selected
-host name or address.
+host name or address. Before a real sync starts, the helper also checks local
+`127.0.0.1` ports `8766`, `8770`, and `8771`; if any write-capable review
+server is still listening locally, sync-out aborts before rsync starts so the
+canonical SQLite snapshot is not copied while local writes can race it.
 
 ## 3. Host Install Chirho
 
