@@ -3,6 +3,7 @@
 
 import { dirname, join } from "path";
 import { existsSync, mkdirSync } from "fs";
+import { connect } from "net";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
@@ -11,6 +12,13 @@ const DEFAULT_REMOTE_USER_CHIRHO = "hottp-review-chirho";
 const DEFAULT_REMOTE_PATH_CHIRHO = "/srv/hottp-review-chirho/current/";
 const REMOTE_PROGRESS_DB_PATH_CHIRHO = "spec-chirho/progress-chirho.sqlite";
 const QUARANTINE_PROGRESS_DB_PATH_CHIRHO = "backups-chirho/vps-snapshot-progress-chirho.sqlite";
+const LOCAL_PORT_CHECK_TIMEOUT_MS_CHIRHO = 500;
+
+const WRITE_CAPABLE_LOCAL_PORTS_CHIRHO = [
+  { labelChirho: "raw Hebrew review server", portChirho: 8766 },
+  { labelChirho: "Latin/symbol review server", portChirho: 8770 },
+  { labelChirho: "expert non-Latin review server", portChirho: 8771 },
+] as const;
 
 const STATION_VALUES_CHIRHO = new Set([
   "raw-hebrew-chirho",
@@ -183,13 +191,47 @@ function assertWriteLeaseForApplyChirho(argsChirho: string[], hostChirho: string
   if (resultChirho.exitCode !== 0) failChirho(`write lease check exited with code ${resultChirho.exitCode}`);
 }
 
-function mainChirho(): void {
+async function localPortAcceptsConnectionChirho(portChirho: number): Promise<boolean> {
+  return await new Promise((resolveChirho) => {
+    const socketChirho = connect({ host: "127.0.0.1", port: portChirho });
+    let settledChirho = false;
+    const finishChirho = (acceptsConnectionChirho: boolean): void => {
+      if (settledChirho) return;
+      settledChirho = true;
+      socketChirho.destroy();
+      resolveChirho(acceptsConnectionChirho);
+    };
+    socketChirho.setTimeout(LOCAL_PORT_CHECK_TIMEOUT_MS_CHIRHO);
+    socketChirho.once("connect", () => finishChirho(true));
+    socketChirho.once("error", () => finishChirho(false));
+    socketChirho.once("timeout", () => finishChirho(false));
+  });
+}
+
+async function assertLocalWritePortsStoppedForApplyChirho(argsChirho: string[]): Promise<void> {
+  if (!argsChirho.includes("--apply-chirho")) return;
+  const listeningPortsChirho: string[] = [];
+  for (const portChirho of WRITE_CAPABLE_LOCAL_PORTS_CHIRHO) {
+    if (await localPortAcceptsConnectionChirho(portChirho.portChirho)) {
+      listeningPortsChirho.push(`${portChirho.labelChirho} :${portChirho.portChirho}`);
+    }
+  }
+  if (listeningPortsChirho.length > 0) {
+    failChirho(
+      "--apply-chirho requires local write-capable review servers to be stopped before pull-back; listening: " +
+        listeningPortsChirho.join(", ")
+    );
+  }
+}
+
+async function mainChirho(): Promise<void> {
   const argsChirho = process.argv.slice(2);
   const printOnlyChirho = argsChirho.includes("--print-command-chirho");
   const commandsValueChirho = commandsChirho(argsChirho);
   const applyChirho = argsChirho.includes("--apply-chirho");
   const hostChirho = assertSafeTokenChirho(parseArgValueChirho(argsChirho, "host-chirho") ?? "REVIEW_HOST_CHIRHO", "host-chirho");
   if (!printOnlyChirho) assertWriteLeaseForApplyChirho(argsChirho, hostChirho);
+  if (!printOnlyChirho) await assertLocalWritePortsStoppedForApplyChirho(argsChirho);
   for (const commandChirho of commandsValueChirho) {
     console.log(`[${MODULE_CHIRHO}] ${commandChirho.map(shellQuoteChirho).join(" ")}`);
   }
@@ -206,11 +248,9 @@ function mainChirho(): void {
 }
 
 if (import.meta.main) {
-  try {
-    mainChirho();
-  } catch (errorChirho) {
+  mainChirho().catch((errorChirho) => {
     const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
     console.error(`[${MODULE_CHIRHO}] ${messageChirho}`);
     process.exit(1);
-  }
+  });
 }

@@ -123,6 +123,9 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       preflight verify the installed Caddyfile strips spoofable identity headers.
 - [x] Add a write-lease verifier and require it for real VPS pull-back apply so
       local/remote write ownership is explicit before commit-back.
+- [x] Have the commit-back pull helper measure local write-capable review ports
+      and refuse `--apply-chirho` if raw, Latin/symbol, or expert review servers
+      are still listening locally.
 - [x] Add live-probe mode to smoke evidence checks so real host smoke verifies
       unauthenticated gateway denial and direct-port refusal itself.
 - [x] Add a Phase 6 completion audit wrapper that composes the readiness,

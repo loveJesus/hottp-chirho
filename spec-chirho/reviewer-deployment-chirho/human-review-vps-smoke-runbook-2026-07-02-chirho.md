@@ -216,7 +216,10 @@ bun run check-human-review-vps-write-lease-chirho -- \
 The completed lease must state that the VPS is the canonical writer, local
 write-capable review servers are paused, the remote review server is stopped
 before pull-back, and the SQLite snapshot is quarantine-only with JSON replay.
-Do not run pull-back `--apply-chirho` without a passing lease.
+Do not run pull-back `--apply-chirho` without a passing lease. The pull helper
+also measures local `127.0.0.1` ports `8766`, `8770`, and `8771` during
+`--apply-chirho`; if raw Hebrew, Latin/symbol, or expert review is still
+listening locally, pull-back aborts before rsync starts.
 
 Then copy the review state back:
 

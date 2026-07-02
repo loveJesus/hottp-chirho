@@ -280,6 +280,12 @@ function assertPullHelperChirho(): void {
     "--include-workspace-spans-chirho",
     "--write-lease-chirho",
     "check-human-review-vps-write-lease-chirho.ts",
+    "WRITE_CAPABLE_LOCAL_PORTS_CHIRHO",
+    "local write-capable review servers to be stopped before pull-back",
+    "127.0.0.1",
+    "8766",
+    "8770",
+    "8771",
   ]) {
     if (!sourceChirho.includes(snippetChirho)) {
       failChirho(`VPS commit-back pull helper missing guard snippet: ${snippetChirho}`);
