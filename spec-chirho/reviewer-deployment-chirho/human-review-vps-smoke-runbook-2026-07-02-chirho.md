@@ -162,13 +162,21 @@ After any write smoke, stop the server and copy state back before continuing.
 On the host, stop or pause the server, then copy the review state back:
 
 ```bash
-rsync -a hottp-review-chirho@REVIEW_HOST_CHIRHO:/srv/hottp-review-chirho/current/spec-chirho/progress-chirho.sqlite spec-chirho/progress-chirho.sqlite
-rsync -a hottp-review-chirho@REVIEW_HOST_CHIRHO:/srv/hottp-review-chirho/current/spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json
+bun run pull-human-review-vps-state-chirho -- --print-command-chirho
+bun run pull-human-review-vps-state-chirho -- --host-chirho=REVIEW_HOST_CHIRHO
+bun run pull-human-review-vps-state-chirho -- --host-chirho=REVIEW_HOST_CHIRHO --apply-chirho
 bun run check-pass-c-human-review-server-guards-chirho
 bun run transcription-certification-status-chirho
 bun run check-certification-strict-status-chirho
 git status --short
 ```
+
+The default pull is raw-Hebrew-only and copies the canonical DB plus the Pass-C
+human validation backup. If the smoke deliberately saved a draft segment repair
+proposal, add `--include-segment-repair-proposals-chirho`. For later expert
+supplied-text work, use `--station-chirho=expert-non-latin-chirho` and add
+`--include-expert-supplied-backup-chirho`; add `--include-workspace-spans-chirho`
+only when an expert-supplied text action changed live span JSON.
 
 Stage only intentional review artifacts. If the smoke action was meant to be
 temporary, restore from the pre-smoke backup and prove `git status --short` no
@@ -201,4 +209,6 @@ bun run review-servers-chirho -- --check-chirho
 ```
 
 Repeat the same Caddy-authenticated browser smoke and commit-back proof for each
-station.
+station. Use `--station-chirho=latin-symbol-chirho`,
+`--station-chirho=expert-non-latin-chirho`, or `--station-chirho=all-chirho`
+with the pull helper to bring back the relevant review artifacts.

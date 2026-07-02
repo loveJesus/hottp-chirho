@@ -1,0 +1,180 @@
+// For God so loved the world that he gave his only begotten Son,
+// that whoever believes in him should not perish but have eternal life. John 3:16
+
+import { dirname, join } from "path";
+
+import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+
+const MODULE_CHIRHO = "pull-human-review-vps-state-chirho";
+const DEFAULT_REMOTE_USER_CHIRHO = "hottp-review-chirho";
+const DEFAULT_REMOTE_PATH_CHIRHO = "/srv/hottp-review-chirho/current/";
+
+const STATION_VALUES_CHIRHO = new Set([
+  "raw-hebrew-chirho",
+  "latin-symbol-chirho",
+  "expert-non-latin-chirho",
+  "all-chirho",
+]);
+
+interface PullArtifactChirho {
+  stationChirho: "core-chirho" | "raw-hebrew-chirho" | "latin-symbol-chirho" | "expert-non-latin-chirho";
+  relativePathChirho: string;
+  optionalFlagChirho?: string;
+}
+
+const PULL_ARTIFACTS_CHIRHO: PullArtifactChirho[] = [
+  { stationChirho: "core-chirho", relativePathChirho: "spec-chirho/progress-chirho.sqlite" },
+  {
+    stationChirho: "raw-hebrew-chirho",
+    relativePathChirho: "spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json",
+  },
+  {
+    stationChirho: "raw-hebrew-chirho",
+    relativePathChirho: "spec-chirho/metropoliluya-chirho/segment-repair-proposals-2026-07-02-chirho.json",
+    optionalFlagChirho: "--include-segment-repair-proposals-chirho",
+  },
+  {
+    stationChirho: "latin-symbol-chirho",
+    relativePathChirho: "spec-chirho/metropoliluya-chirho/latin-symbol-vision-reviews-backup-2026-05-31-chirho.json",
+  },
+  {
+    stationChirho: "expert-non-latin-chirho",
+    relativePathChirho: "spec-chirho/metropoliluya-chirho/vision-tier-expert-confirmations-2026-06-01-chirho.json",
+  },
+  {
+    stationChirho: "expert-non-latin-chirho",
+    relativePathChirho: "spec-chirho/metropoliluya-chirho/expert-supplied-vision-transcriptions-2026-06-04-chirho.json",
+    optionalFlagChirho: "--include-expert-supplied-backup-chirho",
+  },
+  {
+    stationChirho: "expert-non-latin-chirho",
+    relativePathChirho: "workspace-chirho/spans-chirho/",
+    optionalFlagChirho: "--include-workspace-spans-chirho",
+  },
+];
+
+function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | null {
+  const prefixChirho = `--${nameChirho}=`;
+  const matchChirho = argsChirho.find((argChirho) => argChirho.startsWith(prefixChirho));
+  return matchChirho === undefined ? null : matchChirho.slice(prefixChirho.length);
+}
+
+function failChirho(messageChirho: string): never {
+  throw new Error(messageChirho);
+}
+
+function assertSafeTokenChirho(valueChirho: string, labelChirho: string): string {
+  const trimmedChirho = valueChirho.trim();
+  if (!/^[A-Za-z0-9._-]+$/.test(trimmedChirho)) {
+    failChirho(`${labelChirho} must contain only letters, digits, dots, underscores, or dashes`);
+  }
+  return trimmedChirho;
+}
+
+function remotePathChirho(valueChirho: string): string {
+  const trimmedChirho = valueChirho.trim();
+  if (!trimmedChirho.startsWith("/") || /\s/.test(trimmedChirho)) {
+    failChirho("remote path must be an absolute path without whitespace");
+  }
+  return trimmedChirho.endsWith("/") ? trimmedChirho : `${trimmedChirho}/`;
+}
+
+function shellQuoteChirho(valueChirho: string): string {
+  return `'${valueChirho.replace(/'/g, "'\"'\"'")}'`;
+}
+
+function selectedStationChirho(argsChirho: string[]): string {
+  const stationChirho = parseArgValueChirho(argsChirho, "station-chirho") ?? "raw-hebrew-chirho";
+  if (!STATION_VALUES_CHIRHO.has(stationChirho)) {
+    failChirho(`unsupported --station-chirho value: ${stationChirho}`);
+  }
+  return stationChirho;
+}
+
+function artifactSelectedChirho(artifactChirho: PullArtifactChirho, stationChirho: string, argsChirho: string[]): boolean {
+  if (artifactChirho.optionalFlagChirho !== undefined && !argsChirho.includes(artifactChirho.optionalFlagChirho)) {
+    return false;
+  }
+  return (
+    artifactChirho.stationChirho === "core-chirho" ||
+    stationChirho === "all-chirho" ||
+    artifactChirho.stationChirho === stationChirho
+  );
+}
+
+function rsyncCommandChirho(paramsChirho: {
+  artifactChirho: PullArtifactChirho;
+  applyChirho: boolean;
+  hostChirho: string;
+  remoteUserChirho: string;
+  remotePathChirho: string;
+}): string[] {
+  const remoteSourceChirho =
+    `${paramsChirho.remoteUserChirho}@${paramsChirho.hostChirho}:` +
+    `${paramsChirho.remotePathChirho}${paramsChirho.artifactChirho.relativePathChirho}`;
+  const localTargetChirho = paramsChirho.artifactChirho.relativePathChirho.endsWith("/")
+    ? join(PROJECT_ROOT_CHIRHO, paramsChirho.artifactChirho.relativePathChirho)
+    : `${join(PROJECT_ROOT_CHIRHO, dirname(paramsChirho.artifactChirho.relativePathChirho))}/`;
+  const commandChirho = ["rsync", "-a"];
+  if (!paramsChirho.applyChirho) commandChirho.push("--dry-run");
+  commandChirho.push(remoteSourceChirho, localTargetChirho);
+  return commandChirho;
+}
+
+function commandsChirho(argsChirho: string[]): string[][] {
+  const printOnlyChirho = argsChirho.includes("--print-command-chirho");
+  const hostArgChirho = parseArgValueChirho(argsChirho, "host-chirho");
+  if (hostArgChirho === null && !printOnlyChirho) {
+    failChirho("missing required --host-chirho=REVIEW_HOST_CHIRHO");
+  }
+  const hostChirho = assertSafeTokenChirho(hostArgChirho ?? "REVIEW_HOST_CHIRHO", "host-chirho");
+  const applyChirho = argsChirho.includes("--apply-chirho");
+  if (applyChirho && hostChirho === "REVIEW_HOST_CHIRHO") {
+    failChirho("--apply-chirho requires a real --host-chirho value");
+  }
+  const remoteUserChirho = assertSafeTokenChirho(
+    parseArgValueChirho(argsChirho, "remote-user-chirho") ?? DEFAULT_REMOTE_USER_CHIRHO,
+    "remote-user-chirho"
+  );
+  const remotePathValueChirho = remotePathChirho(
+    parseArgValueChirho(argsChirho, "remote-path-chirho") ?? DEFAULT_REMOTE_PATH_CHIRHO
+  );
+  const stationChirho = selectedStationChirho(argsChirho);
+  const selectedArtifactsChirho = PULL_ARTIFACTS_CHIRHO.filter((artifactChirho) =>
+    artifactSelectedChirho(artifactChirho, stationChirho, argsChirho)
+  );
+  if (selectedArtifactsChirho.length === 0) failChirho("no pull artifacts selected");
+  return selectedArtifactsChirho.map((artifactChirho) =>
+    rsyncCommandChirho({
+      artifactChirho,
+      applyChirho,
+      hostChirho,
+      remoteUserChirho,
+      remotePathChirho: remotePathValueChirho,
+    })
+  );
+}
+
+function mainChirho(): void {
+  const argsChirho = process.argv.slice(2);
+  const printOnlyChirho = argsChirho.includes("--print-command-chirho");
+  const commandsValueChirho = commandsChirho(argsChirho);
+  for (const commandChirho of commandsValueChirho) {
+    console.log(`[${MODULE_CHIRHO}] ${commandChirho.map(shellQuoteChirho).join(" ")}`);
+  }
+  if (printOnlyChirho) return;
+  for (const commandChirho of commandsValueChirho) {
+    const resultChirho = Bun.spawnSync(commandChirho, { stdout: "inherit", stderr: "inherit" });
+    if (resultChirho.exitCode !== 0) failChirho(`rsync exited with code ${resultChirho.exitCode}`);
+  }
+}
+
+if (import.meta.main) {
+  try {
+    mainChirho();
+  } catch (errorChirho) {
+    const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
+    console.error(`[${MODULE_CHIRHO}] ${messageChirho}`);
+    process.exit(1);
+  }
+}
