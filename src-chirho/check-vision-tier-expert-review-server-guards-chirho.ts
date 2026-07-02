@@ -413,6 +413,7 @@ async function mainChirho(): Promise<void> {
     ],
     {
       cwd: PROJECT_ROOT_CHIRHO,
+      env: { ...process.env, HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO: "x-webauth-user" },
       stdout: "pipe",
       stderr: "pipe",
     }
@@ -694,6 +695,7 @@ async function mainChirho(): Promise<void> {
       rationaleChirho: "server guard check records an uncertainty issue with a concrete non-template reason",
       issueFlagsChirho: ["uncertain-chirho"],
     }, {
+      "Cf-Access-Authenticated-User-Email": "forged-cf-reviewer-chirho",
       "X-Webauth-User": "dr-expert-header-reviewer-chirho",
     });
     assertCheckChirho(

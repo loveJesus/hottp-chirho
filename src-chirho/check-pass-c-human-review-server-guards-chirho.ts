@@ -394,6 +394,7 @@ async function mainChirho(): Promise<void> {
     ],
     {
       cwd: PROJECT_ROOT_CHIRHO,
+      env: { ...process.env, HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO: "x-webauth-user" },
       stdout: "pipe",
       stderr: "pipe",
     }
@@ -582,7 +583,11 @@ async function mainChirho(): Promise<void> {
     assertCheckChirho(!existsSync(segmentRepairProposalsPathChirho), "read-only-state repair proposal wrote a proposal file");
     const validProposalResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/segment-repair-proposal-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Webauth-User": "dr-pass-c-header-reviewer-chirho" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cf-Access-Authenticated-User-Email": "forged-cf-reviewer-chirho",
+        "X-Webauth-User": "dr-pass-c-header-reviewer-chirho",
+      },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         reviewStateChirho: "pending-chirho",
@@ -867,7 +872,11 @@ async function mainChirho(): Promise<void> {
     );
     const validIssueResponseChirho = await fetch(`http://127.0.0.1:${portChirho}/api-chirho/submit-chirho`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", "X-Webauth-User": "dr-pass-c-header-reviewer-chirho" },
+      headers: {
+        "Content-Type": "application/json",
+        "Cf-Access-Authenticated-User-Email": "forged-cf-reviewer-chirho",
+        "X-Webauth-User": "dr-pass-c-header-reviewer-chirho",
+      },
       body: JSON.stringify({
         keyChirho: itemChirho.keyChirho,
         issueFlagsChirho: ["letters-chirho"],

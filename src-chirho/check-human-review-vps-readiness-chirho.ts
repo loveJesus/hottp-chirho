@@ -88,6 +88,7 @@ const REQUIRED_PATHS_CHIRHO: RequiredPathChirho[] = [
 
 const BOUNDARY_SNIPPETS_CHIRHO = [
   "Stored reviewer attribution is server-authoritative.",
+  "HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO=x-webauth-user",
   "Cf-Access-Authenticated-User-Email",
   "X-Webauth-User",
   "All Bun review servers must bind to `127.0.0.1`",
@@ -108,6 +109,8 @@ const SMOKE_RUNBOOK_SNIPPETS_CHIRHO = [
   "bun run check-human-review-vps-host-preflight-chirho -- --host-chirho=REVIEW_HOST_CHIRHO",
   "basic_auth",
   "header_up X-Webauth-User {http.auth.user.id}",
+  "HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO=x-webauth-user",
+  "forged `Cf-Access-Authenticated-User-Email`",
   "caddy validate --envfile /etc/hottp-review-chirho.env --config /etc/caddy/Caddyfile",
   "Start only raw Hebrew for the first smoke",
   "curl -fsS http://127.0.0.1:8766/api-chirho/server-health-chirho",
@@ -187,6 +190,8 @@ function assertTrustedReviewerIdentityChirho(): void {
   for (const snippetChirho of [
     "cf-access-authenticated-user-email",
     "x-webauth-user",
+    "HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO",
+    "configuredTrustedReviewerHeaderChirho",
     "return serverReviewerChirho.trim()",
   ]) {
     if (!trustedSourceChirho.includes(snippetChirho)) {
@@ -279,7 +284,11 @@ function assertHostPreflightHelperChirho(): void {
     "command -v rsync",
     "test -d /srv/hottp-review-chirho/current",
     "test -f /etc/hottp-review-chirho.env",
+    "grep -q '^HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO=x-webauth-user$' /etc/hottp-review-chirho.env",
     "sudo caddy validate --envfile /etc/hottp-review-chirho.env --config /etc/caddy/Caddyfile",
+    "header_up -Cf-Access-Authenticated-User-Email",
+    "header_up -X-Webauth-User",
+    "header_up X-Webauth-User {http.auth.user.id}",
     "systemctl is-active hottp-raw-review-chirho.service >/dev/null",
     "curl -fsS http://127.0.0.1:8766/api-chirho/server-health-chirho >/dev/null",
   ]) {
@@ -324,6 +333,21 @@ function assertProvisioningDecisionHelperChirho(): void {
   ]) {
     if (!sourceChirho.includes(snippetChirho)) {
       failChirho(`VPS provisioning decision helper missing guard snippet: ${snippetChirho}`);
+    }
+  }
+}
+
+function assertDeploymentTemplatesHelperChirho(): void {
+  const sourceChirho = readFileSync(absolutePathChirho("src-chirho/check-human-review-vps-deployment-templates-chirho.ts"), "utf8");
+  for (const snippetChirho of [
+    "HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO",
+    "HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO=x-webauth-user",
+    "header_up -Cf-Access-Authenticated-User-Email",
+    "header_up -X-Webauth-User",
+    "header_up X-Webauth-User",
+  ]) {
+    if (!sourceChirho.includes(snippetChirho)) {
+      failChirho(`VPS deployment templates helper missing guard snippet: ${snippetChirho}`);
     }
   }
 }
@@ -393,6 +417,7 @@ function mainChirho(): void {
   assertHostPreflightHelperChirho();
   assertProviderInventoryHelperChirho();
   assertProvisioningDecisionHelperChirho();
+  assertDeploymentTemplatesHelperChirho();
   assertSmokeEvidenceHelperChirho();
   assertFirstSmokeCompletionHelperChirho();
   assertReviewServerFingerprintsChirho();

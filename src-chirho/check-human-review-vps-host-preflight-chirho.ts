@@ -16,11 +16,15 @@ const HOST_CHECK_COMMANDS_CHIRHO = [
   "test -f /etc/hottp-review-chirho.env",
   "test \"$(stat -c %a /etc/hottp-review-chirho.env 2>/dev/null || stat -f %Lp /etc/hottp-review-chirho.env)\" = 600",
   "grep -q '^HOTTP_REVIEW_FALLBACK_REVIEWER_CHIRHO=' /etc/hottp-review-chirho.env",
+  "grep -q '^HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO=x-webauth-user$' /etc/hottp-review-chirho.env",
   "grep -q '^HOTTP_REVIEW_USER_CHIRHO=' /etc/hottp-review-chirho.env",
   "grep -q '^HOTTP_REVIEW_PASSWORD_HASH_CHIRHO=' /etc/hottp-review-chirho.env",
   "test -f /etc/caddy/Caddyfile",
   "test -f /etc/systemd/system/caddy.service.d/hottp-review-chirho.conf",
   "sudo caddy validate --envfile /etc/hottp-review-chirho.env --config /etc/caddy/Caddyfile",
+  "test \"$(grep -c 'header_up -Cf-Access-Authenticated-User-Email' /etc/caddy/Caddyfile)\" -ge 3",
+  "test \"$(grep -c 'header_up -X-Webauth-User' /etc/caddy/Caddyfile)\" -ge 3",
+  "test \"$(grep -c 'header_up X-Webauth-User {http.auth.user.id}' /etc/caddy/Caddyfile)\" -ge 3",
   "test -f /etc/systemd/system/hottp-raw-review-chirho.service",
   "systemctl is-enabled hottp-raw-review-chirho.service >/dev/null",
   "systemctl is-active hottp-raw-review-chirho.service >/dev/null",
@@ -52,7 +56,7 @@ function shellQuoteChirho(valueChirho: string): string {
 function remoteScriptChirho(): string {
   return [
     "set -euo pipefail",
-    ...HOST_CHECK_COMMANDS_CHIRHO.map((commandChirho) => `echo '+ ${commandChirho}' && ${commandChirho}`),
+    ...HOST_CHECK_COMMANDS_CHIRHO.map((commandChirho) => `printf '%s\\n' ${shellQuoteChirho(`+ ${commandChirho}`)} && ${commandChirho}`),
   ].join("\n");
 }
 

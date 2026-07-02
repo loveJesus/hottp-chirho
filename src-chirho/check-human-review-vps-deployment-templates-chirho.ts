@@ -45,6 +45,7 @@ const REQUIRED_ENV_KEYS_CHIRHO = [
   "HOTTP_REVIEW_USER_CHIRHO",
   "HOTTP_REVIEW_PASSWORD_HASH_CHIRHO",
   "HOTTP_REVIEW_FALLBACK_REVIEWER_CHIRHO",
+  "HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO",
 ] as const;
 
 const REVIEW_SERVICE_TEMPLATES_CHIRHO = [
@@ -112,6 +113,7 @@ function assertEnvTemplateChirho(sourceChirho: string): void {
   for (const keyChirho of REQUIRED_ENV_KEYS_CHIRHO) {
     assertRegexChirho(sourceChirho, new RegExp(`^${keyChirho}=`, "m"), "env template");
   }
+  assertIncludesChirho(sourceChirho, "HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO=x-webauth-user", "env template");
   if (/=($|\s*$)/m.test(sourceChirho)) failChirho("env template must not contain blank values");
 }
 

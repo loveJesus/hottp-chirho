@@ -315,6 +315,7 @@ async function mainChirho(): Promise<void> {
     ],
     {
       cwd: PROJECT_ROOT_CHIRHO,
+      env: { ...process.env, HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO: "x-webauth-user" },
       stdout: "pipe",
       stderr: "pipe",
     }
@@ -461,6 +462,7 @@ async function mainChirho(): Promise<void> {
       reviewerChirho: "human-chirho",
       notesChirho: "server guard check records a concrete punctuation concern for a disposable review row",
     }, {
+      "Cf-Access-Authenticated-User-Email": "forged-cf-reviewer-chirho",
       "X-Webauth-User": "dr-latin-symbol-header-reviewer-chirho",
     });
     assertCheckChirho(

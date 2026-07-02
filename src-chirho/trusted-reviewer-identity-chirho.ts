@@ -12,16 +12,36 @@
 export const CF_ACCESS_AUTHENTICATED_USER_EMAIL_HEADER_CHIRHO =
   "cf-access-authenticated-user-email";
 export const CADDY_AUTHENTICATED_USER_HEADER_CHIRHO = "x-webauth-user";
+export const TRUSTED_REVIEWER_HEADER_ENV_CHIRHO = "HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO";
 
 const TRUSTED_REVIEWER_HEADER_NAMES_CHIRHO = [
   CF_ACCESS_AUTHENTICATED_USER_EMAIL_HEADER_CHIRHO,
   CADDY_AUTHENTICATED_USER_HEADER_CHIRHO,
 ] as const;
 
+function configuredTrustedReviewerHeaderChirho(): string | null {
+  const configuredHeaderChirho = process.env[TRUSTED_REVIEWER_HEADER_ENV_CHIRHO]?.trim().toLowerCase();
+  if (configuredHeaderChirho === undefined || configuredHeaderChirho.length === 0) return null;
+  if (TRUSTED_REVIEWER_HEADER_NAMES_CHIRHO.includes(configuredHeaderChirho as (typeof TRUSTED_REVIEWER_HEADER_NAMES_CHIRHO)[number])) {
+    return configuredHeaderChirho;
+  }
+  throw new Error(
+    `${TRUSTED_REVIEWER_HEADER_ENV_CHIRHO} must be ${CF_ACCESS_AUTHENTICATED_USER_EMAIL_HEADER_CHIRHO} or ${CADDY_AUTHENTICATED_USER_HEADER_CHIRHO}`
+  );
+}
+
 export function trustedReviewerIdentityChirho(
   headersChirho: Headers,
   serverReviewerChirho: string
 ): string {
+  const configuredHeaderChirho = configuredTrustedReviewerHeaderChirho();
+  if (configuredHeaderChirho !== null) {
+    const configuredHeaderValueChirho = headersChirho.get(configuredHeaderChirho)?.trim();
+    if (configuredHeaderValueChirho !== undefined && configuredHeaderValueChirho.length > 0) {
+      return configuredHeaderValueChirho;
+    }
+    return serverReviewerChirho.trim();
+  }
   for (const headerNameChirho of TRUSTED_REVIEWER_HEADER_NAMES_CHIRHO) {
     const headerValueChirho = headersChirho.get(headerNameChirho)?.trim();
     if (headerValueChirho !== undefined && headerValueChirho.length > 0) {

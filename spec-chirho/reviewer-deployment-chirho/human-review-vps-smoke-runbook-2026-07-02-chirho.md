@@ -99,6 +99,9 @@ bun run check-human-review-vps-host-preflight-chirho -- --print-command-chirho
 Provision `/etc/hottp-review-chirho.env` outside git. It should contain only
 host-local settings such as the fallback reviewer id and any service path
 overrides. Do not put secrets in committed files.
+For the first Caddy basic-auth deployment, keep
+`HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO=x-webauth-user` so the servers ignore any
+forged `Cf-Access-Authenticated-User-Email` header.
 
 Use the committed template as the starting point:
 
@@ -162,6 +165,9 @@ curl --connect-timeout 3 http://REVIEW_HOST_CHIRHO:8766/ || true
 
 The localhost health request should succeed. The direct public-port request
 should fail or be blocked; public traffic must go through Caddy.
+The host preflight also checks that the installed `/etc/caddy/Caddyfile` strips
+both incoming identity headers and injects `X-Webauth-User` from the
+authenticated Caddy user before proxying to the review server.
 
 ## 6. Remote Reviewer Smoke Chirho
 

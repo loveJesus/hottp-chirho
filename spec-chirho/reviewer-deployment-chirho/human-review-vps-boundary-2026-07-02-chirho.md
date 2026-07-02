@@ -15,21 +15,37 @@ Stored reviewer attribution is server-authoritative. Browser-submitted
 `reviewerChirho` values are display-only and must not decide persisted reviewer
 identity.
 
-Reviewer identity precedence:
+Production reviewer identity is pinned by
+`HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO`. The server trusts only that configured
+header and ignores the other supported identity header. The first Caddy
+basic-auth deployment sets:
 
-1. `Cf-Access-Authenticated-User-Email`
-2. `X-Webauth-User`
-3. local server `--reviewer=...` fallback for trusted local/dev sessions
+```text
+HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO=x-webauth-user
+```
 
-If all three are absent or generic, certification-affecting writes fail through
-the existing reviewer-attribution guards.
+Supported production header values are:
+
+1. `cf-access-authenticated-user-email`
+2. `x-webauth-user`
+
+If the configured trusted header is absent on a request, the server falls back
+to the local `--reviewer=...` identity for trusted local/dev sessions. If the
+environment variable is unset, the dual-header behavior is local-dev only and
+must not be used for the VPS deployment.
+
+If the configured trusted header and local fallback are absent or generic,
+certification-affecting writes fail through the existing reviewer-attribution
+guards.
 
 The two supported production gateways are:
 
 - Cloudflare Access in front of the VPS, forwarding
-  `Cf-Access-Authenticated-User-Email`.
+  `Cf-Access-Authenticated-User-Email`, with
+  `HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO=cf-access-authenticated-user-email`.
 - Caddy basic-auth or auth portal in front of the VPS, injecting
-  `X-Webauth-User`.
+  `X-Webauth-User`, with
+  `HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO=x-webauth-user`.
 
 Do not rely on a browser form, localStorage, or POST body reviewer value for
 stored attribution.
