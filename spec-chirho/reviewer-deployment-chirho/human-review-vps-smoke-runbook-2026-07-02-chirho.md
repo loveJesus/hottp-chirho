@@ -295,6 +295,9 @@ from being clobbered, alongside the Pass-C human validation JSON backup. The
 local live `spec-chirho/progress-chirho.sqlite` must never be directly
 overwritten, and the quarantined SQLite snapshot is for replay/forensics only,
 not for staging as the canonical DB.
+Completed smoke evidence that sets `db_copied_back_chirho: true` must be
+verified while that quarantined SQLite snapshot still exists locally as a
+non-empty file.
 
 To replay Pass-C rows from the quarantined snapshot, first dry-run against the
 snapshot DB:

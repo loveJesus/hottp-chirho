@@ -139,6 +139,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       remote write proof is measured from an artifact, not only self-attested.
 - [x] Bind first-smoke restore evidence to the current `git status --short`
       output so restore/commit-back proof is not only a boolean checkbox.
+- [x] Require completed first-smoke evidence to find the non-empty quarantined
+      SQLite snapshot produced by pull-back.
 - [x] Pin the trusted reviewer header for the Caddy VPS path and have host
       preflight verify the installed Caddyfile strips spoofable identity headers.
 - [x] Have host preflight verify trusted-header strip/inject lines inside each

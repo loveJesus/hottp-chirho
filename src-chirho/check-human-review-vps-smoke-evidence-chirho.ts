@@ -1,13 +1,14 @@
 // For God so loved the world that he gave his only begotten Son,
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, statSync } from "fs";
 import { join, resolve, sep } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
 const MODULE_CHIRHO = "check-human-review-vps-smoke-evidence-chirho";
 const LIVE_PROBE_TIMEOUT_MS_CHIRHO = 5000;
+const QUARANTINE_PROGRESS_DB_PATH_CHIRHO = "backups-chirho/vps-snapshot-progress-chirho.sqlite";
 const DEFAULT_TEMPLATE_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -199,6 +200,17 @@ function currentGitStatusShortChirho(): string {
   return normalizeStatusTextChirho(resultChirho.stdout.toString());
 }
 
+function assertQuarantinedProgressDbExistsChirho(): void {
+  const dbPathChirho = join(PROJECT_ROOT_CHIRHO, QUARANTINE_PROGRESS_DB_PATH_CHIRHO);
+  if (!existsSync(dbPathChirho)) {
+    failChirho(`commit-back proof missing quarantined SQLite snapshot: ${QUARANTINE_PROGRESS_DB_PATH_CHIRHO}`);
+  }
+  const statChirho = statSync(dbPathChirho);
+  if (!statChirho.isFile() || statChirho.size <= 0) {
+    failChirho(`quarantined SQLite snapshot must be a non-empty file: ${QUARANTINE_PROGRESS_DB_PATH_CHIRHO}`);
+  }
+}
+
 function assertCompletedEvidenceChirho(evidenceChirho: SmokeEvidenceChirho): void {
   const rootChirho = recordChirho(evidenceChirho, "evidence");
   if (rootChirho.completed_chirho !== true) failChirho("completed smoke evidence must set completed_chirho=true");
@@ -280,6 +292,7 @@ function assertCompletedEvidenceChirho(evidenceChirho: SmokeEvidenceChirho): voi
       failChirho(`commit-back proof missing ${keyChirho}`);
     }
   }
+  assertQuarantinedProgressDbExistsChirho();
   const guardsChirho = new Set(stringArrayFieldChirho(commitBackChirho, "guards_passed_chirho", "commit_back_chirho"));
   for (const guardChirho of REQUIRED_COMMIT_BACK_GUARDS_CHIRHO) {
     if (!guardsChirho.has(guardChirho)) failChirho(`commit-back proof missing guard: ${guardChirho}`);
