@@ -7,6 +7,7 @@ import { join, resolve, sep } from "path";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
 const MODULE_CHIRHO = "check-human-review-vps-smoke-evidence-chirho";
+const LIVE_PROBE_TIMEOUT_MS_CHIRHO = 5000;
 const DEFAULT_TEMPLATE_PATH_CHIRHO = join(
   PROJECT_ROOT_CHIRHO,
   "spec-chirho",
@@ -252,24 +253,60 @@ function assertCompletedEvidenceChirho(evidenceChirho: SmokeEvidenceChirho): voi
   }
 }
 
-function mainChirho(): void {
+async function fetchWithTimeoutChirho(urlChirho: string): Promise<Response> {
+  const controllerChirho = new AbortController();
+  const timeoutChirho = setTimeout(() => controllerChirho.abort(), LIVE_PROBE_TIMEOUT_MS_CHIRHO);
+  try {
+    return await fetch(urlChirho, { redirect: "manual", signal: controllerChirho.signal });
+  } finally {
+    clearTimeout(timeoutChirho);
+  }
+}
+
+async function assertLiveNetworkProbesChirho(evidenceChirho: SmokeEvidenceChirho): Promise<void> {
+  const rootChirho = recordChirho(evidenceChirho, "evidence");
+  const authenticatedUrlChirho = stringFieldChirho(rootChirho, "authenticated_url_chirho", "evidence");
+  const unauthenticatedResponseChirho = await fetchWithTimeoutChirho(authenticatedUrlChirho);
+  if (![401, 403].includes(unauthenticatedResponseChirho.status)) {
+    failChirho(
+      `live probe expected unauthenticated gateway HTTP 401/403, got ${unauthenticatedResponseChirho.status} for ${authenticatedUrlChirho}`
+    );
+  }
+  const boundaryChirho = recordChirho(rootChirho.network_boundary_chirho, "network_boundary_chirho");
+  const hostChirho = nonPlaceholderChirho(stringFieldChirho(rootChirho, "host_chirho", "evidence"), "host_chirho");
+  const directPortChirho = numberFieldChirho(boundaryChirho, "public_direct_port_chirho", "network_boundary_chirho");
+  const directUrlChirho = `http://${hostChirho}:${directPortChirho}/`;
+  try {
+    const directResponseChirho = await fetchWithTimeoutChirho(directUrlChirho);
+    failChirho(`live probe expected direct review port to refuse, got HTTP ${directResponseChirho.status} for ${directUrlChirho}`);
+  } catch (errorChirho) {
+    if (errorChirho instanceof Error && errorChirho.message.startsWith("live probe expected direct review port")) {
+      throw errorChirho;
+    }
+  }
+}
+
+async function mainChirho(): Promise<void> {
   const argsChirho = process.argv.slice(2);
   const templateOkChirho = argsChirho.includes("--template-ok-chirho");
+  const liveProbeChirho = argsChirho.includes("--live-probe-chirho");
   const evidencePathChirho = parseArgValueChirho(argsChirho, "evidence-chirho") ?? DEFAULT_TEMPLATE_PATH_CHIRHO;
   const evidenceChirho = readEvidenceChirho(evidencePathChirho);
   assertShapeChirho(evidenceChirho);
-  if (!templateOkChirho) assertCompletedEvidenceChirho(evidenceChirho);
+  if (!templateOkChirho) {
+    assertCompletedEvidenceChirho(evidenceChirho);
+    if (liveProbeChirho) await assertLiveNetworkProbesChirho(evidenceChirho);
+  }
   console.log(
-    `[${MODULE_CHIRHO}] ${templateOkChirho ? "template shape" : "completed smoke evidence"} passed: ${evidencePathChirho}`
+    `[${MODULE_CHIRHO}] ${templateOkChirho ? "template shape" : "completed smoke evidence"} passed: ${evidencePathChirho}` +
+      (liveProbeChirho && !templateOkChirho ? " with live probes" : "")
   );
 }
 
 if (import.meta.main) {
-  try {
-    mainChirho();
-  } catch (errorChirho) {
+  mainChirho().catch((errorChirho) => {
     const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
     console.error(`[${MODULE_CHIRHO}] ${messageChirho}`);
     process.exit(1);
-  }
+  });
 }

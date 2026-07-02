@@ -129,6 +129,9 @@ const SMOKE_RUNBOOK_SNIPPETS_CHIRHO = [
   "gateway reviewer identity",
   "--pass-c-backup-chirho=spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json",
   "check-human-review-vps-smoke-evidence-chirho",
+  "--live-probe-chirho",
+  "rejects unauthenticated requests",
+  "direct public review port",
   "check-human-review-vps-first-smoke-completion-chirho",
 ] as const;
 
@@ -385,6 +388,9 @@ function assertSmokeEvidenceHelperChirho(): void {
     "expected_reviewer_chirho",
     "saved_after_chirho",
     "saved_before_chirho",
+    "--live-probe-chirho",
+    "expected unauthenticated gateway HTTP 401/403",
+    "expected direct review port to refuse",
     "first write smoke must be a reviewed-issues row, not a clean certification",
   ]) {
     if (!sourceChirho.includes(snippetChirho)) {
@@ -403,6 +409,7 @@ function assertFirstSmokeCompletionHelperChirho(): void {
     "Pass-C backup smoke row reviewer does not match gateway identity evidence",
     "updatedAt is outside the evidence time window",
     "pass-c-backup-chirho",
+    "live-probe-chirho",
     "smoke host",
     "raw-hebrew-chirho",
     "raw review hostname",

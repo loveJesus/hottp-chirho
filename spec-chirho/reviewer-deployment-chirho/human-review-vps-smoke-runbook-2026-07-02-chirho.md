@@ -262,18 +262,22 @@ Fill the evidence file and verify it:
 
 ```bash
 bun run check-human-review-vps-smoke-evidence-chirho -- \
+  --live-probe-chirho \
   --evidence-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-YYYY-MM-DD-chirho.json
 bun run check-human-review-vps-first-smoke-completion-chirho -- \
   --decision-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-YYYY-MM-DD-chirho.json \
   --evidence-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-YYYY-MM-DD-chirho.json \
-  --pass-c-backup-chirho=spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json
+  --pass-c-backup-chirho=spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json \
+  --live-probe-chirho
 ```
 
 Do not mark the first VPS smoke complete unless both completed evidence checks
 pass. The cross-check proves the decision host and raw-review DNS name match the
 actual smoke evidence, and that the named smoke validation row exists in the
 pulled-back Pass-C backup with the gateway reviewer identity and timestamp
-window recorded in the evidence.
+window recorded in the evidence. The live probe checks that the authenticated
+URL rejects unauthenticated requests and that the direct public review port does
+not answer.
 
 ## 8. Add Other Stations Chirho
 

@@ -123,6 +123,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       preflight verify the installed Caddyfile strips spoofable identity headers.
 - [x] Add a write-lease verifier and require it for real VPS pull-back apply so
       local/remote write ownership is explicit before commit-back.
+- [x] Add live-probe mode to smoke evidence checks so real host smoke verifies
+      unauthenticated gateway denial and direct-port refusal itself.
 - [ ] Provision one small authenticated VPS review host.
 - [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
 - [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;
