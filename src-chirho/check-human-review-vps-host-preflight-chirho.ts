@@ -57,6 +57,7 @@ const HOST_CHECK_COMMANDS_CHIRHO = [
   "rsync --version | head -n 1",
   "test -d /srv/hottp-review-chirho/current",
   "test -d /srv/hottp-review-chirho/backups-chirho",
+  "cd /srv/hottp-review-chirho/current && bun run check-human-review-vps-readiness-chirho",
   "test -f /etc/hottp-review-chirho.env",
   "test \"$(stat -c %a /etc/hottp-review-chirho.env 2>/dev/null || stat -f %Lp /etc/hottp-review-chirho.env)\" = 600",
   "grep -q '^HOTTP_REVIEW_FALLBACK_REVIEWER_CHIRHO=' /etc/hottp-review-chirho.env",

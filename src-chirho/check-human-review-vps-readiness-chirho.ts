@@ -381,6 +381,7 @@ function assertHostPreflightHelperChirho(): void {
     "command -v caddy",
     "command -v rsync",
     "test -d /srv/hottp-review-chirho/current",
+    "cd /srv/hottp-review-chirho/current && bun run check-human-review-vps-readiness-chirho",
     "test -f /etc/hottp-review-chirho.env",
     "grep -q '^HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO=x-webauth-user$' /etc/hottp-review-chirho.env",
     "sudo caddy validate --envfile /etc/hottp-review-chirho.env --config /etc/caddy/Caddyfile",

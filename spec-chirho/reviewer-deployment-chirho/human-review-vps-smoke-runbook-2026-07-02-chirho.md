@@ -132,6 +132,12 @@ From the source workstation, print the host preflight command shape:
 bun run check-human-review-vps-host-preflight-chirho -- --print-command-chirho
 ```
 
+The real host preflight also reruns
+`bun run check-human-review-vps-readiness-chirho` from
+`/srv/hottp-review-chirho/current`, so the synced VPS tree must have the same
+review packets, scripts, and commit-back docs as the source workstation before
+smoke completion can pass.
+
 Provision `/etc/hottp-review-chirho.env` outside git. It should contain only
 host-local settings such as the fallback reviewer id and any service path
 overrides. Do not put secrets in committed files.
