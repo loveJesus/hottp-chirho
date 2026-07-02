@@ -135,7 +135,8 @@ const SMOKE_RUNBOOK_SNIPPETS_CHIRHO = [
   "--pass-c-backup-chirho=spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json",
   "check-human-review-vps-smoke-evidence-chirho",
   "--live-probe-chirho",
-  "rejects unauthenticated requests",
+  "authenticated URL rejects",
+  "unauthenticated requests",
   "direct public review port",
   "check-human-review-vps-first-smoke-completion-chirho",
   "check-human-review-vps-phase6-completion-chirho",
@@ -455,6 +456,7 @@ function assertPhase6CompletionHelperChirho(): void {
     "--live-probe-chirho",
     "--source-local-fixture-chirho",
     "Phase 6 completion requires --live-probe-chirho",
+    "write lease owner approval reference does not match provisioning decision approval reference",
   ]) {
     if (!sourceChirho.includes(snippetChirho)) {
       failChirho(`VPS Phase 6 completion helper missing guard snippet: ${snippetChirho}`);

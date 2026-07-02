@@ -13,9 +13,16 @@ const SOURCE_LOCAL_FIXTURE_DIR_FRAGMENT_CHIRHO =
   "spec-chirho/reviewer-deployment-chirho/.tmp-phase6-completion-fixture-chirho/";
 
 interface ProvisioningDecisionForPhase6Chirho {
+  owner_approval_chirho?: {
+    approval_reference_chirho?: unknown;
+  };
   selected_host_chirho?: {
     host_name_chirho?: unknown;
   };
+}
+
+interface WriteLeaseForPhase6Chirho {
+  owner_approval_reference_chirho?: unknown;
 }
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | null {
@@ -52,6 +59,22 @@ function stringValueChirho(valueChirho: unknown, labelChirho: string): string {
 function selectedHostNameChirho(decisionPathChirho: string): string {
   const decisionChirho = readJsonChirho<ProvisioningDecisionForPhase6Chirho>(decisionPathChirho);
   return stringValueChirho(decisionChirho.selected_host_chirho?.host_name_chirho, "selected host name");
+}
+
+function assertWriteLeaseApprovalReferenceMatchesDecisionChirho(decisionPathChirho: string, leasePathChirho: string): void {
+  const decisionChirho = readJsonChirho<ProvisioningDecisionForPhase6Chirho>(decisionPathChirho);
+  const leaseChirho = readJsonChirho<WriteLeaseForPhase6Chirho>(leasePathChirho);
+  const decisionApprovalReferenceChirho = stringValueChirho(
+    decisionChirho.owner_approval_chirho?.approval_reference_chirho,
+    "provisioning decision approval reference"
+  );
+  const leaseApprovalReferenceChirho = stringValueChirho(
+    leaseChirho.owner_approval_reference_chirho,
+    "write lease owner approval reference"
+  );
+  if (leaseApprovalReferenceChirho !== decisionApprovalReferenceChirho) {
+    failChirho("write lease owner approval reference does not match provisioning decision approval reference");
+  }
 }
 
 function runVerifierChirho(commandChirho: string[]): void {
@@ -109,7 +132,7 @@ function mainChirho(): void {
   });
   const decisionPathChirho = projectPathChirho(decisionArgChirho, "provisioning decision");
   projectPathChirho(evidenceArgChirho, "smoke evidence");
-  projectPathChirho(leaseArgChirho, "write lease");
+  const leasePathChirho = projectPathChirho(leaseArgChirho, "write lease");
   projectPathChirho(backupArgChirho, "Pass-C human validation backup");
   const hostNameChirho = selectedHostNameChirho(decisionPathChirho);
 
@@ -128,6 +151,7 @@ function mainChirho(): void {
     `--lease-chirho=${leaseArgChirho}`,
     `--host-chirho=${hostNameChirho}`,
   ]);
+  assertWriteLeaseApprovalReferenceMatchesDecisionChirho(decisionPathChirho, leasePathChirho);
   const firstSmokeCommandChirho = [
     "bun",
     "run",
