@@ -77,6 +77,11 @@ certification gate.
 
 ## Phase 6 — VPS Smoke Deployment Chirho
 
+External VPS provisioning remains open and should not be marked complete until a
+real authenticated host exists and a remote reviewer smoke action is committed
+back. Local prerequisites are ready: servers bind localhost, attribution is
+server-authoritative, and the boundary/commit-back ritual is documented.
+
 - [ ] Provision one small authenticated VPS review host.
 - [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
 - [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;
@@ -87,25 +92,25 @@ certification gate.
 
 ## Phase 7 — Verification Gates Chirho
 
-- [ ] `bun run check` and `bun run build` in `app-chirho`.
-- [ ] Certification guard scripts still pass and gate remains red unless real
+- [x] `bun run check` and `bun run build` in `app-chirho`.
+- [x] Certification guard scripts still pass and gate remains red unless real
       review work legitimately reduces it.
-- [ ] Reviewer-attribution guard rejects forged client identity.
-- [ ] Review-server guard scripts pass for raw Hebrew, Latin/symbol, and expert
+- [x] Reviewer-attribution guard rejects forged client identity.
+- [x] Review-server guard scripts pass for raw Hebrew, Latin/symbol, and expert
       review lanes.
-- [ ] Playwright smoke checks the launchpad and one read-only/one write-capable
+- [x] Playwright smoke checks the launchpad and one read-only/one write-capable
       authenticated reviewer path.
-- [ ] `git diff --check` clean.
+- [x] `git diff --check` clean.
 
 ## Definition Of Done Chirho
 
-- [ ] A normal human reviewer can open one URL, choose their lane, review an item,
+- [x] A normal human reviewer can open one URL, choose their lane, review an item,
       flag or certify it, and see the next item without shell commands.
-- [ ] A script expert can supply text for the blank Syriac span through the
+- [x] A script expert can supply text for the blank Syriac span through the
       browser, and it remains unconfirmed until separately certified.
-- [ ] A reviewer can propose a segment split/merge/rebox without the proposal
+- [x] A reviewer can propose a segment split/merge/rebox without the proposal
       silently certifying text.
-- [ ] Every stored review action is attributed to the authenticated server-side
+- [x] Every stored review action is attributed to the authenticated server-side
       reviewer identity.
-- [ ] All new convenience paths are fail-closed on stale text, stale images,
+- [x] All new convenience paths are fail-closed on stale text, stale images,
       malformed packets, or geometry drift.

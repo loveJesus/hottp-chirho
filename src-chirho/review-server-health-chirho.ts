@@ -43,6 +43,7 @@ const COMMON_REVIEW_SERVER_SOURCE_FILES_CHIRHO = [
   "src-chirho/review-server-health-chirho.ts",
   "src-chirho/reviewer-attribution-chirho.ts",
   "src-chirho/text-normalization-chirho.ts",
+  "src-chirho/trusted-reviewer-identity-chirho.ts",
 ] as const;
 
 const REVIEW_SERVER_SOURCE_FILES_BY_KEY_CHIRHO: Record<ReviewServerKeyChirho, readonly string[]> = {
@@ -53,6 +54,7 @@ const REVIEW_SERVER_SOURCE_FILES_BY_KEY_CHIRHO: Record<ReviewServerKeyChirho, re
     "src-chirho/raw-hebrew-pre-review-notes-chirho.ts",
     "src-chirho/raw-hebrew-review-tier-chirho.ts",
     "src-chirho/raw-hebrew-review-triage-chirho.ts",
+    "src-chirho/segment-repair-proposals-chirho.ts",
     "src-chirho/span-line-text-chirho.ts",
     "src-chirho/template-placeholder-chirho.ts",
     "src-chirho/atomic-json-chirho.ts",
@@ -71,10 +73,12 @@ const REVIEW_SERVER_SOURCE_FILES_BY_KEY_CHIRHO: Record<ReviewServerKeyChirho, re
   ],
   "expert-non-latin-chirho": [
     ...COMMON_REVIEW_SERVER_SOURCE_FILES_CHIRHO,
+    "src-chirho/apply-expert-supplied-vision-text-chirho.ts",
     "src-chirho/vision-tier-expert-review-server-chirho.ts",
     "src-chirho/vision-tier-expert-confirmation-policy-chirho.ts",
     "src-chirho/vision-tier-expert-live-items-chirho.ts",
     "src-chirho/packet-image-fingerprint-chirho.ts",
+    "src-chirho/span-nfc-chirho.ts",
     "src-chirho/template-placeholder-chirho.ts",
     "src-chirho/atomic-json-chirho.ts",
   ],
