@@ -17,6 +17,11 @@ const DEFAULT_TEMPLATE_PATH_CHIRHO = join(
 
 const REVIEW_STATIONS_CHIRHO = new Set(["raw-hebrew-chirho", "latin-symbol-chirho", "expert-non-latin-chirho"]);
 const TRUSTED_HEADERS_CHIRHO = new Set(["X-Webauth-User", "Cf-Access-Authenticated-User-Email"]);
+const FORBIDDEN_REVIEWER_IDENTITY_PATTERNS_CHIRHO = [
+  /\bserver-fallback-reviewer-chirho\b/i,
+  /\bfallback(?:[_-]reviewer)?\b/i,
+  /\bcli(?:[_-]reviewer)?\b/i,
+] as const;
 const REQUIRED_COMMIT_BACK_GUARDS_CHIRHO = [
   "bun run check-pass-c-human-review-server-guards-chirho",
   "bun run transcription-certification-status-chirho",
@@ -98,6 +103,16 @@ function nonPlaceholderChirho(valueChirho: string, labelChirho: string): string 
     failChirho(`${labelChirho} is still a placeholder`);
   }
   return trimmedChirho;
+}
+
+function gatewayReviewerIdentityChirho(valueChirho: string, labelChirho: string): string {
+  const reviewerChirho = nonPlaceholderChirho(valueChirho, labelChirho);
+  for (const patternChirho of FORBIDDEN_REVIEWER_IDENTITY_PATTERNS_CHIRHO) {
+    if (patternChirho.test(reviewerChirho)) {
+      failChirho(`${labelChirho} must be the gateway authenticated reviewer, not the server fallback identity`);
+    }
+  }
+  return reviewerChirho;
 }
 
 function assertProjectPathChirho(pathChirho: string): string {
@@ -224,7 +239,7 @@ function assertCompletedEvidenceChirho(evidenceChirho: SmokeEvidenceChirho): voi
   if (numberFieldChirho(writeChirho, "validation_id_chirho", "write_smoke_chirho") <= 0) {
     failChirho("write smoke validation_id_chirho must be positive");
   }
-  nonPlaceholderChirho(
+  gatewayReviewerIdentityChirho(
     stringFieldChirho(writeChirho, "expected_reviewer_chirho", "write_smoke_chirho"),
     "write smoke expected reviewer"
   );

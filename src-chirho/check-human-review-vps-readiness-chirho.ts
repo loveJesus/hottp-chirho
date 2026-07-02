@@ -408,6 +408,8 @@ function assertSmokeEvidenceHelperChirho(): void {
     "reviewed-issues-chirho",
     "validation_id_chirho",
     "expected_reviewer_chirho",
+    "FORBIDDEN_REVIEWER_IDENTITY_PATTERNS_CHIRHO",
+    "server fallback identity",
     "saved_after_chirho",
     "saved_before_chirho",
     "--live-probe-chirho",

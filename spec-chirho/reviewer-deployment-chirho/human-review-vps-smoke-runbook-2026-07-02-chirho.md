@@ -286,6 +286,10 @@ For this Caddy Basic Auth deployment path, keep
 checker can validate other gateway modes, but the Phase 6 completion audit
 rejects `Cf-Access-Authenticated-User-Email` evidence for this Caddy path so a
 forged or wrong identity namespace cannot satisfy the final gate.
+Set `write_smoke_chirho.expected_reviewer_chirho` to the reviewer identity
+provided by the gateway. Do not use the server fallback reviewer value; the
+evidence verifier rejects fallback-looking identities because they mean the
+trusted header chain was not proven.
 
 ```bash
 bun run check-human-review-vps-smoke-evidence-chirho -- \
