@@ -172,10 +172,11 @@ function mainChirho(): void {
     console.log(`[${MODULE_CHIRHO}] ${commandChirho.map(shellQuoteChirho).join(" ")}`);
   }
   if (printOnlyChirho) return;
+  const applyChirho = argsChirho.includes("--apply-chirho");
   for (const commandChirho of commandsValueChirho) {
     const localPathChirho = commandChirho[commandChirho.length - 1]!;
     const targetDirChirho = localPathChirho.endsWith("/") ? localPathChirho : dirname(localPathChirho);
-    if (!existsSync(targetDirChirho)) {
+    if (applyChirho && !existsSync(targetDirChirho)) {
       mkdirSync(targetDirChirho, { recursive: true });
     }
     const resultChirho = Bun.spawnSync(commandChirho, { stdout: "inherit", stderr: "inherit" });
