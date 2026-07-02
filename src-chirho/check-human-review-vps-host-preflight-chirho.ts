@@ -75,8 +75,9 @@ function mainChirho(): void {
   if (hostChirho === "REVIEW_HOST_CHIRHO") {
     failChirho("real host preflight requires a real --host-chirho value");
   }
+  const stdinChirho = new TextEncoder().encode(remoteScriptChirho());
   const resultChirho = Bun.spawnSync(commandChirho, {
-    stdin: remoteScriptChirho(),
+    stdin: stdinChirho,
     stdout: "inherit",
     stderr: "inherit",
   });

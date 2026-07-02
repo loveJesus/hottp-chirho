@@ -106,6 +106,9 @@ server-authoritative, and the boundary/commit-back ritual is documented.
 - [x] Add a dry-run-default SSH host preflight helper for installed host checks:
       Bun, Caddy, rsync, directories, env permissions, Caddy validation, raw
       service status, and localhost server health.
+- [x] Add a read-only provider inventory helper for existing Hetzner,
+      DigitalOcean, and Cloudflare review-DNS state so provisioning starts from
+      current infrastructure instead of assumptions.
 - [ ] Provision one small authenticated VPS review host.
 - [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
 - [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;

@@ -14,6 +14,7 @@ Run this from the source workstation before copying anything:
 bun run check-human-review-vps-readiness-chirho
 bun run check-human-review-vps-deployment-templates-chirho
 bun run check-human-review-vps-smoke-evidence-chirho -- --template-ok-chirho
+bun run inventory-human-review-vps-candidates-chirho
 bun run check-certification-chirho
 git status --short
 ```
@@ -21,6 +22,10 @@ git status --short
 Proceed only if the preflight passes and the remaining working-tree changes are
 understood. Do not copy `.env`, API keys, or unreviewed scratch directories to
 the host.
+
+The provider inventory command is read-only. It lists existing Hetzner servers,
+DigitalOcean droplets if the token is usable, and existing `bible.systems`
+review DNS records. It must not create a server or DNS record.
 
 ## 1. Host Shape Chirho
 

@@ -37,6 +37,7 @@ const REQUIRED_PACKAGE_SCRIPTS_CHIRHO = [
   "sync-human-review-vps-chirho",
   "pull-human-review-vps-state-chirho",
   "check-human-review-vps-host-preflight-chirho",
+  "inventory-human-review-vps-candidates-chirho",
   "check-human-review-vps-deployment-templates-chirho",
 ] as const;
 
@@ -64,6 +65,7 @@ const REQUIRED_PATHS_CHIRHO: RequiredPathChirho[] = [
   { labelChirho: "VPS sync helper", relativePathChirho: "src-chirho/sync-human-review-vps-chirho.ts", kindChirho: "file-chirho" },
   { labelChirho: "VPS commit-back pull helper", relativePathChirho: "src-chirho/pull-human-review-vps-state-chirho.ts", kindChirho: "file-chirho" },
   { labelChirho: "VPS host preflight helper", relativePathChirho: "src-chirho/check-human-review-vps-host-preflight-chirho.ts", kindChirho: "file-chirho" },
+  { labelChirho: "VPS provider inventory helper", relativePathChirho: "src-chirho/inventory-human-review-vps-candidates-chirho.ts", kindChirho: "file-chirho" },
   { labelChirho: "VPS Caddyfile template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-caddyfile-template-2026-07-02-chirho.caddyfile", kindChirho: "file-chirho" },
   { labelChirho: "VPS env template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-env-template-2026-07-02-chirho.env", kindChirho: "file-chirho" },
   { labelChirho: "VPS Caddy env drop-in", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-caddy-env-2026-07-02-chirho.conf", kindChirho: "file-chirho" },
@@ -93,6 +95,7 @@ const SMOKE_RUNBOOK_SNIPPETS_CHIRHO = [
   "bun run check-human-review-vps-deployment-templates-chirho",
   "bun run sync-human-review-vps-chirho -- --print-command-chirho",
   "bun run sync-human-review-vps-chirho -- --host-chirho=REVIEW_HOST_CHIRHO --apply-chirho",
+  "bun run inventory-human-review-vps-candidates-chirho",
   "bun run check-human-review-vps-host-preflight-chirho -- --print-command-chirho",
   "bun run check-human-review-vps-host-preflight-chirho -- --host-chirho=REVIEW_HOST_CHIRHO",
   "basic_auth",
@@ -270,6 +273,28 @@ function assertHostPreflightHelperChirho(): void {
   }
 }
 
+function assertProviderInventoryHelperChirho(): void {
+  const sourceChirho = readFileSync(absolutePathChirho("src-chirho/inventory-human-review-vps-candidates-chirho.ts"), "utf8");
+  for (const snippetChirho of [
+    "https://api.hetzner.cloud/v1/servers",
+    "https://api.digitalocean.com/v2/droplets",
+    "https://api.cloudflare.com/client/v4/zones?name=bible.systems",
+    "raw-review.bible.systems",
+    "latin-review.bible.systems",
+    "expert-review.bible.systems",
+    "This is read-only provider inventory.",
+  ]) {
+    if (!sourceChirho.includes(snippetChirho)) {
+      failChirho(`VPS provider inventory helper missing snippet: ${snippetChirho}`);
+    }
+  }
+  for (const forbiddenSnippetChirho of ["method: \"POST\"", "method: \"PUT\"", "method: \"PATCH\"", "method: \"DELETE\""]) {
+    if (sourceChirho.includes(forbiddenSnippetChirho)) {
+      failChirho(`VPS provider inventory helper must stay read-only; found ${forbiddenSnippetChirho}`);
+    }
+  }
+}
+
 function assertReviewServerFingerprintsChirho(): void {
   for (const keyChirho of REVIEW_SERVER_KEYS_CHIRHO) {
     const filesChirho = reviewServerSourceFilesChirho(keyChirho);
@@ -296,6 +321,7 @@ function mainChirho(): void {
   assertSyncHelperChirho();
   assertPullHelperChirho();
   assertHostPreflightHelperChirho();
+  assertProviderInventoryHelperChirho();
   assertReviewServerFingerprintsChirho();
   console.log(
     `[${MODULE_CHIRHO}] VPS readiness preflight passed: localhost-bound servers, trusted reviewer headers, assets, DB, packets, scripts, and commit-back docs are present`
