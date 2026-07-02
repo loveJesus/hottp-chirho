@@ -56,6 +56,7 @@ const REQUIRED_PATHS_CHIRHO: RequiredPathChirho[] = [
   { labelChirho: "expert confirmation policy", relativePathChirho: "spec-chirho/metropoliluya-chirho/vision-tier-expert-confirmations-2026-06-01-chirho.json", kindChirho: "file-chirho" },
   { labelChirho: "VPS boundary doc", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-boundary-2026-07-02-chirho.md", kindChirho: "file-chirho" },
   { labelChirho: "VPS smoke runbook", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-runbook-2026-07-02-chirho.md", kindChirho: "file-chirho" },
+  { labelChirho: "VPS smoke evidence template", relativePathChirho: "spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-template-2026-07-02-chirho.json", kindChirho: "file-chirho" },
   { labelChirho: "span source assets", relativePathChirho: "workspace-chirho/spans-chirho", kindChirho: "directory-chirho", mustBeNonEmptyChirho: true },
   { labelChirho: "scanline assets", relativePathChirho: "workspace-chirho/scanlines-chirho", kindChirho: "directory-chirho", mustBeNonEmptyChirho: true },
   { labelChirho: "segment crop assets", relativePathChirho: "workspace-chirho/segments-chirho", kindChirho: "directory-chirho", mustBeNonEmptyChirho: true },
@@ -84,6 +85,7 @@ const SMOKE_RUNBOOK_SNIPPETS_CHIRHO = [
   "public traffic must go through Caddy",
   "Do not clean-certify a real item merely for smoke.",
   "Commit-Back Proof Chirho",
+  "check-human-review-vps-smoke-evidence-chirho",
 ] as const;
 
 const REVIEW_SERVER_KEYS_CHIRHO: ReviewServerKeyChirho[] = [

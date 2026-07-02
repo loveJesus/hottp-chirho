@@ -12,6 +12,7 @@ Run this from the source workstation before copying anything:
 
 ```bash
 bun run check-human-review-vps-readiness-chirho
+bun run check-human-review-vps-smoke-evidence-chirho -- --template-ok-chirho
 bun run check-certification-chirho
 git status --short
 ```
@@ -135,6 +136,13 @@ should fail or be blocked; public traffic must go through Caddy.
 
 ## 6. Remote Reviewer Smoke Chirho
 
+Before the browser smoke, copy the evidence template:
+
+```bash
+cp spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-template-2026-07-02-chirho.json \
+  spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-YYYY-MM-DD-chirho.json
+```
+
 From the reviewer browser:
 
 1. Open `https://raw-review.example-chirho.org/`.
@@ -163,6 +171,15 @@ git status --short
 Stage only intentional review artifacts. If the smoke action was meant to be
 temporary, restore from the pre-smoke backup and prove `git status --short` no
 longer shows the smoke artifact.
+
+Fill the evidence file and verify it:
+
+```bash
+bun run check-human-review-vps-smoke-evidence-chirho -- \
+  --evidence-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-YYYY-MM-DD-chirho.json
+```
+
+Do not mark Phase 6 complete unless this completed evidence check passes.
 
 ## 8. Add Other Stations Chirho
 

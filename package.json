@@ -47,6 +47,7 @@
     "check-reviewer-launchpad-output-chirho": "bun run src-chirho/check-reviewer-launchpad-output-chirho.ts",
     "check-review-server-health-source-coverage-chirho": "bun run src-chirho/check-review-server-health-source-coverage-chirho.ts",
     "check-human-review-vps-readiness-chirho": "bun run src-chirho/check-human-review-vps-readiness-chirho.ts",
+    "check-human-review-vps-smoke-evidence-chirho": "bun run src-chirho/check-human-review-vps-smoke-evidence-chirho.ts",
     "check-certification-strict-status-chirho": "bun run src-chirho/check-certification-strict-status-chirho.ts",
     "check-reviewer-attribution-chirho": "bun run src-chirho/check-reviewer-attribution-chirho.ts",
     "check-expert-supplied-text-guards-chirho": "bun run src-chirho/check-expert-supplied-text-guards-chirho.ts",

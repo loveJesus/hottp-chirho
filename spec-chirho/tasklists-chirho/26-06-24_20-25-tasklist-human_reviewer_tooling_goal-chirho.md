@@ -88,6 +88,9 @@ server-authoritative, and the boundary/commit-back ritual is documented.
 - [x] Add a concrete VPS smoke runbook covering rsync dry-run, Caddy trusted
       header proxying, raw-Hebrew-first startup, direct-port rejection, remote
       browser smoke, and commit-back proof.
+- [x] Add a structured VPS smoke evidence template and verifier so Phase 6
+      completion requires proof of remote auth, direct-port blocking, browser
+      controls, harmless write smoke, guards, and commit-back/restore.
 - [ ] Provision one small authenticated VPS review host.
 - [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
 - [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;
