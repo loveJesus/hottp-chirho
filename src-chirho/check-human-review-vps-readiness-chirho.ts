@@ -249,6 +249,7 @@ function assertPullHelperChirho(): void {
     "--apply-chirho requires a real --host-chirho value",
     "missing required --host-chirho=REVIEW_HOST_CHIRHO",
     "spec-chirho/progress-chirho.sqlite",
+    "backups-chirho/vps-snapshot-progress-chirho.sqlite",
     "pass-c-human-validations-backup-2026-06-01-chirho.json",
     "latin-symbol-vision-reviews-backup-2026-05-31-chirho.json",
     "vision-tier-expert-confirmations-2026-06-01-chirho.json",
@@ -259,6 +260,9 @@ function assertPullHelperChirho(): void {
     if (!sourceChirho.includes(snippetChirho)) {
       failChirho(`VPS commit-back pull helper missing guard snippet: ${snippetChirho}`);
     }
+  }
+  if (!sourceChirho.includes("REMOTE_PROGRESS_DB_PATH_CHIRHO") || !sourceChirho.includes("QUARANTINE_PROGRESS_DB_PATH_CHIRHO")) {
+    failChirho("VPS commit-back pull helper must keep remote progress DB path separate from quarantine target");
   }
 }
 

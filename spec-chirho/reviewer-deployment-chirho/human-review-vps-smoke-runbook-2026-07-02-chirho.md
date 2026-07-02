@@ -198,7 +198,34 @@ bun run check-certification-strict-status-chirho
 git status --short
 ```
 
-The default pull is raw-Hebrew-only and pulls the remote database to a quarantined local path (`backups-chirho/vps-snapshot-progress-chirho.sqlite`) to protect local agent logs from being clobbered, alongside the Pass-C human validation JSON backup. The local live `spec-chirho/progress-chirho.sqlite` must never be directly overwritten. Human rows are replayed locally using `bun run apply-pass-c-human-validations-chirho`. If the smoke deliberately saved a draft segment repair proposal, add `--include-segment-repair-proposals-chirho`. For later expert supplied-text work, use `--station-chirho=expert-non-latin-chirho` and add `--include-expert-supplied-backup-chirho`; add `--include-workspace-spans-chirho` only when an expert-supplied text action changed live span JSON.
+The default pull is raw-Hebrew-only and pulls the remote database to a
+quarantined local path
+`backups-chirho/vps-snapshot-progress-chirho.sqlite` to protect local agent logs
+from being clobbered, alongside the Pass-C human validation JSON backup. The
+local live `spec-chirho/progress-chirho.sqlite` must never be directly
+overwritten, and the quarantined SQLite snapshot is for replay/forensics only,
+not for staging as the canonical DB.
+
+To replay Pass-C rows from the quarantined snapshot, first dry-run against the
+snapshot DB:
+
+```bash
+bun run apply-pass-c-human-validations-chirho -- \
+  --db=backups-chirho/vps-snapshot-progress-chirho.sqlite \
+  --backup-chirho=spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json
+```
+
+Only run `--apply` after the dry-run output gives the exact selected row count
+and validation ids, then supply
+`--expected-row-count-chirho=<count>` and one
+`--expected-validation-id-chirho=<id>` flag per selected row.
+
+If the smoke deliberately saved a draft segment repair proposal, add
+`--include-segment-repair-proposals-chirho`. For later expert supplied-text
+work, use `--station-chirho=expert-non-latin-chirho` and add
+`--include-expert-supplied-backup-chirho`; add
+`--include-workspace-spans-chirho` only when an expert-supplied text action
+changed live span JSON.
 
 Stage only intentional review artifacts. If the smoke action was meant to be
 temporary, restore from the pre-smoke backup and prove `git status --short` no

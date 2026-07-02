@@ -115,6 +115,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
 - [x] Add a first-smoke completion checker that requires a completed
       provisioning decision and completed raw-Hebrew smoke evidence to agree on
       host, raw-review DNS name, station, and blocked direct port.
+- [x] Quarantine remote `progress-chirho.sqlite` snapshots during commit-back
+      so local agent log rows cannot be clobbered by binary SQLite overwrite.
 - [ ] Provision one small authenticated VPS review host.
 - [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
 - [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;

@@ -9,6 +9,8 @@ import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 const MODULE_CHIRHO = "pull-human-review-vps-state-chirho";
 const DEFAULT_REMOTE_USER_CHIRHO = "hottp-review-chirho";
 const DEFAULT_REMOTE_PATH_CHIRHO = "/srv/hottp-review-chirho/current/";
+const REMOTE_PROGRESS_DB_PATH_CHIRHO = "spec-chirho/progress-chirho.sqlite";
+const QUARANTINE_PROGRESS_DB_PATH_CHIRHO = "backups-chirho/vps-snapshot-progress-chirho.sqlite";
 
 const STATION_VALUES_CHIRHO = new Set([
   "raw-hebrew-chirho",
@@ -24,7 +26,7 @@ interface PullArtifactChirho {
 }
 
 const PULL_ARTIFACTS_CHIRHO: PullArtifactChirho[] = [
-  { stationChirho: "core-chirho", relativePathChirho: "spec-chirho/progress-chirho.sqlite" },
+  { stationChirho: "core-chirho", relativePathChirho: REMOTE_PROGRESS_DB_PATH_CHIRHO },
   {
     stationChirho: "raw-hebrew-chirho",
     relativePathChirho: "spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json",
@@ -113,11 +115,9 @@ function rsyncCommandChirho(paramsChirho: {
   const remoteSourceChirho =
     `${paramsChirho.remoteUserChirho}@${paramsChirho.hostChirho}:` +
     `${paramsChirho.remotePathChirho}${paramsChirho.artifactChirho.relativePathChirho}`;
-  
-  // Custom local path override for core database to prevent clobbering steps_taken_chirho logs (VETO Q10)
   let localTargetChirho: string;
-  if (paramsChirho.artifactChirho.relativePathChirho === "spec-chirho/progress-chirho.sqlite") {
-    localTargetChirho = join(PROJECT_ROOT_CHIRHO, "backups-chirho/vps-snapshot-progress-chirho.sqlite");
+  if (paramsChirho.artifactChirho.relativePathChirho === REMOTE_PROGRESS_DB_PATH_CHIRHO) {
+    localTargetChirho = join(PROJECT_ROOT_CHIRHO, QUARANTINE_PROGRESS_DB_PATH_CHIRHO);
   } else {
     localTargetChirho = paramsChirho.artifactChirho.relativePathChirho.endsWith("/")
       ? join(PROJECT_ROOT_CHIRHO, paramsChirho.artifactChirho.relativePathChirho)
