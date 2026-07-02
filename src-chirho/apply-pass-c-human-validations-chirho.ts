@@ -389,6 +389,9 @@ function mainChirho(): void {
   const dbPathChirho = parseArgValueChirho(argsChirho, "db") ?? PROGRESS_DB_PATH_CHIRHO;
   const spansDirChirho = parseArgValueChirho(argsChirho, "spans-dir") ?? SPANS_DIR_CHIRHO;
   const backupPathChirho = parseArgValueChirho(argsChirho, "backup-chirho");
+  if (applyChirho && backupPathChirho === undefined) {
+    throw new Error("--apply requires --backup-chirho=... so replay writes the intended pulled-back backup artifact");
+  }
   const expectedRowCountChirho = parseNonNegativeIntegerArgChirho(
     parseArgValueChirho(argsChirho, "expected-row-count-chirho"),
     "expected-row-count-chirho"

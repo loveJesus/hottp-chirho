@@ -138,6 +138,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       review service is active on the selected host.
 - [x] Have the commit-back pull helper refuse real rsync when any remote
       write-capable review service is active on the selected host.
+- [x] Have the Pass-C replay helper require an explicit backup output path on
+      `--apply` so pulled rows update the intended committable artifact.
 - [x] Add live-probe mode to smoke evidence checks so real host smoke verifies
       unauthenticated gateway denial and direct-port refusal itself.
 - [x] Add a Phase 6 completion audit wrapper that composes the readiness,

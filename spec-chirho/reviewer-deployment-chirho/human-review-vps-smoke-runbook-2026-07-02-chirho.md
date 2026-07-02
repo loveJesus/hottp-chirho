@@ -276,7 +276,7 @@ bun run apply-pass-c-human-validations-chirho -- \
 ```
 
 Only run `--apply` after the dry-run output gives the exact selected row count
-and validation ids, then supply
+and validation ids, then supply the same explicit `--backup-chirho=...`,
 `--expected-row-count-chirho=<count>` and one
 `--expected-validation-id-chirho=<id>` flag per selected row.
 

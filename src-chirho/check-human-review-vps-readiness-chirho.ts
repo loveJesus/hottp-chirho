@@ -44,6 +44,7 @@ const REQUIRED_PACKAGE_SCRIPTS_CHIRHO = [
   "check-human-review-vps-first-smoke-completion-chirho",
   "check-human-review-vps-phase6-completion-chirho",
   "check-human-review-vps-deployment-templates-chirho",
+  "apply-pass-c-human-validations-chirho",
 ] as const;
 
 const LOCALHOST_SERVER_FILES_CHIRHO: RequiredServerChirho[] = [
@@ -341,6 +342,20 @@ function assertWriteLeaseHelperChirho(): void {
   }
 }
 
+function assertPassCReplayHelperChirho(): void {
+  const sourceChirho = readFileSync(absolutePathChirho("src-chirho/apply-pass-c-human-validations-chirho.ts"), "utf8");
+  for (const snippetChirho of [
+    "--apply requires --expected-row-count-chirho=<count>",
+    "--expected-validation-id-chirho set",
+    "--apply requires --backup-chirho",
+    "writePassCHumanValidationBackupChirho",
+  ]) {
+    if (!sourceChirho.includes(snippetChirho)) {
+      failChirho(`Pass-C replay helper missing guard snippet: ${snippetChirho}`);
+    }
+  }
+}
+
 function assertHostPreflightHelperChirho(): void {
   const sourceChirho = readFileSync(absolutePathChirho("src-chirho/check-human-review-vps-host-preflight-chirho.ts"), "utf8");
   for (const snippetChirho of [
@@ -510,6 +525,7 @@ function mainChirho(): void {
   assertSyncHelperChirho();
   assertPullHelperChirho();
   assertWriteLeaseHelperChirho();
+  assertPassCReplayHelperChirho();
   assertHostPreflightHelperChirho();
   assertProviderInventoryHelperChirho();
   assertProvisioningDecisionHelperChirho();
