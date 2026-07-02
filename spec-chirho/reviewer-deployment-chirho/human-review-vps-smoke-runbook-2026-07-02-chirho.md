@@ -281,6 +281,12 @@ longer shows the smoke artifact.
 
 Fill the evidence file and verify it:
 
+For this Caddy Basic Auth deployment path, keep
+`trusted_header_chirho` set to `X-Webauth-User`. The reusable smoke evidence
+checker can validate other gateway modes, but the Phase 6 completion audit
+rejects `Cf-Access-Authenticated-User-Email` evidence for this Caddy path so a
+forged or wrong identity namespace cannot satisfy the final gate.
+
 ```bash
 bun run check-human-review-vps-smoke-evidence-chirho -- \
   --live-probe-chirho \

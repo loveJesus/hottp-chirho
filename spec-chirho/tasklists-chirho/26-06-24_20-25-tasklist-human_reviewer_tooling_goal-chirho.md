@@ -139,6 +139,8 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       backup-row, and certification guards into one final command.
 - [x] Have the Phase 6 completion audit verify the write lease and completed
       provisioning decision cite the same owner approval reference.
+- [x] Have the Phase 6 completion audit require Caddy smoke evidence to use the
+      pinned `X-Webauth-User` trusted reviewer header.
 - [x] Add a non-completed provisioning decision draft from read-only provider
       inventory so owner approval starts from current host/DNS evidence.
 - [x] Add an owner approval handoff with current host/DNS inventory and the exact

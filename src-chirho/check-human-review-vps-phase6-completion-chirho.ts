@@ -11,6 +11,7 @@ const DEFAULT_PASS_C_BACKUP_PATH_CHIRHO =
   "spec-chirho/metropoliluya-chirho/pass-c-human-validations-backup-2026-06-01-chirho.json";
 const SOURCE_LOCAL_FIXTURE_DIR_FRAGMENT_CHIRHO =
   "spec-chirho/reviewer-deployment-chirho/.tmp-phase6-completion-fixture-chirho/";
+const REQUIRED_TRUSTED_HEADER_CHIRHO = "X-Webauth-User";
 
 interface ProvisioningDecisionForPhase6Chirho {
   owner_approval_chirho?: {
@@ -23,6 +24,10 @@ interface ProvisioningDecisionForPhase6Chirho {
 
 interface WriteLeaseForPhase6Chirho {
   owner_approval_reference_chirho?: unknown;
+}
+
+interface SmokeEvidenceForPhase6Chirho {
+  trusted_header_chirho?: unknown;
 }
 
 function parseArgValueChirho(argsChirho: string[], nameChirho: string): string | null {
@@ -74,6 +79,16 @@ function assertWriteLeaseApprovalReferenceMatchesDecisionChirho(decisionPathChir
   );
   if (leaseApprovalReferenceChirho !== decisionApprovalReferenceChirho) {
     failChirho("write lease owner approval reference does not match provisioning decision approval reference");
+  }
+}
+
+function assertSmokeEvidenceUsesPinnedTrustedHeaderChirho(evidencePathChirho: string): void {
+  const evidenceChirho = readJsonChirho<SmokeEvidenceForPhase6Chirho>(evidencePathChirho);
+  const trustedHeaderChirho = stringValueChirho(evidenceChirho.trusted_header_chirho, "smoke evidence trusted header");
+  if (trustedHeaderChirho !== REQUIRED_TRUSTED_HEADER_CHIRHO) {
+    failChirho(
+      `Phase 6 Caddy smoke evidence must use ${REQUIRED_TRUSTED_HEADER_CHIRHO}, got ${trustedHeaderChirho}`
+    );
   }
 }
 
@@ -131,7 +146,7 @@ function mainChirho(): void {
     backupArgChirho,
   });
   const decisionPathChirho = projectPathChirho(decisionArgChirho, "provisioning decision");
-  projectPathChirho(evidenceArgChirho, "smoke evidence");
+  const evidencePathChirho = projectPathChirho(evidenceArgChirho, "smoke evidence");
   const leasePathChirho = projectPathChirho(leaseArgChirho, "write lease");
   projectPathChirho(backupArgChirho, "Pass-C human validation backup");
   const hostNameChirho = selectedHostNameChirho(decisionPathChirho);
@@ -152,6 +167,7 @@ function mainChirho(): void {
     `--host-chirho=${hostNameChirho}`,
   ]);
   assertWriteLeaseApprovalReferenceMatchesDecisionChirho(decisionPathChirho, leasePathChirho);
+  assertSmokeEvidenceUsesPinnedTrustedHeaderChirho(evidencePathChirho);
   const firstSmokeCommandChirho = [
     "bun",
     "run",

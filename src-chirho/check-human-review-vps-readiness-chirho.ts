@@ -456,6 +456,8 @@ function assertPhase6CompletionHelperChirho(): void {
     "--live-probe-chirho",
     "--source-local-fixture-chirho",
     "Phase 6 completion requires --live-probe-chirho",
+    "REQUIRED_TRUSTED_HEADER_CHIRHO",
+    "Phase 6 Caddy smoke evidence must use",
     "write lease owner approval reference does not match provisioning decision approval reference",
   ]) {
     if (!sourceChirho.includes(snippetChirho)) {
