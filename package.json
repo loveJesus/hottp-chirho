@@ -36,6 +36,7 @@
     "check-human-review-vps-host-preflight-chirho": "bun run src-chirho/check-human-review-vps-host-preflight-chirho.ts",
     "inventory-human-review-vps-candidates-chirho": "bun run src-chirho/inventory-human-review-vps-candidates-chirho.ts",
     "check-human-review-vps-provisioning-decision-chirho": "bun run src-chirho/check-human-review-vps-provisioning-decision-chirho.ts",
+    "check-human-review-vps-first-smoke-completion-chirho": "bun run src-chirho/check-human-review-vps-first-smoke-completion-chirho.ts",
     "check-certification-chirho": "bun run src-chirho/check-certification-chirho.ts",
     "check-app-publication-readiness-chirho": "bun run src-chirho/check-app-publication-readiness-chirho.ts",
     "publication-readiness-summary-chirho": "bun run src-chirho/check-app-publication-readiness-chirho.ts --summary-only-chirho",

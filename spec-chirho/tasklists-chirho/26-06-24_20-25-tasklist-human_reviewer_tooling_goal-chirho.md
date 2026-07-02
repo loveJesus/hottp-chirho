@@ -112,6 +112,9 @@ server-authoritative, and the boundary/commit-back ritual is documented.
 - [x] Add a machine-checkable provisioning decision template/verifier so owner
       approval, host choice, DNS plan, budget posture, and single-writer safety
       are explicit before real VPS work starts.
+- [x] Add a first-smoke completion checker that requires a completed
+      provisioning decision and completed raw-Hebrew smoke evidence to agree on
+      host, raw-review DNS name, station, and blocked direct port.
 - [ ] Provision one small authenticated VPS review host.
 - [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
 - [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;

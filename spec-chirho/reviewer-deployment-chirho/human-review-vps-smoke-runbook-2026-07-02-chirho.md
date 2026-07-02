@@ -214,9 +214,14 @@ Fill the evidence file and verify it:
 ```bash
 bun run check-human-review-vps-smoke-evidence-chirho -- \
   --evidence-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-YYYY-MM-DD-chirho.json
+bun run check-human-review-vps-first-smoke-completion-chirho -- \
+  --decision-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-provisioning-decision-YYYY-MM-DD-chirho.json \
+  --evidence-chirho=spec-chirho/reviewer-deployment-chirho/human-review-vps-smoke-evidence-YYYY-MM-DD-chirho.json
 ```
 
-Do not mark Phase 6 complete unless this completed evidence check passes.
+Do not mark the first VPS smoke complete unless both completed evidence checks
+pass. The cross-check proves the decision host and raw-review DNS name match the
+actual smoke evidence.
 
 ## 8. Add Other Stations Chirho
 
