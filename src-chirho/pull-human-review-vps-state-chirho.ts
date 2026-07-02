@@ -2,6 +2,7 @@
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
 import { dirname, join } from "path";
+import { existsSync, mkdirSync } from "fs";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
@@ -112,9 +113,17 @@ function rsyncCommandChirho(paramsChirho: {
   const remoteSourceChirho =
     `${paramsChirho.remoteUserChirho}@${paramsChirho.hostChirho}:` +
     `${paramsChirho.remotePathChirho}${paramsChirho.artifactChirho.relativePathChirho}`;
-  const localTargetChirho = paramsChirho.artifactChirho.relativePathChirho.endsWith("/")
-    ? join(PROJECT_ROOT_CHIRHO, paramsChirho.artifactChirho.relativePathChirho)
-    : `${join(PROJECT_ROOT_CHIRHO, dirname(paramsChirho.artifactChirho.relativePathChirho))}/`;
+  
+  // Custom local path override for core database to prevent clobbering steps_taken_chirho logs (VETO Q10)
+  let localTargetChirho: string;
+  if (paramsChirho.artifactChirho.relativePathChirho === "spec-chirho/progress-chirho.sqlite") {
+    localTargetChirho = join(PROJECT_ROOT_CHIRHO, "backups-chirho/vps-snapshot-progress-chirho.sqlite");
+  } else {
+    localTargetChirho = paramsChirho.artifactChirho.relativePathChirho.endsWith("/")
+      ? join(PROJECT_ROOT_CHIRHO, paramsChirho.artifactChirho.relativePathChirho)
+      : `${join(PROJECT_ROOT_CHIRHO, dirname(paramsChirho.artifactChirho.relativePathChirho))}/`;
+  }
+
   const commandChirho = ["rsync", "-a"];
   if (!paramsChirho.applyChirho) commandChirho.push("--dry-run");
   commandChirho.push(remoteSourceChirho, localTargetChirho);
@@ -164,6 +173,11 @@ function mainChirho(): void {
   }
   if (printOnlyChirho) return;
   for (const commandChirho of commandsValueChirho) {
+    const localPathChirho = commandChirho[commandChirho.length - 1]!;
+    const targetDirChirho = localPathChirho.endsWith("/") ? localPathChirho : dirname(localPathChirho);
+    if (!existsSync(targetDirChirho)) {
+      mkdirSync(targetDirChirho, { recursive: true });
+    }
     const resultChirho = Bun.spawnSync(commandChirho, { stdout: "inherit", stderr: "inherit" });
     if (resultChirho.exitCode !== 0) failChirho(`rsync exited with code ${resultChirho.exitCode}`);
   }
