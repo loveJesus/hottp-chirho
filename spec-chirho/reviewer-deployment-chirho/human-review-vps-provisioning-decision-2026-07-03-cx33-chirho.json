@@ -1,0 +1,47 @@
+{
+  "schema_version_chirho": 1,
+  "completed_chirho": true,
+  "decision_id_chirho": "2026-07-03-cx33-human-review-vps-decision-chirho",
+  "recorded_at_chirho": "2026-07-03T23:47:05.978Z",
+  "recorded_by_chirho": "codex-gpt5-chirho",
+  "owner_approval_chirho": {
+    "approved_chirho": true,
+    "approved_by_chirho": "hallelujah-chirho",
+    "approval_reference_chirho": "chat-2026-07-03-user-said-do-cx33-chirho",
+    "approved_scope_chirho": "create-new-host-chirho",
+    "creates_billable_resources_chirho": true,
+    "dns_changes_approved_chirho": false,
+    "monthly_budget_usd_chirho": 8.49
+  },
+  "selected_host_chirho": {
+    "provider_chirho": "hetzner-chirho",
+    "host_name_chirho": "hottp-human-review-cx33-chirho",
+    "host_address_chirho": "195.201.101.25",
+    "region_chirho": "nbg1",
+    "size_chirho": "cx33",
+    "existing_host_chirho": false
+  },
+  "dns_plan_chirho": {
+    "raw_review_hostname_chirho": "raw-review.bible.systems",
+    "latin_review_hostname_chirho": "latin-review.bible.systems",
+    "expert_review_hostname_chirho": "expert-review.bible.systems",
+    "create_or_update_records_chirho": false,
+    "proxied_chirho": false
+  },
+  "safety_acknowledgements_chirho": {
+    "single_writer_host_chirho": true,
+    "no_cloudflare_workers_for_authoring_chirho": true,
+    "no_d1_authoring_database_chirho": true,
+    "secrets_outside_git_chirho": true,
+    "caddy_auth_required_chirho": true,
+    "direct_ports_blocked_chirho": true,
+    "workspace_assets_synced_explicitly_chirho": true
+  },
+  "inventory_snapshot_chirho": {
+    "inventory_recorded_at_chirho": "2026-07-03T23:47:05.978Z",
+    "hetzner_status_chirho": "ok - created hottp-human-review-cx33-chirho id 147667582 initializing cx33 x86 nbg1 IPv4 195.201.101.25; firewall hottp-human-review-vps-firewall-chirho id 11246138 allows tcp 22/80/443 only; existing Hetzner review inventory before create had no human-review server or firewall",
+    "digital_ocean_status_chirho": "not-ok - HTTP 401 from read-only inventory helper",
+    "cloudflare_review_dns_status_chirho": "ok - found 0 review DNS record(s) for raw-review.bible.systems, latin-review.bible.systems, expert-review.bible.systems; no DNS changes approved",
+    "notes_chirho": "Owner requested cx33 after live availability check. This decision creates a new billable Hetzner cx33 in Nuremberg for Phase 6 human review tooling and explicitly does not authorize DNS changes."
+  }
+}
