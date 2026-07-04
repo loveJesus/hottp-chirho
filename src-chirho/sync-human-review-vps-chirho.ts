@@ -212,6 +212,24 @@ function assertProgressDbCheckpointedForApplyChirho(argsChirho: string[]): void 
   }
 }
 
+function assertGitWorkingTreeCleanForApplyChirho(argsChirho: string[]): void {
+  if (!argsChirho.includes("--apply-chirho")) return;
+  const resultChirho = Bun.spawnSync(
+    ["git", "status", "--porcelain", "--untracked-files=all"],
+    { cwd: PROJECT_ROOT_CHIRHO }
+  );
+  if (resultChirho.exitCode !== 0) {
+    failChirho(`git status exited with code ${resultChirho.exitCode}`);
+  }
+  const statusChirho = new TextDecoder().decode(resultChirho.stdout).trim();
+  if (statusChirho.length > 0) {
+    failChirho(
+      "--apply-chirho requires a clean git working tree before sync-out; commit, stash, or remove local changes first:\n" +
+        statusChirho
+    );
+  }
+}
+
 function shellQuoteChirho(valueChirho: string): string {
   return `'${valueChirho.replace(/'/g, "'\"'\"'")}'`;
 }
@@ -289,6 +307,7 @@ async function mainChirho(): Promise<void> {
   const argsChirho = process.argv.slice(2);
   const printOnlyChirho = argsChirho.includes("--print-command-chirho");
   const hostChirho = assertSafeTokenChirho(parseArgValueChirho(argsChirho, "host-chirho") ?? "REVIEW_HOST_CHIRHO", "host-chirho");
+  if (!printOnlyChirho) assertGitWorkingTreeCleanForApplyChirho(argsChirho);
   const approvalReferenceChirho = !printOnlyChirho ? completedDecisionApprovalReferenceForApplyChirho(argsChirho, hostChirho) : null;
   if (!printOnlyChirho) assertWriteLeaseForApplyChirho(argsChirho, hostChirho);
   if (!printOnlyChirho) assertWriteLeaseApprovalReferenceForApplyChirho(argsChirho, approvalReferenceChirho);

@@ -116,7 +116,9 @@ can race it. It also checks the remote `hottp-raw-review-chirho.service`,
 `hottp-latin-symbol-review-chirho.service`, and
 `hottp-expert-review-chirho.service` units before rsync; if any are active,
 sync-out aborts so the remote live tree is not overwritten under a running
-review server.
+review server. A real sync also refuses a dirty git working tree, including
+untracked files, so scratch notes or unrelated local edits cannot be copied to
+the review host by accident.
 
 ## 3. Host Install Chirho
 
