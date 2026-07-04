@@ -7,10 +7,10 @@
   "owner_approval_chirho": {
     "approved_chirho": true,
     "approved_by_chirho": "hallelujah-chirho",
-    "approval_reference_chirho": "chat-2026-07-03-user-said-do-cx33-chirho",
+    "approval_reference_chirho": "chat-2026-07-03-user-said-do-cx33-chirho-and-chat-2026-07-04-user-said-attach-domain-too-chirho",
     "approved_scope_chirho": "create-new-host-chirho",
     "creates_billable_resources_chirho": true,
-    "dns_changes_approved_chirho": false,
+    "dns_changes_approved_chirho": true,
     "monthly_budget_usd_chirho": 8.49
   },
   "selected_host_chirho": {
@@ -25,7 +25,7 @@
     "raw_review_hostname_chirho": "raw-review.bible.systems",
     "latin_review_hostname_chirho": "latin-review.bible.systems",
     "expert_review_hostname_chirho": "expert-review.bible.systems",
-    "create_or_update_records_chirho": false,
+    "create_or_update_records_chirho": true,
     "proxied_chirho": false
   },
   "safety_acknowledgements_chirho": {
@@ -41,7 +41,7 @@
     "inventory_recorded_at_chirho": "2026-07-03T23:47:05.978Z",
     "hetzner_status_chirho": "ok - created hottp-human-review-cx33-chirho id 147667582 initializing cx33 x86 nbg1 IPv4 195.201.101.25; firewall hottp-human-review-vps-firewall-chirho id 11246138 allows tcp 22/80/443 only; existing Hetzner review inventory before create had no human-review server or firewall",
     "digital_ocean_status_chirho": "not-ok - HTTP 401 from read-only inventory helper",
-    "cloudflare_review_dns_status_chirho": "ok - found 0 review DNS record(s) for raw-review.bible.systems, latin-review.bible.systems, expert-review.bible.systems; no DNS changes approved",
-    "notes_chirho": "Owner requested cx33 after live availability check. This decision creates a new billable Hetzner cx33 in Nuremberg for Phase 6 human review tooling and explicitly does not authorize DNS changes."
+    "cloudflare_review_dns_status_chirho": "ok - created DNS-only A records raw-review.bible.systems, latin-review.bible.systems, and expert-review.bible.systems to 195.201.101.25 with proxied=false",
+    "notes_chirho": "Owner requested cx33 after live availability check, then requested attaching a domain. This decision creates a new billable Hetzner cx33 in Nuremberg for Phase 6 human review tooling and authorizes DNS-only Cloudflare A records for the three review hostnames. Caddy/auth remains required before any review service is exposed."
   }
 }

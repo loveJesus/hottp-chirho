@@ -50,3 +50,14 @@ The provisioning decision check, local readiness check, deployment template
 check, smoke evidence template check, and `git diff --check` passed. SSH as
 `hottp-review-chirho` succeeded and confirmed the `/srv/hottp-review-chirho`
 layout exists. Sync/start remains gated on the write lease and runbook.
+
+On `2026-07-04`, owner requested attaching a domain. After a minimal Fable
+review, created DNS-only Cloudflare A records pointing to `195.201.101.25`:
+
+- `raw-review.bible.systems`
+- `latin-review.bible.systems`
+- `expert-review.bible.systems`
+
+All three records use `proxied=false`; Caddy on the VPS remains responsible for
+TLS/auth before any review service is exposed. Raw-first remains the service
+startup rule, not a DNS rule.
