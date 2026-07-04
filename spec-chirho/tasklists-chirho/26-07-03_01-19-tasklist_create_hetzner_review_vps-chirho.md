@@ -64,3 +64,18 @@ All three records use `proxied=true`. The Hetzner firewall keeps SSH open, opens
 origin `443` only to Cloudflare IP ranges, and closes public `80`. Caddy on the
 VPS remains responsible for origin HTTPS plus auth before any review service is
 exposed. Raw-first remains the service startup rule, not a DNS rule.
+
+VPS bootstrap status:
+
+- Installed Bun `1.3.14`.
+- Upgraded Caddy to official stable `v2.11.4` because the Ubuntu package lacked
+  `caddy validate --envfile`, which the checked runbook requires.
+- Installed the generated Caddyfile with Cloudflare-proxied HTTPS origin,
+  `tls internal`, `auto_https disable_redirects`, and Basic Auth.
+- Saved the generated Basic Auth secret only in local secret files and
+  `/etc/hottp-review-chirho.env`; do not commit it.
+- Verified unauthenticated `https://raw-review.bible.systems/` returns `401`.
+- Verified authenticated access reaches Caddy and returns `502` because no
+  review upstream is running yet.
+- Verified direct origin `80`, direct origin `443`, and direct `8766` time out
+  from the public internet.
