@@ -1,13 +1,25 @@
 <!-- For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life. — John 3:16 (KJV) -->
 
-# Human Reviewer Instructional Chirho
+# Human Reviewer Instructional
 
 This guide is for people reviewing the HOTTP transcription against the printed
 scan. The goal is not to move quickly through a queue. The goal is to create
 small, attributed review records that make the text safer and give Codex enough
 evidence to improve the project-local detectors, queues, and instructions.
 
-## Core Rule Chirho
+## Review Tool Links
+
+Use the link for your assigned lane. Sign-in is required.
+
+- Raw Hebrew review: <https://raw-review.bible.systems/>
+- Latin and symbol review: <https://latin-review.bible.systems/>
+- Expert non-Latin review: <https://expert-review.bible.systems/>
+
+Raw Hebrew is the first remote station we are bringing online. The Latin/symbol
+and expert links use the same protected VPS boundary and will open when those
+services are started.
+
+## Core Rule
 
 Confirm only what you can certify from the print. Do not confirm a word merely
 because it matches WLC, LXX, a lexicon, a standard edition, or a plausible
@@ -17,7 +29,7 @@ review verdict is about this printed line.
 If you are uncertain, use an issue flag or skip. Skipping is useful because it
 keeps the item in the queue for a better-qualified reviewer.
 
-## What Each Action Means Chirho
+## What Each Action Means
 
 - `Continue` with no issue flags means: I intentionally certify this item as
   clean/correct for this lane.
@@ -31,7 +43,7 @@ keeps the item in the queue for a better-qualified reviewer.
 - Supplying text for a blank expert item is not final certification. It fills an
   empty span so it can be reviewed again and explicitly confirmed later.
 
-## Review Lanes Chirho
+## Review Lanes
 
 Raw Hebrew:
 Use this for Hebrew items from the Pass-C validator. Confirm letters, niqqud,
@@ -51,7 +63,7 @@ non-Latin spans that were recovered by visual repair. Only confirm inside your
 competence. A non-Syriac reader can flag a crop or segmentation problem on a
 Syriac item, but should not certify Syriac letters.
 
-## Notes That Help Codex Chirho
+## Notes That Help Codex
 
 When you flag or correct an item, write the shortest note that explains the
 pattern. Useful notes look like this:
@@ -64,7 +76,7 @@ pattern. Useful notes look like this:
 Avoid notes that only say `wrong`, `fixed`, or `looks good`; they are hard to
 turn into detector improvements.
 
-## When To Invoke Codex For Synthesis Chirho
+## When To Invoke Codex For Synthesis
 
 Codex does not automatically learn from each click. Your review rows become
 useful to Codex after they are saved, backed up, and pulled back into the local
@@ -97,7 +109,7 @@ If in doubt, invoke Codex sooner for issues and later for routine clean
 confirmations. A single surprising defect is more useful than fifty ordinary
 clean items.
 
-## What Codex Should Do With A Review Batch Chirho
+## What Codex Should Do With A Review Batch
 
 After a batch is pulled back, ask Codex to:
 
@@ -107,13 +119,19 @@ After a batch is pulled back, ask Codex to:
 4. Decide whether a detector, reviewer instruction, or packet should change.
 5. Commit only reviewed artifacts, never secrets or scratch files.
 
-## Copy-Ready Reviewer Message Chirho
+## Copy-Ready Reviewer Message
 
-Please review against the printed scan, not against what a standard text says
-the line should be. Press `Continue` with no issue boxes only when you
-intentionally certify the current item as clean for your lane. If anything is
-uncertain, outside your script competence, badly boxed, missing, or suspicious,
-flag it or skip it.
+Please use your assigned review link:
+
+- Raw Hebrew: <https://raw-review.bible.systems/>
+- Latin and symbols: <https://latin-review.bible.systems/>
+- Expert non-Latin: <https://expert-review.bible.systems/>
+
+Review against the printed scan, not against what a standard text says the line
+should be. Press `Continue` with no issue boxes only when you intentionally
+certify the current item as clean for your lane. If anything is uncertain,
+outside your script competence, badly boxed, missing, or suspicious, flag it or
+skip it.
 
 Short notes help: name the pattern, not just `wrong`. After roughly 3 repeated
 defects, 10 similar issues, 10 corrections in one lane, 25 clean confirmations,
