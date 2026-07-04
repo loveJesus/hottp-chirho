@@ -58,6 +58,14 @@ stored attribution.
 All Bun review servers must bind to `127.0.0.1`, never `0.0.0.0`. Public traffic
 must reach them only through the authenticated reverse proxy.
 
+For the hosted review VPS, Cloudflare owns the public edge. Review DNS records
+are proxied, and the VPS firewall should expose origin web traffic only on
+`443` from Cloudflare IP ranges. Public `80` stays closed. Caddy still speaks
+encrypted HTTPS to Cloudflare using an origin-only certificate path such as
+`tls internal`; do not depend on public ACME challenges from the protected
+origin. Caddy auth and trusted-header stripping remain mandatory even though
+Cloudflare fronts the host.
+
 Current review station ports:
 
 - `:8766` raw Hebrew human validator.

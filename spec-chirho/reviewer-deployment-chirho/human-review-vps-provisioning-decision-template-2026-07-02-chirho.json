@@ -26,7 +26,7 @@
     "latin_review_hostname_chirho": "latin-review.bible.systems",
     "expert_review_hostname_chirho": "expert-review.bible.systems",
     "create_or_update_records_chirho": false,
-    "proxied_chirho": false
+    "proxied_chirho": true
   },
   "safety_acknowledgements_chirho": {
     "single_writer_host_chirho": false,

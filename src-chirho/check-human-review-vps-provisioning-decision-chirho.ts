@@ -203,8 +203,12 @@ function assertCompletedDecisionChirho(decisionChirho: ProvisioningDecisionChirh
   }
   const dnsChirho = recordChirho(rootChirho.dns_plan_chirho, "dns_plan_chirho");
   const createOrUpdateDnsChirho = booleanFieldChirho(dnsChirho, "create_or_update_records_chirho", "dns_plan_chirho");
+  const proxiedDnsChirho = booleanFieldChirho(dnsChirho, "proxied_chirho", "dns_plan_chirho");
   if (createOrUpdateDnsChirho !== dnsChangesApprovedChirho) {
     failChirho("owner_approval_chirho.dns_changes_approved_chirho must match dns_plan_chirho.create_or_update_records_chirho");
+  }
+  if (createOrUpdateDnsChirho && proxiedDnsChirho !== true) {
+    failChirho("review DNS records must be proxied when DNS changes are approved");
   }
   for (const [keyChirho, expectedChirho] of Object.entries(REQUIRED_DNS_CHIRHO)) {
     const actualChirho = stringFieldChirho(dnsChirho, keyChirho, "dns_plan_chirho");

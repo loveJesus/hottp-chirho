@@ -87,12 +87,18 @@ function assertRegexChirho(sourceChirho: string, regexChirho: RegExp, labelChirh
 }
 
 function assertCaddyTemplateChirho(sourceChirho: string): void {
+  assertIncludesChirho(sourceChirho, "auto_https disable_redirects", "Caddy template");
+  assertIncludesChirho(sourceChirho, "tls internal", "Caddy template");
   assertIncludesChirho(sourceChirho, "basic_auth", "Caddy template");
   assertIncludesChirho(sourceChirho, "{$HOTTP_REVIEW_USER_CHIRHO}", "Caddy template");
   assertIncludesChirho(sourceChirho, "{$HOTTP_REVIEW_PASSWORD_HASH_CHIRHO}", "Caddy template");
   for (const upstreamChirho of REVIEW_UPSTREAMS_CHIRHO) {
-    assertIncludesChirho(sourceChirho, upstreamChirho.hostChirho, "Caddy template");
+    assertIncludesChirho(sourceChirho, `https://${upstreamChirho.hostChirho}`, "Caddy template");
     assertIncludesChirho(sourceChirho, `reverse_proxy 127.0.0.1:${upstreamChirho.portChirho}`, "Caddy template");
+  }
+  const internalTlsImportsChirho = (sourceChirho.match(/import hottp_review_origin_tls_chirho/g) ?? []).length;
+  if (internalTlsImportsChirho !== REVIEW_UPSTREAMS_CHIRHO.length) {
+    failChirho("Caddy template must import internal origin TLS for every upstream");
   }
   const strippedCfHeadersChirho = (sourceChirho.match(/header_up -Cf-Access-Authenticated-User-Email/g) ?? []).length;
   const strippedWebauthHeadersChirho = (sourceChirho.match(/header_up -X-Webauth-User/g) ?? []).length;

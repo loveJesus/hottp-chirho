@@ -1,9 +1,19 @@
 # For God so loved the world, that he gave his only begotten Son,
 # that whosoever believeth in him should not perish, but have everlasting life. — John 3:16 (KJV)
 
+{
+  auto_https disable_redirects
+}
+
 # Copy to /etc/caddy/Caddyfile on the review VPS after replacing the example
-# hostnames. The Caddy service must receive /etc/hottp-review-chirho.env so the
+# hostnames. Cloudflare owns public TLS and proxies to this origin over HTTPS;
+# this origin intentionally uses Caddy internal TLS so port 80 is unnecessary.
+# The Caddy service must receive /etc/hottp-review-chirho.env so the
 # HOTTP_REVIEW_* placeholders resolve.
+
+(hottp_review_origin_tls_chirho) {
+  tls internal
+}
 
 (hottp_review_auth_chirho) {
   basic_auth {
@@ -11,7 +21,8 @@
   }
 }
 
-raw-review.example-chirho.org {
+https://raw-review.example-chirho.org {
+  import hottp_review_origin_tls_chirho
   import hottp_review_auth_chirho
   reverse_proxy 127.0.0.1:8766 {
     header_up -Cf-Access-Authenticated-User-Email
@@ -20,7 +31,8 @@ raw-review.example-chirho.org {
   }
 }
 
-latin-review.example-chirho.org {
+https://latin-review.example-chirho.org {
+  import hottp_review_origin_tls_chirho
   import hottp_review_auth_chirho
   reverse_proxy 127.0.0.1:8770 {
     header_up -Cf-Access-Authenticated-User-Email
@@ -29,7 +41,8 @@ latin-review.example-chirho.org {
   }
 }
 
-expert-review.example-chirho.org {
+https://expert-review.example-chirho.org {
+  import hottp_review_origin_tls_chirho
   import hottp_review_auth_chirho
   reverse_proxy 127.0.0.1:8771 {
     header_up -Cf-Access-Authenticated-User-Email

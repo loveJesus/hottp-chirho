@@ -26,7 +26,7 @@
     "latin_review_hostname_chirho": "latin-review.bible.systems",
     "expert_review_hostname_chirho": "expert-review.bible.systems",
     "create_or_update_records_chirho": true,
-    "proxied_chirho": false
+    "proxied_chirho": true
   },
   "safety_acknowledgements_chirho": {
     "single_writer_host_chirho": true,
@@ -39,9 +39,9 @@
   },
   "inventory_snapshot_chirho": {
     "inventory_recorded_at_chirho": "2026-07-03T23:47:05.978Z",
-    "hetzner_status_chirho": "ok - created hottp-human-review-cx33-chirho id 147667582 initializing cx33 x86 nbg1 IPv4 195.201.101.25; firewall hottp-human-review-vps-firewall-chirho id 11246138 allows tcp 22/80/443 only; existing Hetzner review inventory before create had no human-review server or firewall",
+    "hetzner_status_chirho": "ok - created hottp-human-review-cx33-chirho id 147667582 running cx33 x86 nbg1 IPv4 195.201.101.25; firewall hottp-human-review-vps-firewall-chirho id 11246138 allows tcp 22 from anywhere and tcp 443 only from Cloudflare IP ranges; port 80 is closed",
     "digital_ocean_status_chirho": "not-ok - HTTP 401 from read-only inventory helper",
-    "cloudflare_review_dns_status_chirho": "ok - created DNS-only A records raw-review.bible.systems, latin-review.bible.systems, and expert-review.bible.systems to 195.201.101.25 with proxied=false",
-    "notes_chirho": "Owner requested cx33 after live availability check, then requested attaching a domain. This decision creates a new billable Hetzner cx33 in Nuremberg for Phase 6 human review tooling and authorizes DNS-only Cloudflare A records for the three review hostnames. Caddy/auth remains required before any review service is exposed."
+    "cloudflare_review_dns_status_chirho": "ok - created proxied Cloudflare A records raw-review.bible.systems, latin-review.bible.systems, and expert-review.bible.systems to 195.201.101.25 with proxied=true",
+    "notes_chirho": "Owner requested cx33 after live availability check, then requested attaching a domain with Cloudflare-owned public TLS and protected VPS origin. This decision creates a new billable Hetzner cx33 in Nuremberg for Phase 6 human review tooling and authorizes proxied Cloudflare A records for the three review hostnames. Caddy/auth remains required before any review service is exposed; origin web traffic is HTTPS on 443 from Cloudflare IP ranges only, with public port 80 closed."
   }
 }

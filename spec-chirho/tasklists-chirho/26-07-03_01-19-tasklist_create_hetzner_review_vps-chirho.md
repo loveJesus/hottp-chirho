@@ -51,13 +51,16 @@ check, smoke evidence template check, and `git diff --check` passed. SSH as
 `hottp-review-chirho` succeeded and confirmed the `/srv/hottp-review-chirho`
 layout exists. Sync/start remains gated on the write lease and runbook.
 
-On `2026-07-04`, owner requested attaching a domain. After a minimal Fable
-review, created DNS-only Cloudflare A records pointing to `195.201.101.25`:
+On `2026-07-04`, owner requested attaching a domain, then clarified that
+Cloudflare should own public TLS while the VPS origin remains protected. After a
+minimal Fable review, created Cloudflare-proxied A records pointing to
+`195.201.101.25`:
 
 - `raw-review.bible.systems`
 - `latin-review.bible.systems`
 - `expert-review.bible.systems`
 
-All three records use `proxied=false`; Caddy on the VPS remains responsible for
-TLS/auth before any review service is exposed. Raw-first remains the service
-startup rule, not a DNS rule.
+All three records use `proxied=true`. The Hetzner firewall keeps SSH open, opens
+origin `443` only to Cloudflare IP ranges, and closes public `80`. Caddy on the
+VPS remains responsible for origin HTTPS plus auth before any review service is
+exposed. Raw-first remains the service startup rule, not a DNS rule.

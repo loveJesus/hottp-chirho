@@ -164,10 +164,16 @@ Generate the Caddy password hash on the host:
 caddy hash-password
 ```
 
-## 4. Caddy Boundary Chirho
+## 4. Cloudflare And Caddy Boundary Chirho
 
-Use separate hostnames so each review app remains mounted at `/`. Start from the
-committed Caddyfile template:
+Cloudflare owns the public edge and the review DNS records should be proxied.
+The VPS origin should accept web traffic only on `443` from Cloudflare IP
+ranges; do not open public port `80`. Caddy still terminates encrypted origin
+traffic from Cloudflare, using `tls internal` rather than public ACME, so the
+first smoke is not dependent on Let's Encrypt HTTP-01/TLS-ALPN reachability.
+
+Use separate hostnames so each review app remains mounted at `/`. Start from
+the committed Caddyfile template:
 
 ```bash
 sudo install -m 0644 spec-chirho/reviewer-deployment-chirho/human-review-vps-caddyfile-template-2026-07-02-chirho.caddyfile \
@@ -186,8 +192,12 @@ If Cloudflare Access is used instead of Caddy basic auth, the trusted header is
 either trusted header directly. The basic-auth template strips both trusted
 identity headers from incoming clients before injecting `X-Webauth-User` from
 Caddy's authenticated user. The checked template uses `basic_auth`,
+`tls internal`, `auto_https disable_redirects`,
 `header_up -Cf-Access-Authenticated-User-Email`, `header_up -X-Webauth-User`,
-and `header_up X-Webauth-User {http.auth.user.id}`.
+and `header_up X-Webauth-User {http.auth.user.id}`. The Cloudflare zone can
+remain in SSL mode `Full` for this internal-origin-certificate path; `Full
+(strict)` requires a Cloudflare Origin CA or otherwise trusted origin
+certificate instead.
 
 ## 5. Start Raw Hebrew First Chirho
 
@@ -208,10 +218,13 @@ Before opening the public hostname, prove the raw server is localhost-bound:
 bun run check-human-review-vps-host-preflight-chirho -- --host-chirho=REVIEW_HOST_CHIRHO
 curl -fsS http://127.0.0.1:8766/api-chirho/server-health-chirho
 curl --connect-timeout 3 http://REVIEW_HOST_CHIRHO:8766/ || true
+curl --connect-timeout 3 http://REVIEW_HOST_CHIRHO/ || true
 ```
 
 The localhost health request should succeed. The direct public-port request
-should fail or be blocked; public traffic must go through Caddy.
+should fail or be blocked; public traffic must go through Cloudflare to Caddy.
+The direct public `80` request should also fail because the origin firewall
+does not expose HTTP.
 The host preflight also checks that every review `reverse_proxy` block in the
 installed `/etc/caddy/Caddyfile` strips both incoming identity headers and
 injects `X-Webauth-User` from the authenticated Caddy user before proxying to

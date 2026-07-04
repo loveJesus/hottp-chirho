@@ -66,6 +66,8 @@ const HOST_CHECK_COMMANDS_CHIRHO = [
   "grep -q '^HOTTP_REVIEW_PASSWORD_HASH_CHIRHO=' /etc/hottp-review-chirho.env",
   "test -f /etc/caddy/Caddyfile",
   "test -f /etc/systemd/system/caddy.service.d/hottp-review-chirho.conf",
+  "grep -q 'auto_https disable_redirects' /etc/caddy/Caddyfile",
+  "grep -q 'tls internal' /etc/caddy/Caddyfile",
   "sudo caddy validate --envfile /etc/hottp-review-chirho.env --config /etc/caddy/Caddyfile",
   CADDY_TRUSTED_HEADER_BLOCK_CHECK_CHIRHO,
   "test -f /etc/systemd/system/hottp-raw-review-chirho.service",

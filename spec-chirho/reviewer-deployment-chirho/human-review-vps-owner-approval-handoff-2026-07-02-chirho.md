@@ -2,12 +2,13 @@
 
 # Human Review VPS Owner Approval Handoff Chirho
 
-This is a decision aid only. It is not owner approval, does not create a host,
-does not start a stopped host, and does not create DNS records.
+This file began as a decision aid. The current selected host is now recorded in
+`human-review-vps-provisioning-decision-2026-07-03-cx33-chirho.json`; use that
+completed decision as the source of truth.
 
 ## Current Inventory Chirho
 
-Read-only inventory from `bun run inventory-human-review-vps-candidates-chirho`
+Earlier read-only inventory from `bun run inventory-human-review-vps-candidates-chirho`
 at `2026-07-02T12:38:16.509Z`:
 
 - Hetzner: `ok - found 4 server(s)`.
@@ -20,14 +21,25 @@ at `2026-07-02T12:38:16.509Z`:
 - `cairn-chirho`: running, `cax11`, `unknown-location`, IPv4
   `167.235.194.27`.
 - DigitalOcean: `not-ok - HTTP 401`.
-- Cloudflare review DNS: `ok - found 0 review DNS record(s)` for
+- Cloudflare review DNS at that time: `ok - found 0 review DNS record(s)` for
   `raw-review.bible.systems`, `latin-review.bible.systems`, and
   `expert-review.bible.systems`.
 
+## Current Selected Host Chirho
+
+- Host: `hottp-human-review-cx33-chirho`
+- IPv4: `195.201.101.25`
+- Provider/shape: Hetzner `cx33`, Nuremberg
+- Review DNS: `raw-review.bible.systems`, `latin-review.bible.systems`, and
+  `expert-review.bible.systems` are proxied through Cloudflare to the host.
+- Origin firewall: SSH is open for administration; origin `443` is open only
+  to Cloudflare IP ranges; public `80` is closed.
+
 ## Decision Needed Chirho
 
-Owner approval must choose exactly one write-owning host before Phase 6 can
-continue. The completed provisioning decision must fill:
+The host decision is complete. Before Phase 6 review writes can continue, the
+next decision is the write lease that makes this VPS the single writer. The
+completed provisioning decision filled:
 
 - `owner_approval_chirho.approved_chirho: true`
 - `owner_approval_chirho.approved_by_chirho`
@@ -57,10 +69,10 @@ bun run check-human-review-vps-provisioning-decision-chirho -- \
   host for this workflow.
 - A stopped host may be more isolated, but starting or repurposing it still
   needs owner approval and budget confirmation.
-- No DNS records currently exist for the review hostnames. Creating them is a
-  separate explicit owner decision.
+- Review DNS records now exist and are proxied through Cloudflare. Further DNS
+  changes remain a separate explicit owner decision.
 
-## Approval Sentence Chirho
+## Historical Approval Sentence Chirho
 
 An approval message should be this concrete:
 
