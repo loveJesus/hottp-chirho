@@ -55,6 +55,7 @@ const HOST_CHECK_COMMANDS_CHIRHO = [
   "caddy version",
   "command -v rsync",
   "rsync --version >/dev/null",
+  "command -v magick >/dev/null || command -v convert >/dev/null",
   "test -d /srv/hottp-review-chirho/current",
   "test -d /srv/hottp-review-chirho/backups-chirho",
   "cd /srv/hottp-review-chirho/current && bun run check-human-review-vps-readiness-chirho",

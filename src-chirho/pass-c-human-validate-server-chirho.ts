@@ -3294,8 +3294,9 @@ async function spanImageResponseChirho(itemChirho: QueueItemChirho): Promise<Res
   const cropSpecChirho =
     `${itemChirho.zoomCropWidthPxChirho}x${itemChirho.zoomCropHeightPxChirho}` +
     `+${itemChirho.zoomCropXMinPxChirho}+${itemChirho.zoomCropYMinPxChirho}`;
+  const imageMagickExecutableChirho = imageMagickCommandChirho();
   const procChirho = Bun.spawn([
-    "magick",
+    imageMagickExecutableChirho,
     itemChirho.lineImagePathChirho,
     "-crop",
     cropSpecChirho,
@@ -3312,6 +3313,21 @@ async function spanImageResponseChirho(itemChirho: QueueItemChirho): Promise<Res
     return new Response(errorOutputChirho || "crop failed", { status: 500 });
   }
   return new Response(outputChirho, { headers: reviewServerNoStoreHeadersChirho("image/png") });
+}
+
+function imageMagickCommandChirho(): string {
+  const resultChirho = Bun.spawnSync(["sh", "-lc", "command -v magick || command -v convert"], {
+    stdout: "pipe",
+    stderr: "pipe",
+  });
+  if (resultChirho.exitCode !== 0) {
+    throw new Error('ImageMagick executable not found in $PATH: expected "magick" or "convert"');
+  }
+  const commandChirho = resultChirho.stdout.toString().trim().split("\n")[0]?.trim();
+  if (commandChirho === undefined || commandChirho.length === 0) {
+    throw new Error('ImageMagick executable not found in $PATH: expected "magick" or "convert"');
+  }
+  return commandChirho;
 }
 
 const serverChirho = Bun.serve({
