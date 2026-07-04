@@ -1,0 +1,16 @@
+{
+  "schema_version_chirho": 1,
+  "completed_chirho": true,
+  "lease_id_chirho": "2026-07-04-cx33-human-review-write-lease-chirho",
+  "recorded_at_chirho": "2026-07-04T19:28:30Z",
+  "recorded_by_chirho": "codex-gpt5-chirho",
+  "owner_approval_reference_chirho": "chat-2026-07-03-user-said-do-cx33-chirho-and-chat-2026-07-04-user-said-attach-domain-too-chirho",
+  "writer_host_chirho": "195.201.101.25",
+  "canonical_writer_chirho": "vps-human-review-chirho",
+  "local_writes_paused_chirho": true,
+  "remote_review_servers_stopped_chirho": true,
+  "sqlite_checkpoint_or_stop_chirho": "stopped-review-servers-chirho",
+  "pull_strategy_chirho": "json-replay-with-quarantined-sqlite-chirho",
+  "expires_at_chirho": "2026-07-06T19:28:30Z",
+  "notes_chirho": "Owner approved the CX33 review VPS and review DNS. Local review ports 8766/8770/8771 were checked stopped, and remote raw/Latin/expert services were checked stopped before the first raw-Hebrew service start. Human rows must return through JSON replay with quarantined SQLite for forensics only."
+}
