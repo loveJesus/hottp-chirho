@@ -81,6 +81,8 @@ VPS bootstrap status:
   from the public internet.
 - Installed `build-essential` because the remote `bun install --frozen-lockfile`
   needed native build tools for `better-sqlite3`.
+- Installed `imagemagick` because raw Hebrew crop endpoints need ImageMagick to
+  crop scanlines for span images.
 - Deployed committed `HEAD` plus the gitignored `workspace-chirho/` assets to
   `/srv/hottp-review-chirho/current` without copying local dirty scratch files.
 - Copied the canonical `spec-chirho/progress-chirho.sqlite` explicitly because
