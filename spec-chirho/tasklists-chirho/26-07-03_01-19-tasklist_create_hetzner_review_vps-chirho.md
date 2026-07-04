@@ -79,3 +79,14 @@ VPS bootstrap status:
   review upstream is running yet.
 - Verified direct origin `80`, direct origin `443`, and direct `8766` time out
   from the public internet.
+- Installed `build-essential` because the remote `bun install --frozen-lockfile`
+  needed native build tools for `better-sqlite3`.
+- Deployed committed `HEAD` plus the gitignored `workspace-chirho/` assets to
+  `/srv/hottp-review-chirho/current` without copying local dirty scratch files.
+- Copied the canonical `spec-chirho/progress-chirho.sqlite` explicitly because
+  git archive excludes ignored SQLite files; the local WAL was zero bytes.
+- Started only `hottp-raw-review-chirho.service`.
+- Verified `https://raw-review.bible.systems/` returns `401` without auth and
+  `200` with Basic Auth, and the page title is `Pass C Hebrew Validation`.
+- Verified host preflight passes with raw Hebrew active and direct public
+  `80`/`8766` blocked.
