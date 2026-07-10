@@ -53,7 +53,9 @@ import {
 import {
   SEGMENT_REPAIR_PROPOSAL_SCHEMA_VERSION_CHIRHO,
   SEGMENT_REPAIR_PROPOSAL_STATUS_DRAFT_CHIRHO,
+  SEGMENT_REPAIR_KIND_LABELS_CHIRHO,
   SEGMENT_REPAIR_KIND_VALUES_CHIRHO,
+  SEGMENT_REPAIR_SCRIPT_LABELS_CHIRHO,
   SEGMENT_REPAIR_SCRIPT_VALUES_CHIRHO,
   appendSegmentRepairProposalChirho,
   isSegmentRepairScriptChirho,
@@ -1481,6 +1483,10 @@ function pageHtmlChirho(): string {
     .segment-repair-grid-chirho textarea { resize: vertical; min-height: 34px; unicode-bidi: plaintext; }
     .segment-repair-preview-chirho { border: 1px solid #d6d9dd; background: #f8fafb; padding: 8px; min-height: 34px; unicode-bidi: plaintext; }
     .codepoints-chirho { font-size: 12px; color: #3d4650; direction: ltr; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .codepoints-details-chirho { border: 1px dashed #d6d9dd; background: #fbfbfc; padding: 8px; }
+    .codepoints-details-chirho summary { cursor: pointer; font-size: 12px; color: #3d4650; }
+    .codepoints-details-chirho .label-chirho { margin-top: 6px; }
+    .how-to-review-chirho { display: grid; gap: 6px; font-size: 14px; line-height: 1.45; }
     .candidate-words-chirho { overflow-wrap: anywhere; }
     .witness-list-chirho { display: flex; flex-direction: column; gap: 6px; font-size: 13px; margin-top: 8px; }
     .witness-chirho { border-left: 3px solid #8aa399; padding-left: 8px; }
@@ -1614,7 +1620,9 @@ function pageHtmlChirho(): string {
     const issueFlagOptionsChirho = ${scriptJsonChirho(ISSUE_FLAG_OPTIONS_CHIRHO)};
     const scriptVerdictOptionsChirho = ${scriptJsonChirho(SCRIPT_VERDICT_OPTIONS_CHIRHO)};
     const segmentRepairKindOptionsChirho = ${scriptJsonChirho(SEGMENT_REPAIR_KIND_VALUES_CHIRHO)};
+    const segmentRepairKindLabelsChirho = ${scriptJsonChirho(SEGMENT_REPAIR_KIND_LABELS_CHIRHO)};
     const segmentRepairScriptOptionsChirho = ${scriptJsonChirho(SEGMENT_REPAIR_SCRIPT_VALUES_CHIRHO)};
+    const segmentRepairScriptLabelsChirho = ${scriptJsonChirho(SEGMENT_REPAIR_SCRIPT_LABELS_CHIRHO)};
     const serverReviewerChirho = ${scriptJsonChirho(reviewerChirho)};
     const genericReviewerIdsChirho = new Set(${scriptJsonChirho([...GENERIC_REVIEWER_IDS_CHIRHO])});
     const machineReviewerIdReChirho = new RegExp(
@@ -2246,6 +2254,10 @@ function pageHtmlChirho(): string {
       const markTitleChirho = hebrewTypewriterTitleByValueChirho.get(charChirho);
       return markTitleChirho ? " " + markTitleChirho.replace(/\\s+U\\+[0-9A-F]+$/u, "") : "";
     }
+    function displayValueChirho(valueChirho) {
+      // Internal identifiers keep their -chirho suffix; reviewer-visible diagnostics drop it.
+      return String(valueChirho ?? "").replace(/-chirho\\b/gu, "");
+    }
     function codepointTextChirho(valueChirho) {
       const charsChirho = Array.from(String(valueChirho ?? "").normalize("NFC"));
       if (charsChirho.length === 0) return "(empty)";
@@ -2522,7 +2534,7 @@ function pageHtmlChirho(): string {
       const widthInputChirho = elChirho("input", { classChirho: "repair-width-chirho", type: "number", min: "1", step: "1", value: String(spanChirho.widthPxChirho) });
       const scriptSelectChirho = elChirho("select", { classChirho: "repair-script-chirho" });
       for (const scriptChirho of segmentRepairScriptOptionsChirho) {
-        const optionChirho = elChirho("option", { value: scriptChirho, textChirho: scriptChirho });
+        const optionChirho = elChirho("option", { value: scriptChirho, textChirho: segmentRepairScriptLabelsChirho[scriptChirho] ?? scriptChirho });
         if (scriptChirho === spanChirho.scriptChirho) optionChirho.selected = true;
         scriptSelectChirho.appendChild(optionChirho);
       }
@@ -2546,7 +2558,7 @@ function pageHtmlChirho(): string {
     }
     function renderRepairRowsChirho(gridChirho, rowsChirho, updateChirho) {
       clearChirho(gridChirho);
-      for (const labelChirho of ["#", "x", "w", "script", "text", ""]) {
+      for (const labelChirho of ["#", "left px", "width px", "script", "text", ""]) {
         gridChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: labelChirho }));
       }
       rowsChirho.forEach((rowChirho, indexChirho) => {
@@ -2561,9 +2573,10 @@ function pageHtmlChirho(): string {
     function segmentRepairProposalBoxChirho(itemChirho) {
       const boxChirho = elChirho("div", { classChirho: "box-chirho" });
       boxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Segment repair proposal" }));
+      boxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Use this when the red box itself is wrong: split it, merge it, move or resize it, fix its script, or mark it unreadable. Saving only files a draft proposal for later review; it never certifies text." }));
       const kindSelectChirho = elChirho("select", { id: "segment-repair-kind-chirho" });
       for (const kindChirho of segmentRepairKindOptionsChirho) {
-        kindSelectChirho.appendChild(elChirho("option", { value: kindChirho, textChirho: kindChirho }));
+        kindSelectChirho.appendChild(elChirho("option", { value: kindChirho, textChirho: segmentRepairKindLabelsChirho[kindChirho] ?? kindChirho }));
       }
       const rationaleChirho = elChirho("textarea", { id: "segment-repair-rationale-chirho", placeholder: "what split, merge, rebox, script, punctuation, or unreadable-script repair is needed" });
       const gridChirho = elChirho("div", { classChirho: "segment-repair-grid-chirho" });
@@ -2581,7 +2594,7 @@ function pageHtmlChirho(): string {
       };
       renderRepairRowsChirho(gridChirho, itemChirho.lineSegmentsChirho, updateChirho);
       const actionRowChirho = elChirho("div", { classChirho: "actions-chirho" });
-      const splitButtonChirho = elChirho("button", { type: "button", textChirho: "Split target row" });
+      const splitButtonChirho = elChirho("button", { type: "button", textChirho: "Split the red-box row" });
       const addButtonChirho = elChirho("button", { type: "button", textChirho: "Add row" });
       splitButtonChirho.addEventListener("click", () => {
         const rowsChirho = repairRowsFromGridChirho(gridChirho);
@@ -2643,9 +2656,17 @@ function pageHtmlChirho(): string {
       const spanWidthChirho = Number(itemChirho.spanWidthPxChirho);
       const lineWidthChirho = Number(itemChirho.lineWidthPxChirho);
       const spanEndChirho = spanStartChirho + spanWidthChirho;
-      return "Target span: x" + spanStartChirho + ".." + spanEndChirho + " of " + lineWidthChirho +
-        "px; segment " + itemChirho.segmentIndexChirho +
-        "; clean certification covers exactly the red-boxed printed content, spacing, maqqef, punctuation, and word boundaries.";
+      return "Certify exactly what the red box covers - letters, marks, spacing, maqqef, punctuation, and word boundaries. " +
+        "(Span x" + spanStartChirho + ".." + spanEndChirho + " of " + lineWidthChirho + "px, segment " + itemChirho.segmentIndexChirho + ".)";
+    }
+    function howToReviewBoxChirho() {
+      return elChirho("div", { classChirho: "box-chirho how-to-review-chirho" }, [
+        elChirho("div", { classChirho: "label-chirho", textChirho: "How to review this item" }),
+        elChirho("div", { textChirho: "1. Compare the red box in the images below with Current text (red box)." }),
+        elChirho("div", { textChirho: "2. Box in the right spot but the text is wrong: type the exact printed letters in Your correction." }),
+        elChirho("div", { textChirho: "3. Box itself is wrong (on the wrong word, wrong position or size, or the text belongs to a different word): do not retype text. Check the Segmentation issue box or file a segment repair proposal below." }),
+        elChirho("div", { textChirho: "4. Text and box both match the print exactly: check the clean-certification box and Save." })
+      ]);
     }
     function renderChirho() {
       syncUrlChirho();
@@ -2661,6 +2682,7 @@ function pageHtmlChirho(): string {
       const leftChirho = elChirho("div", { classChirho: "line-panel-chirho" });
       const savedValidationChirho = validationsChirho.get(itemChirho.keyChirho);
       const savedIssueFlagsChirho = new Set(parseJsonArrayChirho(savedValidationChirho?.issue_flags_chirho));
+      leftChirho.appendChild(howToReviewBoxChirho());
       leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Target crop - red box is the item" }));
       const targetWrapChirho = elChirho("div", { classChirho: "target-image-wrap-chirho" });
       const targetFrameChirho = elChirho("div", { classChirho: "target-image-frame-chirho" });
@@ -2677,6 +2699,34 @@ function pageHtmlChirho(): string {
       leftChirho.appendChild(targetWrapChirho);
       leftChirho.appendChild(elChirho("div", { classChirho: "target-boundary-note-chirho", textChirho: targetBoundaryTextChirho(itemChirho) }));
 
+      const targetRowChirho = elChirho("div", { classChirho: "target-row-chirho" });
+      targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Current text (red box)" }));
+      targetRowChirho.appendChild(elChirho("div", { classChirho: spanTextClassChirho(itemChirho), textChirho: itemChirho.liveSpanTextChirho }));
+      if (itemChirho.hasLiveSpanTextDriftChirho) {
+        targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Report text" }));
+        targetRowChirho.appendChild(elChirho("div", { classChirho: spanTextClassChirho(itemChirho), textChirho: itemChirho.textChirho }));
+      }
+      targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Your correction (optional - only when the print differs)" }));
+      const editChirho = elChirho("textarea", { classChirho: "edit-chirho", id: "edit-chirho" });
+      editChirho.value = savedValidationChirho?.corrected_text_chirho ?? itemChirho.liveSpanTextChirho;
+      if (!reviewStateAllowsSubmitChirho()) editChirho.setAttribute("readonly", "true");
+      targetRowChirho.appendChild(editChirho);
+      targetRowChirho.appendChild(typewriterChirho());
+      const editCodepointsChirho = elChirho("div", { id: "edit-codepoints-chirho", classChirho: "mono-chirho codepoints-chirho", textChirho: codepointTextChirho(editChirho.value) });
+      const codepointsDetailsChildrenChirho = [
+        elChirho("summary", { textChirho: "Unicode codepoints (exact character check)" }),
+        elChirho("div", { classChirho: "label-chirho", textChirho: "Current text codepoints" }),
+        elChirho("div", { classChirho: "mono-chirho codepoints-chirho", textChirho: codepointTextChirho(itemChirho.liveSpanTextChirho) })
+      ];
+      if (itemChirho.hasLiveSpanTextDriftChirho) {
+        codepointsDetailsChildrenChirho.push(elChirho("div", { classChirho: "label-chirho", textChirho: "Report codepoints" }));
+        codepointsDetailsChildrenChirho.push(elChirho("div", { classChirho: "mono-chirho codepoints-chirho", textChirho: codepointTextChirho(itemChirho.textChirho) }));
+      }
+      codepointsDetailsChildrenChirho.push(elChirho("div", { classChirho: "label-chirho", textChirho: "Correction codepoints" }));
+      codepointsDetailsChildrenChirho.push(editCodepointsChirho);
+      targetRowChirho.appendChild(elChirho("details", { classChirho: "codepoints-details-chirho" }, codepointsDetailsChildrenChirho));
+      leftChirho.appendChild(targetRowChirho);
+
       leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Full line - red box in context" }));
       const imageWrapChirho = elChirho("div", { classChirho: "line-image-wrap-chirho" });
       const imageFrameChirho = elChirho("div", { classChirho: "line-image-frame-chirho" });
@@ -2691,30 +2741,10 @@ function pageHtmlChirho(): string {
       imageFrameChirho.appendChild(markerChirho);
       imageWrapChirho.appendChild(imageFrameChirho);
       leftChirho.appendChild(imageWrapChirho);
-
-      const targetRowChirho = elChirho("div", { classChirho: "target-row-chirho" });
-      targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Live span text" }));
-      targetRowChirho.appendChild(elChirho("div", { classChirho: spanTextClassChirho(itemChirho), textChirho: itemChirho.liveSpanTextChirho }));
-      targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Live codepoints" }));
-      targetRowChirho.appendChild(elChirho("div", { classChirho: "mono-chirho codepoints-chirho", textChirho: codepointTextChirho(itemChirho.liveSpanTextChirho) }));
-      if (itemChirho.hasLiveSpanTextDriftChirho) {
-        targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Report text" }));
-        targetRowChirho.appendChild(elChirho("div", { classChirho: spanTextClassChirho(itemChirho), textChirho: itemChirho.textChirho }));
-        targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Report codepoints" }));
-        targetRowChirho.appendChild(elChirho("div", { classChirho: "mono-chirho codepoints-chirho", textChirho: codepointTextChirho(itemChirho.textChirho) }));
-      }
-      targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Line text" }));
-      targetRowChirho.appendChild(elChirho("div", { classChirho: "line-text-chirho", textChirho: itemChirho.lineTextChirho }));
-      targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Optional suggested text" }));
-      const editChirho = elChirho("textarea", { classChirho: "edit-chirho", id: "edit-chirho" });
-      editChirho.value = savedValidationChirho?.corrected_text_chirho ?? itemChirho.liveSpanTextChirho;
-      if (!reviewStateAllowsSubmitChirho()) editChirho.setAttribute("readonly", "true");
-      targetRowChirho.appendChild(editChirho);
-      targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Suggested codepoints" }));
-      const editCodepointsChirho = elChirho("div", { id: "edit-codepoints-chirho", classChirho: "mono-chirho codepoints-chirho", textChirho: codepointTextChirho(editChirho.value) });
-      targetRowChirho.appendChild(editCodepointsChirho);
-      targetRowChirho.appendChild(typewriterChirho());
-      leftChirho.appendChild(targetRowChirho);
+      const lineTextRowChirho = elChirho("div", { classChirho: "target-row-chirho" });
+      lineTextRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Full line text" }));
+      lineTextRowChirho.appendChild(elChirho("div", { classChirho: "line-text-chirho", textChirho: itemChirho.lineTextChirho }));
+      leftChirho.appendChild(lineTextRowChirho);
       if (reviewStateAllowsSubmitChirho()) {
         leftChirho.appendChild(segmentRepairProposalBoxChirho(itemChirho));
       }
@@ -2734,7 +2764,7 @@ function pageHtmlChirho(): string {
       if (itemChirho.attentionReasonsChirho.length > 0) {
         sideChirho.appendChild(elChirho("div", {
           classChirho: "warning-chirho",
-          textChirho: "Attention flags: " + itemChirho.attentionReasonsChirho.join("; ") + ". These are review-priority signals, not verdicts; inspect the Target crop - red box is the item and Full line - red box in context panels before any clean certification."
+          textChirho: "Attention flags: " + displayValueChirho(itemChirho.attentionReasonsChirho.join("; ")) + ". These are review-priority signals, not verdicts; inspect the Target crop - red box is the item and Full line - red box in context panels before any clean certification."
         }));
       }
       if (typeof itemChirho.preReviewNoteChirho === "string" && itemChirho.preReviewNoteChirho.length > 0) {
@@ -2759,7 +2789,7 @@ function pageHtmlChirho(): string {
         ]));
       }
       if (itemChirho.hasLiveSpanTextDriftChirho) {
-        sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "Live span text differs from this report. Check the relevant issue box; clean review is blocked." }));
+        sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "Current text differs from this report. Check the relevant issue box; clean review is blocked." }));
       }
       if (reviewStateFilterChirho === "saved-issues-chirho" && savedValidationChirho) {
         sideChirho.appendChild(elChirho("div", {
@@ -2815,7 +2845,7 @@ function pageHtmlChirho(): string {
         }));
         sideChirho.appendChild(elChirho("div", { classChirho: "box-chirho meta-grid-chirho" }, [
           elChirho("div", { textChirho: "Attribution text state" }),
-          elChirho("div", { classChirho: "mono-chirho", textChirho: attributionTextStateLabelChirho }),
+          elChirho("div", { classChirho: "mono-chirho", textChirho: displayValueChirho(attributionTextStateLabelChirho) }),
           elChirho("div", { textChirho: "Gate effect" }),
           elChirho("div", { textChirho: attributionGateEffectTextChirho })
         ]));
@@ -2882,15 +2912,15 @@ function pageHtmlChirho(): string {
         elChirho("div", { textChirho: "Location" }),
         elChirho("div", { classChirho: "mono-chirho", textChirho: "vol " + itemChirho.volumeChirho + " p" + itemChirho.pageChirho + " L" + itemChirho.lineIndexChirho + " S" + itemChirho.segmentIndexChirho }),
         elChirho("div", { textChirho: "Status" }),
-        elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.validationStatusChirho }),
+        elChirho("div", { classChirho: "mono-chirho", textChirho: displayValueChirho(itemChirho.validationStatusChirho) }),
         elChirho("div", { textChirho: "Current script" }),
-        elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.currentScriptChirho }),
+        elChirho("div", { classChirho: "mono-chirho", textChirho: segmentRepairScriptLabelsChirho[itemChirho.currentScriptChirho] ?? displayValueChirho(itemChirho.currentScriptChirho) }),
         elChirho("div", { textChirho: "Script hints" }),
-        elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.scriptHintSummaryChirho }),
+        elChirho("div", { classChirho: "mono-chirho", textChirho: displayValueChirho(itemChirho.scriptHintSummaryChirho) }),
         elChirho("div", { textChirho: "Tier" }),
-        elChirho("div", { classChirho: "tier-chirho", textChirho: itemChirho.tierChirho }),
+        elChirho("div", { classChirho: "tier-chirho", textChirho: displayValueChirho(itemChirho.tierChirho) }),
         elChirho("div", { textChirho: "Attention" }),
-        elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.attentionReasonsChirho.length === 0 ? "none" : itemChirho.attentionReasonsChirho.join("; ") }),
+        elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.attentionReasonsChirho.length === 0 ? "none" : displayValueChirho(itemChirho.attentionReasonsChirho.join("; ")) }),
         elChirho("div", { textChirho: "Hash" }),
         elChirho("div", { classChirho: "mono-chirho", textChirho: itemChirho.originalTextHashChirho.slice(0, 16) }),
         elChirho("div", { textChirho: "Skeletons" }),
@@ -2920,7 +2950,7 @@ function pageHtmlChirho(): string {
         candidateBoxChirho.appendChild(elChirho("div", {
           classChirho: "mono-chirho candidate-words-chirho",
           textChirho: itemChirho.candidateWordsChirho
-            .map((wordChirho) => "#" + wordChirho.wordIndexChirho + " " + wordChirho.scriptHintChirho + " " + wordChirho.textChirho)
+            .map((wordChirho) => "#" + wordChirho.wordIndexChirho + " " + displayValueChirho(wordChirho.scriptHintChirho) + " " + wordChirho.textChirho)
             .join(" | ")
         }));
         sideChirho.appendChild(candidateBoxChirho);
@@ -3517,7 +3547,7 @@ const serverChirho = Bun.serve({
       if (itemChirho.hasLiveSpanTextDriftChirho && issueFlagsChirho.length === 0) {
         return jsonResponseChirho({
           okChirho: false,
-          errorChirho: "Live span text drifted; check at least one issue box",
+          errorChirho: "Current text drifted; check at least one issue box",
         }, 400);
       }
       if (hasEditedTextChirho && issueFlagsChirho.length === 0) {

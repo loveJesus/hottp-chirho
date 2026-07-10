@@ -32,6 +32,28 @@ export const SEGMENT_REPAIR_SCRIPT_VALUES_CHIRHO = [
 export type SegmentRepairKindChirho = (typeof SEGMENT_REPAIR_KIND_VALUES_CHIRHO)[number];
 export type SegmentRepairScriptChirho = (typeof SEGMENT_REPAIR_SCRIPT_VALUES_CHIRHO)[number];
 
+// Reviewer-facing dropdown labels. Stored values above stay the wire format;
+// only these plain-language labels reach human eyes (no -chirho suffix noise).
+export const SEGMENT_REPAIR_KIND_LABELS_CHIRHO: Record<SegmentRepairKindChirho, string> = {
+  "split-chirho": "Split box (one box covers two things)",
+  "merge-chirho": "Merge boxes (one thing split across boxes)",
+  "rebox-chirho": "Move/resize box (box is on the wrong spot)",
+  "script-text-chirho": "Wrong script or wrong text",
+  "punctuation-attachment-chirho": "Punctuation attached to the wrong word",
+  "unreadable-script-chirho": "Unreadable script",
+};
+
+export const SEGMENT_REPAIR_SCRIPT_LABELS_CHIRHO: Record<SegmentRepairScriptChirho, string> = {
+  "french-chirho": "French",
+  "latin-non-french-chirho": "Latin (non-French)",
+  "hebrew-chirho": "Hebrew",
+  "greek-chirho": "Greek",
+  "syriac-chirho": "Syriac",
+  "arabic-chirho": "Arabic",
+  "symbol-chirho": "Symbol",
+  "unknown-script-chirho": "Unknown script",
+};
+
 export interface SegmentRepairProposalSpanChirho {
   segmentIndexChirho: number;
   xMinPxChirho: number;
