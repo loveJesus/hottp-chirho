@@ -20,17 +20,15 @@ BEGIN {
     current_port_chirho = port_parts_chirho[1]
     in_proxy_chirho = 1
     strip_cf_chirho = 0
-    strip_webauth_chirho = 0
     inject_webauth_chirho = 0
     next
   }
   if (in_proxy_chirho == 1) {
     if (line_chirho == "header_up -Cf-Access-Authenticated-User-Email") strip_cf_chirho = 1
-    if (line_chirho == "header_up -X-Webauth-User") strip_webauth_chirho = 1
     if (line_chirho == "header_up X-Webauth-User {http.auth.user.id}") inject_webauth_chirho = 1
     if (line_chirho ~ /^[}][ \t]*$/) {
-      if (strip_cf_chirho != 1 || strip_webauth_chirho != 1 || inject_webauth_chirho != 1) {
-        printf("reverse_proxy 127.0.0.1:%s lacks trusted reviewer header strip/inject lines\n", current_port_chirho) > "/dev/stderr"
+      if (strip_cf_chirho != 1 || inject_webauth_chirho != 1) {
+        printf("reverse_proxy 127.0.0.1:%s lacks trusted reviewer header strip/set lines\n", current_port_chirho) > "/dev/stderr"
         exit 1
       }
       seen_chirho[current_port_chirho] = 1

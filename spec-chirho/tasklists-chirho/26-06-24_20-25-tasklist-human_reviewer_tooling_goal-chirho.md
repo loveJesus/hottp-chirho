@@ -186,13 +186,13 @@ server-authoritative, and the boundary/commit-back ritual is documented.
       inventory so owner approval starts from current host/DNS evidence.
 - [x] Add an owner approval handoff with current host/DNS inventory and the exact
       approval sentence needed before any VPS or DNS action.
-- [ ] Provision one small authenticated VPS review host.
-- [ ] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
-- [ ] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;
+- [x] Provision one small authenticated VPS review host.
+- [x] Run Caddy with TLS and proxy only to localhost-bound Bun servers.
+- [x] Rsync `workspace-chirho/` assets and the canonical review DB explicitly;
       do not rely on git for ignored bulk assets.
-- [ ] Start only `:8766` first, complete one remote reviewer smoke test, then add
+- [x] Start only `:8766` first, complete one remote reviewer smoke test, then add
       `:8770` and `:8771`.
-- [ ] Prove DB commit-back with one harmless review action and a restore test.
+- [x] Prove DB commit-back with one harmless review action and a restore test.
 
 ## Phase 7 — Verification Gates Chirho
 

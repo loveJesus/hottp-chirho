@@ -101,13 +101,9 @@ function assertCaddyTemplateChirho(sourceChirho: string): void {
     failChirho("Caddy template must import internal origin TLS for every upstream");
   }
   const strippedCfHeadersChirho = (sourceChirho.match(/header_up -Cf-Access-Authenticated-User-Email/g) ?? []).length;
-  const strippedWebauthHeadersChirho = (sourceChirho.match(/header_up -X-Webauth-User/g) ?? []).length;
   const injectedWebauthHeadersChirho = (sourceChirho.match(/header_up X-Webauth-User \{http\.auth\.user\.id\}/g) ?? []).length;
   if (strippedCfHeadersChirho !== REVIEW_UPSTREAMS_CHIRHO.length) {
     failChirho("Caddy template must strip Cf-Access-Authenticated-User-Email for every upstream");
-  }
-  if (strippedWebauthHeadersChirho !== REVIEW_UPSTREAMS_CHIRHO.length) {
-    failChirho("Caddy template must strip X-Webauth-User for every upstream before injecting it");
   }
   if (injectedWebauthHeadersChirho !== REVIEW_UPSTREAMS_CHIRHO.length) {
     failChirho("Caddy template must inject X-Webauth-User from {http.auth.user.id} for every upstream");

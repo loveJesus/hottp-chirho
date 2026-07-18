@@ -26,7 +26,6 @@ https://raw-review.example-chirho.org {
   import hottp_review_auth_chirho
   reverse_proxy 127.0.0.1:8766 {
     header_up -Cf-Access-Authenticated-User-Email
-    header_up -X-Webauth-User
     header_up X-Webauth-User {http.auth.user.id}
   }
 }
@@ -36,7 +35,6 @@ https://latin-review.example-chirho.org {
   import hottp_review_auth_chirho
   reverse_proxy 127.0.0.1:8770 {
     header_up -Cf-Access-Authenticated-User-Email
-    header_up -X-Webauth-User
     header_up X-Webauth-User {http.auth.user.id}
   }
 }
@@ -46,7 +44,6 @@ https://expert-review.example-chirho.org {
   import hottp_review_auth_chirho
   reverse_proxy 127.0.0.1:8771 {
     header_up -Cf-Access-Authenticated-User-Email
-    header_up -X-Webauth-User
     header_up X-Webauth-User {http.auth.user.id}
   }
 }

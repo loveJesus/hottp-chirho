@@ -191,11 +191,10 @@ sudo systemctl restart caddy
 
 If Cloudflare Access is used instead of Caddy basic auth, the trusted header is
 `Cf-Access-Authenticated-User-Email`. Do not let arbitrary public clients set
-either trusted header directly. The basic-auth template strips both trusted
-identity headers from incoming clients before injecting `X-Webauth-User` from
-Caddy's authenticated user. The checked template uses `basic_auth`,
-`tls internal`, `auto_https disable_redirects`,
-`header_up -Cf-Access-Authenticated-User-Email`, `header_up -X-Webauth-User`,
+either trusted header directly. The basic-auth template strips the Cloudflare
+Access header from incoming clients and overwrites `X-Webauth-User` from Caddy's
+authenticated user. The checked template uses `basic_auth`, `tls internal`,
+`auto_https disable_redirects`, `header_up -Cf-Access-Authenticated-User-Email`,
 and `header_up X-Webauth-User {http.auth.user.id}`. The Cloudflare zone can
 remain in SSL mode `Full` for this internal-origin-certificate path; `Full
 (strict)` requires a Cloudflare Origin CA or otherwise trusted origin
@@ -338,6 +337,13 @@ changed live span JSON.
 Stage only intentional review artifacts. If the smoke action was meant to be
 temporary, restore from the pre-smoke backup and prove `git status --short` no
 longer shows the smoke artifact.
+For the raw-Hebrew first smoke, prefer the safer issue-then-undo path: save one
+`reviewed-issues-chirho` row only to prove the gateway-attributed write path,
+immediately undo it, and record `final_state_chirho: "undone-chirho"` plus the
+`undo_validation_id_chirho` in the smoke evidence. The first-smoke checker then
+verifies the original issue row and undo row from the quarantined SQLite
+snapshot while also proving the current Pass-C backup does not keep the
+temporary issue as live review state.
 Record the exact post-restore or post-commit `git status --short` output in
 `commit_back_chirho.post_restore_git_status_chirho`; the evidence verifier
 compares that field to the current working tree so stale restore evidence cannot

@@ -31,8 +31,10 @@
   "write_smoke_chirho": {
     "performed_chirho": false,
     "action_chirho": "reviewed-issues-chirho",
+    "final_state_chirho": "undone-chirho",
     "item_id_chirho": "",
     "validation_id_chirho": 0,
+    "undo_validation_id_chirho": 0,
     "expected_reviewer_chirho": "gateway-authenticated-reviewer-chirho",
     "saved_after_chirho": "YYYY-MM-DDTHH:mm:ss.sssZ",
     "saved_before_chirho": "YYYY-MM-DDTHH:mm:ss.sssZ",

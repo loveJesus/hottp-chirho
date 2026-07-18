@@ -1,0 +1,57 @@
+{
+  "schema_version_chirho": 1,
+  "completed_chirho": true,
+  "evidence_id_chirho": "2026-07-18-cx33-raw-hebrew-smoke-chirho",
+  "recorded_at_chirho": "2026-07-18T05:05:58Z",
+  "recorded_by_chirho": "codex-gpt5-chirho",
+  "host_chirho": "195.201.101.25",
+  "review_station_chirho": "raw-hebrew-chirho",
+  "authenticated_url_chirho": "https://raw-review.bible.systems/",
+  "trusted_header_chirho": "X-Webauth-User",
+  "server_health_chirho": {
+    "localhost_health_ok_chirho": true,
+    "source_fingerprint_chirho": "cb7582bac2d9fd5417a1489164e041705185afaed80795971fbb32dc22b7261d",
+    "source_file_count_chirho": 14
+  },
+  "network_boundary_chirho": {
+    "public_direct_port_chirho": 8766,
+    "public_direct_port_blocked_chirho": true,
+    "proxy_tls_ok_chirho": true,
+    "trusted_header_injected_chirho": true
+  },
+  "browser_smoke_chirho": {
+    "page_title_chirho": "Pass C Hebrew Validation Chirho",
+    "target_crop_visible_chirho": true,
+    "full_line_visible_chirho": true,
+    "issue_flags_visible_chirho": true,
+    "clean_ack_visible_chirho": true,
+    "segment_repair_panel_visible_chirho": true,
+    "item_id_chirho": "3:151:36:2"
+  },
+  "write_smoke_chirho": {
+    "performed_chirho": true,
+    "action_chirho": "reviewed-issues-chirho",
+    "final_state_chirho": "undone-chirho",
+    "item_id_chirho": "3:151:36:2",
+    "validation_id_chirho": 13,
+    "undo_validation_id_chirho": 14,
+    "expected_reviewer_chirho": "hallelujah-chirho",
+    "saved_after_chirho": "2026-07-18T04:56:44.522Z",
+    "saved_before_chirho": "2026-07-18T04:56:44.990Z",
+    "reversible_chirho": true,
+    "notes_chirho": "Remote raw-Hebrew gateway smoke wrote one non-certifying reviewed-issues row through Caddy Basic Auth while client-supplied X-Webauth-User and Cf-Access-Authenticated-User-Email headers were forged. The stored reviewer was hallelujah-chirho from the gateway, and validation id 13 was immediately superseded by undo id 14 so no temporary issue remains current."
+  },
+  "commit_back_chirho": {
+    "db_copied_back_chirho": true,
+    "backup_or_proposal_copied_back_chirho": true,
+    "guards_passed_chirho": [
+      "bun run check-pass-c-human-review-server-guards-chirho",
+      "bun run transcription-certification-status-chirho",
+      "bun run check-certification-strict-status-chirho"
+    ],
+    "git_status_reviewed_chirho": true,
+    "restore_test_passed_chirho": true,
+    "committed_or_restored_chirho": true,
+    "post_restore_git_status_chirho": " M AGENTS.md\n M CLAUDE.md\n?? spec-chirho/ocr-witness-chirho/\n?? spec-chirho/tasklists-chirho/26-06-24_14-05-tasklist-mistral_ocr4_probe_report-chirho.md"
+  }
+}
