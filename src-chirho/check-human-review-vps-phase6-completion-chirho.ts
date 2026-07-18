@@ -178,7 +178,7 @@ function mainChirho(): void {
       "bun",
       "run",
       "src-chirho/check-human-review-vps-host-preflight-chirho.ts",
-      `--host-chirho=${hostChirho.hostNameChirho}`,
+      `--host-chirho=${hostChirho.hostAddressChirho}`,
     ]);
   }
   assertWriteLeaseApprovalReferenceMatchesDecisionChirho(decisionPathChirho, leasePathChirho);
