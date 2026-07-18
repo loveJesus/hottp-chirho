@@ -19,6 +19,7 @@ interface ProvisioningDecisionForPhase6Chirho {
   };
   selected_host_chirho?: {
     host_name_chirho?: unknown;
+    host_address_chirho?: unknown;
   };
 }
 
@@ -61,9 +62,12 @@ function stringValueChirho(valueChirho: unknown, labelChirho: string): string {
   return valueChirho.trim();
 }
 
-function selectedHostNameChirho(decisionPathChirho: string): string {
+function selectedHostChirho(decisionPathChirho: string): { hostNameChirho: string; hostAddressChirho: string } {
   const decisionChirho = readJsonChirho<ProvisioningDecisionForPhase6Chirho>(decisionPathChirho);
-  return stringValueChirho(decisionChirho.selected_host_chirho?.host_name_chirho, "selected host name");
+  return {
+    hostNameChirho: stringValueChirho(decisionChirho.selected_host_chirho?.host_name_chirho, "selected host name"),
+    hostAddressChirho: stringValueChirho(decisionChirho.selected_host_chirho?.host_address_chirho, "selected host address"),
+  };
 }
 
 function assertWriteLeaseApprovalReferenceMatchesDecisionChirho(decisionPathChirho: string, leasePathChirho: string): void {
@@ -149,7 +153,7 @@ function mainChirho(): void {
   const evidencePathChirho = projectPathChirho(evidenceArgChirho, "smoke evidence");
   const leasePathChirho = projectPathChirho(leaseArgChirho, "write lease");
   projectPathChirho(backupArgChirho, "Pass-C human validation backup");
-  const hostNameChirho = selectedHostNameChirho(decisionPathChirho);
+  const hostChirho = selectedHostChirho(decisionPathChirho);
   const fixtureQuarantineDbArgChirho = sourceLocalFixtureChirho
     ? `${dirname(backupArgChirho)}/vps-snapshot-progress-chirho.sqlite`
     : null;
@@ -167,14 +171,14 @@ function mainChirho(): void {
     "run",
     "src-chirho/check-human-review-vps-write-lease-chirho.ts",
     `--lease-chirho=${leaseArgChirho}`,
-    `--host-chirho=${hostNameChirho}`,
+    `--host-chirho=${hostChirho.hostAddressChirho}`,
   ]);
   if (!sourceLocalFixtureChirho) {
     runVerifierChirho([
       "bun",
       "run",
       "src-chirho/check-human-review-vps-host-preflight-chirho.ts",
-      `--host-chirho=${hostNameChirho}`,
+      `--host-chirho=${hostChirho.hostNameChirho}`,
     ]);
   }
   assertWriteLeaseApprovalReferenceMatchesDecisionChirho(decisionPathChirho, leasePathChirho);
