@@ -511,13 +511,19 @@ function scanChirho(dbPathChirho: string): ScanResultChirho {
 
       if (signalsChirho.length === 0) continue;
 
-      const noteChirho = preReviewNotesChirho.get(spanKeyChirho(lineChirho, spanChirho)) ?? null;
-      if (noteChirho !== null) {
-        signalsChirho.push(
-          CLEAN_NOTE_RE_CHIRHO.test(noteChirho)
-            ? "pre-review-note-contradicted-chirho"
-            : "pre-review-note-present-chirho"
-        );
+      // Notes are keyed per segment, but a clean-sounding note anywhere on a
+      // flagged line contradicts the flag (the 3:151:36 note sits on S2 while
+      // the swallow evidence sits on S1). Prefer the span's own note text.
+      const ownNoteChirho = preReviewNotesChirho.get(spanKeyChirho(lineChirho, spanChirho)) ?? null;
+      const lineNotesChirho = (lineChirho.spansChirho ?? [])
+        .map((siblingChirho) => preReviewNotesChirho.get(spanKeyChirho(lineChirho, siblingChirho)))
+        .filter((candidateChirho): candidateChirho is string => candidateChirho !== undefined);
+      const cleanLineNoteChirho = lineNotesChirho.find((candidateChirho) => CLEAN_NOTE_RE_CHIRHO.test(candidateChirho)) ?? null;
+      const noteChirho = ownNoteChirho ?? cleanLineNoteChirho ?? lineNotesChirho[0] ?? null;
+      if (cleanLineNoteChirho !== null) {
+        signalsChirho.push("pre-review-note-contradicted-chirho");
+      } else if (noteChirho !== null) {
+        signalsChirho.push("pre-review-note-present-chirho");
       }
 
       const highChirho =

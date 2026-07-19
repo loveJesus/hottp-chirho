@@ -3,14 +3,14 @@ that whosoever believeth in him should not perish, but have everlasting life. �
 
 # Swallowed Hebrew Sweep Chirho
 
-Generated: 2026-07-19T02:23:58.642Z
+Generated: 2026-07-19T02:25:24.397Z
 
 Read-only machine triage queue for the swallowed-Hebrew defect class (reviewer UX v2 plan, Phase 5). Flags are review candidates, not certification results, and every repair still goes draft proposal -> approval -> apply. Pre-review notes are advisory only; a clean-sounding note on a flagged span is reported as a contradiction, never as an exoneration.
 
 ## Summary
 
 - Scanner source files: 7
-- Scanner source fingerprint: 2597dfe95d15299c3db296c3c45df35ecbcf6abc92eeab2c11c66a595089bdeb
+- Scanner source fingerprint: f19e9c5358a6902c2f655e93a3bb8424397cee9dc9a7d8e0f05f5c38a64572db
 - Span source files: 1789
 - Span source fingerprint: 7b48437c5e8dc366651f4b3cdfff49ed873cad03f5d4a5471a260224ea0100ff
 - Lines scanned: 1789 (word-level coverage: 1789)
@@ -18,15 +18,17 @@ Read-only machine triage queue for the swallowed-Hebrew defect class (reviewer U
 - Unwitnessed Hebrew spans (need on-demand CRNN read): 422
 - digit-word-superseded-in-stored-text-chirho: 5
 - orphan-digit-word-chirho: 77
+- pre-review-note-contradicted-chirho: 1
 - Machine triage JSON: `workspace-chirho/swallowed-hebrew-sweep-chirho/candidates-2026-07-18-chirho.json`
 
 ## High Severity Findings
 
 ### high-chirho vol 3 p0151 L036 S1 (3:151:36:1)
 
-- Signals: `orphan-digit-word-chirho`
+- Signals: `orphan-digit-word-chirho`, `pre-review-note-contradicted-chirho`
 - Span (french-chirho, x 138..1105 of 1288): `mot qui réapparaît en Éz 43,13.17 pour 13, en 1R 7 9 pour`
 - Evidence (word-db-chirho, x 771..837): `13,` after `pour`
+- Pre-review note (ADVISORY ONLY): `Live text: \`גְּבוּל\` Current line text: \`γεῖσος mot qui réapparaît en Éz 43,13.17 pour 13, en 1R 7 9 pour גְּבוּל et en Jr\` Visual precheck: crop is centered on the target word; no obvious crop or segmentation issue. The printed letters and visible pointing look plausible for the live text at review resolution. Human check still needed: exact niqqud/marks against the print.`
 - Line text: `γεῖσος mot qui réapparaît en Éz 43,13.17 pour 13, en 1R 7 9 pour גְּבוּל et en Jr`
 - Span file: `workspace-chirho/spans-chirho/vol-3-chirho/page-0151-chirho/line-036-chirho.json`
 ![scanline](../../workspace-chirho/scanlines-chirho/vol-3-chirho/page-0151-chirho/line-036-chirho.png)
