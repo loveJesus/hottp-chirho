@@ -274,6 +274,811 @@
         }
       ],
       "notesChirho": "Text-only repair, geometry unchanged. 𝔊 stays inline in the French segment text, matching how the siglum is stored elsewhere in the corpus (e.g. vol 4 p152 lines 9 and 24). No Hebrew involved."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:54:55.079Z-0c02663472ec7ddd-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print at the flagged range shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the crop during the 2026-07-18 escalation review; sibling of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:54:55.079Z",
+      "itemKeyChirho": "3:150:26:0",
+      "volumeChirho": 3,
+      "pageChirho": 150,
+      "lineIndexChirho": 26,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1272,
+      "lineTextBeforeChirho": "voudrions montrer par quelques exemples que les choix textuels de l'édition du 6",
+      "lineTextPreviewChirho": "voudrions montrer par quelques exemples que les choix textuels de l'édition du 𝔊",
+      "lineImageHashChirho": "55b4fd64151c502b4b9a89bef4e24719c6f1dbe38e204ca4d1073fef9465a687",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1272,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "voudrions montrer par quelques exemples que les choix textuels de l'édition du 6"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1272,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "voudrions montrer par quelques exemples que les choix textuels de l'édition du 𝔊"
+        }
+      ],
+      "notesChirho": "Text-only repair, geometry unchanged; 𝔊 inline per corpus convention. The sweep's Hebrew classifier read 0.88 (ambiguous tier) — Fraktur letterforms sit between the classifier's classes, which is why this class escalates to eyes."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:54:55.080Z-dd6a38f4bbd6077e-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print at the line-end flag shows the Fraktur 𝔊 where the stored French says \"6\". Eye-confirmed on the crop during the 2026-07-18 escalation review.",
+      "createdAtChirho": "2026-07-19T02:54:55.080Z",
+      "itemKeyChirho": "3:151:28:0",
+      "volumeChirho": 3,
+      "pageChirho": 151,
+      "lineIndexChirho": 28,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1286,
+      "lineTextBeforeChirho": "comité montrent que la découverte du papyrus 967 imposerait à un nouvel éditeur du 6",
+      "lineTextPreviewChirho": "comité montrent que la découverte du papyrus 967 imposerait à un nouvel éditeur du 𝔊",
+      "lineImageHashChirho": "86bcc3b727be42e762ff4b15b29785d19bc9ca74ecdfb815f63e01c94b1fd154",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1286,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "comité montrent que la découverte du papyrus 967 imposerait à un nouvel éditeur du 6"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1286,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "comité montrent que la découverte du papyrus 967 imposerait à un nouvel éditeur du 𝔊"
+        }
+      ],
+      "notesChirho": "Text-only repair, geometry unchanged; 𝔊 inline per corpus convention. The line's other flagged number, \"967\" after \"papyrus\", is the famous Ezekiel papyrus 967 and is correct as stored — no change proposed there."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.658Z-674d0b067a5240ec-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.658Z",
+      "itemKeyChirho": "3:148:11:0",
+      "volumeChirho": 3,
+      "pageChirho": 148,
+      "lineIndexChirho": 11,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1170,
+      "lineTextBeforeChirho": "Concluons de ces exemples que la syntaxe naturelle du 6 est bien plus enchaînée",
+      "lineTextPreviewChirho": "Concluons de ces exemples que la syntaxe naturelle du 𝔊 est bien plus enchaînée",
+      "lineImageHashChirho": "a843f8fcb5a2d62b8a2bc5aeed1efee3642f1b53c966f13cb4425a02c811c159",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1170,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "Concluons de ces exemples que la syntaxe naturelle du 6 est bien plus enchaînée"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1170,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "Concluons de ces exemples que la syntaxe naturelle du 𝔊 est bien plus enchaînée"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.659Z-bca1741c30e57041-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.659Z",
+      "itemKeyChirho": "3:148:23:0",
+      "volumeChirho": 3,
+      "pageChirho": 148,
+      "lineIndexChirho": 23,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 492,
+      "lineTextBeforeChirho": "plus petites unités textuelles du 6.",
+      "lineTextPreviewChirho": "plus petites unités textuelles du 𝔊.",
+      "lineImageHashChirho": "0886867c87cbd2af0a50f00c03787467193eff57a3036632747a4d8c74051531",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 492,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "plus petites unités textuelles du 6."
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 492,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "plus petites unités textuelles du 𝔊."
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.659Z-bee2515c16d0f299-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.659Z",
+      "itemKeyChirho": "3:148:24:0",
+      "volumeChirho": 3,
+      "pageChirho": 148,
+      "lineIndexChirho": 24,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 372,
+      "lineTextBeforeChirho": "2. Les petites unités du 6",
+      "lineTextPreviewChirho": "2. Les petites unités du 𝔊",
+      "lineImageHashChirho": "f8879976c8dcf52b049c02f7075977b8823413a428a3c195255b4e93c4138861",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 372,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "2. Les petites unités du 6"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 372,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "2. Les petites unités du 𝔊"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.659Z-47667c13972cd56f-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.659Z",
+      "itemKeyChirho": "3:148:26:0",
+      "volumeChirho": 3,
+      "pageChirho": 148,
+      "lineIndexChirho": 26,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1277,
+      "lineTextBeforeChirho": "selon le M, des textes continus du 6, citons, à titre d'exemple, deux cas où les",
+      "lineTextPreviewChirho": "selon le M, des textes continus du 𝔊, citons, à titre d'exemple, deux cas où les",
+      "lineImageHashChirho": "e81c84047a8b19a9840f49f9dd41cd6d9ec1b88dec951af198f49625144a42ce",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1277,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "selon le M, des textes continus du 6, citons, à titre d'exemple, deux cas où les"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1277,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "selon le M, des textes continus du 𝔊, citons, à titre d'exemple, deux cas où les"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.659Z-b22bed6f1fd02274-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.659Z",
+      "itemKeyChirho": "3:148:27:0",
+      "volumeChirho": 3,
+      "pageChirho": 148,
+      "lineIndexChirho": 27,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1278,
+      "lineTextBeforeChirho": "commentateurs du 6 auraient pu l'aider à donner plus de relief à son texte en évitant des",
+      "lineTextPreviewChirho": "commentateurs du 𝔊 auraient pu l'aider à donner plus de relief à son texte en évitant des",
+      "lineImageHashChirho": "638cba818cbdd50750421bb3c17a50b248fb7f2b6523f216ed0f90bc693a6ed4",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1278,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "commentateurs du 6 auraient pu l'aider à donner plus de relief à son texte en évitant des"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1278,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "commentateurs du 𝔊 auraient pu l'aider à donner plus de relief à son texte en évitant des"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.660Z-a3efa6cc5c664ff3-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.660Z",
+      "itemKeyChirho": "3:148:48:0",
+      "volumeChirho": 3,
+      "pageChirho": 148,
+      "lineIndexChirho": 48,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1174,
+      "lineTextBeforeChirho": "Il vaudrait mieux aborder la ponctuation du 6 à partir de la lecture qu'en font ses",
+      "lineTextPreviewChirho": "Il vaudrait mieux aborder la ponctuation du 𝔊 à partir de la lecture qu'en font ses",
+      "lineImageHashChirho": "e28025b20d6a3c7a342c8feae5488b44e77c6b376651f9a3ad5f363f480c453e",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1174,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "Il vaudrait mieux aborder la ponctuation du 6 à partir de la lecture qu'en font ses"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1174,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "Il vaudrait mieux aborder la ponctuation du 𝔊 à partir de la lecture qu'en font ses"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.660Z-0a9d7ab58b52538b-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.660Z",
+      "itemKeyChirho": "3:148:50:0",
+      "volumeChirho": 3,
+      "pageChirho": 148,
+      "lineIndexChirho": 50,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1279,
+      "lineTextBeforeChirho": "leurs lemmes, il pourrait être opportun que la mise en pages du 6 en alinéas tienne",
+      "lineTextPreviewChirho": "leurs lemmes, il pourrait être opportun que la mise en pages du 𝔊 en alinéas tienne",
+      "lineImageHashChirho": "88a30a792454960b5611607cd34d6b829a6b3d29b9bd03e70a5fbfd29d39dcfe",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1279,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "leurs lemmes, il pourrait être opportun que la mise en pages du 6 en alinéas tienne"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1279,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "leurs lemmes, il pourrait être opportun que la mise en pages du 𝔊 en alinéas tienne"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.660Z-d3374cb45739b212-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.660Z",
+      "itemKeyChirho": "3:149:20:0",
+      "volumeChirho": 3,
+      "pageChirho": 149,
+      "lineIndexChirho": 20,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 324,
+      "lineTextBeforeChirho": "4. Les péricopes du 6",
+      "lineTextPreviewChirho": "4. Les péricopes du 𝔊",
+      "lineImageHashChirho": "51bfee5eac137af52d64d07ee674f72da6861a81cf3046c8a806e808017fe75e",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 324,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "4. Les péricopes du 6"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 324,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "4. Les péricopes du 𝔊"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.660Z-eaae2d6748d25e1f-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.660Z",
+      "itemKeyChirho": "3:149:53:0",
+      "volumeChirho": 3,
+      "pageChirho": 149,
+      "lineIndexChirho": 53,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1173,
+      "lineTextBeforeChirho": "Comme on le voit, une étude des péricopes du 6 mériterait que l'on fasse une",
+      "lineTextPreviewChirho": "Comme on le voit, une étude des péricopes du 𝔊 mériterait que l'on fasse une",
+      "lineImageHashChirho": "11840e255486046550db6ea147d24755dfc9c01f29fa27febdedf568c0cd7685",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1173,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "Comme on le voit, une étude des péricopes du 6 mériterait que l'on fasse une"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1173,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "Comme on le voit, une étude des péricopes du 𝔊 mériterait que l'on fasse une"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.661Z-a25a1bf62d2bd974-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.661Z",
+      "itemKeyChirho": "3:149:57:0",
+      "volumeChirho": 3,
+      "pageChirho": 149,
+      "lineIndexChirho": 57,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1175,
+      "lineTextBeforeChirho": "Cette brève étude sur les divisions du 6 nous a fourni des tests qui suffisent à",
+      "lineTextPreviewChirho": "Cette brève étude sur les divisions du 𝔊 nous a fourni des tests qui suffisent à",
+      "lineImageHashChirho": "4b75cf300ba7f12b875f3ab0a335441d67fd8ed5dfe9432c5294339c26318edb",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1175,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "Cette brève étude sur les divisions du 6 nous a fourni des tests qui suffisent à"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1175,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "Cette brève étude sur les divisions du 𝔊 nous a fourni des tests qui suffisent à"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.661Z-3e5e17e1f3aaf652-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.661Z",
+      "itemKeyChirho": "3:150:20:0",
+      "volumeChirho": 3,
+      "pageChirho": 150,
+      "lineIndexChirho": 20,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1139,
+      "lineTextBeforeChirho": "A. Témoins du 6 d'Ézéchiel nouveaux ou inexploités par Ziegler.",
+      "lineTextPreviewChirho": "A. Témoins du 𝔊 d'Ézéchiel nouveaux ou inexploités par Ziegler.",
+      "lineImageHashChirho": "72def99c5f5ea29675c13386aed5a6190c341ff76cd9bbb8a12070e13b86d09e",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1139,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "A. Témoins du 6 d'Ézéchiel nouveaux ou inexploités par Ziegler."
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1139,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "A. Témoins du 𝔊 d'Ézéchiel nouveaux ou inexploités par Ziegler."
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.661Z-2b7f6a53f236966d-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.661Z",
+      "itemKeyChirho": "3:150:30:0",
+      "volumeChirho": 3,
+      "pageChirho": 150,
+      "lineIndexChirho": 30,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1027,
+      "lineTextBeforeChirho": "la critique contemporaine: la polyglotte d'Alcala, édition princeps du 6.",
+      "lineTextPreviewChirho": "la critique contemporaine: la polyglotte d'Alcala, édition princeps du 𝔊.",
+      "lineImageHashChirho": "e26e01531236927b9015c2f1a22c9a66597e851172ddadba0d589d6793ea2b08",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1027,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "la critique contemporaine: la polyglotte d'Alcala, édition princeps du 6."
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1027,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "la critique contemporaine: la polyglotte d'Alcala, édition princeps du 𝔊."
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.662Z-dc429236e1825f63-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.662Z",
+      "itemKeyChirho": "3:150:41:0",
+      "volumeChirho": 3,
+      "pageChirho": 150,
+      "lineIndexChirho": 41,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1274,
+      "lineTextBeforeChirho": "plus gravement mutilé que le Vaticanus). Aucune des éditions du 6 (en dehors de celle",
+      "lineTextPreviewChirho": "plus gravement mutilé que le Vaticanus). Aucune des éditions du 𝔊 (en dehors de celle",
+      "lineImageHashChirho": "246916c245552e514e972080387e3971a6ef189ad437f8e0d5c17f14062bcb01",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1274,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "plus gravement mutilé que le Vaticanus). Aucune des éditions du 6 (en dehors de celle"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1274,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "plus gravement mutilé que le Vaticanus). Aucune des éditions du 𝔊 (en dehors de celle"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.662Z-545f13a1070eb6ea-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.662Z",
+      "itemKeyChirho": "3:151:26:0",
+      "volumeChirho": 3,
+      "pageChirho": 151,
+      "lineIndexChirho": 26,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1093,
+      "lineTextBeforeChirho": "tous les autres témoins du 6 nous a été rendue possible par 967 (Cologne).",
+      "lineTextPreviewChirho": "tous les autres témoins du 𝔊 nous a été rendue possible par 967 (Cologne).",
+      "lineImageHashChirho": "17de483a9194f209e01530b4c2ec47e150470493409dd4ce6228f7d7695b394b",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1093,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "tous les autres témoins du 6 nous a été rendue possible par 967 (Cologne)."
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1093,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "tous les autres témoins du 𝔊 nous a été rendue possible par 967 (Cologne)."
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.663Z-875b6c48e0c66cd5-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.663Z",
+      "itemKeyChirho": "3:151:38:2",
+      "volumeChirho": 3,
+      "pageChirho": 151,
+      "lineIndexChirho": 38,
+      "targetSegmentIndexChirho": 2,
+      "lineWidthPxChirho": 1286,
+      "lineTextBeforeChirho": "(...) κυμάτιον mot qui ne réapparaît dans le 6 qu'en Ex 25,11.24.25 pour \"1. Or ici",
+      "lineTextPreviewChirho": "(...) κυμάτιον mot qui ne réapparaît dans le 𝔊 qu'en Ex 25,11.24.25 pour \"1. Or ici",
+      "lineImageHashChirho": "1289da075618476017b646c86c4a73556dccbe7934242e22ee93f2f4ae2412d8",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 73,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "(...)"
+        },
+        {
+          "segmentIndexChirho": 1,
+          "xMinPxChirho": 73,
+          "widthPxChirho": 170,
+          "scriptChirho": "greek-chirho",
+          "utf8TextChirho": "κυμάτιον"
+        },
+        {
+          "segmentIndexChirho": 2,
+          "xMinPxChirho": 243,
+          "widthPxChirho": 1043,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "mot qui ne réapparaît dans le 6 qu'en Ex 25,11.24.25 pour \"1. Or ici"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 73,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "(...)"
+        },
+        {
+          "segmentIndexChirho": 1,
+          "xMinPxChirho": 73,
+          "widthPxChirho": 170,
+          "scriptChirho": "greek-chirho",
+          "utf8TextChirho": "κυμάτιον"
+        },
+        {
+          "segmentIndexChirho": 2,
+          "xMinPxChirho": 243,
+          "widthPxChirho": 1043,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "mot qui ne réapparaît dans le 𝔊 qu'en Ex 25,11.24.25 pour \"1. Or ici"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.663Z-d081143d2e24159e-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.663Z",
+      "itemKeyChirho": "3:151:48:0",
+      "volumeChirho": 3,
+      "pageChirho": 151,
+      "lineIndexChirho": 48,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1274,
+      "lineTextBeforeChirho": "princeps du 6, j'ai voulu élargir cette investigation dont voici les résultats essentiels433.",
+      "lineTextPreviewChirho": "princeps du 𝔊, j'ai voulu élargir cette investigation dont voici les résultats essentiels433.",
+      "lineImageHashChirho": "b810119a2beae601cc3911e48d0994240c0c56382a4fd6e8ab285c7a2be08f91",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1274,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "princeps du 6, j'ai voulu élargir cette investigation dont voici les résultats essentiels433."
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1274,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "princeps du 𝔊, j'ai voulu élargir cette investigation dont voici les résultats essentiels433."
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.663Z-562dcf0638c23263-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.663Z",
+      "itemKeyChirho": "4:152:6:0",
+      "volumeChirho": 4,
+      "pageChirho": 152,
+      "lineIndexChirho": 6,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1182,
+      "lineTextBeforeChirho": "tographie, J1-6 se fonde sur le 6 et les versions de Samuel pour",
+      "lineTextPreviewChirho": "tographie, J1-6 se fonde sur le 𝔊 et les versions de Samuel pour",
+      "lineImageHashChirho": "6e0385e291fbeeab8a7529f9a13c87897bedb86ced18bdd3c1c4ee22367b1a6d",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1182,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "tographie, J1-6 se fonde sur le 6 et les versions de Samuel pour"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1182,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "tographie, J1-6 se fonde sur le 𝔊 et les versions de Samuel pour"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.664Z-90682a5c468b282c-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.664Z",
+      "itemKeyChirho": "4:152:21:0",
+      "volumeChirho": 4,
+      "pageChirho": 152,
+      "lineIndexChirho": 21,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1046,
+      "lineTextBeforeChirho": "J123 se fonde sur le 6 pour éliminer le possessif de “mes",
+      "lineTextPreviewChirho": "J123 se fonde sur le 𝔊 pour éliminer le possessif de “mes",
+      "lineImageHashChirho": "13f789d93e43fdb84265b3081b761a1b779eb6191e9d185baa59f6d4bf958ea9",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1046,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "J123 se fonde sur le 6 pour éliminer le possessif de “mes"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1046,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "J123 se fonde sur le 𝔊 pour éliminer le possessif de “mes"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:57:50.664Z-f0afb5dec2ccf3db-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Eye-confirmed on the 2026-07-18 crop montage covering every member of this class; siblings of the 3:149:10:1 repair.",
+      "createdAtChirho": "2026-07-19T02:57:50.664Z",
+      "itemKeyChirho": "4:152:34:0",
+      "volumeChirho": 4,
+      "pageChirho": 152,
+      "lineIndexChirho": 34,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1038,
+      "lineTextBeforeChirho": "Se fondant sur le 6 du Psaume, Krrte en BH23 pour",
+      "lineTextPreviewChirho": "Se fondant sur le 𝔊 du Psaume, Krrte en BH23 pour",
+      "lineImageHashChirho": "0360b2159329184f4df364a496b0dac420794144da79dcbd5d925bf5a3c1023c",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1038,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "Se fondant sur le 6 du Psaume, Krrte en BH23 pour"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1038,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "Se fondant sur le 𝔊 du Psaume, Krrte en BH23 pour"
+        }
+      ],
+      "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
     }
   ]
 }

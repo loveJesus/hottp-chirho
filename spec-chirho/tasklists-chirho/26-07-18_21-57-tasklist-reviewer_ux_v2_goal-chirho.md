@@ -99,8 +99,10 @@ an approved repair. Close that gap.
       garbled digit-runs / mojibake where the print likely shows Hebrew
       (cross-check with CRNN witness reads on the corresponding crop x-ranges).
       (scan-swallowed-hebrew + witness_swallowed_hebrew, 2d6c43e/eef08bd/995fde6)
-- [ ] Triage every flagged item into a draft repair proposal (or clear it with
-      a recorded reason).
+- [x] Triage every flagged item into a draft repair proposal (or clear it with
+      a recorded reason). (77628c2 + eye-check pass: 25 drafted / 57 cleared of
+      82 findings; suspect tier 7 eye-cleared, 5:69:7:8 awaits a second reader,
+      5:150:10:3 routed to the expert print check)
 - [ ] Land the fixes through the Phase 4 apply lane; re-run certification
       status and confirm any count movement is legitimate review work.
 
