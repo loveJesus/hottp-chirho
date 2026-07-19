@@ -20,6 +20,7 @@
     "src-chirho/review-servers-chirho.ts",
     "src-chirho/check-app-publication-readiness-chirho.ts",
     "src-chirho/scan-hebrew-delimiter-order-chirho.ts",
+    "src-chirho/scan-swallowed-hebrew-chirho.ts",
     "spec-chirho/metropoliluya-chirho/find-hidden-hebrew-candidates-2026-06-04-chirho.ts",
     "spec-chirho/metropoliluya-chirho/find-nonlatin-residue-candidates-2026-06-04-chirho.ts",
     "src-chirho/check-certification-chirho.ts",
