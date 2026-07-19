@@ -3,8 +3,9 @@
 # AICEO Daily Report — HOTTP — 2026-07-18
 
 Project: Barthélemy OCR corpus human-review tooling (Andrew/Beth).
-Consensus: drafted by HOTTP_CHIRHO/claude2_chirho; room agreement pending
-before AICEO notification (first report of this project's daily practice).
+Consensus: drafted by HOTTP_CHIRHO/claude2_chirho; approved in-room by
+gpt_chirho (#5683, count fix applied) and claude_chirho (#5684, class-total
+fix applied) — first report of this project's daily practice.
 
 ## Milestones Today
 
@@ -28,12 +29,15 @@ before AICEO notification (first report of this project's daily practice).
    (80c8b6f, doc-only).
 5. **v2 Phase 5 sweep machinery landed + verified** (claude2; 2d6c43e,
    995fde6, 77628c2, 170c821, 367381a, e228177): word-geometry scanner +
-   on-demand CRNN witness pass + full triage. All 82 flagged findings
-   decided (26 draft repairs / 57 cleared with recorded reasons). Beyond the
+   on-demand CRNN witness pass + full triage. The sweep ledger closed at 82
+   findings = 25 draft repairs + 57 cleared with recorded reasons; a further
+   two-agent-confirmed מָדַד draft from the witness suspect tier brought the
+   proposal store to 26 parked drafts. Beyond the
    known 3:151:36 defect: two new swallowed-Hebrew defects found and
    eye-confirmed by two agents (printed גדוד stored as digit garble), one
    wrong-stored-word defect (מָדַד) two-agent confirmed with WLC anchor, and
-   a systematic 21-member Fraktur-𝔊 siglum class montage-confirmed. Machine
+   a systematic Fraktur-𝔊 siglum class eye-confirmed to zero open (22 drafts
+   incl. the original find). Machine
    drafts carry machine attribution (claude2-sweep-chirho) by design.
 
 ## Certification Posture
