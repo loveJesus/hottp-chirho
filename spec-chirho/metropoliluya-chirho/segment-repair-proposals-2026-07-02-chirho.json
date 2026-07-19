@@ -1227,7 +1227,7 @@
           "utf8TextChirho": "מָדַד"
         }
       ],
-      "notesChirho": "Text-only repair, geometry unchanged. Approver anchors: (1) WLC 2 Sam 8:2 puts מדד and שכב in one verse (וַיְמַדְּדֵם... הַשְׁכֵּב), the likely path by which וְשָׁכַב wandered onto this box from the same apparatus entry; (2) the French context reads \"pour corriger וּמָדַד עֶרֶב en [this word]\" — the print at the box eye-reads מָדַד despite the apparent redundancy, so the approver should confirm the apparatus sense on the context crop. Exact niqqud per print: qamats + patach."
+      "notesChirho": "Text-only repair, geometry unchanged. Verse context: Job 7:4 (אִם־שָׁכַבְתִּי וְאָמַרְתִּי מָתַי אָקוּם וּמִדַּד־עָרֶב) — the apparatus phrase continues onto the NEXT line, which begins עָרֶב וְשָׁכַבְתִּי, so the correction target is the multi-word re-division מָדַד עָרֶב וְשָׁכַבְתִּי and the French sentence (\"pour corriger וּמָדַד עֶרֶב en...\") is sensible apparatus prose, not a tautology. The next line's stored span (5:69:8:0, עֶרֶב וְשָׁכַבְתִּי) was verified correct-as-stored against the print during the same two-agent review; the wrong וְשָׁכַב on this box was a truncated duplicate of that line's opening word mis-attached one line up. Exact niqqud per print: qamats + patach on מָדַד; the עֶרֶב vowel nit (stored segol vs print) stays with the expert lane per the vowels-unverified banner."
     }
   ]
 }
