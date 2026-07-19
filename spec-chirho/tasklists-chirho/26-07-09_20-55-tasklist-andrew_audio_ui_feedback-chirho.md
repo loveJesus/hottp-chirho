@@ -37,11 +37,19 @@ stored values, wire formats, and certification gates unchanged.
 
 ## Follow-ups not in this pass (for L.J. / later) Chirho
 
+2026-07-18: open follow-ups consolidated into
+`26-07-18_21-57-tasklist-reviewer_ux_v2_goal-chirho.md` — tracked there.
+
 - [ ] Drag-to-move/resize the red box directly on the image (Lace-style);
       today reboxing is numeric x/w fields in the repair grid.
+      → moved: UX v2 goal plan Phase 2.
 - [ ] Screen-recorded walkthrough video for Andrew (L.J. to record; Andrew
-      asked explicitly).
-- [ ] Ask Andrew for the Copy-link URL of the confusing first item so the
+      asked explicitly). → moved: UX v2 goal plan Phase 6.
+- [x] Ask Andrew for the Copy-link URL of the confusing first item so the
       box/text misalignment can be inspected as data (possible bad span bbox).
-- [ ] Same display-label sweep for the Latin/symbol and expert stations if
-      their dropdowns leak raw values.
+      RESOLVED 2026-07-09 without asking: his first item is the default queue
+      head 3:151:36:2, reproduced and verified as a real data defect
+      (transcripts §4); sweep is UX v2 goal plan Phase 5.
+- [x] Same display-label sweep for the Latin/symbol and expert stations if
+      their dropdowns leak raw values. CHECKED 2026-07-09: those stations
+      already render {label, help} objects; the raw station was the only leak.
