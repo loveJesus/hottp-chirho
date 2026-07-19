@@ -95,9 +95,10 @@ an approved repair. Close that gap.
 - [ ] Fix vol 3 p151 L36 S2 through the repair lane: red box sits on printed
       טפח while the stored span text is גבול; the printed גבול was swallowed by
       the French segment (stored line text garbles it as "pour 13,").
-- [ ] Build the sweep: flag French/Latin segments whose stored text contains
+- [x] Build the sweep: flag French/Latin segments whose stored text contains
       garbled digit-runs / mojibake where the print likely shows Hebrew
       (cross-check with CRNN witness reads on the corresponding crop x-ranges).
+      (scan-swallowed-hebrew + witness_swallowed_hebrew, 2d6c43e/eef08bd/995fde6)
 - [ ] Triage every flagged item into a draft repair proposal (or clear it with
       a recorded reason).
 - [ ] Land the fixes through the Phase 4 apply lane; re-run certification

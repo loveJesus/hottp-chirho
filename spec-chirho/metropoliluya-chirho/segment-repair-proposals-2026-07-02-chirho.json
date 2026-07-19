@@ -1,0 +1,279 @@
+{
+  "schemaVersionChirho": 1,
+  "proposalsChirho": [
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:42:42.021Z-43b25493a3deb39a-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "split-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Swallowed Hebrew (plan Phase 5, defect 3:151:36:2). The French segment stores the printed word גבול as the digit garble \"13,\" after \"pour\", and the Hebrew box on printed טפח stores גבול. Print eye-confirmed twice (2026-07-09 manual witness and 2026-07-18 verification); witness classifier reads the \"13,\" crop as Hebrew script with probability 1.0.",
+      "createdAtChirho": "2026-07-19T02:42:42.021Z",
+      "itemKeyChirho": "3:151:36:1",
+      "volumeChirho": 3,
+      "pageChirho": 151,
+      "lineIndexChirho": 36,
+      "targetSegmentIndexChirho": 1,
+      "lineWidthPxChirho": 1288,
+      "lineTextBeforeChirho": "γεῖσος mot qui réapparaît en Éz 43,13.17 pour 13, en 1R 7 9 pour גְּבוּל et en Jr",
+      "lineTextPreviewChirho": "γεῖσος mot qui réapparaît en Éz 43,13.17 pour גְּבוּל en 1R 7 9 pour טָפַח et en Jr",
+      "lineImageHashChirho": "7cec8a2ac90f13cf6c07081f797c941cd23ceab5665fe125f517ff3a6515718a",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 138,
+          "scriptChirho": "greek-chirho",
+          "utf8TextChirho": "γεῖσος"
+        },
+        {
+          "segmentIndexChirho": 1,
+          "xMinPxChirho": 138,
+          "widthPxChirho": 967,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "mot qui réapparaît en Éz 43,13.17 pour 13, en 1R 7 9 pour"
+        },
+        {
+          "segmentIndexChirho": 2,
+          "xMinPxChirho": 1105,
+          "widthPxChirho": 69,
+          "scriptChirho": "hebrew-chirho",
+          "utf8TextChirho": "גְּבוּל"
+        },
+        {
+          "segmentIndexChirho": 3,
+          "xMinPxChirho": 1174,
+          "widthPxChirho": 114,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "et en Jr"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 138,
+          "scriptChirho": "greek-chirho",
+          "utf8TextChirho": "γεῖσος"
+        },
+        {
+          "segmentIndexChirho": 1,
+          "xMinPxChirho": 138,
+          "widthPxChirho": 627,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "mot qui réapparaît en Éz 43,13.17 pour"
+        },
+        {
+          "segmentIndexChirho": 2,
+          "xMinPxChirho": 765,
+          "widthPxChirho": 78,
+          "scriptChirho": "hebrew-chirho",
+          "utf8TextChirho": "גְּבוּל"
+        },
+        {
+          "segmentIndexChirho": 3,
+          "xMinPxChirho": 843,
+          "widthPxChirho": 262,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "en 1R 7 9 pour"
+        },
+        {
+          "segmentIndexChirho": 4,
+          "xMinPxChirho": 1105,
+          "widthPxChirho": 69,
+          "scriptChirho": "hebrew-chirho",
+          "utf8TextChirho": "טָפַח"
+        },
+        {
+          "segmentIndexChirho": 5,
+          "xMinPxChirho": 1174,
+          "widthPxChirho": 114,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "et en Jr"
+        }
+      ],
+      "notesChirho": "Split carves the printed גבול out of the French segment at word-gap midpoints x765-843 (word box x771-837); the box on x1105-1174 keeps its geometry with text corrected to the printed טפח. CRNN reads: carved range gave a Hebrew-script read at conf 0.86 (letters imperfect, classifier P(hebrew)=1.0); the טפח box read reproduces the 2026-07-09 manual witness (same imperfect read at conf ~0.79 in both implementations, disjoint from the stored גבול). Exact niqqud of both Hebrew words needs the human print check at approval. Remaining French nit NOT included in this repair: stored \"en 1R 7 9\" vs printed \"en 1 R 7,9\"."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:42:42.174Z-34e09daddedb8773-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "split-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Swallowed Hebrew found by the Phase 5 sweep and eye-confirmed by two agents: the French segment stores printed גדוד as the digit garble \"7111\" (letter-for-letter shape garble). The Greek γεδδουρ transliteration in the same line names that very word.",
+      "createdAtChirho": "2026-07-19T02:42:42.174Z",
+      "itemKeyChirho": "4:148:20:2",
+      "volumeChirho": 4,
+      "pageChirho": 148,
+      "lineIndexChirho": 20,
+      "targetSegmentIndexChirho": 2,
+      "lineWidthPxChirho": 1182,
+      "lineTextBeforeChirho": "par γεδδουρ le mot 7111 qu'il ne comprenait pas. Ici le",
+      "lineTextPreviewChirho": "par γεδδουρ le mot גְּדוּד qu'il ne comprenait pas. Ici le",
+      "lineImageHashChirho": "7df7f3f6cc3011bb1c86972be3f641466b0f8b53a275f322c58f67d49ca66632",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 88,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "par"
+        },
+        {
+          "segmentIndexChirho": 1,
+          "xMinPxChirho": 88,
+          "widthPxChirho": 182,
+          "scriptChirho": "greek-chirho",
+          "utf8TextChirho": "γεδδουρ"
+        },
+        {
+          "segmentIndexChirho": 2,
+          "xMinPxChirho": 270,
+          "widthPxChirho": 912,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "le mot 7111 qu'il ne comprenait pas. Ici le"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 88,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "par"
+        },
+        {
+          "segmentIndexChirho": 1,
+          "xMinPxChirho": 88,
+          "widthPxChirho": 182,
+          "scriptChirho": "greek-chirho",
+          "utf8TextChirho": "γεδδουρ"
+        },
+        {
+          "segmentIndexChirho": 2,
+          "xMinPxChirho": 270,
+          "widthPxChirho": 156,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "le mot"
+        },
+        {
+          "segmentIndexChirho": 3,
+          "xMinPxChirho": 426,
+          "widthPxChirho": 111,
+          "scriptChirho": "hebrew-chirho",
+          "utf8TextChirho": "גְּדוּד"
+        },
+        {
+          "segmentIndexChirho": 4,
+          "xMinPxChirho": 537,
+          "widthPxChirho": 645,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "qu'il ne comprenait pas. Ici le"
+        }
+      ],
+      "notesChirho": "Split carves the printed גדוד at word-gap midpoints x426-537 (word box x440-523). CRNN read on the crop: גדוד, WLC-exact, conf 0.90, classifier P(hebrew)=1.0. Niqqud (גְּדוּד as printed) subject to the human check at approval."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:42:42.289Z-6737ce0de56dc760-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "split-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Swallowed Hebrew found by the Phase 5 sweep and eye-confirmed by two agents: the French segment stores printed גדוד as the garble \"11)\". The surrounding French seals the reading — 'rezzou' is the French translation of גדוד, so the slot demands that word.",
+      "createdAtChirho": "2026-07-19T02:42:42.289Z",
+      "itemKeyChirho": "4:148:30:0",
+      "volumeChirho": 4,
+      "pageChirho": 148,
+      "lineIndexChirho": 30,
+      "targetSegmentIndexChirho": 0,
+      "lineWidthPxChirho": 1181,
+      "lineTextBeforeChirho": "complément 11) en son sens normal de ‘rezzou’ convient",
+      "lineTextPreviewChirho": "complément גְּדוּד en son sens normal de ‘rezzou’ convient",
+      "lineImageHashChirho": "1d4c23290c550d9c2aa2a806a3c8182094d1c3bd9bab4af67ff4ef368e0a653b",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1181,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "complément 11) en son sens normal de ‘rezzou’ convient"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 244,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "complément"
+        },
+        {
+          "segmentIndexChirho": 1,
+          "xMinPxChirho": 244,
+          "widthPxChirho": 106,
+          "scriptChirho": "hebrew-chirho",
+          "utf8TextChirho": "גְּדוּד"
+        },
+        {
+          "segmentIndexChirho": 2,
+          "xMinPxChirho": 350,
+          "widthPxChirho": 831,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "en son sens normal de ‘rezzou’ convient"
+        }
+      ],
+      "notesChirho": "Split carves the printed גדוד at word-gap midpoints x244-350 (word box x255-338). CRNN read on the crop: גדוד, WLC-exact, conf 0.995, classifier P(hebrew)=1.0. The \")\" in the stored garble appears to be part of the final ד stroke, not printed punctuation — approver should confirm on the crop. Niqqud subject to the human check at approval."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T02:42:42.433Z-792bd0800f8c3394-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Witness siglum garbled as a digit (symbol class, not Hebrew): the print shows the Fraktur 𝔊 (Septuagint witness siglum) where the stored French says \"6\". Identified on the print during the 2026-07-18 verification; the sweep's Hebrew classifier read 0.928 and correctly refused to auto-claim Hebrew.",
+      "createdAtChirho": "2026-07-19T02:42:42.433Z",
+      "itemKeyChirho": "3:149:10:1",
+      "volumeChirho": 3,
+      "pageChirho": 149,
+      "lineIndexChirho": 10,
+      "targetSegmentIndexChirho": 1,
+      "lineWidthPxChirho": 1326,
+      "lineTextBeforeChirho": "cxxiv Les divisions du 6",
+      "lineTextPreviewChirho": "cxxiv Les divisions du 𝔊",
+      "lineImageHashChirho": "3ac9cba25974e335c3be60cc07352bede1dcc4458931a928c350e007ed1c3fdb",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1011,
+          "scriptChirho": "latin-non-french-chirho",
+          "utf8TextChirho": "cxxiv"
+        },
+        {
+          "segmentIndexChirho": 1,
+          "xMinPxChirho": 1011,
+          "widthPxChirho": 315,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "Les divisions du 6"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 1011,
+          "scriptChirho": "latin-non-french-chirho",
+          "utf8TextChirho": "cxxiv"
+        },
+        {
+          "segmentIndexChirho": 1,
+          "xMinPxChirho": 1011,
+          "widthPxChirho": 315,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "Les divisions du 𝔊"
+        }
+      ],
+      "notesChirho": "Text-only repair, geometry unchanged. 𝔊 stays inline in the French segment text, matching how the siglum is stored elsewhere in the corpus (e.g. vol 4 p152 lines 9 and 24). No Hebrew involved."
+    }
+  ]
+}
