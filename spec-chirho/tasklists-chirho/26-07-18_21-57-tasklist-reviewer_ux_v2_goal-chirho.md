@@ -55,7 +55,9 @@ fail-closed certification gate.
       proposal — it never silently mutates stored spans.
 - [x] Client-side geometry preview enforces the same invariants the server
       enforces on save: contiguous tiling, positive widths, full line coverage.
-- [x] Works acceptably with trackpad and touch (Andrew reviews on a laptop).
+- [ ] Works acceptably with trackpad and touch during Andrew's first real
+      laptop session; synthetic pointer drag/resize is verified, but real
+      trackpad/touch ergonomics still need human-session confirmation.
 
 ## Phase 3 — Manual Segmentation Tools Chirho (E, F, G, I; H scoped later)
 
@@ -137,7 +139,8 @@ an approved repair. Close that gap.
 - [ ] Andrew reviews side by side — the word he is typing about stays magnified
       next to the input, with no scrolling between crop and correction.
 - [ ] Andrew fixes a wrong box by dragging it, and that files a draft repair —
-      stored spans never change without an approval step.
+      stored spans never change without an approval step; synthetic pointer
+      smoke is complete, real laptop ergonomics remain part of Andrew rollout.
 - [ ] An approved repair proposal can actually land, with backup and a proven
       reverse path.
 - [ ] The 3:151:36:2 defect is fixed in the data and the sweep has triaged its
