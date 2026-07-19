@@ -49,13 +49,13 @@ fail-closed certification gate.
 
 ## Phase 2 — Direct Box Manipulation Chirho (O)
 
-- [ ] Drag to move and drag-handles to resize the red box on the zoomed crop,
+- [x] Drag to move and drag-handles to resize the red box on the zoomed crop,
       Lace-style, with live px readout synced to the numeric repair fields.
-- [ ] A drag edit creates or updates a draft rebox/split segment-repair
+- [x] A drag edit creates or updates a draft rebox/split segment-repair
       proposal — it never silently mutates stored spans.
-- [ ] Client-side geometry preview enforces the same invariants the server
+- [x] Client-side geometry preview enforces the same invariants the server
       enforces on save: contiguous tiling, positive widths, full line coverage.
-- [ ] Works acceptably with trackpad and touch (Andrew reviews on a laptop).
+- [x] Works acceptably with trackpad and touch (Andrew reviews on a laptop).
 
 ## Phase 3 — Manual Segmentation Tools Chirho (E, F, G, I; H scoped later)
 

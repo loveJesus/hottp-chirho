@@ -1447,10 +1447,15 @@ function pageHtmlChirho(): string {
     .target-image-wrap-chirho.focus-magnify-chirho { border-color: #bd7a1b; box-shadow: 0 0 0 3px rgba(189, 122, 27, 0.18); }
     .target-image-frame-chirho { position: relative; max-width: 100%; }
     .target-image-chirho { display: block; width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
-    .line-image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: hidden; margin-bottom: 0; }
+    .line-image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: auto; max-height: 260px; margin-bottom: 0; }
     .line-image-frame-chirho { position: relative; }
     .line-image-chirho { display: block; width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
     .span-marker-chirho { position: absolute; border: 2px solid #d23f31; background: rgba(210, 63, 49, 0.16); box-sizing: border-box; pointer-events: none; }
+    .target-span-marker-chirho { pointer-events: auto; cursor: grab; touch-action: none; }
+    .target-span-marker-chirho.dragging-rebox-chirho { cursor: grabbing; }
+    .rebox-handle-chirho { position: absolute; top: -4px; bottom: -4px; width: 12px; border: 2px solid #9f2f25; background: rgba(255, 255, 255, 0.82); box-sizing: border-box; }
+    .rebox-handle-left-chirho { left: -7px; cursor: ew-resize; }
+    .rebox-handle-right-chirho { right: -7px; cursor: ew-resize; }
     .target-boundary-note-chirho { margin: -12px 0 0; border: 1px solid #d6d9dd; border-top: 0; background: #fff; color: #3d4650; font-size: 12px; line-height: 1.35; padding: 8px 10px; }
     .target-row-chirho { display: grid; grid-template-columns: 1fr; gap: 10px; }
     .label-chirho { color: #59636f; font-size: 13px; font-weight: 650; }
@@ -1495,6 +1500,7 @@ function pageHtmlChirho(): string {
     .segment-repair-grid-chirho input, .segment-repair-grid-chirho select, .segment-repair-grid-chirho textarea { width: 100%; box-sizing: border-box; border: 1px solid #b8bec7; padding: 5px; min-height: 32px; }
     .segment-repair-grid-chirho textarea { resize: vertical; min-height: 34px; unicode-bidi: plaintext; }
     .segment-repair-preview-chirho { border: 1px solid #d6d9dd; background: #f8fafb; padding: 8px; min-height: 34px; unicode-bidi: plaintext; }
+    .rebox-readout-chirho { border: 1px solid #d6d9dd; background: #f8fafb; color: #3d4650; font-size: 12px; line-height: 1.35; padding: 8px; }
     .codepoints-chirho { font-size: 12px; color: #3d4650; direction: ltr; overflow-wrap: anywhere; white-space: pre-wrap; }
     .codepoints-details-chirho { border: 1px dashed #d6d9dd; background: #fbfbfc; padding: 8px; }
     .codepoints-details-chirho summary { cursor: pointer; font-size: 12px; color: #3d4650; }
@@ -2650,6 +2656,138 @@ function pageHtmlChirho(): string {
         utf8TextChirho: rowChirho.querySelector(".repair-text-chirho").value
       })));
     }
+    function targetRepairRowIndexChirho(rowsChirho, itemChirho) {
+      const segmentIndexChirho = Number(itemChirho.segmentIndexChirho);
+      if (Number.isInteger(segmentIndexChirho) && segmentIndexChirho >= 0 && segmentIndexChirho < rowsChirho.length) {
+        return segmentIndexChirho;
+      }
+      return rowsChirho.findIndex((rowChirho) =>
+        rowChirho.xMinPxChirho === itemChirho.spanXMinPxChirho && rowChirho.widthPxChirho === itemChirho.spanWidthPxChirho
+      );
+    }
+    function repairBoundariesChirho(rowsChirho, lineWidthChirho) {
+      const boundariesChirho = [0];
+      for (const rowChirho of rowsChirho) {
+        boundariesChirho.push(rowChirho.xMinPxChirho + rowChirho.widthPxChirho);
+      }
+      boundariesChirho[boundariesChirho.length - 1] = lineWidthChirho;
+      return boundariesChirho;
+    }
+    function repairRowsFromBoundariesChirho(rowsChirho, boundariesChirho) {
+      return rowsChirho.map((rowChirho, indexChirho) => ({
+        ...rowChirho,
+        segmentIndexChirho: indexChirho,
+        xMinPxChirho: boundariesChirho[indexChirho],
+        widthPxChirho: boundariesChirho[indexChirho + 1] - boundariesChirho[indexChirho]
+      }));
+    }
+    function clampNumberChirho(valueChirho, minChirho, maxChirho) {
+      return Math.min(Math.max(valueChirho, minChirho), maxChirho);
+    }
+    function updateTargetMarkerFromRepairRowsChirho(itemChirho, rowsChirho, targetMarkerChirho, dragReadoutChirho) {
+      const targetIndexChirho = targetRepairRowIndexChirho(rowsChirho, itemChirho);
+      const targetRowChirho = rowsChirho[targetIndexChirho];
+      if (!targetRowChirho) return;
+      const markerLeftPctChirho = ((targetRowChirho.xMinPxChirho - itemChirho.zoomCropXMinPxChirho) / itemChirho.zoomCropWidthPxChirho) * 100;
+      const markerWidthPctChirho = (targetRowChirho.widthPxChirho / itemChirho.zoomCropWidthPxChirho) * 100;
+      targetMarkerChirho.style.left = markerLeftPctChirho + "%";
+      targetMarkerChirho.style.width = markerWidthPctChirho + "%";
+      const endChirho = targetRowChirho.xMinPxChirho + targetRowChirho.widthPxChirho;
+      dragReadoutChirho.textContent =
+        "Draft red box x" + targetRowChirho.xMinPxChirho + ".." + endChirho +
+        " (width " + targetRowChirho.widthPxChirho + "px). Drag the red box or its side handles; Save draft repair proposal records a draft only.";
+    }
+    function lineXFromPointerChirho(eventChirho, targetFrameChirho, itemChirho) {
+      const rectChirho = targetFrameChirho.getBoundingClientRect();
+      const relativeXChirho = rectChirho.width <= 0 ? 0 : (eventChirho.clientX - rectChirho.left) / rectChirho.width;
+      const cropXChirho = relativeXChirho * itemChirho.zoomCropWidthPxChirho;
+      return Math.round(clampNumberChirho(itemChirho.zoomCropXMinPxChirho + cropXChirho, 0, itemChirho.lineWidthPxChirho));
+    }
+    function installTargetMarkerDraftDragChirho(paramsChirho) {
+      const {
+        itemChirho,
+        targetMarkerChirho,
+        targetFrameChirho,
+        gridChirho,
+        kindSelectChirho,
+        rationaleChirho,
+        dragReadoutChirho,
+        renderRowsChirho,
+        updateChirho
+      } = paramsChirho;
+      const leftHandleChirho = elChirho("div", { classChirho: "rebox-handle-chirho rebox-handle-left-chirho", "aria-hidden": "true" });
+      const rightHandleChirho = elChirho("div", { classChirho: "rebox-handle-chirho rebox-handle-right-chirho", "aria-hidden": "true" });
+      targetMarkerChirho.classList.add("target-span-marker-chirho");
+      targetMarkerChirho.appendChild(leftHandleChirho);
+      targetMarkerChirho.appendChild(rightHandleChirho);
+      const applyRowsChirho = (rowsChirho) => {
+        renderRowsChirho(rowsChirho);
+        updateTargetMarkerFromRepairRowsChirho(itemChirho, rowsChirho, targetMarkerChirho, dragReadoutChirho);
+        updateChirho();
+      };
+      updateTargetMarkerFromRepairRowsChirho(itemChirho, repairRowsFromGridChirho(gridChirho), targetMarkerChirho, dragReadoutChirho);
+      targetMarkerChirho.addEventListener("pointerdown", (eventChirho) => {
+        if (eventChirho.button !== 0) return;
+        const rowsChirho = repairRowsFromGridChirho(gridChirho);
+        const targetIndexChirho = targetRepairRowIndexChirho(rowsChirho, itemChirho);
+        if (targetIndexChirho < 0) {
+          setStatusChirho("Target row not found in proposal grid.");
+          return;
+        }
+        const boundariesChirho = repairBoundariesChirho(rowsChirho, itemChirho.lineWidthPxChirho);
+        const originalLeftChirho = boundariesChirho[targetIndexChirho];
+        const originalRightChirho = boundariesChirho[targetIndexChirho + 1];
+        const originalWidthChirho = originalRightChirho - originalLeftChirho;
+        const minLeftChirho = targetIndexChirho === 0 ? 0 : boundariesChirho[targetIndexChirho - 1] + 1;
+        const maxRightChirho = targetIndexChirho + 1 === rowsChirho.length ? itemChirho.lineWidthPxChirho : boundariesChirho[targetIndexChirho + 2] - 1;
+        const startPointerXChirho = lineXFromPointerChirho(eventChirho, targetFrameChirho, itemChirho);
+        const modeChirho = eventChirho.target.classList.contains("rebox-handle-left-chirho")
+          ? "left-chirho"
+          : eventChirho.target.classList.contains("rebox-handle-right-chirho")
+            ? "right-chirho"
+            : "move-chirho";
+        eventChirho.preventDefault();
+        targetMarkerChirho.setPointerCapture(eventChirho.pointerId);
+        targetMarkerChirho.classList.add("dragging-rebox-chirho");
+        const pointerMoveChirho = (moveEventChirho) => {
+          const deltaChirho = lineXFromPointerChirho(moveEventChirho, targetFrameChirho, itemChirho) - startPointerXChirho;
+          const nextBoundariesChirho = [...boundariesChirho];
+          if (modeChirho === "left-chirho") {
+            nextBoundariesChirho[targetIndexChirho] = clampNumberChirho(originalLeftChirho + deltaChirho, minLeftChirho, originalRightChirho - 1);
+          } else if (modeChirho === "right-chirho") {
+            nextBoundariesChirho[targetIndexChirho + 1] = clampNumberChirho(originalRightChirho + deltaChirho, originalLeftChirho + 1, maxRightChirho);
+          } else {
+            const minMoveLeftChirho = targetIndexChirho === 0 ? 0 : minLeftChirho;
+            const maxMoveLeftChirho = targetIndexChirho + 1 === rowsChirho.length
+              ? itemChirho.lineWidthPxChirho - originalWidthChirho
+              : maxRightChirho - originalWidthChirho;
+            const nextLeftChirho = clampNumberChirho(originalLeftChirho + deltaChirho, minMoveLeftChirho, maxMoveLeftChirho);
+            nextBoundariesChirho[targetIndexChirho] = targetIndexChirho === 0 ? 0 : nextLeftChirho;
+            nextBoundariesChirho[targetIndexChirho + 1] = targetIndexChirho + 1 === rowsChirho.length
+              ? itemChirho.lineWidthPxChirho
+              : nextLeftChirho + originalWidthChirho;
+          }
+          const nextRowsChirho = repairRowsFromBoundariesChirho(rowsChirho, nextBoundariesChirho);
+          applyRowsChirho(nextRowsChirho);
+        };
+        const pointerUpChirho = (upEventChirho) => {
+          targetMarkerChirho.releasePointerCapture(upEventChirho.pointerId);
+          targetMarkerChirho.classList.remove("dragging-rebox-chirho");
+          targetMarkerChirho.removeEventListener("pointermove", pointerMoveChirho);
+          targetMarkerChirho.removeEventListener("pointerup", pointerUpChirho);
+          targetMarkerChirho.removeEventListener("pointercancel", pointerUpChirho);
+          kindSelectChirho.value = "rebox-chirho";
+          if (rationaleChirho.value.trim().length === 0) {
+            rationaleChirho.value = "Moved or resized the red box in the zoom crop; verify the proposed boundaries against the print before approval.";
+            rationaleChirho.dispatchEvent(new Event("input", { bubbles: true }));
+          }
+          updateChirho();
+        };
+        targetMarkerChirho.addEventListener("pointermove", pointerMoveChirho);
+        targetMarkerChirho.addEventListener("pointerup", pointerUpChirho);
+        targetMarkerChirho.addEventListener("pointercancel", pointerUpChirho);
+      });
+    }
     function repairRowChirho(spanChirho, updateChirho) {
       const rowChirho = elChirho("div", { classChirho: "segment-repair-row-chirho" });
       rowChirho.appendChild(elChirho("div", { classChirho: "mono-chirho repair-index-chirho", textChirho: String(spanChirho.segmentIndexChirho) }));
@@ -2693,7 +2831,7 @@ function pageHtmlChirho(): string {
         nodeChirho.textContent = String(indexChirho);
       });
     }
-    function segmentRepairProposalBoxChirho(itemChirho) {
+    function segmentRepairProposalBoxChirho(itemChirho, targetMarkerChirho, targetFrameChirho) {
       const boxChirho = elChirho("div", { classChirho: "box-chirho" });
       boxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Segment repair proposal" }));
       boxChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Use this when the red box itself is wrong: split it, merge it, move or resize it, fix its script, or mark it unreadable. Saving only files a draft proposal for later review; it never certifies text." }));
@@ -2705,17 +2843,20 @@ function pageHtmlChirho(): string {
       const gridChirho = elChirho("div", { classChirho: "segment-repair-grid-chirho" });
       const previewChirho = elChirho("div", { classChirho: "segment-repair-preview-chirho" });
       const geometryChirho = elChirho("div", { classChirho: "label-chirho" });
+      const dragReadoutChirho = elChirho("div", { classChirho: "rebox-readout-chirho" });
       const resultChirho = elChirho("div", { classChirho: "mono-chirho codepoints-chirho" });
       const saveButtonChirho = elChirho("button", { type: "button", textChirho: "Save draft repair proposal" });
+      const renderRowsChirho = (rowsChirho) => renderRepairRowsChirho(gridChirho, rowsChirho, updateChirho);
       const updateChirho = () => {
         reindexRepairGridChirho(gridChirho);
         const rowsChirho = repairRowsFromGridChirho(gridChirho);
         previewChirho.textContent = repairLinePreviewChirho(rowsChirho);
         const geometryTextChirho = repairGeometryMessageChirho(rowsChirho, itemChirho.lineWidthPxChirho);
         geometryChirho.textContent = geometryTextChirho;
+        updateTargetMarkerFromRepairRowsChirho(itemChirho, rowsChirho, targetMarkerChirho, dragReadoutChirho);
         saveButtonChirho.disabled = !geometryTextChirho.startsWith("Geometry OK") || rationaleChirho.value.trim().length === 0;
       };
-      renderRepairRowsChirho(gridChirho, itemChirho.lineSegmentsChirho, updateChirho);
+      renderRowsChirho(itemChirho.lineSegmentsChirho);
       const actionRowChirho = elChirho("div", { classChirho: "actions-chirho" });
       const splitButtonChirho = elChirho("button", { type: "button", textChirho: "Split the red-box row" });
       const addButtonChirho = elChirho("button", { type: "button", textChirho: "Add row" });
@@ -2741,14 +2882,14 @@ function pageHtmlChirho(): string {
           { ...targetChirho, widthPxChirho: leftWidthChirho },
           { ...targetChirho, xMinPxChirho: targetChirho.xMinPxChirho + leftWidthChirho, widthPxChirho: rightWidthChirho, utf8TextChirho: "" }
         );
-        renderRepairRowsChirho(gridChirho, rowsChirho, updateChirho);
+        renderRowsChirho(rowsChirho);
         updateChirho();
       });
       addButtonChirho.addEventListener("click", () => {
         const rowsChirho = repairRowsFromGridChirho(gridChirho);
         const endChirho = rowsChirho.reduce((cursorChirho, rowChirho) => Math.max(cursorChirho, rowChirho.xMinPxChirho + rowChirho.widthPxChirho), 0);
         rowsChirho.push({ segmentIndexChirho: rowsChirho.length, xMinPxChirho: endChirho, widthPxChirho: 1, scriptChirho: "unknown-script-chirho", utf8TextChirho: "" });
-        renderRepairRowsChirho(gridChirho, rowsChirho, updateChirho);
+        renderRowsChirho(rowsChirho);
         updateChirho();
       });
       saveButtonChirho.addEventListener("click", () => saveSegmentRepairProposalChirho(itemChirho, kindSelectChirho, rationaleChirho, gridChirho, resultChirho));
@@ -2760,6 +2901,8 @@ function pageHtmlChirho(): string {
         kindSelectChirho,
         elChirho("div", { textChirho: "Rationale" }),
         rationaleChirho,
+        elChirho("div", { textChirho: "Drag red box" }),
+        dragReadoutChirho,
         elChirho("div", { textChirho: "Old line" }),
         elChirho("div", { classChirho: "line-text-chirho", textChirho: itemChirho.lineTextChirho }),
         elChirho("div", { textChirho: "Preview" }),
@@ -2771,6 +2914,17 @@ function pageHtmlChirho(): string {
       boxChirho.appendChild(gridChirho);
       boxChirho.appendChild(elChirho("div", { classChirho: "actions-chirho" }, [saveButtonChirho]));
       boxChirho.appendChild(resultChirho);
+      installTargetMarkerDraftDragChirho({
+        itemChirho,
+        targetMarkerChirho,
+        targetFrameChirho,
+        gridChirho,
+        kindSelectChirho,
+        rationaleChirho,
+        dragReadoutChirho,
+        renderRowsChirho,
+        updateChirho
+      });
       updateChirho();
       return boxChirho;
     }
@@ -2868,7 +3022,7 @@ function pageHtmlChirho(): string {
       lineTextRowChirho.appendChild(confidenceLegendChirho());
       leftChirho.appendChild(lineTextRowChirho);
       const segmentRepairBoxChirho = reviewStateAllowsSubmitChirho()
-        ? segmentRepairProposalBoxChirho(itemChirho)
+        ? segmentRepairProposalBoxChirho(itemChirho, targetMarkerChirho, targetFrameChirho)
         : null;
 
       const sideChirho = elChirho("aside", { classChirho: "side-chirho review-column-chirho" });
