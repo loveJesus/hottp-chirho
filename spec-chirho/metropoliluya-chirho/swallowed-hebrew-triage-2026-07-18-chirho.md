@@ -3,7 +3,7 @@ that whosoever believeth in him should not perish, but have everlasting life. �
 
 # Swallowed Hebrew Triage Chirho
 
-Generated: 2026-07-19T02:57:50.695Z by draft-swallowed-hebrew-repairs-chirho (reviewer claude2-sweep-chirho, machine triage)
+Generated: 2026-07-19T03:03:33.805Z by draft-swallowed-hebrew-repairs-chirho (reviewer claude2-sweep-chirho, machine triage)
 
 Triage decisions for every sweep finding, per the calibration agreed in the room (msgs #5642/#5645/#5648): WLC-exact witness reads are strong evidence even from a weak reader; disjoint non-exact reads on vols 3-5 are weak and never justify a text-changing draft without eye confirmation; geometry and digit-garble signals are primary, CRNN reads are corroboration. Drafts land nothing: the Phase 4 apply lane with its mandatory approval step is the only path to a data change.
 
@@ -14,7 +14,7 @@ Triage decisions for every sweep finding, per the calibration agreed in the room
 - drafted: 25
 - Draft proposals appended this run: 0 -> spec-chirho/metropoliluya-chirho/segment-repair-proposals-2026-07-02-chirho.json
 - Unwitnessed Hebrew spans read: 422 (stored text witness-confirmed: 49)
-- Stored-Hebrew-suspect tier (disjoint confident read, vols 3-5 CRNN-weak rule): 9 — 7 eye-cleared, 2 open
+- Stored-Hebrew-suspect tier (disjoint confident read, vols 3-5 CRNN-weak rule): 9 — 7 eye-cleared, 1 drafted, 1 open
 
 ## Drafted Proposals
 
@@ -25,7 +25,7 @@ Per the calibration these get NO text-changing draft until a human or second age
 - 5:63:27:0 [cleared]: Eye-checked: print matches stored ישבק (CRNN misread). Possible plene ו in print — expert letter-check noted, not a swallow.
 - 5:64:29:6 [cleared]: Eye-checked: print תָּם matches stored (CRNN misread ת as ה).
 - 5:69:4:1 [cleared]: Eye-checked: print מִי יִתֵּן matches stored lexemes; tsere/segol niqqud nit noted for the expert queue.
-- 5:69:7:8 [confirmed-defect-needs-second-reader]: Eye-checked: stored וְשָׁכַב is WRONG — print shows a three-letter מָדַד/נָדַד (CRNN read נדד conf 0.89 agrees in shape). First letter מ vs נ needs a second reader before a text-changing draft.
+- 5:69:7:8 [drafted]: Confirmed defect: stored וְשָׁכַב, print reads מָדַד — first eye read 2026-07-18, second reader confirmed the mem (wide bowl, sibling-letterform match). Text repair drafted.
 - 5:69:17:0 [cleared]: Eye-checked: print קמתי matches stored (CRNN garbage read); qamats/patach niqqud nit noted.
 - 5:69:17:4 [cleared]: Eye-checked: print מָתַי matches stored.
 - 5:70:8:0 [cleared]: Eye-checked: print מָתַי matches stored.

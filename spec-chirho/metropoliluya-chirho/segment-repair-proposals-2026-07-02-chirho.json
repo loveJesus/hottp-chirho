@@ -1079,6 +1079,155 @@
         }
       ],
       "notesChirho": "Text-only repair generated for the eye-confirmed siglum class; geometry unchanged; 𝔊 inline per corpus convention. The CRNN reads the glyph as a round Hebrew letter and the Hebrew classifier scores it low — the glyph is neither Hebrew nor a digit, which is why the class required eye review."
+    },
+    {
+      "schemaVersionChirho": 1,
+      "proposalIdChirho": "segment-repair-2026-07-19T03:03:33.773Z-1030df200aef58b7-chirho",
+      "statusChirho": "draft-chirho",
+      "repairKindChirho": "script-text-chirho",
+      "reviewerChirho": "claude2-sweep-chirho",
+      "rationaleChirho": "Stored-Hebrew-suspect confirmed by two independent eye reads (2026-07-18): the box at x2134 prints the three-letter מָדַד — wide mem head with qamats, patach under the middle dalet, letterform identical to the וּמָדַד sibling two words left — while the store carries the four-letter וְשָׁכַב. The CRNN witness read נדד (conf 0.89) agrees in shape; its נ-for-מ is the model's narrow-letter bias.",
+      "createdAtChirho": "2026-07-19T03:03:33.773Z",
+      "itemKeyChirho": "5:69:7:8",
+      "volumeChirho": 5,
+      "pageChirho": 69,
+      "lineIndexChirho": 7,
+      "targetSegmentIndexChirho": 8,
+      "lineWidthPxChirho": 2275,
+      "lineTextBeforeChirho": "אָקוּם du 𝔐 , puis elle se réfère à la 𝔖 pour corriger וּמָדַד עֶרֶב en וְשָׁכַב",
+      "lineTextPreviewChirho": "אָקוּם du 𝔐 , puis elle se réfère à la 𝔖 pour corriger וּמָדַד עֶרֶב en מָדַד",
+      "lineImageHashChirho": "eda0c09ace5005ea290df3d74e4a0a7a99997effe75af55074d692ef3592e9e6",
+      "oldSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 205,
+          "scriptChirho": "hebrew-chirho",
+          "utf8TextChirho": "אָקוּם"
+        },
+        {
+          "segmentIndexChirho": 1,
+          "xMinPxChirho": 205,
+          "widthPxChirho": 104,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "du"
+        },
+        {
+          "segmentIndexChirho": 2,
+          "xMinPxChirho": 309,
+          "widthPxChirho": 62,
+          "scriptChirho": "symbol-chirho",
+          "utf8TextChirho": "𝔐"
+        },
+        {
+          "segmentIndexChirho": 3,
+          "xMinPxChirho": 371,
+          "widthPxChirho": 771,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": ", puis elle se réfère à la"
+        },
+        {
+          "segmentIndexChirho": 4,
+          "xMinPxChirho": 1142,
+          "widthPxChirho": 71,
+          "scriptChirho": "symbol-chirho",
+          "utf8TextChirho": "𝔖"
+        },
+        {
+          "segmentIndexChirho": 5,
+          "xMinPxChirho": 1213,
+          "widthPxChirho": 446,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "pour corriger"
+        },
+        {
+          "segmentIndexChirho": 6,
+          "xMinPxChirho": 1659,
+          "widthPxChirho": 371,
+          "scriptChirho": "hebrew-chirho",
+          "utf8TextChirho": "וּמָדַד עֶרֶב"
+        },
+        {
+          "segmentIndexChirho": 7,
+          "xMinPxChirho": 2030,
+          "widthPxChirho": 104,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "en"
+        },
+        {
+          "segmentIndexChirho": 8,
+          "xMinPxChirho": 2134,
+          "widthPxChirho": 141,
+          "scriptChirho": "hebrew-chirho",
+          "utf8TextChirho": "וְשָׁכַב"
+        }
+      ],
+      "proposedSpansChirho": [
+        {
+          "segmentIndexChirho": 0,
+          "xMinPxChirho": 0,
+          "widthPxChirho": 205,
+          "scriptChirho": "hebrew-chirho",
+          "utf8TextChirho": "אָקוּם"
+        },
+        {
+          "segmentIndexChirho": 1,
+          "xMinPxChirho": 205,
+          "widthPxChirho": 104,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "du"
+        },
+        {
+          "segmentIndexChirho": 2,
+          "xMinPxChirho": 309,
+          "widthPxChirho": 62,
+          "scriptChirho": "symbol-chirho",
+          "utf8TextChirho": "𝔐"
+        },
+        {
+          "segmentIndexChirho": 3,
+          "xMinPxChirho": 371,
+          "widthPxChirho": 771,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": ", puis elle se réfère à la"
+        },
+        {
+          "segmentIndexChirho": 4,
+          "xMinPxChirho": 1142,
+          "widthPxChirho": 71,
+          "scriptChirho": "symbol-chirho",
+          "utf8TextChirho": "𝔖"
+        },
+        {
+          "segmentIndexChirho": 5,
+          "xMinPxChirho": 1213,
+          "widthPxChirho": 446,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "pour corriger"
+        },
+        {
+          "segmentIndexChirho": 6,
+          "xMinPxChirho": 1659,
+          "widthPxChirho": 371,
+          "scriptChirho": "hebrew-chirho",
+          "utf8TextChirho": "וּמָדַד עֶרֶב"
+        },
+        {
+          "segmentIndexChirho": 7,
+          "xMinPxChirho": 2030,
+          "widthPxChirho": 104,
+          "scriptChirho": "french-chirho",
+          "utf8TextChirho": "en"
+        },
+        {
+          "segmentIndexChirho": 8,
+          "xMinPxChirho": 2134,
+          "widthPxChirho": 141,
+          "scriptChirho": "hebrew-chirho",
+          "utf8TextChirho": "מָדַד"
+        }
+      ],
+      "notesChirho": "Text-only repair, geometry unchanged. Approver anchors: (1) WLC 2 Sam 8:2 puts מדד and שכב in one verse (וַיְמַדְּדֵם... הַשְׁכֵּב), the likely path by which וְשָׁכַב wandered onto this box from the same apparatus entry; (2) the French context reads \"pour corriger וּמָדַד עֶרֶב en [this word]\" — the print at the box eye-reads מָדַד despite the apparent redundancy, so the approver should confirm the apparatus sense on the context crop. Exact niqqud per print: qamats + patach."
     }
   ]
 }

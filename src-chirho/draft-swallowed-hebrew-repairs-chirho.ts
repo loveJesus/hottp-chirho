@@ -197,6 +197,29 @@ const REPAIR_SPECS_CHIRHO: RepairDraftSpecChirho[] = [
       "Split carves the printed גדוד at word-gap midpoints x244-350 (word box x255-338). CRNN read on the crop: גדוד, WLC-exact, conf 0.995, classifier P(hebrew)=1.0. The \")\" in the stored garble appears to be part of the final ד stroke, not printed punctuation — approver should confirm on the crop. Niqqud subject to the human check at approval.",
   },
   {
+    itemKeyChirho: "5:69:7:8",
+    repairKindChirho: "script-text-chirho",
+    volumeChirho: 5,
+    pageChirho: 69,
+    lineIndexChirho: 7,
+    targetSegmentIndexChirho: 8,
+    proposedSpansChirho: [
+      { segmentIndexChirho: 0, xMinPxChirho: 0, widthPxChirho: 205, scriptChirho: "hebrew-chirho", utf8TextChirho: "אָקוּם" },
+      { segmentIndexChirho: 1, xMinPxChirho: 205, widthPxChirho: 104, scriptChirho: "french-chirho", utf8TextChirho: "du" },
+      { segmentIndexChirho: 2, xMinPxChirho: 309, widthPxChirho: 62, scriptChirho: "symbol-chirho", utf8TextChirho: "𝔐" },
+      { segmentIndexChirho: 3, xMinPxChirho: 371, widthPxChirho: 771, scriptChirho: "french-chirho", utf8TextChirho: ", puis elle se réfère à la" },
+      { segmentIndexChirho: 4, xMinPxChirho: 1142, widthPxChirho: 71, scriptChirho: "symbol-chirho", utf8TextChirho: "𝔖" },
+      { segmentIndexChirho: 5, xMinPxChirho: 1213, widthPxChirho: 446, scriptChirho: "french-chirho", utf8TextChirho: "pour corriger" },
+      { segmentIndexChirho: 6, xMinPxChirho: 1659, widthPxChirho: 371, scriptChirho: "hebrew-chirho", utf8TextChirho: "וּמָדַד עֶרֶב" },
+      { segmentIndexChirho: 7, xMinPxChirho: 2030, widthPxChirho: 104, scriptChirho: "french-chirho", utf8TextChirho: "en" },
+      { segmentIndexChirho: 8, xMinPxChirho: 2134, widthPxChirho: 141, scriptChirho: "hebrew-chirho", utf8TextChirho: "מָדַד" },
+    ],
+    rationaleChirho:
+      "Stored-Hebrew-suspect confirmed by two independent eye reads (2026-07-18): the box at x2134 prints the three-letter מָדַד — wide mem head with qamats, patach under the middle dalet, letterform identical to the וּמָדַד sibling two words left — while the store carries the four-letter וְשָׁכַב. The CRNN witness read נדד (conf 0.89) agrees in shape; its נ-for-מ is the model's narrow-letter bias.",
+    notesChirho:
+      "Text-only repair, geometry unchanged. Approver anchors: (1) WLC 2 Sam 8:2 puts מדד and שכב in one verse (וַיְמַדְּדֵם... הַשְׁכֵּב), the likely path by which וְשָׁכַב wandered onto this box from the same apparatus entry; (2) the French context reads \"pour corriger וּמָדַד עֶרֶב en [this word]\" — the print at the box eye-reads מָדַד despite the apparent redundancy, so the approver should confirm the apparatus sense on the context crop. Exact niqqud per print: qamats + patach.",
+  },
+  {
     itemKeyChirho: "3:150:26:0",
     repairKindChirho: "script-text-chirho",
     volumeChirho: 3,
@@ -476,7 +499,7 @@ const EYE_VERDICTS_CHIRHO: TriageRowChirho[] = [
   { spanKeyChirho: "5:69:17:4", decisionChirho: "cleared", reasonChirho: "Eye-checked: print מָתַי matches stored." },
   { spanKeyChirho: "5:70:8:0", decisionChirho: "cleared", reasonChirho: "Eye-checked: print מָתַי matches stored." },
   { spanKeyChirho: "5:150:4:1", decisionChirho: "cleared", reasonChirho: "Eye-checked: print יָמַי matches stored (adjacent apparatus brace is print, not text)." },
-  { spanKeyChirho: "5:69:7:8", decisionChirho: "confirmed-defect-needs-second-reader", reasonChirho: "Eye-checked: stored וְשָׁכַב is WRONG — print shows a three-letter מָדַד/נָדַד (CRNN read נדד conf 0.89 agrees in shape). First letter מ vs נ needs a second reader before a text-changing draft." },
+  { spanKeyChirho: "5:69:7:8", decisionChirho: "drafted", reasonChirho: "Confirmed defect: stored וְשָׁכַב, print reads מָדַד — first eye read 2026-07-18, second reader confirmed the mem (wide bowl, sibling-letterform match). Text repair drafted." },
   { spanKeyChirho: "5:150:10:3", decisionChirho: "needs-expert", reasonChirho: "Eye-checked but unresolved: print may show suffixed יָמֶיךָ where stored has יָמַי; too small to call — expert print check required." },
 ];
 const EYE_VERDICT_BY_KEY_CHIRHO = new Map(EYE_VERDICTS_CHIRHO.map((rowChirho) => [rowChirho.spanKeyChirho, rowChirho]));
@@ -583,7 +606,7 @@ function renderTriageReportChirho(
     ...[...countsChirho.entries()].sort().map(([decisionChirho, countChirho]) => `- ${decisionChirho}: ${countChirho}`),
     `- Draft proposals appended this run: ${draftedChirho.length} -> ${relative(PROJECT_ROOT_CHIRHO, storePathChirho)}`,
     `- Unwitnessed Hebrew spans read: ${unwitnessedChirho.length} (stored text witness-confirmed: ${confirmedChirho.length})`,
-    `- Stored-Hebrew-suspect tier (disjoint confident read, vols 3-5 CRNN-weak rule): ${suspectRowsChirho.length} — ${suspectRowsChirho.filter((rowChirho) => rowChirho.decisionChirho === "cleared").length} eye-cleared, ${suspectRowsChirho.filter((rowChirho) => rowChirho.decisionChirho !== "cleared").length} open`,
+    `- Stored-Hebrew-suspect tier (disjoint confident read, vols 3-5 CRNN-weak rule): ${suspectRowsChirho.length} — ${suspectRowsChirho.filter((rowChirho) => rowChirho.decisionChirho === "cleared").length} eye-cleared, ${suspectRowsChirho.filter((rowChirho) => rowChirho.decisionChirho === "drafted").length} drafted, ${suspectRowsChirho.filter((rowChirho) => !["cleared", "drafted"].includes(rowChirho.decisionChirho)).length} open`,
     "",
     "## Drafted Proposals",
     "",
