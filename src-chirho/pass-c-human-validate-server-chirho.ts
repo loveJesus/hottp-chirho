@@ -1434,27 +1434,39 @@ function pageHtmlChirho(): string {
     :root { color-scheme: light; font-family: Inter, ui-sans-serif, system-ui, sans-serif; }
     body { margin: 0; background: #f5f5f2; color: #1f2933; }
     button, textarea, input { font: inherit; }
-    .shell-chirho { max-width: 1220px; margin: 0 auto; padding: 18px; }
+    .shell-chirho { max-width: 1540px; margin: 0 auto; padding: 18px; }
     .top-chirho { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 1px solid #d8d4c8; padding-bottom: 12px; }
     .title-chirho { font-size: 20px; font-weight: 700; }
     .summary-chirho { color: #59636f; font-size: 14px; }
     .server-health-chirho { color: #59636f; font-size: 12px; text-align: right; margin-bottom: 4px; }
-    .main-chirho { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 18px; padding-top: 18px; }
-    .line-panel-chirho { min-width: 0; }
+    .main-chirho { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(430px, 0.9fr); gap: 18px; align-items: start; padding-top: 18px; }
+    .line-panel-chirho { min-width: 0; display: flex; flex-direction: column; gap: 12px; }
+    .review-column-chirho { position: sticky; top: 12px; max-height: calc(100vh - 24px); overflow: auto; padding-right: 2px; }
     .image-label-chirho { color: #59636f; font-size: 13px; font-weight: 650; margin: 0 0 6px; }
-    .target-image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: hidden; margin-bottom: 12px; }
+    .target-image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: auto; margin-bottom: 0; transition: border-color 120ms ease, box-shadow 120ms ease; }
+    .target-image-wrap-chirho.focus-magnify-chirho { border-color: #bd7a1b; box-shadow: 0 0 0 3px rgba(189, 122, 27, 0.18); }
     .target-image-frame-chirho { position: relative; max-width: 100%; }
     .target-image-chirho { display: block; width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
-    .line-image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: hidden; margin-bottom: 12px; }
+    .line-image-wrap-chirho { background: white; border: 1px solid #d6d9dd; overflow: hidden; margin-bottom: 0; }
     .line-image-frame-chirho { position: relative; }
     .line-image-chirho { display: block; width: 100%; height: auto; image-rendering: -webkit-optimize-contrast; }
     .span-marker-chirho { position: absolute; border: 2px solid #d23f31; background: rgba(210, 63, 49, 0.16); box-sizing: border-box; pointer-events: none; }
-    .target-boundary-note-chirho { margin: -4px 0 12px; border: 1px solid #d6d9dd; border-top: 0; background: #fff; color: #3d4650; font-size: 12px; line-height: 1.35; padding: 8px 10px; }
-    .target-row-chirho { display: grid; grid-template-columns: 1fr; gap: 10px; margin-top: 14px; }
+    .target-boundary-note-chirho { margin: -12px 0 0; border: 1px solid #d6d9dd; border-top: 0; background: #fff; color: #3d4650; font-size: 12px; line-height: 1.35; padding: 8px 10px; }
+    .target-row-chirho { display: grid; grid-template-columns: 1fr; gap: 10px; }
     .label-chirho { color: #59636f; font-size: 13px; font-weight: 650; }
     .hebrew-chirho { direction: rtl; unicode-bidi: plaintext; font-size: 32px; line-height: 1.35; background: white; border: 1px solid #d6d9dd; padding: 12px; min-height: 56px; }
     .span-text-chirho { direction: ltr; unicode-bidi: plaintext; font-size: 24px; line-height: 1.35; background: white; border: 1px solid #d6d9dd; padding: 12px; min-height: 52px; }
-    .line-text-chirho { font-size: 17px; line-height: 1.5; background: white; border: 1px solid #d6d9dd; padding: 10px; }
+    .line-text-chirho { font-size: 17px; line-height: 1.55; background: white; border: 1px solid #d6d9dd; padding: 10px; }
+    .reconstructed-line-chirho { display: flex; flex-wrap: wrap; gap: 4px 5px; align-items: baseline; white-space: normal; }
+    .line-text-segment-chirho { display: inline-flex; align-items: baseline; min-height: 26px; border: 1px solid transparent; border-radius: 4px; padding: 1px 4px; unicode-bidi: plaintext; overflow-wrap: anywhere; }
+    .line-text-segment-rtl-chirho { direction: rtl; }
+    .line-text-segment-target-chirho { border-color: #d23f31; box-shadow: inset 0 0 0 1px rgba(210, 63, 49, 0.18); }
+    .line-confidence-certain-chirho { background: #edf8f1; }
+    .line-confidence-borderline-chirho { background: #fff6d7; }
+    .line-confidence-questionable-chirho { background: #ffe8ec; }
+    .confidence-legend-chirho { display: flex; flex-wrap: wrap; gap: 8px; color: #59636f; font-size: 12px; margin-top: -4px; }
+    .confidence-legend-chip-chirho { display: inline-flex; align-items: center; gap: 4px; }
+    .confidence-swatch-chirho { width: 14px; height: 14px; border: 1px solid #c8cdd3; border-radius: 3px; }
     .edit-chirho { direction: rtl; unicode-bidi: plaintext; min-height: 76px; resize: vertical; width: 100%; box-sizing: border-box; border: 1px solid #b8bec7; padding: 10px; background: #fff; font-size: 25px; line-height: 1.35; }
     .typewriter-chirho { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; background: #fff; border: 1px solid #d6d9dd; padding: 8px; }
     .typewriter-button-chirho { min-width: 38px; height: 34px; border: 1px solid #aab1b9; background: #fff; cursor: pointer; font-size: 20px; line-height: 1; }
@@ -1468,7 +1480,8 @@ function pageHtmlChirho(): string {
     .lane-shortcuts-chirho a { color: #1f2933; text-decoration: none; border: 1px solid #c8cdd3; background: #fff; padding: 4px 7px; }
     .lane-shortcuts-chirho a:hover { background: #edf1f4; }
     .lane-shortcut-count-chirho { color: #59636f; margin-left: 4px; }
-    .side-chirho { display: flex; flex-direction: column; gap: 12px; }
+    .side-chirho { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+    .review-primary-chirho { display: grid; gap: 10px; }
     .box-chirho { border: 1px solid #d6d9dd; background: #fff; padding: 12px; }
     .meta-grid-chirho { display: grid; grid-template-columns: auto 1fr; gap: 6px 10px; font-size: 13px; }
     .mono-chirho { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
@@ -1510,10 +1523,11 @@ function pageHtmlChirho(): string {
     .continue-chirho { color: #116149; border-color: #499b7f !important; font-weight: 700; }
     .undo-chirho { color: #59636f; }
     .status-chirho { min-height: 22px; color: #116149; font-size: 13px; }
+    .keyboard-hint-chirho { color: #59636f; font-size: 12px; line-height: 1.35; }
     .done-chirho { padding: 42px 0; color: #59636f; font-size: 18px; }
     @media (max-width: 900px) {
       .main-chirho { grid-template-columns: 1fr; }
-      .side-chirho { order: -1; }
+      .review-column-chirho { position: static; max-height: none; overflow: visible; order: -1; }
       .hebrew-chirho { font-size: 28px; }
     }
   </style>
@@ -1637,6 +1651,7 @@ function pageHtmlChirho(): string {
     let validationRowsChirho = [];
     let validationsChirho = new Map();
     let indexChirho = 0;
+    let focusCorrectionAfterRenderChirho = false;
     const initialSearchParamsChirho = new URLSearchParams(window.location.search);
     let requestedItemKeyChirho = initialSearchParamsChirho.get("item-chirho");
     let reviewerChirho = storedReviewerChirho() || serverReviewerChirho || "";
@@ -2464,6 +2479,114 @@ function pageHtmlChirho(): string {
         ? "hebrew-chirho"
         : "span-text-chirho";
     }
+    function isRtlLineSegmentScriptChirho(scriptChirho) {
+      return ["hebrew-chirho", "syriac-chirho", "arabic-chirho"].includes(String(scriptChirho ?? ""));
+    }
+    function lineSegmentConfidenceClassChirho(itemChirho, segmentChirho) {
+      const segmentTextChirho = String(segmentChirho.utf8TextChirho ?? "").trim();
+      const scriptChirho = String(segmentChirho.scriptChirho ?? "");
+      const isTargetChirho = Number(segmentChirho.segmentIndexChirho) === Number(itemChirho.segmentIndexChirho);
+      if (segmentTextChirho.length === 0 || scriptChirho === "unknown-script-chirho") return "line-confidence-questionable-chirho";
+      if (isTargetChirho) {
+        if (
+          itemChirho.hasLiveSpanTextDriftChirho ||
+          itemChirho.attentionKindsChirho.includes("${RAW_HEBREW_ATTENTION_CONFIDENT_DIRECT_READ_DISAGREEMENT_CHIRHO}") ||
+          itemChirho.attentionKindsChirho.includes("${RAW_HEBREW_ATTENTION_NO_DIRECT_READ_CHIRHO}") ||
+          itemChirho.validationStatusChirho === "unvalidated-chirho"
+        ) {
+          return "line-confidence-questionable-chirho";
+        }
+        if (
+          itemChirho.validationStatusChirho !== "all-token-validated-chirho" ||
+          itemChirho.attentionKindsChirho.length > 0
+        ) {
+          return "line-confidence-borderline-chirho";
+        }
+        return "line-confidence-certain-chirho";
+      }
+      if (["hebrew-chirho", "greek-chirho", "syriac-chirho", "arabic-chirho"].includes(scriptChirho)) {
+        return "line-confidence-borderline-chirho";
+      }
+      return "line-confidence-certain-chirho";
+    }
+    function lineSegmentConfidenceLabelChirho(confidenceClassChirho) {
+      if (confidenceClassChirho === "line-confidence-certain-chirho") return "certain";
+      if (confidenceClassChirho === "line-confidence-borderline-chirho") return "borderline";
+      return "questionable";
+    }
+    function reconstructedLineTextChirho(itemChirho) {
+      const lineChirho = elChirho("div", {
+        classChirho: "line-text-chirho reconstructed-line-chirho",
+        "aria-label": itemChirho.lineTextChirho
+      });
+      if (!Array.isArray(itemChirho.lineSegmentsChirho) || itemChirho.lineSegmentsChirho.length === 0) {
+        lineChirho.textContent = itemChirho.lineTextChirho;
+        return lineChirho;
+      }
+      for (const segmentChirho of itemChirho.lineSegmentsChirho) {
+        const confidenceClassChirho = lineSegmentConfidenceClassChirho(itemChirho, segmentChirho);
+        const segmentTextChirho = String(segmentChirho.utf8TextChirho ?? "").trim();
+        const classesChirho = [
+          "line-text-segment-chirho",
+          confidenceClassChirho,
+          Number(segmentChirho.segmentIndexChirho) === Number(itemChirho.segmentIndexChirho) ? "line-text-segment-target-chirho" : "",
+          isRtlLineSegmentScriptChirho(segmentChirho.scriptChirho) ? "line-text-segment-rtl-chirho" : ""
+        ].filter((valueChirho) => valueChirho.length > 0).join(" ");
+        lineChirho.appendChild(elChirho("span", {
+          classChirho: classesChirho,
+          title: "segment " + segmentChirho.segmentIndexChirho + " · " +
+            (segmentRepairScriptLabelsChirho[segmentChirho.scriptChirho] ?? displayValueChirho(segmentChirho.scriptChirho)) +
+            " · " + lineSegmentConfidenceLabelChirho(confidenceClassChirho),
+          textChirho: segmentTextChirho.length === 0 ? "(empty span)" : segmentTextChirho
+        }));
+      }
+      return lineChirho;
+    }
+    function confidenceLegendChirho() {
+      return elChirho("div", { classChirho: "confidence-legend-chirho" }, [
+        elChirho("span", { classChirho: "confidence-legend-chip-chirho" }, [
+          elChirho("span", { classChirho: "confidence-swatch-chirho line-confidence-certain-chirho" }),
+          textChirho("certain")
+        ]),
+        elChirho("span", { classChirho: "confidence-legend-chip-chirho" }, [
+          elChirho("span", { classChirho: "confidence-swatch-chirho line-confidence-borderline-chirho" }),
+          textChirho("borderline")
+        ]),
+        elChirho("span", { classChirho: "confidence-legend-chip-chirho" }, [
+          elChirho("span", { classChirho: "confidence-swatch-chirho line-confidence-questionable-chirho" }),
+          textChirho("questionable")
+        ])
+      ]);
+    }
+    function installFocusMagnifierChirho(targetWrapChirho, targetFrameChirho, focusRootChirho, itemChirho) {
+      const baseWidthChirho = Math.min(itemChirho.zoomCropWidthPxChirho * 2, 1040);
+      const magnifiedWidthChirho = Math.min(Math.round(baseWidthChirho * 1.55), Math.max(baseWidthChirho, 1500));
+      const centerTargetChirho = () => {
+        const markerCenterPctChirho = itemChirho.zoomMarkerLeftPctChirho + itemChirho.zoomMarkerWidthPctChirho / 2;
+        const targetCenterPxChirho = targetFrameChirho.clientWidth * markerCenterPctChirho / 100;
+        targetWrapChirho.scrollLeft = Math.max(0, targetCenterPxChirho - targetWrapChirho.clientWidth / 2);
+      };
+      const setMagnifiedChirho = (enabledChirho) => {
+        targetWrapChirho.classList.toggle("focus-magnify-chirho", enabledChirho);
+        targetFrameChirho.style.maxWidth = enabledChirho ? "none" : "100%";
+        targetFrameChirho.style.width = (enabledChirho ? magnifiedWidthChirho : baseWidthChirho) + "px";
+        if (enabledChirho) window.requestAnimationFrame(centerTargetChirho);
+      };
+      focusRootChirho.addEventListener("focusin", (eventChirho) => {
+        if (eventChirho.target?.matches?.("input, textarea, select, button")) setMagnifiedChirho(true);
+      });
+      focusRootChirho.addEventListener("focusout", () => {
+        window.setTimeout(() => {
+          if (!focusRootChirho.contains(document.activeElement)) setMagnifiedChirho(false);
+        }, 0);
+      });
+    }
+    function focusPrimaryCorrectionChirho() {
+      const editChirho = document.getElementById("edit-chirho");
+      if (!editChirho || editChirho.hasAttribute("readonly")) return;
+      editChirho.focus();
+      editChirho.select();
+    }
     function insertCorrectionTextChirho(valueChirho) {
       const editChirho = document.getElementById("edit-chirho");
       if (!editChirho) return;
@@ -2682,7 +2805,6 @@ function pageHtmlChirho(): string {
       const leftChirho = elChirho("div", { classChirho: "line-panel-chirho" });
       const savedValidationChirho = validationsChirho.get(itemChirho.keyChirho);
       const savedIssueFlagsChirho = new Set(parseJsonArrayChirho(savedValidationChirho?.issue_flags_chirho));
-      leftChirho.appendChild(howToReviewBoxChirho());
       leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Target crop - red box is the item" }));
       const targetWrapChirho = elChirho("div", { classChirho: "target-image-wrap-chirho" });
       const targetFrameChirho = elChirho("div", { classChirho: "target-image-frame-chirho" });
@@ -2699,7 +2821,7 @@ function pageHtmlChirho(): string {
       leftChirho.appendChild(targetWrapChirho);
       leftChirho.appendChild(elChirho("div", { classChirho: "target-boundary-note-chirho", textChirho: targetBoundaryTextChirho(itemChirho) }));
 
-      const targetRowChirho = elChirho("div", { classChirho: "target-row-chirho" });
+      const targetRowChirho = elChirho("div", { classChirho: "box-chirho target-row-chirho review-primary-chirho" });
       targetRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Current text (red box)" }));
       targetRowChirho.appendChild(elChirho("div", { classChirho: spanTextClassChirho(itemChirho), textChirho: itemChirho.liveSpanTextChirho }));
       if (itemChirho.hasLiveSpanTextDriftChirho) {
@@ -2725,7 +2847,6 @@ function pageHtmlChirho(): string {
       codepointsDetailsChildrenChirho.push(elChirho("div", { classChirho: "label-chirho", textChirho: "Correction codepoints" }));
       codepointsDetailsChildrenChirho.push(editCodepointsChirho);
       targetRowChirho.appendChild(elChirho("details", { classChirho: "codepoints-details-chirho" }, codepointsDetailsChildrenChirho));
-      leftChirho.appendChild(targetRowChirho);
 
       leftChirho.appendChild(elChirho("div", { classChirho: "image-label-chirho", textChirho: "Full line - red box in context" }));
       const imageWrapChirho = elChirho("div", { classChirho: "line-image-wrap-chirho" });
@@ -2743,13 +2864,15 @@ function pageHtmlChirho(): string {
       leftChirho.appendChild(imageWrapChirho);
       const lineTextRowChirho = elChirho("div", { classChirho: "target-row-chirho" });
       lineTextRowChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: "Full line text" }));
-      lineTextRowChirho.appendChild(elChirho("div", { classChirho: "line-text-chirho", textChirho: itemChirho.lineTextChirho }));
+      lineTextRowChirho.appendChild(reconstructedLineTextChirho(itemChirho));
+      lineTextRowChirho.appendChild(confidenceLegendChirho());
       leftChirho.appendChild(lineTextRowChirho);
-      if (reviewStateAllowsSubmitChirho()) {
-        leftChirho.appendChild(segmentRepairProposalBoxChirho(itemChirho));
-      }
+      const segmentRepairBoxChirho = reviewStateAllowsSubmitChirho()
+        ? segmentRepairProposalBoxChirho(itemChirho)
+        : null;
 
-      const sideChirho = elChirho("aside", { classChirho: "side-chirho" });
+      const sideChirho = elChirho("aside", { classChirho: "side-chirho review-column-chirho" });
+      sideChirho.appendChild(howToReviewBoxChirho());
       if (queueModeChirho === "hebrew-chirho") {
         sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "Machine witnesses validate consonants only. Vowels and niqqud are UNVERIFIED even when consonants agree." }));
         sideChirho.appendChild(elChirho("div", {
@@ -2791,6 +2914,7 @@ function pageHtmlChirho(): string {
       if (itemChirho.hasLiveSpanTextDriftChirho) {
         sideChirho.appendChild(elChirho("div", { classChirho: "warning-chirho", textChirho: "Current text differs from this report. Check the relevant issue box; clean review is blocked." }));
       }
+      sideChirho.appendChild(targetRowChirho);
       if (reviewStateFilterChirho === "saved-issues-chirho" && savedValidationChirho) {
         sideChirho.appendChild(elChirho("div", {
           classChirho: "warning-chirho",
@@ -3065,6 +3189,10 @@ function pageHtmlChirho(): string {
           classChirho: "warning-chirho",
           textChirho: "A clean save requires the checkbox above. Check an issue box and write a note if anything is wrong, split, lumped, missing, extra, or uncertain."
         }));
+        sideChirho.appendChild(elChirho("div", {
+          classChirho: "keyboard-hint-chirho",
+          textChirho: "Keyboard: Ctrl/Command+Enter saves when the action requirements are satisfied; Tab from the final action button moves to the next item."
+        }));
         const actionStatusChirho = elChirho("div", { classChirho: "label-chirho action-status-chirho", textChirho: "" });
         sideChirho.appendChild(actionStatusChirho);
         const continueButtonChirho = elChirho("button", { classChirho: "continue-chirho", textChirho: cleanReviewActionTextChirho(itemChirho) });
@@ -3106,10 +3234,18 @@ function pageHtmlChirho(): string {
         continueButtonChirho.addEventListener("click", () => submitReviewChirho());
         actionsChirho.appendChild(continueButtonChirho);
         const undoButtonChirho = elChirho("button", { classChirho: "undo-chirho", textChirho: "Undo last" });
+        const advanceOnTabChirho = (eventChirho) => {
+          if (eventChirho.key !== "Tab" || eventChirho.shiftKey) return;
+          eventChirho.preventDefault();
+          focusCorrectionAfterRenderChirho = true;
+          moveIndexChirho(1);
+        };
         if (reviewStateAllowsUndoChirho()) {
           undoButtonChirho.addEventListener("click", () => undoLastChirho());
+          undoButtonChirho.addEventListener("keydown", advanceOnTabChirho);
         } else {
           undoButtonChirho.disabled = true;
+          continueButtonChirho.addEventListener("keydown", advanceOnTabChirho);
         }
         actionsChirho.appendChild(undoButtonChirho);
       } else {
@@ -3121,9 +3257,17 @@ function pageHtmlChirho(): string {
         }));
       }
       sideChirho.appendChild(actionsChirho);
+      if (segmentRepairBoxChirho !== null) {
+        sideChirho.appendChild(segmentRepairBoxChirho);
+      }
 
+      installFocusMagnifierChirho(targetWrapChirho, targetFrameChirho, sideChirho, itemChirho);
       appChirho.appendChild(leftChirho);
       appChirho.appendChild(sideChirho);
+      if (focusCorrectionAfterRenderChirho) {
+        focusCorrectionAfterRenderChirho = false;
+        window.requestAnimationFrame(focusPrimaryCorrectionChirho);
+      }
     }
     async function saveSegmentRepairProposalChirho(itemChirho, kindSelectChirho, rationaleChirho, gridChirho, resultChirho) {
       const rowsChirho = repairRowsFromGridChirho(gridChirho);
@@ -3211,6 +3355,7 @@ function pageHtmlChirho(): string {
       validationsChirho.set(itemChirho.keyChirho, dataChirho.rowChirho);
       setStatusChirho("Saved " + dataChirho.rowChirho.verdict_chirho);
       clampIndexChirho(indexChirho);
+      focusCorrectionAfterRenderChirho = true;
       renderChirho();
     }
     async function undoLastChirho() {
@@ -3233,8 +3378,13 @@ function pageHtmlChirho(): string {
       renderChirho();
     }
     document.addEventListener("keydown", (eventChirho) => {
-      if (eventChirho.target && ["TEXTAREA", "INPUT"].includes(eventChirho.target.tagName)) return;
       const keyChirho = eventChirho.key.toLowerCase();
+      if ((eventChirho.ctrlKey || eventChirho.metaKey) && keyChirho === "enter" && reviewStateAllowsSubmitChirho()) {
+        eventChirho.preventDefault();
+        submitReviewChirho();
+        return;
+      }
+      if (eventChirho.target && ["TEXTAREA", "INPUT", "SELECT"].includes(eventChirho.target.tagName)) return;
       if (keyChirho === "enter" && reviewStateAllowsSubmitChirho()) submitReviewChirho();
       if (keyChirho === "u" && reviewStateAllowsUndoChirho()) undoLastChirho();
       if (keyChirho === "arrowright") moveIndexChirho(1);

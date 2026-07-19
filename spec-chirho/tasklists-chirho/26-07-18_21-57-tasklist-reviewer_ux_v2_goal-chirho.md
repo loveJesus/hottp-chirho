@@ -31,19 +31,19 @@ fail-closed certification gate.
 
 ## Phase 1 — Lace Parity Review Surface Chirho (A, B, C, D)
 
-- [ ] Side-by-side layout: scan/line image on the left, review-and-correction
+- [x] Side-by-side layout: scan/line image on the left, review-and-correction
       column on the right, line-aligned; replace the vertical scroll layout (A).
-- [ ] Magnify-on-focus: focusing the correction (or any per-segment input)
+- [x] Magnify-on-focus: focusing the correction (or any per-segment input)
       magnifies the matching word crop in place — no popups or modals (B).
-- [ ] Keyboard flow: Tab advances to the next item needing review; saving from
+- [x] Keyboard flow: Tab advances to the next item needing review; saving from
       the keyboard works without mouse travel (D).
-- [ ] Confidence coloring over the full reconstructed line text: green =
+- [x] Confidence coloring over the full reconstructed line text: green =
       certain, yellow = atypical/borderline, red-pink = questionable or no
       canonical match — surrounding French visibly checked too, not only
       segment chips (C).
-- [ ] Keep the 4-case "How to review this item" guide adjacent to the new
+- [x] Keep the 4-case "How to review this item" guide adjacent to the new
       layout without re-crowding the first screen.
-- [ ] Update guard snippets in lockstep with any copy/layout change; never
+- [x] Update guard snippets in lockstep with any copy/layout change; never
       reduce the safety-bearing pins (clean-certification semantics, red-box
       meaning, boundary note).
 
