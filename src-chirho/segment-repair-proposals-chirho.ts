@@ -3,11 +3,37 @@
 import { existsSync, readFileSync } from "fs";
 
 import { writeJsonAtomicChirho } from "./atomic-json-chirho.ts";
+import { withSegmentRepairStoreLockChirho } from "./segment-repair-store-lock-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import { normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 export const SEGMENT_REPAIR_PROPOSAL_SCHEMA_VERSION_CHIRHO = 1;
 export const SEGMENT_REPAIR_PROPOSAL_STATUS_DRAFT_CHIRHO = "draft-chirho";
+export const SEGMENT_REPAIR_PROPOSAL_STATUS_APPROVED_CHIRHO = "approved-chirho";
+export const SEGMENT_REPAIR_PROPOSAL_STATUS_REJECTED_CHIRHO = "rejected-chirho";
+export const SEGMENT_REPAIR_PROPOSAL_STATUS_APPLIED_CHIRHO = "applied-chirho";
+export const SEGMENT_REPAIR_PROPOSAL_STATUS_REVERTED_CHIRHO = "reverted-chirho";
+
+export const SEGMENT_REPAIR_PROPOSAL_STATUS_VALUES_CHIRHO = [
+  SEGMENT_REPAIR_PROPOSAL_STATUS_DRAFT_CHIRHO,
+  SEGMENT_REPAIR_PROPOSAL_STATUS_APPROVED_CHIRHO,
+  SEGMENT_REPAIR_PROPOSAL_STATUS_REJECTED_CHIRHO,
+  SEGMENT_REPAIR_PROPOSAL_STATUS_APPLIED_CHIRHO,
+  SEGMENT_REPAIR_PROPOSAL_STATUS_REVERTED_CHIRHO,
+] as const;
+
+export type SegmentRepairProposalStatusChirho = (typeof SEGMENT_REPAIR_PROPOSAL_STATUS_VALUES_CHIRHO)[number];
+
+// One-way lifecycle: a draft is decided (approved/rejected) by a human, an
+// approved proposal may be applied to the live span files, and an applied
+// proposal may only move to reverted through the documented reverse path.
+const SEGMENT_REPAIR_STATUS_TRANSITIONS_CHIRHO: Record<SegmentRepairProposalStatusChirho, SegmentRepairProposalStatusChirho[]> = {
+  "draft-chirho": [SEGMENT_REPAIR_PROPOSAL_STATUS_APPROVED_CHIRHO, SEGMENT_REPAIR_PROPOSAL_STATUS_REJECTED_CHIRHO],
+  "approved-chirho": [SEGMENT_REPAIR_PROPOSAL_STATUS_APPLIED_CHIRHO],
+  "rejected-chirho": [],
+  "applied-chirho": [SEGMENT_REPAIR_PROPOSAL_STATUS_REVERTED_CHIRHO],
+  "reverted-chirho": [],
+};
 
 export const SEGMENT_REPAIR_KIND_VALUES_CHIRHO = [
   "split-chirho",
@@ -65,7 +91,7 @@ export interface SegmentRepairProposalSpanChirho {
 export interface SegmentRepairProposalRecordChirho {
   schemaVersionChirho: typeof SEGMENT_REPAIR_PROPOSAL_SCHEMA_VERSION_CHIRHO;
   proposalIdChirho: string;
-  statusChirho: typeof SEGMENT_REPAIR_PROPOSAL_STATUS_DRAFT_CHIRHO;
+  statusChirho: SegmentRepairProposalStatusChirho;
   repairKindChirho: SegmentRepairKindChirho;
   reviewerChirho: string;
   rationaleChirho: string;
@@ -82,9 +108,19 @@ export interface SegmentRepairProposalRecordChirho {
   oldSpansChirho: SegmentRepairProposalSpanChirho[];
   proposedSpansChirho: SegmentRepairProposalSpanChirho[];
   notesChirho: string;
+  decidedAtChirho?: string;
+  decidedByChirho?: string;
+  decisionRationaleChirho?: string;
+  appliedAtChirho?: string;
+  appliedByChirho?: string;
+  applyBackupDirChirho?: string;
+  appliedLineFileSha256Chirho?: string;
+  revertedAtChirho?: string;
+  revertedByChirho?: string;
+  revertRationaleChirho?: string;
 }
 
-interface SegmentRepairProposalStoreChirho {
+export interface SegmentRepairProposalStoreChirho {
   schemaVersionChirho: typeof SEGMENT_REPAIR_PROPOSAL_SCHEMA_VERSION_CHIRHO;
   proposalsChirho: SegmentRepairProposalRecordChirho[];
 }
@@ -174,7 +210,7 @@ export function validateSegmentRepairProposalSpansChirho(
   return { proposedSpansChirho, lineTextPreviewChirho };
 }
 
-function loadSegmentRepairProposalStoreChirho(pathChirho: string): SegmentRepairProposalStoreChirho {
+export function loadSegmentRepairProposalStoreChirho(pathChirho: string): SegmentRepairProposalStoreChirho {
   if (!existsSync(pathChirho)) {
     return {
       schemaVersionChirho: SEGMENT_REPAIR_PROPOSAL_SCHEMA_VERSION_CHIRHO,
@@ -191,10 +227,62 @@ function loadSegmentRepairProposalStoreChirho(pathChirho: string): SegmentRepair
   return parsedChirho as SegmentRepairProposalStoreChirho;
 }
 
+export function assertSegmentRepairStatusTransitionChirho(
+  fromChirho: SegmentRepairProposalStatusChirho,
+  toChirho: SegmentRepairProposalStatusChirho
+): void {
+  const allowedChirho = SEGMENT_REPAIR_STATUS_TRANSITIONS_CHIRHO[fromChirho] ?? [];
+  if (!allowedChirho.includes(toChirho)) {
+    throw new Error(`segment repair proposal cannot move from ${fromChirho} to ${toChirho}`);
+  }
+}
+
 export function appendSegmentRepairProposalChirho(pathChirho: string, proposalChirho: SegmentRepairProposalRecordChirho): void {
-  const storeChirho = loadSegmentRepairProposalStoreChirho(pathChirho);
-  writeJsonAtomicChirho(pathChirho, {
-    schemaVersionChirho: SEGMENT_REPAIR_PROPOSAL_SCHEMA_VERSION_CHIRHO,
-    proposalsChirho: [...storeChirho.proposalsChirho, proposalChirho],
+  withSegmentRepairStoreLockChirho(pathChirho, `append-${proposalChirho.proposalIdChirho}`, () => {
+    const storeChirho = loadSegmentRepairProposalStoreChirho(pathChirho);
+    if (storeChirho.proposalsChirho.some((existingChirho) => existingChirho.proposalIdChirho === proposalChirho.proposalIdChirho)) {
+      throw new Error(`segment repair proposal id already exists: ${proposalChirho.proposalIdChirho}`);
+    }
+    writeJsonAtomicChirho(pathChirho, {
+      schemaVersionChirho: SEGMENT_REPAIR_PROPOSAL_SCHEMA_VERSION_CHIRHO,
+      proposalsChirho: [...storeChirho.proposalsChirho, proposalChirho],
+    });
+  });
+}
+
+/**
+ * Locked read-modify-write of one proposal record. The mutator receives the
+ * current record and returns the replacement; a status change must be a legal
+ * lifecycle transition (asserted here, not left to callers).
+ */
+export function updateSegmentRepairProposalChirho(
+  pathChirho: string,
+  proposalIdChirho: string,
+  ownerChirho: string,
+  mutateChirho: (proposalChirho: SegmentRepairProposalRecordChirho) => SegmentRepairProposalRecordChirho
+): SegmentRepairProposalRecordChirho {
+  return withSegmentRepairStoreLockChirho(pathChirho, ownerChirho, () => {
+    const storeChirho = loadSegmentRepairProposalStoreChirho(pathChirho);
+    const indexChirho = storeChirho.proposalsChirho.findIndex(
+      (proposalChirho) => proposalChirho.proposalIdChirho === proposalIdChirho
+    );
+    if (indexChirho < 0) {
+      throw new Error(`segment repair proposal not found: ${proposalIdChirho}`);
+    }
+    const currentChirho = storeChirho.proposalsChirho[indexChirho]!;
+    const updatedChirho = mutateChirho(currentChirho);
+    if (updatedChirho.proposalIdChirho !== currentChirho.proposalIdChirho) {
+      throw new Error("segment repair proposal id cannot change during update");
+    }
+    if (updatedChirho.statusChirho !== currentChirho.statusChirho) {
+      assertSegmentRepairStatusTransitionChirho(currentChirho.statusChirho, updatedChirho.statusChirho);
+    }
+    const proposalsChirho = [...storeChirho.proposalsChirho];
+    proposalsChirho[indexChirho] = updatedChirho;
+    writeJsonAtomicChirho(pathChirho, {
+      schemaVersionChirho: SEGMENT_REPAIR_PROPOSAL_SCHEMA_VERSION_CHIRHO,
+      proposalsChirho,
+    });
+    return updatedChirho;
   });
 }

@@ -10,7 +10,8 @@ import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 export type ReviewServerKeyChirho =
   | "raw-hebrew-chirho"
   | "latin-symbol-chirho"
-  | "expert-non-latin-chirho";
+  | "expert-non-latin-chirho"
+  | "segment-repair-approval-chirho";
 
 export interface ReviewServerSourceFingerprintChirho {
   sourceFingerprintChirho: string;
@@ -78,6 +79,18 @@ const REVIEW_SERVER_SOURCE_FILES_BY_KEY_CHIRHO: Record<ReviewServerKeyChirho, re
     "src-chirho/vision-tier-expert-confirmation-policy-chirho.ts",
     "src-chirho/vision-tier-expert-live-items-chirho.ts",
     "src-chirho/packet-image-fingerprint-chirho.ts",
+    "src-chirho/span-nfc-chirho.ts",
+    "src-chirho/template-placeholder-chirho.ts",
+    "src-chirho/atomic-json-chirho.ts",
+  ],
+  "segment-repair-approval-chirho": [
+    ...COMMON_REVIEW_SERVER_SOURCE_FILES_CHIRHO,
+    "src-chirho/segment-repair-approval-server-chirho.ts",
+    "src-chirho/segment-repair-apply-chirho.ts",
+    "src-chirho/segment-repair-proposals-chirho.ts",
+    "src-chirho/segment-repair-store-lock-chirho.ts",
+    "src-chirho/pass-c-human-validation-backup-chirho.ts",
+    "src-chirho/span-line-text-chirho.ts",
     "src-chirho/span-nfc-chirho.ts",
     "src-chirho/template-placeholder-chirho.ts",
     "src-chirho/atomic-json-chirho.ts",

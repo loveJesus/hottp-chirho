@@ -79,24 +79,39 @@ fail-closed certification gate.
 Today `segment-repair-proposals-chirho.ts` stores drafts only; nothing can land
 an approved repair. Close that gap.
 
-- [ ] Approval queue UI: list draft proposals with target crop, full line,
+- [x] Approval queue UI: list draft proposals with target crop, full line,
       old spans, proposed spans, and exact geometry side by side.
-- [ ] Approve / reject with server-authoritative attribution; approval never
-      certifies text by itself.
-- [ ] Apply path: an approved proposal rewrites the live spans atomically with
+      (segment-repair-approval-server-chirho.ts, station on :8772; all 26
+      parked drafts render apply-ready against the live tree, Playwright-eyed)
+- [x] Approve / reject with server-authoritative attribution; approval never
+      certifies text by itself. (trusted-header identity + certifying human
+      guard; machine drafter allowed, machine approver 400-refused; decision
+      recorded on the proposal, no data change — guard-proven)
+- [x] Apply path: an approved proposal rewrites the live spans atomically with
       a backup written first and a documented reverse path.
-- [ ] Applying correctly invalidates or preserves existing validations for the
+      (segment-repair-apply-chirho.ts backup-first + manifest;
+      revert-segment-repair-chirho.ts restores byte-exact — guard-proven,
+      incl. the real store lock replacing the announce-window protocol)
+- [x] Applying correctly invalidates or preserves existing validations for the
       touched line (stale-hash rules decide; nothing silently stays certified
-      against changed geometry).
-- [ ] Apply refuses stale line-image hash, stale text, or non-contiguous
+      against changed geometry). (rule: a current row survives iff its segment
+      is identical before/after at the same index; everything else gets a
+      non-certifying tombstone superseding the segment's current rows —
+      split/index-shift cases guard-proven)
+- [x] Apply refuses stale line-image hash, stale text, or non-contiguous
       tiling; certification gate output changes only through legitimate review
-      state transitions.
+      state transitions. (segmentRepairLiveStateChirho shared by UI readiness
+      and the apply gate; tamper + corrupted-tiling refusals guard-proven;
+      check-segment-repair-approval-server-guards-chirho.ts runs inside
+      check-certification-chirho)
 
 ## Phase 5 — Swallowed-Hebrew Data Sweep Chirho (Q)
 
 - [ ] Fix vol 3 p151 L36 S2 through the repair lane: red box sits on printed
       טפח while the stored span text is גבול; the printed גבול was swallowed by
       the French segment (stored line text garbles it as "pour 13,").
+      (UNBLOCKED: the draft renders apply-ready on the :8772 approval station;
+      needs a human approve + apply — machines cannot approve by design)
 - [x] Build the sweep: flag French/Latin segments whose stored text contains
       garbled digit-runs / mojibake where the print likely shows Hebrew
       (cross-check with CRNN witness reads on the corresponding crop x-ranges).
@@ -107,6 +122,8 @@ an approved repair. Close that gap.
       two-agent מָדַד confirmation, 5:150:10:3 routed to the expert print check)
 - [ ] Land the fixes through the Phase 4 apply lane; re-run certification
       status and confirm any count movement is legitimate review work.
+      (UNBLOCKED: all 26 drafts verified apply-ready 2026-08-13; awaiting
+      L.J.'s approve/apply decisions on the station)
 
 ## Phase 6 — Rollout To Andrew Chirho (P)
 

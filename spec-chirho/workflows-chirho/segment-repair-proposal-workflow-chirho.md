@@ -14,7 +14,7 @@ flowchart TD
   GeometryOkChirho{Rows are positive-width, contiguous, and cover full line?}
   SaveDraftChirho[Save draft repair proposal]
   NoLiveChangeChirho[Live spans and certification rows remain unchanged]
-  LaterApplyChirho[Separate audited apply path may implement proposal after review]
+  LaterApplyChirho[Audited apply lane implements approved proposals: see segment-repair-apply-lane-chirho.md]
   FixRowsChirho[Fix geometry or text proposal]
 
   OpenRawChirho --> FindProblemChirho

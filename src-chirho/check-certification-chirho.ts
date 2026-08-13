@@ -57,6 +57,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
     argsChirho: [process.execPath, "run", "check-pass-c-human-apply-cli-guards-chirho"],
   },
   {
+    labelChirho: "Segment repair approval server guards",
+    argsChirho: [process.execPath, "run", "check-segment-repair-approval-server-guards-chirho"],
+  },
+  {
     labelChirho: "Pass-C human reattribution CLI guards",
     argsChirho: [process.execPath, "run", "check-pass-c-human-reattribution-cli-guards-chirho"],
   },
