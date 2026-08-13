@@ -147,9 +147,18 @@ an approved repair. Close that gap.
       write-capable path, and zero visible "-chirho" in reviewer-facing text.
 - [ ] `bun run check` and `bun run build` in `app-chirho`; `git diff --check`
       clean; typecheck-certification clean.
-- [ ] Redeploy changed stations to the VPS via the leased sync-out ritual
+- [x] Redeploy changed stations to the VPS via the leased sync-out ritual
       (stopped writers, decision + lease cited) and pass one remote smoke per
-      changed station.
+      changed station. (2026-08-13: fresh lease
+      human-review-vps-write-lease-2026-08-13-cx33-chirho.json + July decision
+      cited; remote services stopped + both WALs truncated + local ports
+      verified before rsync; all four stations restarted 21:12Z on the synced
+      tree incl. the NEW repair-approval station at
+      https://repair-approval.bible.systems behind its own L.J.-only
+      credential (shared review login cannot reach it); smokes: unauth 401 /
+      wrong-password 401 / authed 200 with all 26 draft cards / unauth POST
+      401 on repair-approval, unauth 401 on raw/latin/expert, all four origin
+      health keys current)
 
 ## Definition Of Done Chirho
 
