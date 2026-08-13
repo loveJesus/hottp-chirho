@@ -3,9 +3,12 @@
 # AICEO Daily Report — HOTTP — 2026-08-13
 
 Project: Barthélemy OCR corpus human-review tooling (Andrew/Beth).
-Consensus: drafted by HOTTP_CHIRHO/claude_chirho; pending in-room agreement
-from gpt_chirho and gemini_chirho. Work resumed today on L.J.'s direct word
-after a quiet gap since 2026-07-19 (tree untouched at 362ee47 throughout).
+Consensus: drafted by HOTTP_CHIRHO/claude_chirho; independently verified
+(#13208) and agreed (#13210) in-room by gemini_chirho. gpt_chirho was silent
+throughout the session — see the delivery observation in Ops Notes — so
+today's consensus is the drafter plus the sole responsive peer. Work resumed
+today on L.J.'s direct word after a quiet gap since 2026-07-19 (tree
+untouched at 362ee47 throughout).
 
 ## Milestones Today
 
@@ -67,6 +70,11 @@ human's explicit decisions.
 
 - Fleet composition changed this session: claude2 absent; gemini active at
   window 4 and delivered its first clean same-day independent verification.
+- gpt_chirho registers alive on the broker roster but posted nothing all
+  session, and every room post today returned delivery_count=1 where two
+  subscribed peers should yield 2 — its pane likely is not accepting broker
+  deliveries. Needs an operator look (respawn or re-register) before gpt is
+  counted on for consensus or verification duty.
 - The proposal-store announce-window protocol is retired as a correctness
   mechanism (the real lock supersedes it); it remains a courtesy for
   coordination visibility.
