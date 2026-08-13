@@ -1,0 +1,16 @@
+{
+  "schema_version_chirho": 1,
+  "completed_chirho": true,
+  "lease_id_chirho": "2026-08-13-cx33-human-review-write-lease-chirho",
+  "recorded_at_chirho": "2026-08-13T17:40:00Z",
+  "recorded_by_chirho": "claude-fable5-chirho",
+  "owner_approval_reference_chirho": "chat-2026-07-03-user-said-do-cx33-chirho-and-chat-2026-07-04-user-said-attach-domain-too-chirho",
+  "writer_host_chirho": "195.201.101.25",
+  "canonical_writer_chirho": "vps-human-review-chirho",
+  "local_writes_paused_chirho": true,
+  "remote_review_servers_stopped_chirho": true,
+  "sqlite_checkpoint_or_stop_chirho": "stopped-review-servers-chirho",
+  "pull_strategy_chirho": "json-replay-with-quarantined-sqlite-chirho",
+  "expires_at_chirho": "2026-08-15T17:40:00Z",
+  "notes_chirho": "2026-08-13 redeploy on L.J.'s direct requests: 'please deploy our latest changes' and 'Expose it on the VPS too' for the new segment-repair approval station behind a separate approval-only credential. All three remote review services stopped and the remote progress DB WAL checkpoint-truncated before sync-out; local write ports 8766-8772 verified closed and the local WAL truncated. Remote validation rows 13-14 are L.J.'s own 2026-07-18 smoke pair (one review immediately undone, net no review meaning); they were deliberately not json-replayed in July and the quarantined snapshot remains their forensic record, so this sync-out supersedes them per that precedent. No new billable resources; one new DNS record (repair-approval.bible.systems) on the already-approved attached domain, per L.J.'s explicit exposure instruction."
+}

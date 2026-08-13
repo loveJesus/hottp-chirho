@@ -34,11 +34,16 @@ const EXPERT_SERVICE_TEMPLATE_PATH_CHIRHO = join(
   TEMPLATE_DIR_CHIRHO,
   "human-review-expert-non-latin-2026-07-02-chirho.service"
 );
+const REPAIR_APPROVAL_SERVICE_TEMPLATE_PATH_CHIRHO = join(
+  TEMPLATE_DIR_CHIRHO,
+  "human-review-repair-approval-2026-08-13-chirho.service"
+);
 
 const REVIEW_UPSTREAMS_CHIRHO = [
   { hostChirho: "raw-review.example-chirho.org", portChirho: 8766 },
   { hostChirho: "latin-review.example-chirho.org", portChirho: 8770 },
   { hostChirho: "expert-review.example-chirho.org", portChirho: 8771 },
+  { hostChirho: "repair-approval.example-chirho.org", portChirho: 8772 },
 ] as const;
 
 const REQUIRED_ENV_KEYS_CHIRHO = [
@@ -46,6 +51,8 @@ const REQUIRED_ENV_KEYS_CHIRHO = [
   "HOTTP_REVIEW_PASSWORD_HASH_CHIRHO",
   "HOTTP_REVIEW_FALLBACK_REVIEWER_CHIRHO",
   "HOTTP_TRUSTED_REVIEWER_HEADER_CHIRHO",
+  "HOTTP_APPROVAL_USER_CHIRHO",
+  "HOTTP_APPROVAL_PASSWORD_HASH_CHIRHO",
 ] as const;
 
 const REVIEW_SERVICE_TEMPLATES_CHIRHO = [
@@ -53,19 +60,41 @@ const REVIEW_SERVICE_TEMPLATES_CHIRHO = [
     labelChirho: "raw review systemd service",
     pathChirho: RAW_SERVICE_TEMPLATE_PATH_CHIRHO,
     commandChirho: "bun run pass-c-human-validate-chirho",
-    forbiddenCommandsChirho: ["latin-symbol-vision-review-chirho", "vision-tier-expert-review-chirho"],
+    forbiddenCommandsChirho: [
+      "latin-symbol-vision-review-chirho",
+      "vision-tier-expert-review-chirho",
+      "segment-repair-approval-chirho",
+    ],
   },
   {
     labelChirho: "Latin/symbol review systemd service",
     pathChirho: LATIN_SYMBOL_SERVICE_TEMPLATE_PATH_CHIRHO,
     commandChirho: "bun run latin-symbol-vision-review-chirho",
-    forbiddenCommandsChirho: ["pass-c-human-validate-chirho", "vision-tier-expert-review-chirho"],
+    forbiddenCommandsChirho: [
+      "pass-c-human-validate-chirho",
+      "vision-tier-expert-review-chirho",
+      "segment-repair-approval-chirho",
+    ],
   },
   {
     labelChirho: "expert review systemd service",
     pathChirho: EXPERT_SERVICE_TEMPLATE_PATH_CHIRHO,
     commandChirho: "bun run vision-tier-expert-review-chirho",
-    forbiddenCommandsChirho: ["pass-c-human-validate-chirho", "latin-symbol-vision-review-chirho"],
+    forbiddenCommandsChirho: [
+      "pass-c-human-validate-chirho",
+      "latin-symbol-vision-review-chirho",
+      "segment-repair-approval-chirho",
+    ],
+  },
+  {
+    labelChirho: "segment repair approval systemd service",
+    pathChirho: REPAIR_APPROVAL_SERVICE_TEMPLATE_PATH_CHIRHO,
+    commandChirho: "bun run segment-repair-approval-chirho",
+    forbiddenCommandsChirho: [
+      "pass-c-human-validate-chirho",
+      "latin-symbol-vision-review-chirho",
+      "vision-tier-expert-review-chirho",
+    ],
   },
 ] as const;
 
@@ -92,6 +121,8 @@ function assertCaddyTemplateChirho(sourceChirho: string): void {
   assertIncludesChirho(sourceChirho, "basic_auth", "Caddy template");
   assertIncludesChirho(sourceChirho, "{$HOTTP_REVIEW_USER_CHIRHO}", "Caddy template");
   assertIncludesChirho(sourceChirho, "{$HOTTP_REVIEW_PASSWORD_HASH_CHIRHO}", "Caddy template");
+  assertIncludesChirho(sourceChirho, "{$HOTTP_APPROVAL_USER_CHIRHO}", "Caddy template");
+  assertIncludesChirho(sourceChirho, "{$HOTTP_APPROVAL_PASSWORD_HASH_CHIRHO}", "Caddy template");
   for (const upstreamChirho of REVIEW_UPSTREAMS_CHIRHO) {
     assertIncludesChirho(sourceChirho, `https://${upstreamChirho.hostChirho}`, "Caddy template");
     assertIncludesChirho(sourceChirho, `reverse_proxy 127.0.0.1:${upstreamChirho.portChirho}`, "Caddy template");

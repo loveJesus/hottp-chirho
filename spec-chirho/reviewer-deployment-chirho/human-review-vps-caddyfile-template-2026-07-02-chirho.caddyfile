@@ -21,6 +21,15 @@
   }
 }
 
+# The repair-approval station carries write authority over live span data, so
+# it authenticates with its own credential: the shared review login cannot
+# reach it, and the basic-auth username becomes the approver attribution.
+(hottp_approval_auth_chirho) {
+  basic_auth {
+    {$HOTTP_APPROVAL_USER_CHIRHO} {$HOTTP_APPROVAL_PASSWORD_HASH_CHIRHO}
+  }
+}
+
 https://raw-review.example-chirho.org {
   import hottp_review_origin_tls_chirho
   import hottp_review_auth_chirho
@@ -43,6 +52,15 @@ https://expert-review.example-chirho.org {
   import hottp_review_origin_tls_chirho
   import hottp_review_auth_chirho
   reverse_proxy 127.0.0.1:8771 {
+    header_up -Cf-Access-Authenticated-User-Email
+    header_up X-Webauth-User {http.auth.user.id}
+  }
+}
+
+https://repair-approval.example-chirho.org {
+  import hottp_review_origin_tls_chirho
+  import hottp_approval_auth_chirho
+  reverse_proxy 127.0.0.1:8772 {
     header_up -Cf-Access-Authenticated-User-Email
     header_up X-Webauth-User {http.auth.user.id}
   }
