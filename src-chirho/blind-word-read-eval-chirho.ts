@@ -9,8 +9,13 @@
  *   2. The reader (human or vision model) looks at each crop and records a
  *      reading into a JSON array of { cropChirho, readingChirho }.
  *   3. `score` joins the locked readings with the manifest and prints
- *      consonantal exact-match and character accuracy — comparable to the
- *      CRNN's held-out gold numbers (char 0.978 / exact 0.911).
+ *      consonantal exact-match and character accuracy, alongside the CRNN's
+ *      held-out number on the same gold.
+ *
+ * CAVEAT (2026-08-19): that gold carries no print witness — it is tesseract's
+ * reading admitted by WLC membership, and >=10 of 308 GOLD_STRICT labels are
+ * proven wrong. Neither side of this comparison is certified print accuracy.
+ * See spec-chirho/ocr-witness-chirho/gold-set-label-integrity-2026-08-19-chirho.md
  *
  *   bun run src-chirho/blind-word-read-eval-chirho.ts sample --count-chirho=40
  *   bun run src-chirho/blind-word-read-eval-chirho.ts score --reads-chirho=<path>
@@ -191,7 +196,9 @@ function scoreChirho(argsChirho: string[]): void {
   const exactRateChirho = exactChirho / readsChirho.length;
   const charRateChirho = charNumeratorChirho / charDenominatorChirho;
   console.log(
-    `n=${readsChirho.length} exact=${exactChirho} exactRate=${exactRateChirho.toFixed(3)} charAccuracy=${charRateChirho.toFixed(3)} (CRNN held-out gold: exact 0.911 / char 0.978)`
+    `n=${readsChirho.length} exact=${exactChirho} exactRate=${exactRateChirho.toFixed(3)} charAccuracy=${charRateChirho.toFixed(3)} ` +
+      `(CRNN on the same gold, checkpoint aa7a0ff9: exact 0.919 / char 0.972 — ` +
+      `agreement with tesseract-derived labels, NOT certified print accuracy)`
   );
 }
 

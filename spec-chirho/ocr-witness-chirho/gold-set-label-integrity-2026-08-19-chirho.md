@@ -9,9 +9,16 @@ gold set that prices *both* numbers.
 ## 1. The defect
 
 `mint_gold_set_chirho.py` mints gold as: **tesseract text whose consonant
-skeleton is an exact WLC word form**. `goldConsonantsChirho` is byte-identical
-to `tessTextChirho` in every record. The WLC check proves the string is *a*
-real Hebrew word — never that it is *the word printed in this crop*.
+skeleton is an exact WLC word form**. `goldConsonantsChirho` is the *normalized
+skeleton* of `tessTextChirho` — skeleton-equal in 629/629 records, byte-equal in
+only 112/629 (the rest differ by stripped RLM marks and folded final forms).
+Either way there is **no print witness anywhere in the mint path**: the WLC check
+proves the string is *a* real Hebrew word, never that it is *the word printed in
+this crop*.
+
+(An earlier revision of this file said "byte-identical in every record". That was
+wrong — corrected after `gpt_chirho`'s independent audit; the substantive point,
+that gold carries no print witness, is unchanged.)
 
 So any tesseract misread that happens to land on another valid WLC form is
 silently canonised as GOLD_STRICT.
@@ -64,21 +71,50 @@ and inspected the pixels without being given the gold values first
 The control held: opposite verdicts on the two crops, matching the claims made
 here before verification. Two independent readers, same conclusion.
 
+`gpt_chirho` then ran a separate audit (broker #14349, evidence in
+`gold-set-independent-audit-2026-08-20-chirho.md`): re-cut p0150 and p0308 from
+the source pages (ImageMagick AE=0 against the corpus crops, so the crops do
+match their manifest bboxes) and independently confirmed both bad labels. That
+audit also produced the two corrections applied above — the byte-equality
+wording and the withdrawal of the quantitative inflation claim. Both were
+verified here before adopting them.
+
 ## 2. Why it inflates the CRNN headline
 
 `train_word_ocr_chirho.py:227` fine-tunes on `goldConsonantsChirho` and scores
 against `goldConsonantsChirho` from the same manifest. Train signal and eval
 signal share the defect, so the error is invisible to the metric.
 
-Probed the trained `crnn-chirho.pt` directly on the ten proven-wrong crops:
+Probed the trained `crnn-chirho.pt` (sha256 `aa7a0ff937c3a38d`) directly on the
+ten proven-wrong crops: **9 of 10 — the CRNN emits the corrupt tesseract
+reading.**
 
-**9 of 10 — the CRNN emits the corrupt tesseract reading. 1 of 10 it reads
-correctly.** Each of those nine scores as *correct* against gold.
+Split membership (verified): **8 of the 10 are in the training split, 2 are
+held out.** The eight training cases prove the *learned target* is contaminated —
+the model was taught tesseract's misreads as truth. That claim stands.
 
-So **exact 0.911 / char 0.978 measures agreement-with-tesseract-filtered-by-WLC,
-not agreement with the print**, and overstates print accuracy by roughly the
-corrupt-label rate (≥3%). The bias is directional: it rewards the CRNN for
-reproducing the error and penalises any independent reader that reads correctly.
+**They do not quantify held-out metric inflation, and an earlier revision of this
+file wrongly asserted that they did.** The two held-out defects point in opposite
+directions:
+
+| crop | gold | CRNN emits | print truth | effect on the metric |
+|---|---|---|---|---|
+| p0150-x1217-y1462 | ולאמר | ולאמר | ויאמר | **false pass** (scored right, actually wrong) |
+| p0308-x497-y609 | ולשכב | וישכב | וישכב | **false fail** (scored wrong, actually right) |
+
+They cancel. Correcting both leaves the held-out score unchanged.
+
+Reproduced from the live checkpoint this session:
+**exact 79/86 = 0.9186, char 0.9719.** Note this is *not* the 0.911 / 0.978 pair
+carried in project memory and hardcoded in the eval harness banner; that pair
+does not reproduce against this checkpoint and lacks the provenance to bind it.
+
+The defensible conclusion is therefore qualitative, not numeric:
+**the headline measures agreement with tesseract-derived, WLC-filtered labels —
+not certified print accuracy.** The direction and magnitude of the held-out
+effect are *unknown* and stay unknown until the full held-out split is
+witness-relabelled. Independent readers are still penalised on the specific
+corrupt items, which is why the reader corrections in §3 stand.
 
 `load_pseudo_gold_chirho` compounds this — it promotes "CRNN high-confidence
 WLC-exact reads" to training labels through the same filter that admitted the
@@ -93,7 +129,7 @@ the Opus 5 session context, so Opus 5 drew provably disjoint samples
 
 | reader | input | exact | char | corrected exact |
 |---|---|---|---|---|
-| CRNN (held-out gold) | native crop | 0.911 | 0.978 | ~0.88 (see §2) |
+| CRNN (held-out gold) | native crop | 0.9186 | 0.9719 | unknown — see §2 |
 | Fable 5 | native crop | 0.800 | 0.939 | **0.900** (4 bad labels in its 40) |
 | Opus 5 | native crop | 0.675 | 0.874 | 0.700 (1 bad label) |
 | Opus 5 | 6x LANCZOS upscale | **0.850** | **0.957** | 0.850 (0 bad labels) |
@@ -125,7 +161,8 @@ printed), `ותאמרו`→ותאמר (dropped final vav), `מצרימ`→העצ
 3. Re-cut crops with vertical padding (or reject crops with ink on row 0) so
    ascenders are not clipped and neighbouring-line bleed is separable.
 4. Re-state the CRNN metric against a witness-agreed gold before it is used in
-   any completion or certification claim.
+   any completion or certification claim, and re-derive the headline pair from a
+   named checkpoint rather than carrying it forward by memory.
 5. Treat `load_pseudo_gold_chirho` as suspect until (2) lands.
 
 ## Artifacts
