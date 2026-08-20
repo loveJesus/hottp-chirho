@@ -35,7 +35,7 @@ if str(Path(__file__).resolve().parent) not in sys.path:
 
 from train_word_ocr_chirho import (
     CRNNChirho, IDX_TO_CHAR_CHIRHO, NUM_CLASSES_CHIRHO, MODEL_OUT_CHIRHO,
-    img_to_tensor_chirho, device_chirho, collate_chirho)
+    img_to_tensor_chirho, device_chirho, collate_chirho, valid_timesteps_chirho)
 from audit_canonical_recon_chirho import (
     load_wlc_validators_chirho, skeleton_in_wlc_chirho)
 
@@ -45,15 +45,22 @@ CORPUS_DIR_CHIRHO = (PROJECT_ROOT_CHIRHO / "workspace-chirho"
                      / "hebrew-corpus-chirho")
 
 
-def decode_with_conf_chirho(logits_chirho):
+def decode_with_conf_chirho(logits_chirho, widths_chirho=None):
     """(B,T,C) -> list of (reading_string, confidence). Confidence =
-    mean max-softmax over the timesteps that EMIT a character."""
+    mean max-softmax over the timesteps that EMIT a character.
+
+    `widths_chirho` = true pre-padding pixel widths; without it a padded batch
+    decodes across its widest member and reads become batch-size dependent
+    (see greedy_decode_chirho)."""
     probs_chirho = logits_chirho.softmax(dim=2)
     maxp_chirho, idx_chirho = probs_chirho.max(dim=2)
     idx_np_chirho = idx_chirho.cpu().numpy()
     maxp_np_chirho = maxp_chirho.cpu().numpy()
     out_chirho = []
-    for row_chirho, pr_chirho in zip(idx_np_chirho, maxp_np_chirho):
+    for row_index_chirho, (row_chirho, pr_chirho) in enumerate(zip(idx_np_chirho, maxp_np_chirho)):
+        if widths_chirho is not None:
+            limit_chirho = valid_timesteps_chirho(widths_chirho[row_index_chirho])
+            row_chirho, pr_chirho = row_chirho[:limit_chirho], pr_chirho[:limit_chirho]
         prev_chirho, chars_chirho, confs_chirho = 0, [], []
         for t_chirho, v_chirho in enumerate(row_chirho):
             if v_chirho != 0 and v_chirho != prev_chirho:
@@ -112,9 +119,9 @@ def main_chirho():
         if batch_chirho is None:
             continue
         with torch.no_grad():
-            logits_chirho = model_chirho(batch_chirho[0].to(dev_chirho))
+            logits_chirho = model_chirho(batch_chirho[0].to(dev_chirho), batch_chirho[3])
         for p_chirho, (reading_chirho, conf_chirho) in zip(
-                chunk_chirho, decode_with_conf_chirho(logits_chirho)):
+                chunk_chirho, decode_with_conf_chirho(logits_chirho, batch_chirho[3])):
             verdict_chirho, _ = skeleton_in_wlc_chirho(
                 reading_chirho, word_skel_chirho, verse_blob_chirho)
             preds_chirho.append((p_chirho.name, reading_chirho,

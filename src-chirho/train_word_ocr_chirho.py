@@ -159,11 +159,26 @@ class CRNNChirho(nn.Module):
                                   bidirectional=True, batch_first=True)
         self.head_chirho = nn.Linear(512, num_classes_chirho)
 
-    def forward(self, x_chirho):                  # x: (B,1,H,W)
+    def forward(self, x_chirho, widths_chirho=None):   # x: (B,1,H,W)
         f_chirho = self.cnn_chirho(x_chirho)       # (B,256,H',W')
         f_chirho = self.collapse_chirho(f_chirho)  # (B,256,1,W')
         f_chirho = f_chirho.squeeze(2).permute(0, 2, 1)  # (B,W',256)
-        f_chirho, _ = self.rnn_chirho(f_chirho)    # (B,W',512)
+        if widths_chirho is None:
+            f_chirho, _ = self.rnn_chirho(f_chirho)      # (B,W',512)
+        else:
+            # The RNN is BIDIRECTIONAL, so its backward pass begins inside the
+            # right-padding and carries that state into the real timesteps.
+            # Truncating after the fact does not undo it — the padding has to be
+            # kept out of the RNN. Packing makes a batched read identical to the
+            # same crop read alone (audited 2026-08-20).
+            lens_chirho = torch.tensor(
+                [valid_timesteps_chirho(w_chirho) for w_chirho in widths_chirho],
+                dtype=torch.long)
+            packed_chirho = nn.utils.rnn.pack_padded_sequence(
+                f_chirho, lens_chirho, batch_first=True, enforce_sorted=False)
+            packed_chirho, _ = self.rnn_chirho(packed_chirho)
+            f_chirho, _ = nn.utils.rnn.pad_packed_sequence(
+                packed_chirho, batch_first=True, total_length=f_chirho.shape[1])
         return self.head_chirho(f_chirho)          # (B,W',C)
 
 
@@ -173,7 +188,8 @@ def collate_chirho(batch_chirho):
                     if b_chirho[0] is not None and len(b_chirho[1]) > 0]
     if not batch_chirho:
         return None
-    max_w_chirho = max(b_chirho[0].shape[2] for b_chirho in batch_chirho)
+    max_w_chirho = padded_width_chirho(
+        max(b_chirho[0].shape[2] for b_chirho in batch_chirho))
     imgs_chirho = torch.zeros(len(batch_chirho), 1, IMG_H_CHIRHO, max_w_chirho)
     widths_chirho, targets_chirho, target_lens_chirho = [], [], []
     for i_chirho, (img_chirho, lab_chirho) in enumerate(batch_chirho):
@@ -187,11 +203,45 @@ def collate_chirho(batch_chirho):
             torch.tensor(widths_chirho, dtype=torch.long))
 
 
-def greedy_decode_chirho(logits_chirho):
-    """(B,T,C) logits -> list of reading-order strings (un-reverse)."""
+# The CNN halves width twice ((2,2) then (2,2); the last two pools are (2,1)),
+# so one timestep covers WIDTH_DOWNSAMPLE_CHIRHO input columns. Needed to know
+# which timesteps belong to a real image and which to right-padding.
+WIDTH_DOWNSAMPLE_CHIRHO = 4
+
+
+def padded_width_chirho(width_chirho):
+    """Round a width up to the pooling grid so the grid never depends on which
+    other crops share the batch."""
+    w_chirho = int(width_chirho)
+    return ((w_chirho + WIDTH_DOWNSAMPLE_CHIRHO - 1)
+            // WIDTH_DOWNSAMPLE_CHIRHO) * WIDTH_DOWNSAMPLE_CHIRHO
+
+
+def valid_timesteps_chirho(width_chirho):
+    """Timesteps a crop of this true pixel width occupies on that grid.
+
+    Ceiling, not floor: at an un-rounded width the final MaxPool DISCARDS a
+    trailing odd column when the crop is alone but PAIRS it with padding when
+    the crop shares a batch, which silently changes the boundary timestep's
+    features (measured 1.89 max-abs, 2026-08-20)."""
+    return max(1, padded_width_chirho(width_chirho) // WIDTH_DOWNSAMPLE_CHIRHO)
+
+
+def greedy_decode_chirho(logits_chirho, widths_chirho=None):
+    """(B,T,C) logits -> list of reading-order strings (un-reverse).
+
+    `widths_chirho` = true pre-padding pixel widths. Without it every row is
+    decoded across the full padded width, so a batch's widest member dictates
+    what its neighbours emit and the same crop can decode differently at
+    different batch sizes (audited 2026-08-20: batch 32 vs batch 1 flipped two
+    held-out predictions, one of which manufactured a false pass). Always pass
+    widths when decoding a padded batch.
+    """
     idx_chirho = logits_chirho.argmax(dim=2).cpu().numpy()   # (B,T)
     out_chirho = []
-    for row_chirho in idx_chirho:
+    for row_index_chirho, row_chirho in enumerate(idx_chirho):
+        if widths_chirho is not None:
+            row_chirho = row_chirho[:valid_timesteps_chirho(widths_chirho[row_index_chirho])]
         prev_chirho, chars_chirho = 0, []
         for v_chirho in row_chirho:
             if v_chirho != 0 and v_chirho != prev_chirho:
@@ -255,7 +305,8 @@ def score_heldout_chirho(model_chirho, items_chirho, dev_chirho, bs_chirho=32):
         if batch_chirho is None:
             continue
         imgs_chirho = batch_chirho[0].to(dev_chirho)
-        preds_chirho = greedy_decode_chirho(model_chirho(imgs_chirho))
+        preds_chirho = greedy_decode_chirho(
+            model_chirho(imgs_chirho, batch_chirho[3]), batch_chirho[3])
         for (_, _, gold_chirho), pred_chirho in zip(chunk_chirho, preds_chirho):
             tot_ed_chirho += edit_dist_chirho(pred_chirho, gold_chirho)
             tot_len_chirho += len(gold_chirho)

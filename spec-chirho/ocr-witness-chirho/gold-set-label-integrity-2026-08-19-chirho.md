@@ -176,20 +176,58 @@ Net −5 = 6 − 1. Under batch 32 p0342 decodes `להוה`, becoming a seventh 
 pass: net −6 = 7 − 1. An earlier revision paired the per-item delta with the
 batch-32 breakdown; that is corrected.
 
-**The batching wrinkle is a defect, not a footnote.** Exactly two predictions
-change with batch size: p0252-x820-y1049 (`עפוו`→`אפוו`, wrong either way) and
-p0342 (`ילהוה`→`להוה`, which manufactures a false pass against corrupt gold).
-Mechanism, visible in code: `collate_chirho` computes `widths_chirho` and
-returns it, but `score_heldout_chirho` consumes only `batch_chirho[0]` and never
-passes widths to the model or the decoder — so the bidirectional LSTM runs
-across the full right-padded width and the greedy decode consumes
-padding-derived timesteps. The pad value is `torch.zeros`, not the image
-background, so the padding is active signal rather than neutral. `gpt_chirho`'s
-sweep: batch 1-4 give 78→73, batch 8-86 give 79→73.
+**The batching wrinkle is a defect, and it is now fixed.** Two predictions
+changed with batch size: p0252-x820-y1049 and p0342-x636-y1628, the latter
+manufacturing a false pass against corrupt gold. Diagnosis took three passes,
+and the first two were wrong:
 
-**Consequence: the reported metric is a function of batch size.** Any future
-quote of this number must name the batch size, and the width tensor should be
-honoured in decode before the metric is trusted at all.
+1. *Decode-time masking is insufficient.* Truncating each row to its valid
+   timesteps leaves both flips intact — the BiLSTM is **bidirectional**, so its
+   backward pass has already consumed the padded tail and carried that state
+   into the real timesteps. Post-hoc masking cannot undo it. (`gpt_chirho`
+   measured 4.14 max-abs logit divergence on the valid prefix of p0252.)
+2. *Packing the BiLSTM is also insufficient.* `pack_padded_sequence` removes the
+   p0342 flip but not p0252: its **CNN features already differ** (1.89 max-abs
+   here, 1.44 in gpt's prototype), concentrated at the right edge.
+3. *The root cause is the pooling grid.* At an odd width the final `MaxPool2d`
+   **discards** the trailing column when a crop is alone, but **pairs it with
+   padding** when the crop shares a batch — so the boundary timestep is a
+   different function of the image depending on its batch-mates.
+
+Fix landed: `collate_chirho` rounds the canvas up to a multiple of
+`WIDTH_DOWNSAMPLE_CHIRHO`, `valid_timesteps_chirho` is a **ceiling** on that
+grid, `CRNNChirho.forward` packs the BiLSTM when given widths, and decode +
+confidence truncate to those lengths. Verified: batch sizes **1, 2, 3, 4, 8, 16,
+32, 86 now produce byte-identical predictions on all 86 held-out crops.** The
+same fix is applied to `infer_word_ocr_chirho.py`, whose production reads
+(pseudo-gold and the triage output behind `ocr_suggestions_chirho`) were
+generated through the same defective batched path.
+
+*Correction:* an earlier revision of this file said the pad value "is not the
+image background". That is inverted — `img_to_tensor_chirho` does `1.0 - arr`,
+so background **is** 0 and the pad is neutral **at the input**. The tail becomes
+non-neutral downstream, via CNN/BatchNorm features and the pooling grid, not at
+the pixel level. Caught by `gpt_chirho`.
+
+**The deterministic number, and what the published headline actually contained:**
+
+| | exact | vs published |
+|---|---|---|
+| published headline (batch 32, defective path) | 0.9186 | — |
+| deterministic, same gold labels | 0.9070 | −1.2 pts = **batching artifact** |
+| deterministic + witness-corrected labels | **0.8488** | −5.8 pts = **label corruption** |
+| **total overstatement** | | **−7.0 pts** |
+
+That decomposes the 5.8-vs-7.0 question cleanly: **7.0 points is the full gap
+from the published figure; 5.8 of it is label corruption and 1.2 is the padding
+artifact.** The fixed path agrees with the old per-item path (78/86), confirming
+batch-1 was the correct reference all along.
+
+*Not yet fixed:* `ctc_step_chirho` still passes the full padded length as
+`input_lengths` for every item and calls `forward` without widths, so **training
+remains length-unaware**. The current checkpoint was trained that way. Evaluation
+and inference are now deterministic; a retrain should make the training path
+length-aware too, and would need re-measuring afterwards.
 
 *Independent verification status (per item, 2026-08-20):*
 
