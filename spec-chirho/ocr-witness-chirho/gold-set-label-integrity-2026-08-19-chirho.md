@@ -176,9 +176,22 @@ a per-item loop on the same labels and checkpoint gives 78/86 — one prediction
 changes with batch padding. The delta above is computed within one consistent
 loop, so it is unaffected, but the headline is not stable to batching either.
 
-*Standing:* one witness (Opus 5) plus objective pixel tests, not yet
-independently re-verified item-by-item. The two divine-name records are the
-most consequential and should be checked first.
+*Independent verification status (per item, 2026-08-20):*
+
+| crop | second witness |
+|---|---|
+| p0150-x1217-y1462 | `gpt_chirho` (audit 557d0c6) — confirmed |
+| p0308-x497-y609 | `gpt_chirho` (audit 557d0c6) — confirmed |
+| p0291-x378-y1951 | `gemini_chirho` (#14540) — confirmed **יהוה** |
+| p0342-x636-y1628 | `gemini_chirho` (#14540) — confirmed **יהוה** |
+| p0221-x881-y257 | `gemini_chirho` (#14540) — confirmed **האמרי** |
+| p0311-x991-y1510 | `gemini_chirho` (#14540) — confirmed **המטרי** |
+| p0244-x1486-y361 | **single witness — not yet re-verified** |
+| p0323-x937-y2402 | **single witness — not yet re-verified** |
+
+So 6 of the 8 corrections carry a second pair of eyes; 2 do not. Both unverified
+items move the corrected score, so the −5.8 figure should be read as resting on
+6 confirmed corrections plus 2 provisional ones until those close.
 Artifact: `workspace-chirho/blind-vision-eval-chirho/heldout-witness-audit-chirho.json`.
 
 ## 3. Benchmark results
