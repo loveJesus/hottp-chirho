@@ -1,0 +1,122 @@
+<!-- For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life. — John 3:16 (KJV) -->
+
+# GOLD_STRICT Label Integrity + Vision-Reader Benchmark (2026-08-19)
+
+Triggered by L.J.'s request to benchmark Opus 5 vision against our CRNN on the
+blind word-read harness. The benchmark ran; it also surfaced a defect in the
+gold set that prices *both* numbers.
+
+## 1. The defect
+
+`mint_gold_set_chirho.py` mints gold as: **tesseract text whose consonant
+skeleton is an exact WLC word form**. `goldConsonantsChirho` is byte-identical
+to `tessTextChirho` in every record. The WLC check proves the string is *a*
+real Hebrew word — never that it is *the word printed in this crop*.
+
+So any tesseract misread that happens to land on another valid WLC form is
+silently canonised as GOLD_STRICT.
+
+The dominant instance is **ל→י**: the typeface's yod is a short ascender-free
+stroke, and ink bleed from the line above (these crops are cut flush — e.g.
+85x24 px with ink on row 0) fuses onto it and reads as a lamed.
+`ויאמר` → `ולאמר` is the signature case: *wə-lēmōr* is a genuine WLC form, so
+the guard passes.
+
+### Confirmed wrong labels (visually verified against the source page, padded re-cut)
+
+| crop | gold label | actually printed |
+|---|---|---|
+| p0150-x1217-y1462 | ולאמר | **ויאמר** |
+| p0247-x291-y909 | ולאמר | **ויאמר** |
+| p0221-x1358-y2147 | ולאמר | **ויאמר** |
+| p0310-x1454-y1750 | ולאמרו | **ויאמרו** |
+| p0157-x1137-y1422 | להושע | **יהושע** (Joshua) |
+| p0157-x525-y1473 | להושע | **יהושע** |
+| p0296-x890-y458 | למותו | **ימותו** |
+| p0252-x1190-y1749 | לאבלו | **לאביו** |
+| p0308-x497-y609 | ולשכב | **וישכב** |
+| p0252-x235-y1797 | ולאמו | **ולאמר** (ר→ו, different class) |
+
+**≥10 of 308 GOLD_STRICT = 3.2%, and that is a floor.** The screen only catches
+labels ≥10x rarer in WLC than a one-substitution neighbour drawn from a
+hand-picked confusion list; errors between comparably frequent words are
+invisible to it.
+
+Discrimination control: at p0252-x235-y1797 a real lamed ascender *is* present,
+and that label was upheld — the finding is an ascender test, not a bias toward
+the commoner word. Screen false positives confirmed correct: `שלשומ` (p0330),
+`משפחה` (p0152-x172, p0153-x821, p0153-x709 — settled by an objective
+final-letter ink-connectivity test after an eyeball call went the other way).
+
+## 2. Why it inflates the CRNN headline
+
+`train_word_ocr_chirho.py:227` fine-tunes on `goldConsonantsChirho` and scores
+against `goldConsonantsChirho` from the same manifest. Train signal and eval
+signal share the defect, so the error is invisible to the metric.
+
+Probed the trained `crnn-chirho.pt` directly on the ten proven-wrong crops:
+
+**9 of 10 — the CRNN emits the corrupt tesseract reading. 1 of 10 it reads
+correctly.** Each of those nine scores as *correct* against gold.
+
+So **exact 0.911 / char 0.978 measures agreement-with-tesseract-filtered-by-WLC,
+not agreement with the print**, and overstates print accuracy by roughly the
+corrupt-label rate (≥3%). The bias is directional: it rewards the CRNN for
+reproducing the error and penalises any independent reader that reads correctly.
+
+`load_pseudo_gold_chirho` compounds this — it promotes "CRNN high-confidence
+WLC-exact reads" to training labels through the same filter that admitted the
+error, a self-reinforcing channel.
+
+## 3. Benchmark results
+
+All runs blind (crop paths only, labels sealed until scoring), n=40, disjoint
+samples from the 308-crop GOLD_STRICT pool. Fable 5's earlier readings were in
+the Opus 5 session context, so Opus 5 drew provably disjoint samples
+(`--exclude-chirho`) rather than re-reading contaminated crops.
+
+| reader | input | exact | char | corrected exact |
+|---|---|---|---|---|
+| CRNN (held-out gold) | native crop | 0.911 | 0.978 | ~0.88 (see §2) |
+| Fable 5 | native crop | 0.800 | 0.939 | **0.900** (4 bad labels in its 40) |
+| Opus 5 | native crop | 0.675 | 0.874 | 0.700 (1 bad label) |
+| Opus 5 | 6x LANCZOS upscale | **0.850** | **0.957** | 0.850 (0 bad labels) |
+
+Opus 5 native-vs-magnified on same-difficulty samples: **0.675 → 0.850 exact,
+0.874 → 0.957 char.** The crops are ~85x24 px; at native size the binding
+constraint is resolution, not knowledge. Every native-res miss re-checked at 6x
+was read correctly (`ואבלו`, `ולקחו`, `בתרמה`, `ובבאר`, `מגבורתם`, `בפרים`).
+
+Residual Opus 5 misses at 6x: `ואקחם`→ולקחתם, `משפחה`→משפחת, `ולחמס`→ולחממ
+(ס/ם closure), `והרקונ`→והירקונ (language prior inserted a yod that isn't
+printed), `ותאמרו`→ותאמר (dropped final vav), `מצרימ`→העצים.
+
+## 4. What this does and does not say
+
+- It does **not** say the CRNN is bad. It is a strong reader and still the
+  production engine; ~97% of GOLD_STRICT is sound.
+- It **does** say the headline number cannot be quoted as print accuracy, and
+  that no independent reader can be fairly compared against this gold as-is.
+- Vision-model reading is resolution-bound, not competence-bound — feeding
+  models the raw tight crop understates them badly.
+
+## 5. Recommended next steps (L.J.'s call — nothing here was changed)
+
+1. Do not re-mint or edit the gold set unilaterally; it is the calibration
+   target for several claims.
+2. Add a **second witness** at mint time: require a vision read to agree with
+   the tesseract skeleton before GOLD_STRICT, or route disagreements to review.
+3. Re-cut crops with vertical padding (or reject crops with ink on row 0) so
+   ascenders are not clipped and neighbouring-line bleed is separable.
+4. Re-state the CRNN metric against a witness-agreed gold before it is used in
+   any completion or certification claim.
+5. Treat `load_pseudo_gold_chirho` as suspect until (2) lands.
+
+## Artifacts
+
+Harness: `src-chirho/blind-word-read-eval-chirho.ts` (gained `--exclude-chirho`
+and `--label-chirho` this session so later readers can draw provably disjoint
+blind samples). Readings/scores live in
+`workspace-chirho/blind-vision-eval-chirho/` (gitignored, rsync-carried):
+`opus5-reads-40-disjoint-chirho.json`, `opus5-score-40-disjoint-chirho.txt`,
+`opus5-reads-40-magnified-chirho.json`, `opus5-score-40-magnified-chirho.txt`.

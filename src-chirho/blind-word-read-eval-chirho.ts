@@ -14,6 +14,11 @@
  *
  *   bun run src-chirho/blind-word-read-eval-chirho.ts sample --count-chirho=40
  *   bun run src-chirho/blind-word-read-eval-chirho.ts score --reads-chirho=<path>
+ *
+ * A second reader whose context has already seen the first reader's answers is
+ * no longer blind on those crops, so `--exclude-chirho=<sample|reads json,...>`
+ * removes already-read crops from the pool and `--label-chirho=<name>` keeps the
+ * disjoint sample in its own file.
  */
 
 import { existsSync, readFileSync } from "fs";
@@ -101,12 +106,40 @@ function levenshteinChirho(aChirho: string, bChirho: string): number {
   return distChirho[colsChirho - 1]!;
 }
 
+function loadExcludedCropsChirho(pathsCsvChirho: string | undefined): Set<string> {
+  const excludedChirho = new Set<string>();
+  if (pathsCsvChirho === undefined) return excludedChirho;
+  const pathsChirho = pathsCsvChirho
+    .split(",")
+    .map((partChirho) => partChirho.trim())
+    .filter((partChirho) => partChirho.length > 0);
+  for (const pathChirho of pathsChirho) {
+    const parsedChirho = JSON.parse(readFileSync(pathChirho, "utf8")) as unknown;
+    const recordsChirho: { cropChirho?: unknown }[] = Array.isArray(parsedChirho)
+      ? (parsedChirho as { cropChirho?: unknown }[])
+      : ((parsedChirho as { itemsChirho?: { cropChirho?: unknown }[] }).itemsChirho ?? []);
+    const beforeChirho = excludedChirho.size;
+    for (const recordChirho of recordsChirho) {
+      if (typeof recordChirho.cropChirho === "string") excludedChirho.add(recordChirho.cropChirho);
+    }
+    if (excludedChirho.size === beforeChirho) throw new Error(`exclusion file contributed no crops: ${pathChirho}`);
+  }
+  return excludedChirho;
+}
+
 function sampleChirho(argsChirho: string[]): void {
   const countChirho = Number.parseInt(parseArgValueChirho(argsChirho, "count-chirho") ?? "40", 10);
+  const excludedCropsChirho = loadExcludedCropsChirho(parseArgValueChirho(argsChirho, "exclude-chirho"));
+  const labelChirho = parseArgValueChirho(argsChirho, "label-chirho");
+  if (labelChirho !== undefined && !/^[a-z0-9-]+$/.test(labelChirho)) {
+    throw new Error("--label-chirho must be lowercase letters, digits or hyphens");
+  }
   const goldChirho = loadGoldStrictChirho()
     .filter((entryChirho) => existsSync(resolveCropPathChirho(entryChirho.cropChirho)))
+    .filter((entryChirho) => !excludedCropsChirho.has(entryChirho.cropChirho))
     .sort((aChirho, bChirho) => aChirho.cropChirho.localeCompare(bChirho.cropChirho));
   if (goldChirho.length === 0) throw new Error("no GOLD_STRICT entries with existing crops");
+  if (goldChirho.length < countChirho) throw new Error("pool smaller than requested count after exclusions");
   const strideChirho = Math.max(1, Math.floor(goldChirho.length / countChirho));
   const itemsChirho: BlindItemChirho[] = [];
   for (let iChirho = 0; iChirho < goldChirho.length && itemsChirho.length < countChirho; iChirho += strideChirho) {
@@ -115,13 +148,20 @@ function sampleChirho(argsChirho: string[]): void {
       cropChirho: goldChirho[iChirho]!.cropChirho,
     });
   }
-  const outputPathChirho = join(OUTPUT_DIR_CHIRHO, `blind-sample-${itemsChirho.length}-chirho.json`);
+  const outputNameChirho =
+    labelChirho === undefined
+      ? `blind-sample-${itemsChirho.length}-chirho.json`
+      : `blind-sample-${itemsChirho.length}-${labelChirho}-chirho.json`;
+  const outputPathChirho = join(OUTPUT_DIR_CHIRHO, outputNameChirho);
   writeJsonAtomicChirho(outputPathChirho, {
     protocolChirho: "blind: crop paths only; labels stay in the manifest until score time",
     strictPoolChirho: goldChirho.length,
+    excludedCropsChirho: excludedCropsChirho.size,
     itemsChirho,
   });
-  console.log(`pool=${goldChirho.length} sampled=${itemsChirho.length} -> ${outputPathChirho}`);
+  console.log(
+    `pool=${goldChirho.length} excluded=${excludedCropsChirho.size} sampled=${itemsChirho.length} -> ${outputPathChirho}`
+  );
   for (const itemChirho of itemsChirho) {
     console.log(`${itemChirho.indexChirho}\t${resolveCropPathChirho(itemChirho.cropChirho)}`);
   }
