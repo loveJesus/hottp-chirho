@@ -227,6 +227,49 @@ def valid_timesteps_chirho(width_chirho):
     return max(1, padded_width_chirho(width_chirho) // WIDTH_DOWNSAMPLE_CHIRHO)
 
 
+def tensor_width_for_image_chirho(path_chirho):
+    """Width img_to_tensor_chirho will produce, read from the image HEADER only.
+
+    Lets a caller bucket by width without decoding pixels, so bucketing does not
+    force the whole corpus into memory (10,342 crops is ~227 MiB of tensor).
+    Must stay in lockstep with img_to_tensor_chirho's resize arithmetic.
+    """
+    with Image.open(path_chirho) as image_chirho:
+        width_chirho, height_chirho = image_chirho.size
+    if height_chirho == 0:
+        return None
+    return max(8, int(round(width_chirho * IMG_H_CHIRHO / height_chirho)))
+
+
+def width_bucketed_path_batches_chirho(paths_chirho, batch_size_chirho, load_chirho):
+    """Width-bucketed batches over PATHS, materialising one chunk at a time.
+
+    Same guarantee as width_bucketed_batches_chirho (a batched read equals a solo
+    read) but batch-bounded in memory: widths come from headers, and only the
+    current chunk's tensors are decoded.
+    """
+    buckets_chirho = {}
+    for index_chirho, path_chirho in enumerate(paths_chirho):
+        width_chirho = tensor_width_for_image_chirho(path_chirho)
+        if width_chirho is None:
+            continue
+        buckets_chirho.setdefault(padded_width_chirho(width_chirho), []).append(index_chirho)
+    for width_chirho in sorted(buckets_chirho):
+        indices_chirho = buckets_chirho[width_chirho]
+        for start_chirho in range(0, len(indices_chirho), batch_size_chirho):
+            group_chirho = indices_chirho[start_chirho:start_chirho + batch_size_chirho]
+            items_chirho, kept_chirho = [], []
+            for index_chirho in group_chirho:
+                tensor_chirho = load_chirho(paths_chirho[index_chirho])
+                if tensor_chirho is None:
+                    continue
+                items_chirho.append((tensor_chirho, [1]))
+                kept_chirho.append(index_chirho)
+            batch_chirho = collate_chirho(items_chirho)
+            if batch_chirho is not None:
+                yield kept_chirho, batch_chirho
+
+
 def width_bucketed_batches_chirho(tensors_chirho, batch_size_chirho):
     """Yield (indices, collate output) batching ONLY crops of equal padded width.
 

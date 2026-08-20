@@ -36,7 +36,7 @@ if str(Path(__file__).resolve().parent) not in sys.path:
 from train_word_ocr_chirho import (
     CRNNChirho, IDX_TO_CHAR_CHIRHO, NUM_CLASSES_CHIRHO, MODEL_OUT_CHIRHO,
     img_to_tensor_chirho, device_chirho, collate_chirho, valid_timesteps_chirho,
-    width_bucketed_batches_chirho)
+    width_bucketed_path_batches_chirho)
 from audit_canonical_recon_chirho import (
     load_wlc_validators_chirho, skeleton_in_wlc_chirho)
 
@@ -110,11 +110,13 @@ def main_chirho():
 
     preds_chirho = []      # (name, reading, conf, verdict)
     bs_chirho = 32
-    tensors_chirho = [img_to_tensor_chirho(Image.open(p_chirho).convert("L"))
-                      for p_chirho in sample_chirho]
+    def load_crop_chirho(path_chirho):
+        return img_to_tensor_chirho(Image.open(path_chirho).convert("L"))
+
     # Width-homogeneous batches only — mixed widths make a batched read differ
     # from the same crop read alone (see width_bucketed_batches_chirho).
-    for group_chirho, batch_chirho in width_bucketed_batches_chirho(tensors_chirho, bs_chirho):
+    for group_chirho, batch_chirho in width_bucketed_path_batches_chirho(
+            sample_chirho, bs_chirho, load_crop_chirho):
         chunk_chirho = [sample_chirho[i_chirho] for i_chirho in group_chirho]
         with torch.no_grad():
             logits_chirho = model_chirho(batch_chirho[0].to(dev_chirho), batch_chirho[3])

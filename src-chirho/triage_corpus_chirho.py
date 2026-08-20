@@ -42,7 +42,7 @@ if str(Path(__file__).resolve().parent) not in sys.path:
 from train_word_ocr_chirho import (
     CRNNChirho, NUM_CLASSES_CHIRHO, MODEL_OUT_CHIRHO,
     img_to_tensor_chirho, device_chirho, collate_chirho,
-    width_bucketed_batches_chirho)
+    width_bucketed_path_batches_chirho)
 from infer_word_ocr_chirho import decode_with_conf_chirho
 from audit_canonical_recon_chirho import (
     load_wlc_validators_chirho, skeleton_in_wlc_chirho)
@@ -86,19 +86,23 @@ def main_chirho():
 
     records_chirho = []
     bs_chirho = 64
-    tensors_chirho, metas_all_chirho = [], []
+    # Paths only — widths come from image headers, so bucketing never holds the
+    # whole corpus in memory (10,342 crops is ~227 MiB of tensor).
+    paths_all_chirho, metas_all_chirho = [], []
     for r_chirho in man_chirho:
         p_chirho = CORPUS_DIR_CHIRHO / r_chirho["cropChirho"]
         if not p_chirho.exists():
             continue
-        t_chirho = img_to_tensor_chirho(Image.open(p_chirho).convert("L"))
-        if t_chirho is None:
-            continue
-        tensors_chirho.append(t_chirho)
+        paths_all_chirho.append(p_chirho)
         metas_all_chirho.append(r_chirho)
+
+    def load_crop_chirho(path_chirho):
+        return img_to_tensor_chirho(Image.open(path_chirho).convert("L"))
+
     # Width-homogeneous batches only: mixing widths makes a batched read differ
     # from the same crop read alone (see width_bucketed_batches_chirho).
-    for group_chirho, batch_chirho in width_bucketed_batches_chirho(tensors_chirho, bs_chirho):
+    for group_chirho, batch_chirho in width_bucketed_path_batches_chirho(
+            paths_all_chirho, bs_chirho, load_crop_chirho):
         metas_chirho = [metas_all_chirho[i_chirho] for i_chirho in group_chirho]
         with torch.no_grad():
             logits_chirho = model_chirho(batch_chirho[0].to(dev_chirho), batch_chirho[3])

@@ -329,13 +329,39 @@ checkpoint was trained without it, so a retrain should adopt the same grid.
 
 ## 2d. The TRAINING split carries the same defect (2026-08-20)
 
-The held-out split is a **random (hash-based) split of the same gold set**, so
-its corruption rate is an unbiased estimator of the whole set's. That answers
-the "unmeasured training-split rate" question without relabelling 543 records:
+The held-out split is an MD5-hash split of the same gold set on crop names, and
+`mint_gold_set_chirho.py` never consults the hash. Under the standard
+random-oracle treatment of MD5 over these pre-existing, non-adversarial
+filenames, conditioning on n=86 gives an **as-if simple random sample**. (An
+earlier revision of this file said the split and corruption are "independent by
+construction"; `gpt_chirho` correctly notes that is stronger than a
+deterministic hash warrants — **"as-if random, absent adaptive selection"** is
+the precise claim. Image-content corruption may well correlate with page/x/y;
+the MD5 avalanche severs that structure from allocation.)
 
 > 8/86 = 9.30%, Wilson 95% CI **[4.8%, 17.3%]**
-> → expected corrupt labels in the 543-record training split: **≈51 (CI 26–94)**
-> → expected across all 629 gold records: **≈59 (CI 30–109)**
+> → **≈59 corrupt labels across all 629 gold records**
+> → **≈51 in the 543-record training split**
+
+Count ranges from multiplying the rate interval are **approximate** — a binomial
+rate interval is not an exact CI for a fixed finite population. `gpt_chirho`
+inverted the exact hypergeometric for the one fixed population sampled without
+replacement: **total corrupt 28–106, training-split complement 20–98.** The
+conclusion is unchanged.
+
+Independently checked by `gpt_chirho` (audit
+`crnn-batch-and-split-independent-audit-2026-08-20-chirho.md`): 629 unique crop
+names, 543/86, manual MD5-prefix membership matches `load_gold_split_chirho`
+exactly, modelled inclusion probability .150007, and no detectable split relation
+to page, x, y or label length (all p>.31). The held-out sample is mildly enriched
+for GOLD_OK (tier chi-square p=.0456), but corruption rates are near-identical by
+tier — STRICT 3/33 = 9.09%, OK 5/53 = 9.43% — so a tier-stratified estimate lands
+at 58.3, essentially the same number.
+
+**Decision boundary (important):** this is enough to stop uncorrected retraining
+and to size the remediation. It is **not** enough to identify *which* remaining
+labels are safe. Witness / replace / exclude is still required before any
+retrain.
 
 **A cheap high-yield screen names them.** Every confirmed corrupt label shows the
 same signature: the *shipped* model read the print while the *current* checkpoint
