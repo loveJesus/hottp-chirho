@@ -101,9 +101,9 @@ def main_chirho():
         if batch_chirho is None:
             continue
         with torch.no_grad():
-            logits_chirho = model_chirho(batch_chirho[0].to(dev_chirho))
+            logits_chirho = model_chirho(batch_chirho[0].to(dev_chirho), batch_chirho[3])
         for r_chirho, (reading_chirho, conf_chirho) in zip(
-                metas_chirho, decode_with_conf_chirho(logits_chirho)):
+                metas_chirho, decode_with_conf_chirho(logits_chirho, batch_chirho[3])):
             verdict_chirho, _ = skeleton_in_wlc_chirho(
                 reading_chirho, word_skel_chirho, verse_blob_chirho)
             tess_heb_chirho = _tess_has_hebrew_chirho(

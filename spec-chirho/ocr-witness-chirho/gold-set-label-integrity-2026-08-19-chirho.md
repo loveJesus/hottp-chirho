@@ -255,6 +255,56 @@ pattern-matching to the defect it had already found.
 `gemini_chirho` acknowledged rather than reproduced this point.
 Artifact: `workspace-chirho/blind-vision-eval-chirho/heldout-witness-audit-chirho.json`.
 
+## 2c. Contamination measurably degrades the real task (2026-08-20)
+
+Attempting to measure the decode fix's blast radius on the shipped corpus
+produced a **retraction and two findings**.
+
+**RETRACTED:** an intermediate analysis here reported that ~58% of the 10,342
+stored triage readings change under the fixed decode. That number is void — it
+compared the current checkpoint against a stored file that the current
+checkpoint does not reproduce, so it measured checkpoint drift, not the fix.
+Deleted rather than corrected, because the comparison was not meaningful.
+
+**Finding 1 — the shipped reads have a provenance gap.** The readings in
+`triage-chirho.json` (which generate `ocr_suggestions_chirho`, now live in prod
+D1) do **not** reproduce from `crnn-chirho.pt` + current code: 195/512 at
+batch 64, 198/512 solo. They were produced by a model/code state that no longer
+exists on disk. Those production suggestions therefore cannot be regenerated or
+audited against any checkpoint we hold.
+
+**Finding 2 — the current checkpoint is MORE contaminated than the shipped one,
+and that is measurable on the real task.** On the eight crops whose gold labels
+are proven wrong:
+
+| | reads the PRINT | reproduces the CORRUPTION |
+|---|---|---|
+| shipped model (behind prod suggestions) | **4 / 8** | 4 / 8 |
+| current checkpoint `aa7a0ff9` | **1 / 8** | 7 / 8 |
+
+The shipped model read **both `יהוה` records correctly**; the current checkpoint
+reads neither. Yet on the 629 gold-labelled records the current checkpoint scores
+*higher* (0.9873 vs 0.9587 — inflated by training-split memorisation).
+
+**So further fine-tuning against corrupt gold improved the measured score while
+degrading true print accuracy on exactly the defect class.** The metric and the
+truth moved in opposite directions. This is the concrete harm the §1 mint defect
+causes, not a hypothetical one, and it is the strongest argument for
+witness-relabelling before any retrain.
+
+**Possible 9th corrupt label**, surfaced by the same comparison and not yet
+adjudicated: p0159-x644-y459, gold `דבלת`, shipped model read `דבית` — the same
+lamed/yod axis. It sits in the *training* split.
+
+**Cost of the decode fix, measured honestly.** The canonical pooling grid is a
+real behaviour change, not a no-op: 56 of 86 held-out crops have a width that is
+not a multiple of 4. Against the original unrounded solo reference it preserves
+**85/86 = 98.8%** of held-out reads with **identical accuracy** (78/86, char
+0.9694), but only ~87% on a 512-crop slice of the noisy full corpus — it flips
+reads where the model was already unconfident. Exact batch-invariance requires a
+canonical grid, and adopting one necessarily changes odd-width crops; the
+checkpoint was trained without it, so a retrain should adopt the same grid.
+
 ## 3. Benchmark results
 
 All runs blind (crop paths only, labels sealed until scoring), n=40, disjoint
