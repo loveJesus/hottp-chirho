@@ -222,6 +222,14 @@ triage output behind `ocr_suggestions_chirho`.
 Per-item remains the strict reference; bucketing is what makes batched reads
 equal it.
 
+Bucketing by header-derived width keeps this batch-bounded. `gpt_chirho`
+exercised it over the **full 10,342-crop corpus** (not a sample): header width
+matched `img_to_tensor_chirho` on 10,342/10,342, every index yielded exactly
+once, zero mixed-width bucket violations, and peak live collated payload
+**3.375 MiB against ~227.5 MiB** for the corpus-wide materialisation it replaced.
+Production 400-sample, bs64 vs singleton: 0 string differences on both CPU
+(max conf delta 7.6e-06) and MPS (1.2e-06), no 0.90/0.95 gate crossings.
+
 *Correction:* an earlier revision of this file said the pad value "is not the
 image background". That is inverted — `img_to_tensor_chirho` does `1.0 - arr`,
 so background **is** 0 and the pad is neutral **at the input**. The tail becomes
