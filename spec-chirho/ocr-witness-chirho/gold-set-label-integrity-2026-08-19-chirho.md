@@ -327,6 +327,58 @@ reads where the model was already unconfident. Exact batch-invariance requires a
 canonical grid, and adopting one necessarily changes odd-width crops; the
 checkpoint was trained without it, so a retrain should adopt the same grid.
 
+## 2d. The TRAINING split carries the same defect (2026-08-20)
+
+The held-out split is a **random (hash-based) split of the same gold set**, so
+its corruption rate is an unbiased estimator of the whole set's. That answers
+the "unmeasured training-split rate" question without relabelling 543 records:
+
+> 8/86 = 9.30%, Wilson 95% CI **[4.8%, 17.3%]**
+> → expected corrupt labels in the 543-record training split: **≈51 (CI 26–94)**
+> → expected across all 629 gold records: **≈59 (CI 30–109)**
+
+**A cheap high-yield screen names them.** Every confirmed corrupt label shows the
+same signature: the *shipped* model read the print while the *current* checkpoint
+memorised the corrupt gold. Screening all 629 gold records for
+`shipped ≠ current AND current == gold AND shipped ≠ gold` yields **20
+candidates, 16 of them in the training split**.
+
+Adjudicated all 16 against padded source-page re-cuts: **13 gold-wrong, 3 screen
+false positives — 81% precision.** (Calibration held: on the screen's 4 held-out
+candidates, 3 were already-confirmed corrupt and 1, p0345, was one I had already
+proven *not* corrupt.)
+
+Newly confirmed corrupt **training-split** labels:
+
+| crop | gold | printed | note |
+|---|---|---|---|
+| p0157-x525-y1473 | להושע | **יהושע** | |
+| p0190-x425-y2097 | הארכ | **הארכי** | dropped final yod |
+| p0209-x605-y1690 | לבלעמ | **יבלעם** | only ONE lamed ascender; gold needs two |
+| p0244-x737-y1309 | אלכה | **איכה** | |
+| p0257-x128-y550 | כשלת | **כשית** | |
+| p0310-x930-y1792 | למלכ | **ימלך** | only ONE lamed ascender; gold needs two |
+| p0332-x369-y2046 | לשנו | **ישנו** | no lamed ascender at all |
+| p0347-x669-y1898 | אלתא | **איתא** | |
+| p0352-x250-y304 | לשבר | **ישבר** | no lamed ascender |
+| p0238-x150-y1406 | השבי | **השני** | *probable* — narrow-nun vs wide-bet width call |
+
+Plus p0157-x1137, p0159 and p0252-x1190 already confirmed. **Total named across
+the gold set: 21** (8 held-out + 13 training).
+
+Two of these are decided by **counting ascenders**, which is as objective as this
+gets: `יבלעם` and `ימלך` each show exactly one tall lamed where the gold spelling
+requires two.
+
+Screen false positives, for honesty about the tool: p0200 (`קראלה` — first glyph
+has a qof descender), p0241 (`ולקחו` — a real lamed ascender is present), p0339
+(`ממלט` — gold right, the shipped model *inserted* a yod). The screen finds
+corrupt labels; it does not certify them. Each still needs a source re-cut.
+
+**Bottom line:** 21 named, ~59 expected across the gold set, and the screen is a
+reusable way to surface the rest cheaply.
+Artifact: `workspace-chirho/blind-vision-eval-chirho/training-split-suspects-chirho.json`.
+
 ## 3. Benchmark results
 
 All runs blind (crop paths only, labels sealed until scoring), n=40, disjoint
