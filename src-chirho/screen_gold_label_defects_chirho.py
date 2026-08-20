@@ -29,7 +29,8 @@ verification by two other agents; no pixel heuristic here reached that bar.
 
     workspace-chirho/classifier-venv-chirho/bin/python3 \\
         src-chirho/screen_gold_label_defects_chirho.py [--limit=N] [--validate]
-"""import argparse
+"""
+import argparse
 import json
 from collections import deque
 from pathlib import Path
