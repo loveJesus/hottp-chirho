@@ -343,8 +343,8 @@ memorised the corrupt gold. Screening all 629 gold records for
 `shipped ≠ current AND current == gold AND shipped ≠ gold` yields **20
 candidates, 16 of them in the training split**.
 
-Adjudicated all 16 against padded source-page re-cuts: **13 gold-wrong, 3 screen
-false positives — 81% precision.** (Calibration held: on the screen's 4 held-out
+Adjudicated all 16 against padded source-page re-cuts: **12 gold-wrong, 4 screen
+false positives — 75% precision.** (Calibration held: on the screen's 4 held-out
 candidates, 3 were already-confirmed corrupt and 1, p0345, was one I had already
 proven *not* corrupt.)
 
@@ -361,10 +361,9 @@ Newly confirmed corrupt **training-split** labels:
 | p0332-x369-y2046 | לשנו | **ישנו** | no lamed ascender at all |
 | p0347-x669-y1898 | אלתא | **איתא** | |
 | p0352-x250-y304 | לשבר | **ישבר** | no lamed ascender |
-| p0238-x150-y1406 | השבי | **השני** | *probable* — narrow-nun vs wide-bet width call |
 
 Plus p0157-x1137, p0159 and p0252-x1190 already confirmed. **Total named across
-the gold set: 21** (8 held-out + 13 training).
+the gold set: 20** (8 held-out + 12 training).
 
 Two of these are decided by **counting ascenders**, which is as objective as this
 gets: `יבלעם` and `ימלך` each show exactly one tall lamed where the gold spelling
@@ -372,11 +371,17 @@ requires two.
 
 Screen false positives, for honesty about the tool: p0200 (`קראלה` — first glyph
 has a qof descender), p0241 (`ולקחו` — a real lamed ascender is present), p0339
-(`ממלט` — gold right, the shipped model *inserted* a yod). The screen finds
+(`ממלט` — gold right, the shipped model *inserted* a yod), and p0238 (`השבי` —
+initially recorded here as *probable* gold-wrong; the column-run test was
+inconclusive because the glyphs are merged, and at 12x the disputed letter is a
+**wide bet**, not a narrow nun. Gold is right and my `השני` was wrong). The screen finds
 corrupt labels; it does not certify them. Each still needs a source re-cut.
 
-**Bottom line:** 21 named, ~59 expected across the gold set, and the screen is a
-reusable way to surface the rest cheaply.
+**Bottom line:** 20 named, ~59 expected across the gold set, and the screen is a
+reusable way to surface the rest cheaply — at ~75% precision, so every hit still
+needs a source re-cut. Note that the one item this file first recorded as
+*probable* turned out to be a false positive: on a width call rather than an
+ascender call, only magnification settled it.
 Artifact: `workspace-chirho/blind-vision-eval-chirho/training-split-suspects-chirho.json`.
 
 ## 3. Benchmark results
