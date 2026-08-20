@@ -48,6 +48,22 @@ the commoner word. Screen false positives confirmed correct: `שלשומ` (p0330
 `משפחה` (p0152-x172, p0153-x821, p0153-x709 — settled by an objective
 final-letter ink-connectivity test after an eyeball call went the other way).
 
+### Independent verification
+
+The whole finding rests on one perceptual call (lamed ascender vs ascender-free
+yod), so it was put to a second reader with a deliberate control: two crops that
+must yield opposite answers. `gemini_chirho` re-cut both from the source pages
+and inspected the pixels without being given the gold values first
+(broker #14341 -> #14342):
+
+| crop | gemini verdict | agrees with |
+|---|---|---|
+| p0157-x1137-y1422 | first letter is a short yod, zero ascender -> **יהושע** | gold label `להושע` is WRONG |
+| p0252-x235-y1797 | second letter is a tall lamed, distinct ascender -> **ולאמר** | gold label upheld |
+
+The control held: opposite verdicts on the two crops, matching the claims made
+here before verification. Two independent readers, same conclusion.
+
 ## 2. Why it inflates the CRNN headline
 
 `train_word_ocr_chirho.py:227` fine-tunes on `goldConsonantsChirho` and scores
