@@ -186,12 +186,19 @@ loop, so it is unaffected, but the headline is not stable to batching either.
 | p0342-x636-y1628 | `gemini_chirho` (#14540) — confirmed **יהוה** |
 | p0221-x881-y257 | `gemini_chirho` (#14540) — confirmed **האמרי** |
 | p0311-x991-y1510 | `gemini_chirho` (#14540) — confirmed **המטרי** |
-| p0244-x1486-y361 | **single witness — not yet re-verified** |
-| p0323-x937-y2402 | **single witness — not yet re-verified** |
+| p0244-x1486-y361 | `gemini_chirho` (#14542) — confirmed **איכה** |
+| p0323-x937-y2402 | `gemini_chirho` (#14542) — confirmed **שלשם**, zero ink between ש and ם |
 
-So 6 of the 8 corrections carry a second pair of eyes; 2 do not. Both unverified
-items move the corrected score, so the −5.8 figure should be read as resting on
-6 confirmed corrections plus 2 provisional ones until those close.
+**All 8 of 8 corrections are two-witness confirmed**, so the −5.8 delta is fully
+evidenced. p0323 was verified deliberately last: it is the only correction that
+runs *against* the defect pattern (gold inserting a yod rather than substituting
+one), so confirming it is evidence the audit was reading pixels rather than
+pattern-matching to the defect it had already found.
+
+*Single-source item, explicitly not verified:* the batch-padding discrepancy
+(79/86 batched vs 78/86 per-item) rests on this session's observation alone.
+`gemini_chirho` confirmed it acknowledged that report rather than reproducing
+it. Anyone relying on it should re-run both paths.
 Artifact: `workspace-chirho/blind-vision-eval-chirho/heldout-witness-audit-chirho.json`.
 
 ## 3. Benchmark results
