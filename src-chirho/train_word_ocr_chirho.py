@@ -227,6 +227,35 @@ def valid_timesteps_chirho(width_chirho):
     return max(1, padded_width_chirho(width_chirho) // WIDTH_DOWNSAMPLE_CHIRHO)
 
 
+def width_bucketed_batches_chirho(tensors_chirho, batch_size_chirho):
+    """Yield (indices, collate output) batching ONLY crops of equal padded width.
+
+    Rounding the batch maximum is not enough for a batched read to equal a solo
+    read: a narrow crop sharing a canvas with a wider one still gets extra
+    background columns inside its CNN receptive field, and those reach its
+    boundary timestep BEFORE packing isolates the BiLSTM. Packing fixes the
+    recurrence; it cannot undo CNN divergence. Width-homogeneous batches give
+    every crop the same canvas it would get alone.
+
+    Measured on the default 400-crop production sample (2026-08-20): mixed-width
+    batch 32 differed from solo on 12-24 decoded strings (count is backend
+    dependent) and up to 0.55 confidence; width-bucketed batching differs on 0
+    strings with ~1e-6 confidence noise.
+    """
+    buckets_chirho = {}
+    for index_chirho, tensor_chirho in enumerate(tensors_chirho):
+        buckets_chirho.setdefault(
+            padded_width_chirho(tensor_chirho.shape[-1]), []).append(index_chirho)
+    for width_chirho in sorted(buckets_chirho):
+        indices_chirho = buckets_chirho[width_chirho]
+        for start_chirho in range(0, len(indices_chirho), batch_size_chirho):
+            group_chirho = indices_chirho[start_chirho:start_chirho + batch_size_chirho]
+            batch_chirho = collate_chirho([(tensors_chirho[i_chirho], [1])
+                                           for i_chirho in group_chirho])
+            if batch_chirho is not None:
+                yield group_chirho, batch_chirho
+
+
 def greedy_decode_chirho(logits_chirho, widths_chirho=None):
     """(B,T,C) logits -> list of reading-order strings (un-reverse).
 
@@ -298,12 +327,9 @@ def load_pseudo_gold_chirho(test_crop_names_chirho):
 def score_heldout_chirho(model_chirho, items_chirho, dev_chirho, bs_chirho=32):
     model_chirho.train(False)
     tot_ed_chirho = tot_len_chirho = exact_chirho = n_chirho = 0
-    for i_chirho in range(0, len(items_chirho), bs_chirho):
-        chunk_chirho = items_chirho[i_chirho:i_chirho + bs_chirho]
-        batch_chirho = collate_chirho([(t_chirho, lab_chirho)
-                                       for t_chirho, lab_chirho, _ in chunk_chirho])
-        if batch_chirho is None:
-            continue
+    tensors_chirho = [t_chirho for t_chirho, _, _ in items_chirho]
+    for group_chirho, batch_chirho in width_bucketed_batches_chirho(tensors_chirho, bs_chirho):
+        chunk_chirho = [items_chirho[i_chirho] for i_chirho in group_chirho]
         imgs_chirho = batch_chirho[0].to(dev_chirho)
         preds_chirho = greedy_decode_chirho(
             model_chirho(imgs_chirho, batch_chirho[3]), batch_chirho[3])

@@ -41,7 +41,8 @@ if str(Path(__file__).resolve().parent) not in sys.path:
 
 from train_word_ocr_chirho import (
     CRNNChirho, NUM_CLASSES_CHIRHO, MODEL_OUT_CHIRHO,
-    img_to_tensor_chirho, device_chirho, collate_chirho)
+    img_to_tensor_chirho, device_chirho, collate_chirho,
+    width_bucketed_batches_chirho)
 from infer_word_ocr_chirho import decode_with_conf_chirho
 from audit_canonical_recon_chirho import (
     load_wlc_validators_chirho, skeleton_in_wlc_chirho)
@@ -85,21 +86,20 @@ def main_chirho():
 
     records_chirho = []
     bs_chirho = 64
-    for i_chirho in range(0, len(man_chirho), bs_chirho):
-        chunk_chirho = man_chirho[i_chirho:i_chirho + bs_chirho]
-        items_chirho, metas_chirho = [], []
-        for r_chirho in chunk_chirho:
-            p_chirho = CORPUS_DIR_CHIRHO / r_chirho["cropChirho"]
-            if not p_chirho.exists():
-                continue
-            t_chirho = img_to_tensor_chirho(Image.open(p_chirho).convert("L"))
-            if t_chirho is None:
-                continue
-            items_chirho.append((t_chirho, [1]))
-            metas_chirho.append(r_chirho)
-        batch_chirho = collate_chirho(items_chirho)
-        if batch_chirho is None:
+    tensors_chirho, metas_all_chirho = [], []
+    for r_chirho in man_chirho:
+        p_chirho = CORPUS_DIR_CHIRHO / r_chirho["cropChirho"]
+        if not p_chirho.exists():
             continue
+        t_chirho = img_to_tensor_chirho(Image.open(p_chirho).convert("L"))
+        if t_chirho is None:
+            continue
+        tensors_chirho.append(t_chirho)
+        metas_all_chirho.append(r_chirho)
+    # Width-homogeneous batches only: mixing widths makes a batched read differ
+    # from the same crop read alone (see width_bucketed_batches_chirho).
+    for group_chirho, batch_chirho in width_bucketed_batches_chirho(tensors_chirho, bs_chirho):
+        metas_chirho = [metas_all_chirho[i_chirho] for i_chirho in group_chirho]
         with torch.no_grad():
             logits_chirho = model_chirho(batch_chirho[0].to(dev_chirho), batch_chirho[3])
         for r_chirho, (reading_chirho, conf_chirho) in zip(

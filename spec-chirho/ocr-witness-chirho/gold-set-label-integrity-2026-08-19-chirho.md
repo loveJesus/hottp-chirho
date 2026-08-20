@@ -197,11 +197,30 @@ and the first two were wrong:
 Fix landed: `collate_chirho` rounds the canvas up to a multiple of
 `WIDTH_DOWNSAMPLE_CHIRHO`, `valid_timesteps_chirho` is a **ceiling** on that
 grid, `CRNNChirho.forward` packs the BiLSTM when given widths, and decode +
-confidence truncate to those lengths. Verified: batch sizes **1, 2, 3, 4, 8, 16,
-32, 86 now produce byte-identical predictions on all 86 held-out crops.** The
-same fix is applied to `infer_word_ocr_chirho.py`, whose production reads
-(pseudo-gold and the triage output behind `ocr_suggestions_chirho`) were
-generated through the same defective batched path.
+confidence truncate to those lengths. **RETRACTED — the claim "eval and inference are batch-invariant" was too broad.**
+It holds only for the 86 held-out *strings*. `gpt_chirho` produced a direct
+counterexample on the default 400-crop production sample: mixed-width batch 32
+vs solo differed on **24/400 decoded strings (CPU) / 12/400 (MPS — the count is
+backend dependent)**, with confidence differing on ~370/400 up to 0.55, and one
+crop crossing the complete pseudo-gold acceptance gate. Reproduced here.
+
+Root cause of the *residual*: rounding only the batch **maximum** does not give
+each crop a canonical CNN boundary. A narrow crop sharing a canvas with a wider
+one still gets extra background columns inside its convolutional receptive
+field, and those reach its boundary timestep **before** packing isolates the
+BiLSTM. Packing fixes the recurrence; it cannot undo CNN divergence.
+
+**Repair: width-homogeneous batching** (`width_bucketed_batches_chirho`) — batch
+only crops of equal padded width, so every crop gets the canvas it would get
+alone. Verified on the same 400-crop production sample at batch 8/32/64:
+**0/400 string differences vs singleton, max confidence delta 1.7e-06** (float
+execution-order noise). Held-out remains 78/86 = 0.9070. Applied to
+`score_heldout_chirho`, `infer_word_ocr_chirho.py`, and
+`triage_corpus_chirho.py` — the last two generate the pseudo-gold and the
+triage output behind `ocr_suggestions_chirho`.
+
+Per-item remains the strict reference; bucketing is what makes batched reads
+equal it.
 
 *Correction:* an earlier revision of this file said the pad value "is not the
 image background". That is inverted — `img_to_tensor_chirho` does `1.0 - arr`,
@@ -292,9 +311,12 @@ truth moved in opposite directions. This is the concrete harm the §1 mint defec
 causes, not a hypothetical one, and it is the strongest argument for
 witness-relabelling before any retrain.
 
-**Possible 9th corrupt label**, surfaced by the same comparison and not yet
-adjudicated: p0159-x644-y459, gold `דבלת`, shipped model read `דבית` — the same
-lamed/yod axis. It sits in the *training* split.
+**Ninth corrupt label — CONFIRMED** by `gemini_chirho` from the source page:
+p0159-x644-y459 prints `דבית` (third letter a short top-hanging yod, zero
+ascender); gold `דבלת` is wrong. The shipped model read it correctly; the
+current checkpoint reproduces the corruption. **This one sits in the TRAINING
+split**, so the mint defect is confirmed on both sides of the split and the
+training-split rate is still unmeasured.
 
 **Cost of the decode fix, measured honestly.** The canonical pooling grid is a
 real behaviour change, not a no-op: 56 of 86 held-out crops have a width that is
