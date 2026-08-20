@@ -120,6 +120,67 @@ corrupt items, which is why the reader corrections in §3 stand.
 WLC-exact reads" to training labels through the same filter that admitted the
 error, a self-reinforcing channel.
 
+## 2b. RESOLVED (2026-08-20): the held-out split, witness-relabelled
+
+§2 left the direction and magnitude unknown "until the full held-out split is
+witness-relabelled". That is now done — all 86 held-out records.
+
+**Protocol.** 71 crops read blind at 6x and locked before any label was seen;
+12 reused from this session's earlier blind locks; 3 taken from Fable 5's blind
+reads (crops this session had already spoiled for me). Every witness/gold
+disagreement was then adjudicated against a **padded re-cut of the vol-1 source
+page**, and marginal calls were settled by objective pixel tests rather than by
+eye (ink-group widths, he-vs-tav component counts, yod-vs-comma vertical
+position).
+
+**Result: 55 agree, 31 disagree.** Of the 31 — **22 were MY errors** (gold
+upheld), **8 are gold labels proven wrong**, and **1 is a crop-scope defect**.
+
+| crop | gold | printed | defect |
+|---|---|---|---|
+| p0150-x1217-y1462 | ולאמר | **ויאמר** | lamed-for-yod |
+| p0244-x1486-y361 | אלכה | **איכה** | lamed-for-yod |
+| p0291-x378-y1951 | להוה | **יהוה** | lamed-for-yod — *the divine name* |
+| p0342-x636-y1628 | להוה | **יהוה** | lamed-for-yod — *the divine name* |
+| p0308-x497-y609 | ולשכב | **וישכב** | lamed-for-yod |
+| p0221-x881-y257 | האמר | **האמרי** | dropped a printed final yod |
+| p0311-x991-y1510 | המטר | **המטרי** | dropped a printed final yod |
+| p0323-x937-y2402 | שלשים | **שלשם** | inserted a yod that is not printed |
+
+Plus p0157-x1285-y1264, where the **bbox spans two words** (`וילך — העמק`)
+while the label covers only one — a segmentation defect, not a spelling one.
+
+**Corrupt-label rate on held-out: 8/86 = 9.3%** (9/86 = 10.5% including the
+crop defect). That is ~3x the 3.2% floor the §1 heuristic screen produced,
+because that screen only caught labels >=10x rarer than a one-substitution
+neighbour.
+
+**Re-scoring the CRNN (checkpoint `aa7a0ff9`) against the witness-corrected
+labels:**
+
+| labels | exact | char |
+|---|---|---|
+| as-published gold | 78/86 = 0.9070 | 0.9694 |
+| **witness-corrected** | **73/86 = 0.8488** | **0.9567** |
+| delta | **−0.058** | **−0.013** |
+
+**So the direction is inflation and the magnitude is about 5.8 points of exact
+accuracy.** 7 of the 8 corrupt labels are false passes — the CRNN reproduces
+the corrupt reading and is scored correct. Only p0308 is a false fail. The
+earlier cancellation argument held only because it rested on the 2 defects the
+heuristic screen happened to surface; with the full split witnessed, the false
+passes dominate almost 7:1.
+
+*Reproducibility wrinkle:* `score_heldout_chirho` (batched) reports 79/86 while
+a per-item loop on the same labels and checkpoint gives 78/86 — one prediction
+changes with batch padding. The delta above is computed within one consistent
+loop, so it is unaffected, but the headline is not stable to batching either.
+
+*Standing:* one witness (Opus 5) plus objective pixel tests, not yet
+independently re-verified item-by-item. The two divine-name records are the
+most consequential and should be checked first.
+Artifact: `workspace-chirho/blind-vision-eval-chirho/heldout-witness-audit-chirho.json`.
+
 ## 3. Benchmark results
 
 All runs blind (crop paths only, labels sealed until scoring), n=40, disjoint
@@ -129,7 +190,7 @@ the Opus 5 session context, so Opus 5 drew provably disjoint samples
 
 | reader | input | exact | char | corrected exact |
 |---|---|---|---|---|
-| CRNN (held-out gold) | native crop | 0.9186 | 0.9719 | unknown — see §2 |
+| CRNN (held-out gold) | native crop | 0.9186 | 0.9719 | **0.8488** — see §2b |
 | Fable 5 | native crop | 0.800 | 0.939 | **0.900** (4 bad labels in its 40) |
 | Opus 5 | native crop | 0.675 | 0.874 | 0.700 (1 bad label) |
 | Opus 5 | 6x LANCZOS upscale | **0.850** | **0.957** | 0.850 (0 bad labels) |
