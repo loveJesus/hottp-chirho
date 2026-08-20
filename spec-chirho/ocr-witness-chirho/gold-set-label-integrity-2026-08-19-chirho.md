@@ -156,25 +156,40 @@ because that screen only caught labels >=10x rarer than a one-substitution
 neighbour.
 
 **Re-scoring the CRNN (checkpoint `aa7a0ff9`) against the witness-corrected
-labels:**
+labels.** `gpt_chirho`'s audit (f6b9b86) caught that an earlier revision of this
+section mixed two evaluation paths; re-derived here, both are reported
+separately.
 
-| labels | exact | char |
-|---|---|---|
-| as-published gold | 78/86 = 0.9070 | 0.9694 |
-| **witness-corrected** | **73/86 = 0.8488** | **0.9567** |
-| delta | **−0.058** | **−0.013** |
+| path | as-published gold | witness-corrected | delta |
+|---|---|---|---|
+| **batch 32** (what `score_heldout_chirho` actually runs, and the source of the quoted headline) | 79/86 = 0.9186 | **73/86 = 0.8488** | **−0.070** |
+| per-item (batch 1) | 78/86 = 0.9070 | 73/86 = 0.8488 | −0.058 |
 
-**So the direction is inflation and the magnitude is about 5.8 points of exact
-accuracy.** 7 of the 8 corrupt labels are false passes — the CRNN reproduces
-the corrupt reading and is scored correct. Only p0308 is a false fail. The
-earlier cancellation argument held only because it rested on the 2 defects the
-heuristic screen happened to surface; with the full split witnessed, the false
-passes dominate almost 7:1.
+The corrected score is **73/86 in both paths** — the correction is stable; only
+the *baseline* moves. So **the published headline is inflated by 7.0 points of
+exact accuracy**, and the −5.8 figure quoted earlier belongs to the per-item
+path only.
 
-*Reproducibility wrinkle:* `score_heldout_chirho` (batched) reports 79/86 while
-a per-item loop on the same labels and checkpoint gives 78/86 — one prediction
-changes with batch padding. The delta above is computed within one consistent
-loop, so it is unaffected, but the headline is not stable to batching either.
+Per-item status of the eight corrupt labels: **6 false passes, 1 false fail
+(p0308), and 1 wrong under both** (p0342 decodes `ילהוה`, matching neither).
+Net −5 = 6 − 1. Under batch 32 p0342 decodes `להוה`, becoming a seventh false
+pass: net −6 = 7 − 1. An earlier revision paired the per-item delta with the
+batch-32 breakdown; that is corrected.
+
+**The batching wrinkle is a defect, not a footnote.** Exactly two predictions
+change with batch size: p0252-x820-y1049 (`עפוו`→`אפוו`, wrong either way) and
+p0342 (`ילהוה`→`להוה`, which manufactures a false pass against corrupt gold).
+Mechanism, visible in code: `collate_chirho` computes `widths_chirho` and
+returns it, but `score_heldout_chirho` consumes only `batch_chirho[0]` and never
+passes widths to the model or the decoder — so the bidirectional LSTM runs
+across the full right-padded width and the greedy decode consumes
+padding-derived timesteps. The pad value is `torch.zeros`, not the image
+background, so the padding is active signal rather than neutral. `gpt_chirho`'s
+sweep: batch 1-4 give 78→73, batch 8-86 give 79→73.
+
+**Consequence: the reported metric is a function of batch size.** Any future
+quote of this number must name the batch size, and the width tensor should be
+honoured in decode before the metric is trusted at all.
 
 *Independent verification status (per item, 2026-08-20):*
 
@@ -189,16 +204,17 @@ loop, so it is unaffected, but the headline is not stable to batching either.
 | p0244-x1486-y361 | `gemini_chirho` (#14542) — confirmed **איכה** |
 | p0323-x937-y2402 | `gemini_chirho` (#14542) — confirmed **שלשם**, zero ink between ש and ם |
 
-**All 8 of 8 corrections are two-witness confirmed**, so the −5.8 delta is fully
+**All 8 of 8 corrections are two-witness confirmed** (`gpt_chirho` f6b9b86
+independently re-cut p0291/p0342/p0221/p0311 and reproduced the column
+arithmetic, centroids 7.18 and 7.33), so the inflation figure is fully
 evidenced. p0323 was verified deliberately last: it is the only correction that
 runs *against* the defect pattern (gold inserting a yod rather than substituting
 one), so confirming it is evidence the audit was reading pixels rather than
 pattern-matching to the defect it had already found.
 
-*Single-source item, explicitly not verified:* the batch-padding discrepancy
-(79/86 batched vs 78/86 per-item) rests on this session's observation alone.
-`gemini_chirho` confirmed it acknowledged that report rather than reproducing
-it. Anyone relying on it should re-run both paths.
+*Batch-padding item:* independently reproduced and extended by `gpt_chirho`
+(f6b9b86), which found the second changed string and the code mechanism.
+`gemini_chirho` acknowledged rather than reproduced this point.
 Artifact: `workspace-chirho/blind-vision-eval-chirho/heldout-witness-audit-chirho.json`.
 
 ## 3. Benchmark results
@@ -210,7 +226,7 @@ the Opus 5 session context, so Opus 5 drew provably disjoint samples
 
 | reader | input | exact | char | corrected exact |
 |---|---|---|---|---|
-| CRNN (held-out gold) | native crop | 0.9186 | 0.9719 | **0.8488** — see §2b |
+| CRNN (held-out gold) | native crop | 0.9186 | 0.9719 | **0.8488** (−7.0) — see §2b |
 | Fable 5 | native crop | 0.800 | 0.939 | **0.900** (4 bad labels in its 40) |
 | Opus 5 | native crop | 0.675 | 0.874 | 0.700 (1 bad label) |
 | Opus 5 | 6x LANCZOS upscale | **0.850** | **0.957** | 0.850 (0 bad labels) |
