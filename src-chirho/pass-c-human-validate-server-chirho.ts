@@ -1495,7 +1495,9 @@ function pageHtmlChirho(): string {
     .copy-command-chirho { border: 1px solid #aab1b9; background: white; padding: 7px 9px; cursor: pointer; font-size: 12px; }
     .copy-command-chirho:hover { background: #edf1f4; }
     .command-helper-note-chirho { font-size: 12px; color: #59636f; }
-    .segment-repair-grid-chirho { display: grid; grid-template-columns: 42px 72px 72px 132px minmax(180px, 1fr) 34px; gap: 6px; align-items: stretch; margin-top: 8px; }
+    .segment-repair-grid-chirho { display: grid; grid-template-columns: 30px 42px 72px 72px 132px minmax(180px, 1fr) 34px; gap: 6px; align-items: stretch; margin-top: 8px; }
+    .repair-select-cell-chirho { display: flex; align-items: center; justify-content: center; }
+    .segment-repair-row-selected-chirho input, .segment-repair-row-selected-chirho select, .segment-repair-row-selected-chirho textarea { border-color: #0b6b3a; background: #f2fbf5; }
     .segment-repair-row-chirho { display: contents; }
     .segment-repair-grid-chirho input, .segment-repair-grid-chirho select, .segment-repair-grid-chirho textarea { width: 100%; box-sizing: border-box; border: 1px solid #b8bec7; padding: 5px; min-height: 32px; }
     .segment-repair-grid-chirho textarea { resize: vertical; min-height: 34px; unicode-bidi: plaintext; }
@@ -2790,6 +2792,10 @@ function pageHtmlChirho(): string {
     }
     function repairRowChirho(spanChirho, updateChirho) {
       const rowChirho = elChirho("div", { classChirho: "segment-repair-row-chirho" });
+      const selectCellChirho = elChirho("div", { classChirho: "repair-select-cell-chirho" });
+      const selectBoxChirho = elChirho("input", { classChirho: "repair-select-chirho", type: "checkbox", "aria-label": "Select this box to merge" });
+      selectCellChirho.appendChild(selectBoxChirho);
+      rowChirho.appendChild(selectCellChirho);
       rowChirho.appendChild(elChirho("div", { classChirho: "mono-chirho repair-index-chirho", textChirho: String(spanChirho.segmentIndexChirho) }));
       const xInputChirho = elChirho("input", { classChirho: "repair-x-chirho", type: "number", min: "0", step: "1", value: String(spanChirho.xMinPxChirho) });
       const widthInputChirho = elChirho("input", { classChirho: "repair-width-chirho", type: "number", min: "1", step: "1", value: String(spanChirho.widthPxChirho) });
@@ -2819,12 +2825,41 @@ function pageHtmlChirho(): string {
     }
     function renderRepairRowsChirho(gridChirho, rowsChirho, updateChirho) {
       clearChirho(gridChirho);
-      for (const labelChirho of ["#", "left px", "width px", "script", "text", ""]) {
+      for (const labelChirho of ["", "#", "left px", "width px", "script", "text", ""]) {
         gridChirho.appendChild(elChirho("div", { classChirho: "label-chirho", textChirho: labelChirho }));
       }
       rowsChirho.forEach((rowChirho, indexChirho) => {
         gridChirho.appendChild(repairRowChirho({ ...rowChirho, segmentIndexChirho: indexChirho }, updateChirho));
       });
+    }
+    function selectedRepairRowIndexesChirho(gridChirho) {
+      return Array.from(gridChirho.querySelectorAll(".segment-repair-row-chirho"))
+        .map((rowChirho, indexChirho) => (rowChirho.querySelector(".repair-select-chirho").checked ? indexChirho : -1))
+        .filter((indexChirho) => indexChirho >= 0);
+    }
+    // Andrew's case: one printed phrase carved into several boxes, some of its
+    // words swallowed by the neighbouring French box. Merging the boxes back
+    // into one phrase is faster than deleting each tag and re-selecting.
+    function mergeRepairRowsChirho(rowsChirho, selectedChirho) {
+      const firstChirho = rowsChirho[selectedChirho[0]];
+      const lastChirho = rowsChirho[selectedChirho[selectedChirho.length - 1]];
+      const textsChirho = selectedChirho
+        .map((indexChirho) => (rowsChirho[indexChirho].utf8TextChirho ?? "").trim())
+        .filter((textChirho) => textChirho.length > 0);
+      // A merged phrase takes the first non-French script among its parts: the
+      // French box is usually the one that swallowed the words, not the subject.
+      const scriptsChirho = selectedChirho.map((indexChirho) => rowsChirho[indexChirho].scriptChirho);
+      const scriptChirho = scriptsChirho.find((candidateChirho) => candidateChirho !== "french-chirho") ?? scriptsChirho[0];
+      const mergedChirho = {
+        segmentIndexChirho: selectedChirho[0],
+        xMinPxChirho: firstChirho.xMinPxChirho,
+        widthPxChirho: lastChirho.xMinPxChirho + lastChirho.widthPxChirho - firstChirho.xMinPxChirho,
+        scriptChirho: scriptChirho,
+        utf8TextChirho: textsChirho.join(" ")
+      };
+      const remainingChirho = rowsChirho.filter((unusedChirho, indexChirho) => !selectedChirho.includes(indexChirho));
+      remainingChirho.splice(selectedChirho[0], 0, mergedChirho);
+      return remainingChirho;
     }
     function reindexRepairGridChirho(gridChirho) {
       Array.from(gridChirho.querySelectorAll(".repair-index-chirho")).forEach((nodeChirho, indexChirho) => {
@@ -2894,7 +2929,28 @@ function pageHtmlChirho(): string {
       });
       saveButtonChirho.addEventListener("click", () => saveSegmentRepairProposalChirho(itemChirho, kindSelectChirho, rationaleChirho, gridChirho, resultChirho));
       rationaleChirho.addEventListener("input", updateChirho);
+      const mergeButtonChirho = elChirho("button", { type: "button", textChirho: "Merge selected boxes" });
+      mergeButtonChirho.addEventListener("click", () => {
+        const rowsChirho = repairRowsFromGridChirho(gridChirho);
+        const selectedChirho = selectedRepairRowIndexesChirho(gridChirho);
+        if (selectedChirho.length < 2) {
+          setStatusChirho("Tick at least two boxes to merge them into one phrase.");
+          return;
+        }
+        const contiguousChirho = selectedChirho.every(
+          (indexChirho, positionChirho) => positionChirho === 0 || indexChirho === selectedChirho[positionChirho - 1] + 1
+        );
+        if (!contiguousChirho) {
+          setStatusChirho("Only boxes next to each other can merge into one phrase.");
+          return;
+        }
+        renderRowsChirho(mergeRepairRowsChirho(rowsChirho, selectedChirho));
+        kindSelectChirho.value = "merge-chirho";
+        updateChirho();
+        setStatusChirho("Merged " + selectedChirho.length + " boxes into one. Check the text, add a reason, then save the draft.");
+      });
       actionRowChirho.appendChild(splitButtonChirho);
+      actionRowChirho.appendChild(mergeButtonChirho);
       actionRowChirho.appendChild(addButtonChirho);
       boxChirho.appendChild(elChirho("div", { classChirho: "meta-grid-chirho" }, [
         elChirho("div", { textChirho: "Kind" }),

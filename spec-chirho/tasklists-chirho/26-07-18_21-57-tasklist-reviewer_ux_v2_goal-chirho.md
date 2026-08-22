@@ -64,8 +64,14 @@ fail-closed certification gate.
 - [ ] Draw-a-box on the scan: drag a rectangle, pick a script, type the
       transcription; stored as a manual segment proposal that augments or
       overrides OCR output (E).
-- [ ] Merge / split / delete existing auto-segments, including selecting
-      multiple chips to merge into one phrase (F).
+- [x] Merge / split / delete existing auto-segments, including selecting
+      multiple chips to merge into one phrase (F). (Split + per-row delete
+      already existed; 2026-08-22 added a select-checkbox column and
+      "Merge selected boxes" to the repair grid — merges adjacent boxes,
+      keeps the first non-French script, joins the texts, auto-sets Kind to
+      merge-chirho. Browser-verified on Andrew's own item 3:151:36:2: 4 boxes
+      -> 3, merged x=1105 w=183 script hebrew, "Geometry OK: contiguous
+      positive-width tiling covers 0..1288", save still gated on a reason.)
 - [ ] Manual-first mode for the toughest (handwritten) pages: reviewer tags
       everything themselves without fighting auto-detection (G).
 - [ ] Per-language reviewer filter: a volunteer can sweep "only Hebrew items" /
