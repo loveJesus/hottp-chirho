@@ -78,15 +78,24 @@ tired, outside your competence, or simply want another reviewer to handle it.
 Moves back to the prior item.
 
 `Copy link`:
-Copies a direct link to the current item. Use this when asking Hallelujah or
-Codex about a specific case.
+Copies a direct link to the current item. **Hit `Copy link` whenever an item
+confuses you**, paste it into your message, and move on with `Skip`. You do not
+have to explain the item - the link opens exactly what you were looking at, so
+a confusing item becomes something we can look at together instead of something
+you have to resolve alone or guess at.
 
 `Quickstart`:
 Opens a short in-app reminder for that station.
 
-Filters such as `Status`, `Tier`, `Script`, `Priority`, `Volume`, or `Text`:
+Filters such as `Status`, `Tier`, `Script`, `Priority`, `Volume`, `Language`,
+or `Text`:
 These narrow the queue. They do not change the item. If a filter leaves you
 with no items, set it back to `All`.
+
+`Language` is worth knowing about: set it to one script and you sweep only
+those items across the whole queue - useful when you want a run of Hebrew, or
+want to leave the Greek to someone who reads Greek. The shortcut row under the
+filters shows how many items each language has.
 
 Issue checkboxes:
 Use these when the item is not clean. Examples include wrong letters, vowel or
@@ -99,14 +108,57 @@ Only edit text when you are intentionally recording a correction and are sure
 what the printed text says. If the exact text is uncertain, flag the issue
 instead of guessing.
 
+## When The Box Itself Is Wrong
+
+Sometimes the text is not the problem - the red box is. It sits on the wrong
+word, covers two words, splits one word in half, or a printed word has no box
+at all. Do not retype text to work around a wrong box. Use the
+`Segment repair proposal` panel underneath the images instead.
+
+Everything in that panel is a **draft**. It never changes the stored text and
+never certifies anything; it records what you think the boxes should be, and a
+second person approves it before anything moves. Write a short reason - that is
+what the approver reads.
+
+Drag the red box:
+Drag the box itself to move it, or its side handles to resize it. The numbers
+in the grid follow your drag.
+
+`Split the red-box row`:
+Use when one box covers two separate things.
+
+`Merge selected boxes`:
+Tick the checkboxes next to two or more boxes that sit side by side, then press
+this. Use it when one printed phrase got carved across several boxes, or when a
+neighbouring box swallowed words that belong with yours. The texts join up, so
+you do not have to retype the phrase.
+
+`Draw a new box`:
+Use when a printed word has no box at all. Pick its language from the dropdown,
+press `Draw a new box`, then drag across the word on the crop. The new box
+takes the space you dragged and its neighbours give way; then type what is
+printed in it.
+
+`One box for the whole line`:
+For a page where the automatic boxes are simply wrong - handwriting, unusual
+layout - collapse the line into a single box and tag it yourself with
+`Draw a new box`. `keep text` keeps every existing reading joined together as a
+crib; `blank text` starts you from nothing. Nothing is lost either way:
+reloading the item brings the automatic boxes straight back.
+
+`Geometry` line:
+This must say `Geometry OK` before you can save. The boxes have to cover the
+line with no gaps and no overlaps, so if it complains, adjust a width until it
+is happy.
+
 ## Lane-Specific Guidance
 
 Raw Hebrew:
 Review Hebrew items from the Pass-C validator. Confirm exact letters, niqqud,
 accents, maqqef, punctuation, and segmentation only when you can see them in the
 print. If several words are lumped into one span, or one word is split across
-spans, flag segmentation or enter the corrected full text only if the tool
-clearly supports that repair.
+spans, fix the boxes with the segment repair panel described above rather than
+retyping text around the problem.
 
 Latin and symbols:
 Review French, Latin, references, apparatus signs, witness sigla, and ordinary

@@ -459,7 +459,7 @@ export function reviewerLaunchpadHtmlChirho(statusChirho: ReviewerLaunchpadStatu
     "  </header>",
     "  <main>",
     ...sectionsChirho.map((sectionChirho) => sectionHtmlChirho(sectionChirho)),
-    "    <p class=\"footer-chirho\">This page is generated from status-chirho.json and contains no save form. Certification still depends on the review servers and fail-closed status gate.</p>",
+    "    <p class=\"footer-chirho\">This page is generated from the certification status file and contains no save form. Certification still depends on the review servers and fail-closed status gate.</p>",
     "  </main>",
     "</body>",
     "</html>",

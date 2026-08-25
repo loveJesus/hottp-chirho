@@ -190,22 +190,54 @@ an approved repair. Close that gap.
       repair proposal (P — L.J.'s action).
 - [ ] Onboarding note with the live URL and credential handoff outside git
       (no secrets in the repo or the broker).
-- [ ] Handout gains the "hit Copy link whenever an item confuses you" feedback
-      loop so confusing items arrive as permalinks.
+- [x] Handout gains the "hit Copy link whenever an item confuses you" feedback
+      loop so confusing items arrive as permalinks. (2026-08-25. Reworded so
+      the reviewer is told to copy the link and move on with Skip WITHOUT
+      having to explain the item. Same pass added a "When The Box Itself Is
+      Wrong" section covering drag, split, merge, draw-a-box, manual-first and
+      the Geometry gate in plain language, plus the Language filter - the
+      handout previously told reviewers to retype text "only if the tool
+      clearly supports that repair", which is now stale and was corrected.)
 - [ ] Capture Andrew's first real-session feedback into
       `transcripts-chirho.md` actionables and fold deltas into this plan.
 
 ## Phase 7 — Verification Gates Chirho
 
-- [ ] Review-server guard scripts pass for raw Hebrew, Latin/symbol, and
+- [x] Review-server guard scripts pass for raw Hebrew, Latin/symbol, and
       expert lanes after every UI change (snippets updated in lockstep).
-- [ ] Certification guards and strict status stay red unless legitimately
+      (2026-08-25: raw Hebrew, Latin/symbol, expert, repair-approval, health
+      source coverage, VPS deployment templates and the new segment tiling
+      guard all pass.)
+- [x] Certification guards and strict status stay red unless legitimately
       reduced; reviewer-attribution guard still rejects forged identity.
-- [ ] Playwright smoke per changed station: launchpad, one read-only path, one
+      (2026-08-25: check-reviewer-attribution, check-certification-strict-status
+      and check-certification-status-gate-guards all pass; status regenerated
+      complete=false strictMode=false strictExport=false rawHebrew=90
+      visionTier=645 - unchanged by this work, which saved no validation.)
+- [x] Playwright smoke per changed station: launchpad, one read-only path, one
       write-capable path, and zero visible "-chirho" in reviewer-facing text.
-- [ ] `bun run check` and `bun run build` in `app-chirho`; `git diff --check`
-      clean; typecheck-certification clean.
-- [x] Redeploy changed stations to the VPS via the leased sync-out ritual
+      (2026-08-25. Raw station write-capable path shows the repair panel, draw
+      tool, manual-first and Language filter; read-only saved-issues path
+      correctly hides the repair panel and draw tool. A text-node + attribute
+      walk found ZERO leaks on both. The launchpad DID leak one - its footer
+      read "generated from status-chirho.json" - reworded to "generated from
+      the certification status file", keeping every safety claim; re-scanned
+      clean. Language filter verified live: 90 of 100 items, permalink kept,
+      shortcut reads "Only Hebrew (90)".)
+- [x] `bun run check` and `bun run build` in `app-chirho`; `git diff --check`
+      clean; typecheck-certification clean. (2026-08-25: svelte-check 615
+      files, 0 errors, 0 warnings; build succeeded with the Cloudflare adapter;
+      git diff --check clean; typecheck-certification clean.
+      check-certification-chirho passes every step EXCEPT its final local
+      station liveness probe, which needs ports 8766/8770/8771 up - they are
+      intentionally closed while the VPS is the canonical writer.)
+- [ ] Redeploy changed stations to the VPS via the leased sync-out ritual.
+      **STALE AS OF 2026-08-25**: the raw Hebrew station changed again (Phase 3
+      tools + the crop/line pixel fix), so the live VPS copy is older code and
+      still renders the red box off-crop on vol-5 items. A redeploy needs
+      L.J.'s explicit authorization and a FRESH write lease - the 2026-08-13
+      lease expired 2026-08-15. History of the completed 2026-08-13 round:
+- [x] (2026-08-13) Redeployed changed stations to the VPS via the leased sync-out ritual
       (stopped writers, decision + lease cited) and pass one remote smoke per
       changed station. (2026-08-13: fresh lease
       human-review-vps-write-lease-2026-08-13-cx33-chirho.json + July decision
