@@ -1,0 +1,16 @@
+{
+  "schema_version_chirho": 1,
+  "completed_chirho": true,
+  "lease_id_chirho": "2026-08-25-cx33-human-review-write-lease-chirho",
+  "recorded_at_chirho": "2026-08-25T20:50:00Z",
+  "recorded_by_chirho": "claude-opus5-chirho",
+  "owner_approval_reference_chirho": "chat-2026-07-03-user-said-do-cx33-chirho-and-chat-2026-07-04-user-said-attach-domain-too-chirho",
+  "writer_host_chirho": "195.201.101.25",
+  "canonical_writer_chirho": "vps-human-review-chirho",
+  "local_writes_paused_chirho": true,
+  "remote_review_servers_stopped_chirho": true,
+  "sqlite_checkpoint_or_stop_chirho": "stopped-review-servers-chirho",
+  "pull_strategy_chirho": "json-replay-with-quarantined-sqlite-chirho",
+  "expires_at_chirho": "2026-08-27T20:50:00Z",
+  "notes_chirho": "2026-08-25 redeploy on L.J.'s direct request 'yes redeploy'. Reason: the live raw Hebrew station renders the red box off-crop on vol-5 items (left 153.42% on 5:148:25:5) because crop geometry is image px while span geometry is line px; 39 of 100 raw-queue items are affected. This sync also carries the Phase 3 reviewer tools (draw-a-box, manual-first, per-language filter). Pre-sync inspection of the remote showed NOTHING to lose: remote pass_c_human_validations_chirho has 12 rows with latest updated_at 2026-06-04T05:49:21.909Z, byte-identical in review meaning to local (12 rows, same latest, all reviewer human-chirho), and the remote WAL was already 0 bytes from the 2026-08-13 checkpoint, so no review has been saved on the VPS since that sync. All four write-capable remote services stopped before rsync, including hottp-repair-approval-chirho.service, which this pass ADDED to the sync guard's writer list - it was added to the fleet on 2026-08-13 but never registered as a writer, so a sync could previously have run while it was mutating the proposal store being overwritten. Local write ports 8766, 8770, 8771 and 8772 verified closed. No new billable resources and no DNS changes."
+}

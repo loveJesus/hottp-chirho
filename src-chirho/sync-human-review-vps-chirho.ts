@@ -14,16 +14,22 @@ const LOCAL_PORT_CHECK_TIMEOUT_MS_CHIRHO = 500;
 const PROGRESS_DB_WAL_PATH_CHIRHO = resolve(PROJECT_ROOT_CHIRHO, "spec-chirho", "progress-chirho.sqlite-wal");
 const PROGRESS_DB_JOURNAL_PATH_CHIRHO = resolve(PROJECT_ROOT_CHIRHO, "spec-chirho", "progress-chirho.sqlite-journal");
 
+// Every process that can write review state must be stopped before sync-out,
+// because rsync --delete replaces the very files they write. The repair
+// approval station belongs here too: approving, rejecting, or applying a
+// proposal mutates the proposal store this sync overwrites.
 const WRITE_CAPABLE_LOCAL_PORTS_CHIRHO = [
   { labelChirho: "raw Hebrew review server", portChirho: 8766 },
   { labelChirho: "Latin/symbol review server", portChirho: 8770 },
   { labelChirho: "expert non-Latin review server", portChirho: 8771 },
+  { labelChirho: "segment repair approval server", portChirho: 8772 },
 ] as const;
 
 const WRITE_CAPABLE_REMOTE_SERVICES_CHIRHO = [
   "hottp-raw-review-chirho.service",
   "hottp-latin-symbol-review-chirho.service",
   "hottp-expert-review-chirho.service",
+  "hottp-repair-approval-chirho.service",
 ] as const;
 
 const EXCLUDES_CHIRHO = [
