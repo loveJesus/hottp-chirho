@@ -231,12 +231,33 @@ an approved repair. Close that gap.
       check-certification-chirho passes every step EXCEPT its final local
       station liveness probe, which needs ports 8766/8770/8771 up - they are
       intentionally closed while the VPS is the canonical writer.)
-- [ ] Redeploy changed stations to the VPS via the leased sync-out ritual.
-      **STALE AS OF 2026-08-25**: the raw Hebrew station changed again (Phase 3
-      tools + the crop/line pixel fix), so the live VPS copy is older code and
-      still renders the red box off-crop on vol-5 items. A redeploy needs
-      L.J.'s explicit authorization and a FRESH write lease - the 2026-08-13
-      lease expired 2026-08-15. History of the completed 2026-08-13 round:
+- [x] Redeploy changed stations to the VPS via the leased sync-out ritual
+      (stopped writers, decision + lease cited) and pass one remote smoke per
+      changed station. (2026-08-25 on L.J.'s "yes redeploy". Fresh lease
+      human-review-vps-write-lease-2026-08-25-cx33-chirho.json + the July
+      decision cited. Pre-sync the remote was inspected and had NOTHING to
+      lose: 12 validation rows, latest 2026-06-04, WAL already 0 bytes, and a
+      table-by-table comparison showed local >= remote on all 20 tables with no
+      remote-only table. All four write-capable services stopped - including
+      the repair-approval station, which this pass first ADDED to the sync
+      guard's writer list. Itemised dry run: 82 changes, ZERO deletions.
+      Post-sync: services all active, data intact at 12 rows, and the tiling
+      guard re-run ON the deployed tree passed under the VPS's Bun 1.3.14
+      (local is 1.2.14 - a real transpile risk, retired by running it there).
+      Smokes: unauth 401 on all four hosts; review credential 200 on
+      raw/latin/expert and 401 on repair-approval; approval credential 200;
+      unauth POST 401 on both submit and decide; direct ports 8766/8770/8771/
+      8772 blocked from the public internet while all four answer 200 on
+      loopback; ImageMagick crop path serves valid PNGs (520x54 span,
+      1174x83 line). Browser smoke through an SSH tunnel to the origin (no
+      credential exposed): served fingerprint da197063bbcd EQUALS local, all
+      five shared tiling functions live in the page, every Phase 3 control
+      present, zero page errors, and the vol-5 defect item 5:148:25:5 now
+      renders its red box at 53.55% - on the crop, screenshot-verified sitting
+      on מְלִיצַי רֵעָי - where the previously deployed code put it at 153.42%.
+      Drew a box on the live station: aimed 1620..1700, got x1620 w80,
+      geometry OK. No proposal saved, no validation row written.)
+      History of the completed 2026-08-13 round:
 - [x] (2026-08-13) Redeployed changed stations to the VPS via the leased sync-out ritual
       (stopped writers, decision + lease cited) and pass one remote smoke per
       changed station. (2026-08-13: fresh lease
