@@ -59,11 +59,22 @@ fail-closed certification gate.
       laptop session; synthetic pointer drag/resize is verified, but real
       trackpad/touch ergonomics still need human-session confirmation.
 
-## Phase 3 — Manual Segmentation Tools Chirho (E, F, G, I; H scoped later)
+## Phase 3 — Manual Segmentation Tools Chirho (E, F, G, I; H scoped later) — COMPLETE
 
-- [ ] Draw-a-box on the scan: drag a rectangle, pick a script, type the
+- [x] Draw-a-box on the scan: drag a rectangle, pick a script, type the
       transcription; stored as a manual segment proposal that augments or
-      overrides OCR output (E).
+      overrides OCR output (E). (2026-08-25. Geometry lives in the new
+      typechecked `src-chirho/segment-tiling-edit-chirho.ts`, shared VERBATIM
+      with the page - the server transpiles its marked block into the inline
+      script, and `check-segment-tiling-edit-chirho.ts` evaluates that exact
+      copy and diffs it against the module, so the two cannot drift. A drawn
+      box is never a floating rectangle: it carves the dragged x-range out of
+      the existing coverage, whole boxes it swallows hand over their text, a
+      clipped box keeps its text on the surviving stub. Real-mouse smokes on
+      3:151:36:2: aimed 1040..1140 -> x1040 w100, pointer-down started ON the
+      red box and the draw still won over the rebox drag; kind auto-set to
+      "split-chirho", focus jumped to the new row's text field, save stayed
+      gated on a reason. No proposal saved.)
 - [x] Merge / split / delete existing auto-segments, including selecting
       multiple chips to merge into one phrase (F). (Split + per-row delete
       already existed; 2026-08-22 added a select-checkbox column and
@@ -72,13 +83,54 @@ fail-closed certification gate.
       merge-chirho. Browser-verified on Andrew's own item 3:151:36:2: 4 boxes
       -> 3, merged x=1105 w=183 script hebrew, "Geometry OK: contiguous
       positive-width tiling covers 0..1288", save still gated on a reason.)
-- [ ] Manual-first mode for the toughest (handwritten) pages: reviewer tags
-      everything themselves without fighting auto-detection (G).
-- [ ] Per-language reviewer filter: a volunteer can sweep "only Hebrew items" /
-      "only Greek items" across a volume (I).
-- [ ] Scope the language-tagging-pass workflow (human tags → language-
+- [x] Manual-first mode for the toughest (handwritten) pages: reviewer tags
+      everything themselves without fighting auto-detection (G). (2026-08-25.
+      Two buttons collapse the line to a single box - "keep text" joins every
+      reading as a crib, "blank text" starts empty - and the reviewer then
+      draws their own boxes. No modal: both are one click, draft-only, and
+      reloading the item restores the automatic boxes (verified: 1 row after,
+      4 rows on reload). Smoke drew a hand box at 1100..1180 from a blank
+      slate; tiling stayed exact.)
+- [x] Per-language reviewer filter: a volunteer can sweep "only Hebrew items" /
+      "only Greek items" across a volume (I). (2026-08-25. "Language" toolbar
+      select + `?script-chirho=` permalink + a counted lane shortcut per
+      script. Options are generated from the scripts the loaded queue actually
+      contains, so no dead option is ever offered, and labels are plain
+      language - the raw Hebrew queue correctly shows only "Hebrew". Composes
+      with the volume filter, and a permalink to an item of another script
+      clears the filter rather than showing an empty queue.)
+- [x] Scope the language-tagging-pass workflow (human tags → language-
       constrained OCR → review) as its own follow-on plan; record the decision
-      here rather than building it in this goal (H).
+      here rather than building it in this goal (H). (2026-08-25, scoped and
+      NOT started: `26-08-25_18-45-tasklist-language_tagging_pass_scope-chirho.md`.
+      Decision: deferred because no per-language reader exists for Greek or
+      Syriac, so a tagging pass would today hand those boxes to an engine that
+      cannot read them - the same weak-oracle trap the gold-label audit found.
+      Revisit after Andrew's first real session.)
+
+### Defect found and fixed while building Phase 3 Chirho
+
+- [x] Crop/line pixel units were mixed in the reviewer surface. Zoom-crop
+      geometry is IMAGE pixels; span geometry is LINE pixels. Vol-5 line images
+      are stored at ~0.667x, so `updateTargetMarkerFromRepairRowsChirho` put the
+      red box at **left 153.42%** on item 5:148:25:5 - off the crop, invisible -
+      and `lineXFromPointerChirho` mapped a pointer to the wrong line-x, so a
+      Phase-2 rebox drag would have written wrong geometry into a draft. This
+      was already SHIPPED (Phase 2 ticked, station live). 39 of the 100 items in
+      the raw queue are affected, all vol-5. Fixed with
+      `cropFractionToLineXChirho` / `lineXToCropFractionChirho` in the shared
+      module; the marker now renders at 53.55% against the server's own 52.03%
+      (the residual is the word-box padding), unscaled lines are byte-unchanged,
+      and a draw on the scaled line aimed at 1600..1750 produced exactly
+      x1600 w150 in line pixels. Screenshot-verified: the red box sits on
+      מְלִיצַי רֵעָי. The guard states the defect as a test (marker left must be
+      within 0..100%). Blast radius on stored data: none - the only vol-5 draft
+      of the 26 parked (5:69:7:8) came from the machine sweep, not a browser
+      drag, so no parked proposal carries wrong geometry.
+- [x] `src-chirho/segment-repair-store-lock-chirho.ts` was missing from the raw
+      review server's source-fingerprint list, so edits to the store lock did
+      not mark that server stale. Pre-existing; confirmed against HEAD with the
+      fix stashed, then closed.
 
 ## Phase 4 — Repair Proposal Apply Lane Chirho
 
