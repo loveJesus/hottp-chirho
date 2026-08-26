@@ -5,6 +5,7 @@ import { existsSync, readFileSync, statSync } from "fs";
 import { connect } from "net";
 import { resolve, sep } from "path";
 
+import { assertBunVersionsMatchPinChirho } from "./check-bun-version-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
 const MODULE_CHIRHO = "sync-human-review-vps-chirho";
@@ -204,6 +205,20 @@ function assertWriteLeaseApprovalReferenceForApplyChirho(
   }
 }
 
+/**
+ * The review page ships a transpiled copy of the shared tiling block, produced
+ * by whichever Bun runs the station. Deploying onto a host with a different Bun
+ * could therefore put untested browser code in front of a reviewer, so sync-out
+ * refuses until the host matches the pin in .bun-version.
+ */
+function assertBunPinForApplyChirho(argsChirho: string[], hostChirho: string): void {
+  if (!argsChirho.includes("--apply-chirho")) return;
+  assertBunVersionsMatchPinChirho([
+    `--host-chirho=${hostChirho}`,
+    `--remote-user-chirho=${remoteUserChirho(argsChirho)}`,
+  ]);
+}
+
 function assertProgressDbCheckpointedForApplyChirho(argsChirho: string[]): void {
   if (!argsChirho.includes("--apply-chirho")) return;
   const unsafeSidecarsChirho = [
@@ -320,6 +335,7 @@ async function mainChirho(): Promise<void> {
   if (!printOnlyChirho) assertProgressDbCheckpointedForApplyChirho(argsChirho);
   if (!printOnlyChirho) await assertLocalWritePortsStoppedForApplyChirho(argsChirho);
   if (!printOnlyChirho) assertRemoteWriteServicesStoppedForApplyChirho(argsChirho, hostChirho);
+  if (!printOnlyChirho) assertBunPinForApplyChirho(argsChirho, hostChirho);
   const rsyncArgsValueChirho = rsyncArgsChirho(argsChirho);
   console.log(
     `[${MODULE_CHIRHO}] ${["rsync", ...rsyncArgsValueChirho].map(shellQuoteChirho).join(" ")}`

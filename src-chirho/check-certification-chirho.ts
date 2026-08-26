@@ -73,6 +73,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
     argsChirho: [process.execPath, "run", "check-segment-tiling-edit-chirho"],
   },
   {
+    labelChirho: "Bun toolchain pin",
+    argsChirho: [process.execPath, "run", "check-bun-version-chirho"],
+  },
+  {
     labelChirho: "policy preparation CLI guards",
     argsChirho: [process.execPath, "run", "check-policy-preparation-cli-guards-chirho"],
   },
