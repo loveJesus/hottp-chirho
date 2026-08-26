@@ -257,6 +257,24 @@ an approved repair. Close that gap.
       on מְלִיצַי רֵעָי - where the previously deployed code put it at 153.42%.
       Drew a box on the live station: aimed 1620..1700, got x1620 w80,
       geometry OK. No proposal saved, no validation row written.)
+- [x] Toolchain pinned so the two sides cannot silently diverge again.
+      (2026-08-25. The version gap found during the redeploy - local 1.2.14 vs
+      host 1.3.14 - mattered because the page ships a TRANSPILED copy of the
+      shared tiling block, so a host on a different Bun could show a reviewer
+      code that was never tested. Both sides moved to Bun 1.4.0 on L.J.'s
+      call. The transpiled block is byte-identical across 1.2.14 / 1.3.14 /
+      1.4.0 at 6554 bytes, and its sha256 built ON the host equals the local
+      one (35939e0e5149...), so the risk never materialised - but nothing
+      guaranteed it. .bun-version now holds the exact version and
+      check-bun-version-chirho enforces it locally and, via --host-chirho, on
+      the review host; it runs inside check-certification AND inside the
+      sync-out apply sequence, so a deploy onto a mismatched host fails closed.
+      The guard was proven to fire, refusing the host while it was still on
+      1.3.14. Re-smoked live after the upgrade: zero page errors, all Phase 3
+      controls present, vol-5 red box on the crop at 53.55%, draw 1620..1700
+      -> x1620 w80, manual-first collapsed to 1 row, ImageMagick still serving
+      valid PNGs. Caveat: 1.4.0 was 5 days old at adoption, so a 1.4.x patch
+      is worth watching for.)
       History of the completed 2026-08-13 round:
 - [x] (2026-08-13) Redeployed changed stations to the VPS via the leased sync-out ritual
       (stopped writers, decision + lease cited) and pass one remote smoke per
