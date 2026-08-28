@@ -72,6 +72,7 @@
     "check-pass-c-human-review-server-guards-chirho": "bun run src-chirho/check-pass-c-human-review-server-guards-chirho.ts",
     "check-segment-repair-approval-server-guards-chirho": "bun run src-chirho/check-segment-repair-approval-server-guards-chirho.ts",
     "check-bun-version-chirho": "bun run src-chirho/check-bun-version-chirho.ts",
+    "check-canonical-review-stations-chirho": "bun run src-chirho/check-canonical-review-stations-chirho.ts",
     "check-segment-tiling-edit-chirho": "bun run src-chirho/check-segment-tiling-edit-chirho.ts",
     "check-policy-preparation-cli-guards-chirho": "bun run src-chirho/check-policy-preparation-cli-guards-chirho.ts",
     "check-vision-tier-expert-review-server-guards-chirho": "bun run src-chirho/check-vision-tier-expert-review-server-guards-chirho.ts",

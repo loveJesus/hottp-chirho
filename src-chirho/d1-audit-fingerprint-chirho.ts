@@ -8,15 +8,16 @@ import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 
-const LOCAL_D1_DIR_CHIRHO = join(
-  PROJECT_ROOT_CHIRHO,
-  "app-chirho",
-  ".wrangler",
-  "state",
-  "v3",
-  "d1",
-  "miniflare-D1DatabaseObject"
-);
+/**
+ * Project-relative home of the local D1 audit database. Exported because the
+ * review-station sync has to carry this one file out of an otherwise excluded
+ * `.wrangler/` tree: the Latin/symbol and expert stations derive part of their
+ * review queue from it and fail closed when it is absent.
+ */
+export const LOCAL_D1_AUDIT_RELATIVE_DIR_CHIRHO =
+  "app-chirho/.wrangler/state/v3/d1/miniflare-D1DatabaseObject";
+
+const LOCAL_D1_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, ...LOCAL_D1_AUDIT_RELATIVE_DIR_CHIRHO.split("/"));
 
 export interface D1AuditFingerprintChirho {
   dbPathChirho: string;

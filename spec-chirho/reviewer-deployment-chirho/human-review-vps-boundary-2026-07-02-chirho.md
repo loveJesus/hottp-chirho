@@ -71,6 +71,7 @@ Current review station ports:
 - `:8766` raw Hebrew human validator.
 - `:8770` Latin/symbol review.
 - `:8771` expert non-Latin review.
+- `:8772` segment repair approval station.
 
 Other local tools, such as glyph review, labeling, polygon annotation, font
 specimen, and Hebrew validation, follow the same localhost-only rule.
@@ -86,6 +87,30 @@ Only one box owns human-review writes at a time. The canonical writer owns:
 
 Do not run competing write-capable review servers against separate copies of the
 same review state. SQLite files are binary and do not merge safely.
+
+Which box currently owns the stations is recorded in
+`spec-chirho/reviewer-deployment-chirho/human-review-canonical-stations-chirho.json`.
+That record is standing state, unlike a write lease, which authorizes a single
+sync-out window and then expires. Two things read it:
+
+- `bun run review-servers-chirho -- --check-chirho` probes the stations where
+  they actually live, so the certification bundle's liveness gate reports a real
+  outage instead of the expected absence of local servers.
+- `bun run review-servers-chirho` refuses to start local writers while a
+  deployed fleet is canonical, which is the single-writer rule enforced rather
+  than merely documented. `--local-writer-anyway-chirho` overrides it once
+  ownership has genuinely come back to the workstation.
+
+## D1 Audit Database Sync Rule Chirho
+
+The Latin/symbol and expert stations derive part of their review queue from the
+local D1 audit database under `app-chirho/.wrangler/`. The sync excludes
+`.wrangler/` wholesale, so that database has to be carried by explicit rsync
+include rules; without it those two stations answer HTTP 500 "packet is stale"
+for every request, because their live item count falls short by exactly the
+D1-derived items. `check-canonical-review-stations-chirho` pins those include
+rules, and sync-out refuses to ship a D1 database whose recent commits are still
+sitting in a WAL or rollback journal.
 
 ## Asset Sync Rule Chirho
 

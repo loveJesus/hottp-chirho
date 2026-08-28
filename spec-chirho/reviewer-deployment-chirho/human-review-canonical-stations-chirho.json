@@ -1,0 +1,35 @@
+{
+  "schema_version_chirho": 1,
+  "canonical_location_chirho": "vps-chirho",
+  "recorded_at_chirho": "2026-08-28T15:05:00Z",
+  "recorded_by_chirho": "claude-opus5-chirho",
+  "authorization_reference_chirho": "chat-2026-07-03-user-said-do-cx33-chirho-and-chat-2026-07-04-user-said-attach-domain-too-chirho-and-chat-2026-08-25-user-said-yes-redeploy-chirho",
+  "writer_host_chirho": "195.201.101.25",
+  "notes_chirho": "Standing record of WHERE the canonical human-review stations live, distinct from a write lease, which only authorizes one sync-out window. The review-server health check probes these stations when the location is vps-chirho, so a red bundle means a real outage or stale deployed code rather than the expected absence of local servers. Flip canonical_location_chirho back to local-chirho only when the workstation genuinely owns human-review writes again; the boundary rule is one writer at a time.",
+  "stations_chirho": [
+    {
+      "key_chirho": "raw-hebrew-chirho",
+      "label_chirho": "Raw Hebrew live validator",
+      "url_chirho": "https://raw-review.bible.systems/",
+      "credential_chirho": "review-basic-auth-chirho"
+    },
+    {
+      "key_chirho": "latin-symbol-chirho",
+      "label_chirho": "Latin/symbol live reviewer",
+      "url_chirho": "https://latin-review.bible.systems/",
+      "credential_chirho": "review-basic-auth-chirho"
+    },
+    {
+      "key_chirho": "expert-non-latin-chirho",
+      "label_chirho": "Expert non-Latin live reviewer",
+      "url_chirho": "https://expert-review.bible.systems/",
+      "credential_chirho": "review-basic-auth-chirho"
+    },
+    {
+      "key_chirho": "segment-repair-approval-chirho",
+      "label_chirho": "Segment repair approval station",
+      "url_chirho": "https://repair-approval.bible.systems/",
+      "credential_chirho": "approval-basic-auth-chirho"
+    }
+  ]
+}

@@ -18,6 +18,7 @@ const REVIEW_SERVER_KEYS_CHIRHO: ReviewServerKeyChirho[] = [
   "raw-hebrew-chirho",
   "latin-symbol-chirho",
   "expert-non-latin-chirho",
+  "segment-repair-approval-chirho",
 ];
 
 const FROM_IMPORT_RE_CHIRHO = /\bfrom\s+["'](\.[^"']+)["']/g;

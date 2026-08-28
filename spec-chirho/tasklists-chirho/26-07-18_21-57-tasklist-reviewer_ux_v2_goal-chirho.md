@@ -203,6 +203,61 @@ an approved repair. Close that gap.
 
 ## Phase 7 — Verification Gates Chirho
 
+- [x] The certification bundle's liveness gate checks the stations where they
+      actually live. It probed localhost while the VPS owned the fleet, so it
+      exited 1 on every run for a legitimate operational reason, which trains
+      everyone to ignore a red bundle and hides real regressions.
+      (2026-08-28. `human-review-canonical-stations-chirho.json` records the
+      standing location; `review-servers-chirho --check-chirho` probes the
+      deployed stations over HTTPS with the .env basic-auth credentials and
+      asserts the same things as locally - 200, no-store, key match, source
+      fingerprint equal to current local source. Both branches exercised.)
+- [x] `review-servers-chirho` refuses to start local writers while a deployed
+      fleet is the recorded canonical writer, with
+      `--local-writer-anyway-chirho` as the deliberate override. The
+      single-writer rule was documented but not enforced. (2026-08-28)
+- [x] The approval station is covered by the review-server source-coverage
+      guard; `segment-repair-approval-chirho` was missing from its key list, so
+      that station's fingerprint list was never checked against its imports.
+      (2026-08-28, passes with the key added)
+- [x] The guard scripts are themselves typechecked.
+      `check-bun-version-chirho`, `check-segment-tiling-edit-chirho` and the new
+      `check-canonical-review-stations-chirho` were outside
+      `tsconfig-certification-chirho.json`. (2026-08-28)
+
+### Defect found by the fixed liveness gate Chirho
+
+The first honest run of the gate found two of the four live stations broken:
+`latin-review` and `expert-review` answer HTTP 500 on
+`/api-chirho/state-chirho` with "packet is stale: packet has 567 item(s), live
+state has 559" and "645 / 644".
+
+Root cause, proven rather than inferred: the sync excludes `.wrangler/`, and the
+host has no `app-chirho/.wrangler` directory at all, so the local D1 audit
+database never travelled. Those two stations derive part of their queue from it.
+Locally the Latin queue is 559 explicit-span + 8 D1-derived = 567, matching the
+packet; on the host the 8 D1-derived items are absent, giving 559. The expert
+queue loses its single D1-derived item, 645 to 644. The span corpus is identical
+on both sides at 1789 files, so the D1 database is the whole difference.
+
+Why it went unnoticed: `/` returns 200 because the HTML shell renders; only the
+data call fails. The only recorded VPS smoke evidence is
+`human-review-vps-smoke-evidence-2026-07-18-cx33-raw-hebrew-chirho.json`, which
+covers the raw Hebrew station alone, and the D1-derived items predate the first
+2026-07-02 deploy. There is no evidence these two stations ever worked on the
+VPS.
+
+- [x] Fix the sync rules so the D1 audit database travels, keeping the rest of
+      `.wrangler/` excluded, and refuse to ship a D1 database whose commits are
+      still in a WAL or rollback journal. (2026-08-28. Itemized dry run against
+      the host: exactly one new file, the D1 `.sqlite`, plus its five parent
+      directories; zero deletions; no `-wal`/`-shm` carried. The guard was
+      mutation-tested - removing the include turns it red.)
+- [ ] Redeploy so the two broken stations serve again, then confirm the
+      liveness gate goes green. BLOCKED: needs L.J.'s authorization and a fresh
+      write lease; the 2026-08-25 lease expired 2026-08-27.
+
+
 - [x] Review-server guard scripts pass for raw Hebrew, Latin/symbol, and
       expert lanes after every UI change (snippets updated in lockstep).
       (2026-08-25: raw Hebrew, Latin/symbol, expert, repair-approval, health

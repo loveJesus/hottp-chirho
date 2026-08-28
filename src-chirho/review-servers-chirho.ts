@@ -9,6 +9,14 @@
  * committable backup files.
  */
 
+import {
+  canonicalReviewBasicAuthHeaderChirho,
+  canonicalReviewCredentialEnvNamesChirho,
+  canonicalReviewCredentialValueChirho,
+  readCanonicalReviewStationsChirho,
+  CANONICAL_REVIEW_STATIONS_RELATIVE_PATH_CHIRHO,
+  type CanonicalReviewStationChirho,
+} from "./canonical-review-stations-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import {
   reviewServerHeadersHaveNoStoreChirho,
@@ -19,6 +27,7 @@ import {
 
 const MODULE_CHIRHO = "review-servers-chirho";
 const CHECK_TIMEOUT_MS_CHIRHO = 3000;
+const DEPLOYED_CHECK_TIMEOUT_MS_CHIRHO = 10000;
 const START_TIMEOUT_MS_CHIRHO = 8000;
 
 interface ReviewServerChirho {
@@ -29,8 +38,16 @@ interface ReviewServerChirho {
   probePathsChirho: string[];
 }
 
+interface ProbeTargetChirho {
+  keyChirho: ReviewServerKeyChirho;
+  labelChirho: string;
+  baseUrlChirho: string;
+  probePathsChirho: string[];
+  authHeaderChirho: string | null;
+}
+
 interface ServerCheckChirho {
-  serviceChirho: ReviewServerChirho;
+  targetChirho: ProbeTargetChirho;
   runningChirho: boolean;
   statusChirho: number | null;
   errorChirho: string | null;
@@ -72,32 +89,70 @@ const REVIEW_SERVERS_CHIRHO: ReviewServerChirho[] = [
 
 function usageChirho(): string {
   return [
-    `Usage: bun run review-servers-chirho [--check-chirho] [--restart-stale-chirho]`,
+    `Usage: bun run review-servers-chirho [--check-chirho] [--restart-stale-chirho] [--local-writer-anyway-chirho]`,
     "",
     "Default mode starts any missing standard review servers and keeps this process open.",
-    "Check mode reports whether the standard review servers respond, without starting anything.",
+    `Check mode reports whether the canonical review stations respond, without starting anything; ${CANONICAL_REVIEW_STATIONS_RELATIVE_PATH_CHIRHO} decides whether that means localhost or the deployed fleet.`,
+    "Local-writer-anyway mode starts local writers even while a deployed fleet is the recorded canonical writer.",
     "Restart-stale mode may stop a responding stale server only when its health endpoint identifies it as the same review service.",
   ].join("\n");
 }
 
-function serverUrlChirho(serviceChirho: ReviewServerChirho): string {
-  return `http://localhost:${serviceChirho.portChirho}/`;
+function localTargetChirho(serviceChirho: ReviewServerChirho): ProbeTargetChirho {
+  return {
+    keyChirho: serviceChirho.keyChirho,
+    labelChirho: serviceChirho.labelChirho,
+    baseUrlChirho: `http://localhost:${serviceChirho.portChirho}/`,
+    probePathsChirho: serviceChirho.probePathsChirho,
+    authHeaderChirho: null,
+  };
 }
 
-function serverProbeUrlChirho(serviceChirho: ReviewServerChirho, probePathChirho: string): string {
-  return new URL(probePathChirho, serverUrlChirho(serviceChirho)).toString();
+/**
+ * Build a probe target for a deployed station. Missing credentials are an
+ * error rather than an unauthenticated probe, because a 401 would otherwise
+ * read as "station down" and hide the real cause.
+ */
+function deployedTargetChirho(stationChirho: CanonicalReviewStationChirho): ProbeTargetChirho {
+  const credentialChirho = canonicalReviewCredentialValueChirho(stationChirho.credentialChirho);
+  if (credentialChirho === null) {
+    const namesChirho = canonicalReviewCredentialEnvNamesChirho(stationChirho.credentialChirho);
+    throw new Error(
+      `${stationChirho.labelChirho} needs ${namesChirho.userEnvChirho} and ${namesChirho.passwordEnvChirho} in .env to probe ${stationChirho.urlChirho}`
+    );
+  }
+  const localServiceChirho = REVIEW_SERVERS_CHIRHO.find((serviceChirho) => serviceChirho.keyChirho === stationChirho.keyChirho);
+  return {
+    keyChirho: stationChirho.keyChirho,
+    labelChirho: stationChirho.labelChirho,
+    baseUrlChirho: stationChirho.urlChirho,
+    probePathsChirho: localServiceChirho?.probePathsChirho ?? ["/"],
+    authHeaderChirho: canonicalReviewBasicAuthHeaderChirho(credentialChirho),
+  };
+}
+
+function targetProbeUrlChirho(targetChirho: ProbeTargetChirho, probePathChirho: string): string {
+  return new URL(probePathChirho, targetChirho.baseUrlChirho).toString();
+}
+
+function targetRequestInitChirho(targetChirho: ProbeTargetChirho, signalChirho: AbortSignal): RequestInit {
+  return {
+    signal: signalChirho,
+    ...(targetChirho.authHeaderChirho === null ? {} : { headers: { Authorization: targetChirho.authHeaderChirho } }),
+  };
 }
 
 async function fetchServerHealthChirho(
-  serviceChirho: ReviewServerChirho,
+  targetChirho: ProbeTargetChirho,
   timeoutMsChirho: number
 ): Promise<FetchedReviewServerHealthChirho> {
   const abortControllerChirho = new AbortController();
   const timeoutChirho = setTimeout(() => abortControllerChirho.abort(), timeoutMsChirho);
   try {
-    const responseChirho = await fetch(serverProbeUrlChirho(serviceChirho, "/api-chirho/server-health-chirho"), {
-      signal: abortControllerChirho.signal,
-    });
+    const responseChirho = await fetch(
+      targetProbeUrlChirho(targetChirho, "/api-chirho/server-health-chirho"),
+      targetRequestInitChirho(targetChirho, abortControllerChirho.signal)
+    );
     if (!responseChirho.ok) throw new Error(`HTTP ${responseChirho.status}`);
     return {
       healthChirho: (await responseChirho.json()) as ReviewServerHealthChirho,
@@ -108,21 +163,19 @@ async function fetchServerHealthChirho(
   }
 }
 
-async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChirho = CHECK_TIMEOUT_MS_CHIRHO): Promise<ServerCheckChirho> {
+async function checkTargetChirho(targetChirho: ProbeTargetChirho, timeoutMsChirho = CHECK_TIMEOUT_MS_CHIRHO): Promise<ServerCheckChirho> {
   const checkedUrlsChirho: string[] = [];
   let noStoreErrorChirho: string | null = null;
-  for (const probePathChirho of serviceChirho.probePathsChirho) {
-    const probeUrlChirho = serverProbeUrlChirho(serviceChirho, probePathChirho);
+  for (const probePathChirho of targetChirho.probePathsChirho) {
+    const probeUrlChirho = targetProbeUrlChirho(targetChirho, probePathChirho);
     checkedUrlsChirho.push(probeUrlChirho);
     const abortControllerChirho = new AbortController();
     const timeoutChirho = setTimeout(() => abortControllerChirho.abort(), timeoutMsChirho);
     try {
-      const responseChirho = await fetch(probeUrlChirho, {
-        signal: abortControllerChirho.signal,
-      });
+      const responseChirho = await fetch(probeUrlChirho, targetRequestInitChirho(targetChirho, abortControllerChirho.signal));
       if (!responseChirho.ok) {
         return {
-          serviceChirho,
+          targetChirho,
           runningChirho: false,
           statusChirho: responseChirho.status,
           errorChirho: `${probePathChirho} HTTP ${responseChirho.status}`,
@@ -139,7 +192,7 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
     } catch (errorChirho) {
       const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
       return {
-        serviceChirho,
+        targetChirho,
         runningChirho: false,
         statusChirho: null,
         errorChirho: `${probePathChirho} ${messageChirho}`,
@@ -153,21 +206,21 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
       clearTimeout(timeoutChirho);
     }
   }
-  const expectedFingerprintChirho = reviewServerSourceFingerprintChirho(serviceChirho.keyChirho);
-  const healthUrlChirho = serverProbeUrlChirho(serviceChirho, "/api-chirho/server-health-chirho");
+  const expectedFingerprintChirho = reviewServerSourceFingerprintChirho(targetChirho.keyChirho);
+  const healthUrlChirho = targetProbeUrlChirho(targetChirho, "/api-chirho/server-health-chirho");
   checkedUrlsChirho.push(healthUrlChirho);
   try {
-    const healthResultChirho = await fetchServerHealthChirho(serviceChirho, timeoutMsChirho);
+    const healthResultChirho = await fetchServerHealthChirho(targetChirho, timeoutMsChirho);
     const healthChirho = healthResultChirho.healthChirho;
     const staleSameServiceChirho =
       healthChirho.schemaVersionChirho === 1 &&
-      healthChirho.keyChirho === serviceChirho.keyChirho;
+      healthChirho.keyChirho === targetChirho.keyChirho;
     if (!healthResultChirho.noStoreChirho) {
       noStoreErrorChirho ??= "/api-chirho/server-health-chirho missing no-store cache control";
     }
     if (noStoreErrorChirho !== null) {
       return {
-        serviceChirho,
+        targetChirho,
         runningChirho: false,
         statusChirho: 200,
         errorChirho: noStoreErrorChirho,
@@ -180,12 +233,12 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
     }
     if (
       healthChirho.schemaVersionChirho !== 1 ||
-      healthChirho.keyChirho !== serviceChirho.keyChirho ||
+      healthChirho.keyChirho !== targetChirho.keyChirho ||
       healthChirho.sourceFingerprintChirho !== expectedFingerprintChirho.sourceFingerprintChirho ||
       healthChirho.sourceFileCountChirho !== expectedFingerprintChirho.sourceFileCountChirho
     ) {
       return {
-        serviceChirho,
+        targetChirho,
         runningChirho: false,
         statusChirho: 200,
         errorChirho:
@@ -200,7 +253,7 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
       };
     }
     return {
-      serviceChirho,
+      targetChirho,
       runningChirho: true,
       statusChirho: 200,
       errorChirho: null,
@@ -213,7 +266,7 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
   } catch (errorChirho) {
     const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
     return {
-      serviceChirho,
+      targetChirho,
       runningChirho: false,
       statusChirho: null,
       errorChirho: `/api-chirho/server-health-chirho ${messageChirho}`,
@@ -226,6 +279,10 @@ async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChi
   }
 }
 
+async function checkServerChirho(serviceChirho: ReviewServerChirho, timeoutMsChirho = CHECK_TIMEOUT_MS_CHIRHO): Promise<ServerCheckChirho> {
+  return checkTargetChirho(localTargetChirho(serviceChirho), timeoutMsChirho);
+}
+
 async function waitForServerChirho(serviceChirho: ReviewServerChirho): Promise<ServerCheckChirho> {
   const deadlineChirho = Date.now() + START_TIMEOUT_MS_CHIRHO;
   let lastCheckChirho = await checkServerChirho(serviceChirho);
@@ -236,23 +293,45 @@ async function waitForServerChirho(serviceChirho: ReviewServerChirho): Promise<S
   return lastCheckChirho;
 }
 
+function localServerUrlChirho(serviceChirho: ReviewServerChirho): string {
+  return `http://localhost:${serviceChirho.portChirho}/`;
+}
+
 function printCheckChirho(checkChirho: ServerCheckChirho): void {
-  const urlChirho = serverUrlChirho(checkChirho.serviceChirho);
+  const urlChirho = checkChirho.targetChirho.baseUrlChirho;
   if (checkChirho.runningChirho) {
     console.log(
-      `[${MODULE_CHIRHO}] ok ${checkChirho.serviceChirho.labelChirho}: ${urlChirho}` +
+      `[${MODULE_CHIRHO}] ok ${checkChirho.targetChirho.labelChirho}: ${urlChirho}` +
         ` (${checkChirho.checkedUrlsChirho.length} probe(s), source ${checkChirho.sourceFingerprintChirho?.slice(0, 12) ?? "unknown"})`
     );
     return;
   }
   console.log(
-    `[${MODULE_CHIRHO}] down ${checkChirho.serviceChirho.labelChirho}: ${urlChirho}` +
+    `[${MODULE_CHIRHO}] down ${checkChirho.targetChirho.labelChirho}: ${urlChirho}` +
       (checkChirho.errorChirho === null ? "" : ` (${checkChirho.errorChirho})`)
   );
 }
 
+/**
+ * Check the stations wherever they canonically live. Probing localhost while
+ * the VPS owns human-review writes reports a permanent, meaningless red, so
+ * the committed canonical-stations record decides which fleet is checked.
+ */
 async function checkAllChirho(): Promise<boolean> {
-  const checksChirho = await Promise.all(REVIEW_SERVERS_CHIRHO.map((serviceChirho) => checkServerChirho(serviceChirho)));
+  const canonicalChirho = readCanonicalReviewStationsChirho();
+  if (canonicalChirho.canonicalLocationChirho === "local-chirho") {
+    console.log(`[${MODULE_CHIRHO}] canonical review stations: local workstation`);
+    const checksChirho = await Promise.all(REVIEW_SERVERS_CHIRHO.map((serviceChirho) => checkServerChirho(serviceChirho)));
+    for (const checkChirho of checksChirho) printCheckChirho(checkChirho);
+    return checksChirho.every((checkChirho) => checkChirho.runningChirho);
+  }
+  console.log(
+    `[${MODULE_CHIRHO}] canonical review stations: deployed` +
+      (canonicalChirho.writerHostChirho === null ? "" : ` on ${canonicalChirho.writerHostChirho}`) +
+      ` (recorded ${canonicalChirho.recordedAtChirho} by ${canonicalChirho.recordedByChirho})`
+  );
+  const targetsChirho = canonicalChirho.stationsChirho.map((stationChirho) => deployedTargetChirho(stationChirho));
+  const checksChirho = await Promise.all(targetsChirho.map((targetChirho) => checkTargetChirho(targetChirho, DEPLOYED_CHECK_TIMEOUT_MS_CHIRHO)));
   for (const checkChirho of checksChirho) printCheckChirho(checkChirho);
   return checksChirho.every((checkChirho) => checkChirho.runningChirho);
 }
@@ -282,32 +361,62 @@ async function waitForPortToClearChirho(serviceChirho: ReviewServerChirho): Prom
   return !lastCheckChirho.portRespondedChirho;
 }
 
-async function stopStaleSameServiceChirho(checkChirho: ServerCheckChirho): Promise<void> {
+async function stopStaleSameServiceChirho(
+  checkChirho: ServerCheckChirho,
+  serviceChirho: ReviewServerChirho
+): Promise<void> {
   if (!checkChirho.staleSameServiceChirho) {
-    throw new Error(`${checkChirho.serviceChirho.labelChirho} is responding but is not a same-service stale review server; refusing to stop it`);
+    throw new Error(`${serviceChirho.labelChirho} is responding but is not a same-service stale review server; refusing to stop it`);
   }
-  const pidsChirho = await pidsListeningOnPortChirho(checkChirho.serviceChirho.portChirho);
+  const pidsChirho = await pidsListeningOnPortChirho(serviceChirho.portChirho);
   if (pidsChirho.length === 0) {
-    throw new Error(`${checkChirho.serviceChirho.labelChirho} is stale but no listening PID was found on ${serverUrlChirho(checkChirho.serviceChirho)}`);
+    throw new Error(`${serviceChirho.labelChirho} is stale but no listening PID was found on ${localServerUrlChirho(serviceChirho)}`);
   }
   console.log(
-    `[${MODULE_CHIRHO}] stopping stale ${checkChirho.serviceChirho.labelChirho} PID(s): ${pidsChirho.join(", ")}`
+    `[${MODULE_CHIRHO}] stopping stale ${serviceChirho.labelChirho} PID(s): ${pidsChirho.join(", ")}`
   );
   for (const pidChirho of pidsChirho) {
     process.kill(pidChirho, "SIGTERM");
   }
-  const clearedChirho = await waitForPortToClearChirho(checkChirho.serviceChirho);
+  const clearedChirho = await waitForPortToClearChirho(serviceChirho);
   if (!clearedChirho) {
-    throw new Error(`${checkChirho.serviceChirho.labelChirho} did not stop cleanly on ${serverUrlChirho(checkChirho.serviceChirho)}`);
+    throw new Error(`${serviceChirho.labelChirho} did not stop cleanly on ${localServerUrlChirho(serviceChirho)}`);
   }
 }
 
-async function startMissingServersChirho(optionsChirho: { restartStaleChirho: boolean }): Promise<void> {
+/**
+ * Refuse to start local writers while a deployed fleet is the canonical writer.
+ * The boundary rule is one writer at a time; two live fleets diverge the review
+ * data that the sync ritual then overwrites wholesale.
+ */
+function assertLocalWriterAllowedChirho(optionsChirho: { localWriterAnywayChirho: boolean }): void {
+  const canonicalChirho = readCanonicalReviewStationsChirho();
+  if (canonicalChirho.canonicalLocationChirho === "local-chirho") return;
+  if (optionsChirho.localWriterAnywayChirho) {
+    console.log(
+      `[${MODULE_CHIRHO}] WARNING: starting local review writers while the canonical writer is` +
+        `${canonicalChirho.writerHostChirho === null ? " deployed" : ` ${canonicalChirho.writerHostChirho}`};` +
+        ` reviews saved here will be overwritten by the next sync-out unless they are pulled first`
+    );
+    return;
+  }
+  throw new Error(
+    `refusing to start local review writers: ${CANONICAL_REVIEW_STATIONS_RELATIVE_PATH_CHIRHO} records the canonical writer as` +
+      `${canonicalChirho.writerHostChirho === null ? " a deployed fleet" : ` ${canonicalChirho.writerHostChirho}`}.` +
+      ` Review on the deployed stations, or pass --local-writer-anyway-chirho if you have already taken ownership back.`
+  );
+}
+
+async function startMissingServersChirho(optionsChirho: {
+  restartStaleChirho: boolean;
+  localWriterAnywayChirho: boolean;
+}): Promise<void> {
+  assertLocalWriterAllowedChirho(optionsChirho);
   const spawnedProcessesChirho: Bun.Subprocess[] = [];
   for (const serviceChirho of REVIEW_SERVERS_CHIRHO) {
     let initialCheckChirho = await checkServerChirho(serviceChirho);
     if (initialCheckChirho.runningChirho) {
-      console.log(`[${MODULE_CHIRHO}] already running ${serviceChirho.labelChirho}: ${serverUrlChirho(serviceChirho)}`);
+      console.log(`[${MODULE_CHIRHO}] already running ${serviceChirho.labelChirho}: ${localServerUrlChirho(serviceChirho)}`);
       continue;
     }
     if (initialCheckChirho.portRespondedChirho) {
@@ -317,7 +426,7 @@ async function startMissingServersChirho(optionsChirho: { restartStaleChirho: bo
           `${serviceChirho.labelChirho} is responding but stale or unhealthy; rerun with --restart-stale-chirho only if this is the same review service`
         );
       }
-      await stopStaleSameServiceChirho(initialCheckChirho);
+      await stopStaleSameServiceChirho(initialCheckChirho, serviceChirho);
       initialCheckChirho = await checkServerChirho(serviceChirho);
       if (initialCheckChirho.portRespondedChirho) {
         printCheckChirho(initialCheckChirho);
@@ -337,14 +446,14 @@ async function startMissingServersChirho(optionsChirho: { restartStaleChirho: bo
     const startedCheckChirho = await waitForServerChirho(serviceChirho);
     if (!startedCheckChirho.runningChirho) {
       printCheckChirho(startedCheckChirho);
-      throw new Error(`${serviceChirho.labelChirho} did not become ready on ${serverUrlChirho(serviceChirho)}`);
+      throw new Error(`${serviceChirho.labelChirho} did not become ready on ${localServerUrlChirho(serviceChirho)}`);
     }
     printCheckChirho(startedCheckChirho);
   }
 
   console.log(`[${MODULE_CHIRHO}] review URLs:`);
   for (const serviceChirho of REVIEW_SERVERS_CHIRHO) {
-    console.log(`- ${serviceChirho.labelChirho}: ${serverUrlChirho(serviceChirho)}`);
+    console.log(`- ${serviceChirho.labelChirho}: ${localServerUrlChirho(serviceChirho)}`);
   }
 
   if (spawnedProcessesChirho.length === 0) return;
@@ -372,18 +481,25 @@ async function mainChirho(): Promise<void> {
     console.log(usageChirho());
     return;
   }
-  const allowedArgsChirho = new Set(["--check-chirho", "--restart-stale-chirho", "--help-chirho", "-h"]);
+  const allowedArgsChirho = new Set([
+    "--check-chirho",
+    "--restart-stale-chirho",
+    "--local-writer-anyway-chirho",
+    "--help-chirho",
+    "-h",
+  ]);
   const unknownArgChirho = argsChirho.find((argChirho) => !allowedArgsChirho.has(argChirho));
   if (unknownArgChirho !== undefined) {
     throw new Error(`unknown argument ${unknownArgChirho}\n${usageChirho()}`);
   }
   const restartStaleChirho = argsChirho.includes("--restart-stale-chirho");
+  const localWriterAnywayChirho = argsChirho.includes("--local-writer-anyway-chirho");
   if (argsChirho.includes("--check-chirho")) {
     const allRunningChirho = await checkAllChirho();
     if (!allRunningChirho) process.exitCode = 1;
     return;
   }
-  await startMissingServersChirho({ restartStaleChirho });
+  await startMissingServersChirho({ restartStaleChirho, localWriterAnywayChirho });
 }
 
 mainChirho().catch((errorChirho) => {

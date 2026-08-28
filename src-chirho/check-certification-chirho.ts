@@ -77,6 +77,10 @@ const CHECK_COMMANDS_CHIRHO: CheckCommandChirho[] = [
     argsChirho: [process.execPath, "run", "check-bun-version-chirho"],
   },
   {
+    labelChirho: "canonical review station record and sync inclusion",
+    argsChirho: [process.execPath, "run", "check-canonical-review-stations-chirho"],
+  },
+  {
     labelChirho: "policy preparation CLI guards",
     argsChirho: [process.execPath, "run", "check-policy-preparation-cli-guards-chirho"],
   },
