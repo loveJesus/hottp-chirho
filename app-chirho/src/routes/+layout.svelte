@@ -53,9 +53,8 @@
     background: #1a1a2e;
     border-bottom: 1px solid #2a2a4a;
     padding: 0.75rem 1.5rem;
-    position: sticky;
-    top: 0;
-    z-index: 100;
+    /* Workflow: page-reading-workflow-chirho.md. Keep navigation in flow so
+       fragment/focus navigation cannot leave a reading behind the header. */
   }
 
   .nav-chirho {

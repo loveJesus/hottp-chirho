@@ -84,6 +84,14 @@ have to explain the item - the link opens exactly what you were looking at, so
 a confusing item becomes something we can look at together instead of something
 you have to resolve alone or guess at.
 
+The side-by-side page reader has `Copy reading link` for the same purpose. Select
+the word or phrase first; `Find on this page` searches stored readings (ignoring
+accents and vowel marks), and `Line` jumps to a numbered transcription line.
+The link includes neither your draft nor sign-in details. It opens that stored
+reading only while its text and box still match; if they changed, the reader
+asks you to choose the current reading instead. Signing in preserves the linked
+selection. This is a reader link, not a repair-station submission or approval.
+
 `Quickstart`:
 Opens a short in-app reminder for that station.
 

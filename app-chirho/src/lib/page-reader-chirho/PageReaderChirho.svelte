@@ -1,8 +1,11 @@
 <!-- For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life. — John 3:16 (KJV) -->
 <script lang="ts">
   import { beforeNavigate, invalidateAll } from '$app/navigation';
-  import { onMount, tick } from 'svelte';
+  import { page } from '$app/state';
+  import { onMount, tick, untrack } from 'svelte';
   import PageScanChirho from './PageScanChirho.svelte';
+  import ReadingNavigatorChirho from './ReadingNavigatorChirho.svelte';
+  import { linkedReadingChirho, readingLinkChirho } from './navigation-chirho';
   import { readingLinesChirho, isRtlChirho, isReviewConfirmedChirho, needsAttentionChirho, reviewLabelChirho, sameBoxChirho, scriptLabelChirho, type BoxChirho, type ReadingTokenChirho } from './model-chirho';
   import { saveReadingChirho } from './save-reading-chirho';
   import { readPageDraftsChirho, writePageDraftsChirho, draftMatchesSourceChirho, editDraftChirho, type ReadingDraftChirho } from './drafts-chirho/session-store-chirho';
@@ -10,6 +13,8 @@
 
   let { data }: { data: PageData } = $props();
   let selectedKeyChirho = $state<string | null>(null);
+  let selectedLinkChirho = $state('');
+  let selectionRevisionChirho = 0;
   let draftsChirho = $state<Record<string, ReadingDraftChirho>>({});
   let backupReadyChirho = $state(false), backupErrorChirho = $state(''), restoredChirho = $state(false);
   let backupImageKeyChirho = $state('');
@@ -22,7 +27,7 @@
   const linesChirho = $derived(readingLinesChirho(data.readerLinesChirho, data.readerWordsChirho));
   const tokensChirho = $derived(linesChirho.flatMap((lineChirho) => lineChirho.tokensChirho));
   const confirmationHeldChirho = $derived(!data.signedInChirho || refreshFailedChirho);
-  const accessUrlChirho = $derived(`/reviewer-chirho?return-chirho=${encodeURIComponent(`/volumes-chirho/${data.volumeNumberChirho}/pages-chirho/${data.pageNumberChirho}`)}`);
+  const accessUrlChirho = $derived(`/reviewer-chirho?return-chirho=${encodeURIComponent(selectedLinkChirho ? new URL(selectedLinkChirho).pathname + new URL(selectedLinkChirho).hash : `/volumes-chirho/${data.volumeNumberChirho}/pages-chirho/${data.pageNumberChirho}`)}`);
   const tokenMapChirho = $derived(new Map(tokensChirho.map((tokenChirho) => [tokenChirho.keyChirho, tokenChirho])));
   const selectedChirho = $derived(selectedKeyChirho ? tokenMapChirho.get(selectedKeyChirho) ?? null : null);
   const selectedDraftChirho = $derived(selectedKeyChirho ? draftsChirho[selectedKeyChirho] : undefined);
@@ -47,10 +52,35 @@
         draftsChirho = Object.fromEntries(pageDraftsChirho.draftsChirho.map((draftChirho) => [draftChirho.sourceChirho.keyChirho, draftChirho]));
         restoredChirho = pageDraftsChirho.draftsChirho.length > 0;
         const tokenChirho = tokenMapChirho.get(pageDraftsChirho.selectedKeyChirho ?? '');
-        if (tokenChirho) void selectChirho(tokenChirho);
+        if (tokenChirho && !page.url.hash.startsWith('#reading-chirho=')) void selectChirho(tokenChirho);
       }
     } catch (caughtChirho) { backupErrorChirho = backupFailureChirho(caughtChirho); }
     backupReadyChirho = true;
+  });
+  // Workflow: page-reading-workflow-chirho.md. Links only select matching stored
+  // source, never restore shared drafts or authorize a confirmation.
+  $effect(() => {
+    if (!backupReadyChirho || !page.url.hash.startsWith('#reading-chirho=')) return;
+    const urlChirho = page.url.href;
+    let cancelledChirho = false;
+    untrack(() => {
+      const revisionChirho = selectionRevisionChirho;
+      void linkedReadingChirho(urlChirho, tokensChirho).then((tokenChirho) => {
+        if (cancelledChirho || selectionRevisionChirho !== revisionChirho) return;
+        if (tokenChirho) void selectChirho(tokenChirho);
+        else { selectedKeyChirho = null; statusChirho = 'This linked reading changed or is no longer available. Choose the current reading from the page; no replacement was selected.'; }
+      }).catch(() => { if (!cancelledChirho) statusChirho = 'This reading link could not be checked. Choose the reading from the page.'; });
+    });
+    return () => { cancelledChirho = true; };
+  });
+  $effect(() => {
+    const tokenChirho = selectedChirho, urlChirho = page.url.href;
+    selectedLinkChirho = '';
+    let cancelledChirho = false;
+    if (tokenChirho) void readingLinkChirho(urlChirho, tokenChirho).then((linkChirho) => {
+      if (!cancelledChirho) selectedLinkChirho = linkChirho;
+    }).catch(() => { if (!cancelledChirho) statusChirho = 'Reading links are unavailable in this browser.'; });
+    return () => { cancelledChirho = true; };
   });
   function backupFailureChirho(caughtChirho: unknown): string {
     return `${caughtChirho instanceof Error ? caughtChirho.message : 'Tab backup is unavailable.'} Current drafts remain on screen; download them before leaving.`;
@@ -73,6 +103,7 @@
   }
   async function selectChirho(tokenChirho: ReadingTokenChirho): Promise<void> {
     if (savingChirho) return;
+    selectionRevisionChirho += 1;
     selectedKeyChirho = tokenChirho.keyChirho; repairChirho = false;
     if (draftCountChirho) backupChirho();
     await tick();
@@ -201,6 +232,8 @@
       onselectChirho={(tokenChirho) => { void selectChirho(tokenChirho); }} onboxChirho={changeBoxChirho} onreadyChirho={(readyChirho) => { imageReadyChirho = readyChirho; }} />
     <section class="transcript-pane-chirho" aria-label="Page transcription">
       <header><h2>Transcription</h2><span class="legend-chirho"><i class="legend-confirmed-chirho"></i> Human-confirmed <i class="legend-review-chirho"></i> Needs review</span></header>
+      <ReadingNavigatorChirho {linesChirho} {tokensChirho} {selectedKeyChirho} {selectedLinkChirho}
+        disabledChirho={!backupReadyChirho || savingChirho} onselectChirho={(tokenChirho) => { void selectChirho(tokenChirho); }} />
       <div class="review-navigation-chirho">
         <label>Move through <select bind:value={reviewScopeChirho} disabled={savingChirho}>
           <option value="all-chirho">All readings</option><option value="attention-chirho">Needs attention</option>
@@ -282,8 +315,8 @@
   .draft-backup-chirho button,.review-navigation-chirho button,.review-navigation-chirho select{padding:5px 8px;border:1px solid #b6c1b8;border-radius:4px;background:#fffdf6;color:#295c4e;font:inherit;}
   .review-navigation-chirho{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid #ddd7cb;font-size:.74rem;}.review-navigation-chirho label{display:flex;align-items:center;gap:6px;}.review-navigation-chirho span{font-size:.68rem;color:#6d736b;}
   .reader-workspace-chirho{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;height:calc(100dvh - 244px);min-height:480px;}
-  .transcript-pane-chirho{min-width:0;display:flex;flex-direction:column;border:1px solid #d6d0c5;border-radius:8px;overflow:hidden;background:#fffefb;}
-  header{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;background:#f3f0e8;border-bottom:1px solid #d6d0c5;}
+  .transcript-pane-chirho{min-width:0;display:flex;flex-direction:column;border:1px solid #d6d0c5;border-radius:8px;overflow:auto;background:#fffefb;}
+  header{display:flex;flex-shrink:0;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;background:#f3f0e8;border-bottom:1px solid #d6d0c5;}
   h2{font-size:.92rem;} .legend-chirho{display:flex;gap:6px;align-items:center;font-size:.68rem;color:#667166;}
   .legend-chirho i{width:9px;height:9px;border-radius:50%;} .legend-confirmed-chirho{background:#75ab9e;} .legend-review-chirho{background:#e4ba79;}
   .reader-lines-chirho{flex:1;overflow:auto;min-height:130px;padding:18px 12px;overscroll-behavior:contain;}
@@ -297,7 +330,7 @@
   .reading-token-chirho.draft-chirho{background:#f7e1d4;border-bottom:2px dashed #bb6637;}
   .reading-token-chirho:hover{outline:1px solid #428379;border-radius:2px;}
   .inline-reading-chirho{font:inherit;line-height:1.5;color:#183b31;background:white;border:2px solid #277c6f;border-radius:3px;padding:1px 4px;max-width:100%;vertical-align:middle;resize:vertical;min-height:34px;}
-  .reading-controls-chirho{padding:12px 16px;border-top:1px solid #d6d0c5;background:#f7f5ee;font-size:.77rem;line-height:1.5;}
+  .reading-controls-chirho{flex-shrink:0;padding:12px 16px;border-top:1px solid #d6d0c5;background:#f7f5ee;font-size:.77rem;line-height:1.5;}
   .selection-label-chirho{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:5px;} .selection-label-chirho span{color:#806137;}
   .reading-actions-chirho{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0;}
   .reading-controls-chirho button{padding:7px 11px;border:1px solid #aebbb1;border-radius:5px;background:#fffef8;color:#295c4e;font:inherit;cursor:pointer;}
@@ -311,5 +344,5 @@
   @media(max-width:1000px){.reader-chirho{padding:12px;}.reader-workspace-chirho{gap:10px;}.legend-chirho{font-size:.62rem;}.reading-controls-chirho{padding:10px;}}
   /* Workflow: page-reading-workflow-chirho.md. On stacked mobile layouts the
      scan stays in document flow, so it cannot cover the active reading. */
-  @media(max-width:700px){.reader-workspace-chirho{grid-template-columns:minmax(0,1fr);height:auto;min-height:0;}.reader-workspace-chirho :global(.scan-pane-chirho){height:42dvh;min-height:260px;}.transcript-pane-chirho{height:65dvh;min-height:440px;}.reader-nav-chirho{gap:8px;}.reader-intro-chirho{font-size:.85rem;}.reader-chirho{padding:8px;}.reader-nav-chirho a{font-size:.75rem;}.reading-text-chirho{font-size:16px;}.reader-lines-chirho{padding:10px 5px;}}
+  @media(max-width:700px){.reader-workspace-chirho{grid-template-columns:minmax(0,1fr);height:auto;min-height:0;}.reader-workspace-chirho :global(.scan-pane-chirho){height:42dvh;min-height:260px;}.transcript-pane-chirho{height:auto;min-height:0;}.reader-nav-chirho{gap:8px;}.reader-intro-chirho{font-size:.85rem;}.reader-chirho{padding:8px;}.reader-nav-chirho a{font-size:.75rem;}.reading-text-chirho{font-size:16px;}.reader-lines-chirho{flex:none;height:40dvh;min-height:180px;padding:10px 5px;}}
 </style>

@@ -18,7 +18,7 @@ App check: zero errors/warnings; frozen dependencies and Cloudflare build passed
 
 Full-row hashes before and after release match for all seven reader content tables, including the legacy mutation tables not covered by the event ledger: 46 pages, 1,076 scanlines, 11,938 words, 1,925 segments, zero snippets, 275 known words and 237 events (max seq 752). The two unattributed legacy segment flags remain unchanged. Only the index DDL changed schema; it reported one schema row written. Local certification-witness fingerprint remains unchanged at `2584f948...` (46/11938/67). Test confirmations and the clipped-folio fixture existed only in an isolated disposable copy, never synced to production.
 
-Release ledger: `spec-chirho/tasklists-chirho/26-09-19_14-05-tasklist-reader_proof-chirho.md`. Row-hash evidence: `spec-chirho/page-reader-checks-chirho/proof-chirho/deploy-fingerprint-chirho.json`. Workflow: `spec-chirho/workflows-chirho/page-reading-workflow-chirho.md`.
+Release ledger: `spec-chirho/tasklists-chirho/reader-chirho/26-09-19_14-05-tasklist-reader_proof-chirho.md`. Row-hash evidence: `spec-chirho/page-reader-checks-chirho/proof-chirho/deploy-fingerprint-chirho.json`. Workflow: `spec-chirho/workflows-chirho/page-reading-workflow-chirho.md`.
 
 ## Boundaries
 

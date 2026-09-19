@@ -1,5 +1,7 @@
 // For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life. — John 3:16 (KJV)
 
+import { readingTargetChirho } from '../../page-reader-chirho/navigation-chirho';
+
 export const REVIEW_COOKIE_CHIRHO = 'hottp-review-session-chirho';
 export const SESSION_SECONDS_CHIRHO = 8 * 60 * 60;
 export interface ReviewCredentialsChirho {
@@ -47,7 +49,13 @@ export async function credentialsMatchChirho(userChirho: string, passwordChirho:
   return differenceChirho === 0;
 }
 export function returnPathChirho(valueChirho: string | null): string {
-  return valueChirho && /^\/volumes-chirho\/\d+(?:\/pages-chirho\/\d+)?$/.test(valueChirho) ? valueChirho : '/';
+  if (!valueChirho || valueChirho.length > 240) return '/';
+  const splitChirho = valueChirho.indexOf('#');
+  const pathChirho = splitChirho < 0 ? valueChirho : valueChirho.slice(0, splitChirho);
+  const hashChirho = splitChirho < 0 ? '' : valueChirho.slice(splitChirho);
+  if (!/^\/volumes-chirho\/\d+(?:\/pages-chirho\/\d+)?$/.test(pathChirho)) return '/';
+  if (hashChirho && (!/^\/volumes-chirho\/\d+\/pages-chirho\/\d+$/.test(pathChirho) || !readingTargetChirho(hashChirho))) return '/';
+  return valueChirho;
 }
 export function sameOriginChirho(requestChirho: Request): boolean {
   return requestChirho.headers.get('origin') === new URL(requestChirho.url).origin && requestChirho.headers.get('sec-fetch-site') !== 'cross-site';

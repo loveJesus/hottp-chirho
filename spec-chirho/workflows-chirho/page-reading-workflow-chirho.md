@@ -144,6 +144,30 @@ New proof runners live under `spec-chirho/page-reader-checks-chirho/proof-chirho
 
 Remaining product work: Andrew's hands-on acceptance and a lossless station deep link. Do not adapt free 2D reader boxes into contiguous 1D Pass-C tilings: that would invent neighbour boundaries and drop y/height. Repair drafts remain local exports, not approved proposals. OCR/gold/training/prod-suggestion provenance remain separate owner decisions.
 
-### Mobile viewport follow-up
+## Find and share a reading, 2026-09-19 development
+
+```mermaid
+flowchart TD
+  FindChirho[Stored-text search or line jump] --> SelectChirho[Select a current page token; keep all context and drafts]
+  SelectChirho --> CopyChirho[Copy page plus word/segment identity and source digest]
+  CopyChirho --> OpenChirho[Open public reading link]
+  OpenChirho --> MatchChirho{Current stored source matches?}
+  MatchChirho -->|yes| FocusChirho[Select exact reading; recover this tab's drafts independently]
+  MatchChirho -->|no| NoticeChirho[Explain changed or missing source; select no substitute]
+  FocusChirho --> LoginChirho[Optional sign-in retains strictly validated fragment]
+  LoginChirho --> ConfirmChirho[Existing explicit confirmation and source CAS, unchanged]
+```
+
+`ReadingNavigatorChirho.svelte` owns only page-local navigation. The parent owns selection, draft recovery, confirmation and access. `navigation-chirho.ts` folds case, combining marks and bidi controls for literal substring search over stored tokens, not drafts; an empty folded query matches nothing. Search result traversal wraps, while normal review-scope traversal retains its existing behavior. Line numbers are transcription indices, not an assertion about printed folios. No search term, draft text, raw box, or credential is embedded in copied URLs, and navigation issues no content mutation requests.
+
+Reader fragments use `#reading-chirho=<word/segment-key>&source-chirho=<sha256>`. The digest binds page pathname, record key, line index, stored text, script and raw box; it is a stale-source check, not authorization or proof of human review. A re-seed that removes/reuses an ID, changed source or malformed target does not select a guessed replacement. These links deliberately remain distinct from station item identifiers; no 2D-to-1D repair adapter is implied. Changing pathname conventions can invalidate existing digests. The exact same pathname on the two hosting aliases remains compatible.
+
+Explicit valid links take precedence over backed-up selection without replacing drafts. Unrelated fragments such as `#top` are ignored. A cancelled asynchronous check cannot override a newer selection. The sign-in return-path allowlist accepts only existing numeric volume/page routes and this exact bounded fragment; arbitrary queries, external URLs, repeated delimiters and malformed fingerprints are refused. Clipboard denial leaves a selectable link on screen.
+
+The mobile transcription now grows with its controls while its text area keeps a bounded scroll viewport. On shorter desktop layouts the transcription panel can scroll rather than clipping controls. The global app header is in normal flow: its previous sticky overlay covered a focused reading after viewport changes. Browser checks now hit-test both the active field and confirmation button, not only horizontal overflow. Mutation authorization, confirmation and source geometry behavior remain unchanged; only the strict sign-in return location gains the validated fragment.
+
+Local development proof is recorded in `spec-chirho/tasklists-chirho/reader-chirho/26-09-19_16-15-tasklist-reader_navigation-chirho.md`. This addition is not yet hosted, and Andrew's hands-on acceptance remains open.
+
+### Earlier mobile viewport follow-up (deployed before navigation)
 
 The source scan stays in normal document flow on the stacked mobile layout. Sticky positioning previously overlaid the active textarea even though the page had no horizontal overflow. A real hosted viewport caught it; `proof-chirho/mobile-visibility-chirho.js` fails before the change and passes afterward at 320/390/700px by checking the element actually hit at the editor's center. Inspect the actual scrolled viewport as well as a top-reset full-page screenshot; a screenshot assembled across sticky positions is not proof that the active field is unobstructed. Source `9a55a22` is the final CSS follow-up to provenance source `2bb7d02`.
