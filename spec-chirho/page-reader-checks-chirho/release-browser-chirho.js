@@ -64,7 +64,7 @@ async (parentPageChirho) => {
     checkChirho((await wordResponseChirho).status() === 200, 'real word confirmation succeeds through event and projection');
     await pageChirho.reload();
     await pageChirho.getByRole('button', { name: 'fixture-word-chirho', exact: true }).waitFor();
-    checkChirho(await pageChirho.getByRole('button', { name: 'fixture-word-chirho', exact: true }).getAttribute('title').then((valueChirho) => valueChirho.includes('Human-confirmed')), 'word correction survives full reload via event replay');
+    checkChirho(await pageChirho.getByRole('button', { name: 'fixture-word-chirho', exact: true }).getAttribute('title').then((valueChirho) => valueChirho.includes('Human-confirmed')), 'word correction survives reload with current state and matching receipt');
     await pageChirho.getByRole('link', { name: 'Reviewer access · signed in' }).click();
     await pageChirho.getByRole('button', { name: 'Sign out', exact: true }).click();
     const refusedChirho = await contextChirho.request.post(originChirho + '/api-chirho/reading-confirmations-chirho', { headers: { Origin: originChirho, 'Content-Type': 'application/json' }, data: '{}' });

@@ -1,8 +1,10 @@
 // For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life. — John 3:16 (KJV)
 
 import type { PageLineChirho } from '$lib/server-chirho/page-lines-chirho';
+import type { PageWordChirho } from '$lib/server-chirho/review-chirho/reading-evidence-chirho';
 
 export interface BoxChirho { xChirho: number; yChirho: number; widthChirho: number; heightChirho: number }
+export type ReviewStateChirho = 'recorded-chirho' | 'machine-chirho' | 'anonymous-chirho' | 'unattributed-chirho' | 'unreviewed-chirho';
 export interface ReadingTokenChirho {
   keyChirho: string;
   kindChirho: 'word-chirho' | 'segment-chirho';
@@ -11,19 +13,28 @@ export interface ReadingTokenChirho {
   lineIndexChirho: number;
   textChirho: string;
   scriptChirho: string;
-  confirmedChirho: boolean;
+  confirmedChirho: boolean; // Raw D1 status for CAS, never a display-proof claim.
+  reviewStateChirho?: ReviewStateChirho; // Optional only for old tab backups.
   flaggedChirho: boolean;
   boxChirho: BoxChirho | null;
 }
 export interface ReadingLineChirho { idChirho: number; indexChirho: number; textChirho: string; tokensChirho: ReadingTokenChirho[] }
-interface SnapshotWordChirho {
-  wordIdChirho: number; xMinChirho: number | null; yMinChirho: number | null;
-  xMaxChirho: number | null; yMaxChirho: number | null;
-  currentTextChirho: string | null; originalOcrTextChirho: string | null;
-  currentScriptChirho: string | null; isHumanConfirmedChirho: boolean; pendingScriptFlagChirho: boolean;
+export type ReadingWordChirho = Pick<PageWordChirho, 'idChirho' | 'scanlineIdChirho' | 'xMinChirho' | 'yMinChirho' | 'xMaxChirho' | 'yMaxChirho' | 'currentTextChirho' | 'originalOcrTextChirho' | 'currentScriptChirho' | 'isHumanConfirmedChirho' | 'pendingScriptFlagChirho' | 'reviewStateChirho'>;
+
+export function isReviewConfirmedChirho(tokenChirho: ReadingTokenChirho): boolean {
+  return tokenChirho.confirmedChirho && tokenChirho.reviewStateChirho === 'recorded-chirho' && !tokenChirho.flaggedChirho;
 }
-interface SnapshotChirho { scanlinesChirho: { scanlineIdChirho: number; wordsChirho: SnapshotWordChirho[] }[] }
-export interface ReadingEventChirho { wordIdChirho: number | null; eventTypeChirho: string; payloadJsonChirho: string }
+export function needsAttentionChirho(tokenChirho: ReadingTokenChirho): boolean {
+  return tokenChirho.flaggedChirho || !isReviewConfirmedChirho(tokenChirho) &&
+    (tokenChirho.confirmedChirho || ['machine-chirho', 'anonymous-chirho', 'unattributed-chirho'].includes(tokenChirho.reviewStateChirho ?? '') || !['french-chirho', 'latin-chirho'].includes(tokenChirho.scriptChirho));
+}
+export function reviewLabelChirho(tokenChirho: ReadingTokenChirho): string {
+  if (isReviewConfirmedChirho(tokenChirho)) return 'Human-confirmed · shared reviewer account';
+  if (tokenChirho.reviewStateChirho === 'machine-chirho') return 'Machine-assisted reading · needs review';
+  if (tokenChirho.reviewStateChirho === 'anonymous-chirho') return 'Legacy anonymous activity · unverified';
+  if (tokenChirho.confirmedChirho) return 'Unattributed confirmation mark · unverified';
+  return 'Not human-confirmed';
+}
 
 export function boxChirho(xChirho: number | null, yChirho: number | null, widthChirho: number | null, heightChirho: number | null): BoxChirho | null {
   if (xChirho == null || yChirho == null || widthChirho == null || heightChirho == null ||
@@ -48,18 +59,14 @@ export function isRtlChirho(tokenChirho: ReadingTokenChirho): boolean {
 }
 
 // Workflow: spec-chirho/workflows-chirho/page-reading-workflow-chirho.md.
-// Fresh segments retain the established non-French phrase layer. French word
-// snapshots, when present, retain event-sourced edits. No snapshot is required.
-export function readingLinesChirho(linesChirho: PageLineChirho[], snapshotJsonChirho: string | null, eventsChirho: ReadingEventChirho[]): ReadingLineChirho[] {
-  let snapshotChirho: SnapshotChirho | null = null;
-  try { snapshotChirho = snapshotJsonChirho ? JSON.parse(snapshotJsonChirho) : null; } catch { /* fall back to current rows */ }
-  const snapshotLinesChirho = new Map((snapshotChirho?.scanlinesChirho ?? []).map((lineChirho) => [lineChirho.scanlineIdChirho, lineChirho]));
-  const wordEventsChirho = new Map<number, ReadingEventChirho[]>();
-  for (const eventChirho of eventsChirho) {
-    if (eventChirho.wordIdChirho == null) continue;
-    const listChirho = wordEventsChirho.get(eventChirho.wordIdChirho) ?? [];
-    listChirho.push(eventChirho);
-    wordEventsChirho.set(eventChirho.wordIdChirho, listChirho);
+// Current D1 words and segments are authoritative for display and raw CAS.
+// Events only supply independently matched provenance; never replay an event
+// into a confirmation flag or overwrite current text from a stale snapshot.
+export function readingLinesChirho(linesChirho: PageLineChirho[], currentWordsChirho: ReadingWordChirho[]): ReadingLineChirho[] {
+  const wordLinesChirho = new Map<number, ReadingWordChirho[]>();
+  for (const wordChirho of currentWordsChirho) {
+    const listChirho = wordLinesChirho.get(wordChirho.scanlineIdChirho) ?? [];
+    listChirho.push(wordChirho); wordLinesChirho.set(wordChirho.scanlineIdChirho, listChirho);
   }
   return linesChirho.map(({ scanlineChirho: lineChirho, segmentsChirho }) => {
     const segmentTokensChirho: ReadingTokenChirho[] = segmentsChirho.map((segmentChirho) => ({
@@ -68,10 +75,11 @@ export function readingLinesChirho(linesChirho: PageLineChirho[], snapshotJsonCh
       textChirho: segmentChirho.acceptedTextChirho ?? segmentChirho.ocrTextChirho ?? segmentChirho.pdftotextChirho ?? '',
       scriptChirho: segmentChirho.scriptTypeChirho ?? 'unknown-chirho',
       confirmedChirho: segmentChirho.statusChirho === 'human-confirmed-chirho', flaggedChirho: false,
+      reviewStateChirho: segmentChirho.reviewStateChirho ?? (segmentChirho.statusChirho === 'human-confirmed-chirho' ? 'unattributed-chirho' : 'unreviewed-chirho'),
       boxChirho: boxChirho(lineChirho.xMinChirho == null || segmentChirho.xMinPxChirho == null ? null : lineChirho.xMinChirho + segmentChirho.xMinPxChirho,
         lineChirho.yMinChirho, segmentChirho.widthPxChirho, lineChirho.heightChirho),
     }));
-    const wordsChirho = snapshotLinesChirho.get(lineChirho.idChirho)?.wordsChirho ?? [];
+    const wordsChirho = wordLinesChirho.get(lineChirho.idChirho) ?? [];
     let tokensChirho = segmentTokensChirho;
     if (wordsChirho.length) {
       const phrasesChirho = segmentTokensChirho.filter((tokenChirho) => tokenChirho.scriptChirho !== 'french-chirho');
@@ -85,30 +93,16 @@ export function readingLinesChirho(linesChirho: PageLineChirho[], snapshotJsonCh
           return [phraseChirho];
         }
         const tokenChirho: ReadingTokenChirho = {
-          keyChirho: `word-${wordChirho.wordIdChirho}-chirho`, kindChirho: 'word-chirho', idChirho: wordChirho.wordIdChirho,
+          keyChirho: `word-${wordChirho.idChirho}-chirho`, kindChirho: 'word-chirho', idChirho: wordChirho.idChirho,
           scanlineIdChirho: lineChirho.idChirho, lineIndexChirho: lineChirho.lineIndexChirho,
           textChirho: wordChirho.currentTextChirho ?? wordChirho.originalOcrTextChirho ?? '',
           scriptChirho: wordChirho.currentScriptChirho ?? 'latin-chirho',
-          confirmedChirho: wordChirho.isHumanConfirmedChirho, flaggedChirho: wordChirho.pendingScriptFlagChirho,
+          confirmedChirho: wordChirho.isHumanConfirmedChirho === 1, flaggedChirho: wordChirho.pendingScriptFlagChirho === 1,
+          reviewStateChirho: wordChirho.reviewStateChirho,
           boxChirho: boxChirho(wordChirho.xMinChirho, wordChirho.yMinChirho,
             wordChirho.xMaxChirho == null || wordChirho.xMinChirho == null ? null : wordChirho.xMaxChirho - wordChirho.xMinChirho,
             wordChirho.yMaxChirho == null || wordChirho.yMinChirho == null ? null : wordChirho.yMaxChirho - wordChirho.yMinChirho),
         };
-        for (const eventChirho of wordEventsChirho.get(wordChirho.wordIdChirho) ?? []) {
-          let payloadChirho: Record<string, unknown>;
-          try { payloadChirho = JSON.parse(eventChirho.payloadJsonChirho); } catch { continue; }
-          if (eventChirho.eventTypeChirho === 'word-text-corrected-chirho' && typeof payloadChirho.newTextChirho === 'string') {
-            tokenChirho.textChirho = payloadChirho.newTextChirho; tokenChirho.confirmedChirho = true;
-          } else if (eventChirho.eventTypeChirho === 'word-verified-chirho') tokenChirho.confirmedChirho = true;
-          else if (eventChirho.eventTypeChirho === 'word-script-flagged-chirho') tokenChirho.flaggedChirho = true;
-          else if (eventChirho.eventTypeChirho === 'word-script-set-chirho' && typeof payloadChirho.newScriptChirho === 'string') {
-            tokenChirho.scriptChirho = payloadChirho.newScriptChirho; tokenChirho.flaggedChirho = false;
-          } else if (eventChirho.eventTypeChirho === 'word-vision-applied-chirho') {
-            if (typeof payloadChirho.newTextChirho === 'string') tokenChirho.textChirho = payloadChirho.newTextChirho;
-            if (typeof payloadChirho.newScriptChirho === 'string') tokenChirho.scriptChirho = payloadChirho.newScriptChirho;
-            tokenChirho.flaggedChirho = false;
-          }
-        }
         return [tokenChirho];
       });
       // A segment without an overlapping word must not silently disappear.

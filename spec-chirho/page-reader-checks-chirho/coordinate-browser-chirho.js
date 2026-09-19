@@ -44,8 +44,9 @@ async (parentPageChirho) => {
     checkChirho(pageChirho.url().endsWith('/148'), 'vol-5 bad line-image view redirects to full-page reader');
     await pageChirho.goto('http://127.0.0.1:5178/volumes-chirho/5/pages-chirho/148?view-chirho=tools-chirho');
     checkChirho(await pageChirho.locator('.reader-chirho').count() === 1 && await pageChirho.locator('.legacy-page-editor-chirho').count() === 0, 'vol-5 legacy tools cannot surface incorrect line crops');
-    // This copied emulator has the page PNG but no word snapshot for 2:151,
-    // exercising the real segment fallback, whose folio padding is clipped.
+    // Fixture: remove ONLY word 4978 from the disposable 2:151 copy, retaining
+    // its folio segment. This exercises missing-current-word fallback with
+    // clipped segment padding; absence of an R2 snapshot no longer forces it.
     await pageChirho.goto('http://127.0.0.1:5178/volumes-chirho/2/pages-chirho/151');
     await pageChirho.getByRole('button', { name: '58', exact: true }).click();
     await pageChirho.getByRole('alert').filter({ hasText: 'box extends past the image edge' }).waitFor();

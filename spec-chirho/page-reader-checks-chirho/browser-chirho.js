@@ -20,7 +20,7 @@ async (pageChirho) => {
   await pageChirho.goto('http://127.0.0.1:5178/volumes-chirho/3/pages-chirho/151');
   await pageChirho.locator('.reading-token-chirho').first().waitFor();
   await pageChirho.waitForFunction(() => document.querySelector('.scan-canvas-chirho img')?.naturalWidth > 0);
-  checkChirho(await pageChirho.locator('.reading-token-chirho').count() > 500, 'real snapshot path renders full-page words');
+  checkChirho(await pageChirho.locator('.reading-token-chirho').count() > 500, 'current D1 rows render full-page words');
   const scanBoundsChirho = await pageChirho.getByRole('region', { name: 'Source scan' }).boundingBox();
   const textBoundsChirho = await pageChirho.getByRole('region', { name: 'Page transcription' }).boundingBox();
   checkChirho(scanBoundsChirho.x < textBoundsChirho.x, 'source left, transcription right');

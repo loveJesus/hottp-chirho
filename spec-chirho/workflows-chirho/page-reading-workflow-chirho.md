@@ -8,7 +8,12 @@ The default Svelte page route is the reading workspace. `?view-chirho=tools-chir
 flowchart TD
   PageChirho[Open one page] --> JoinChirho[Page-indexed scanline and segment join]
   JoinChirho --> TextChirho[French context plus non-French phrases]
-  SnapshotChirho[Optional word snapshot and newer events] --> TextChirho
+  WordsChirho[Current page word rows and raw CAS flags] --> TextChirho
+  ReceiptChirho[Indexed latest record receipt] --> ProofChirho{Matches current row, actor, source and scope?}
+  WordsChirho --> ProofChirho
+  JoinChirho --> ProofChirho
+  ProofChirho -->|yes plus raw flag and no open flag| ColorChirho[Shared-reviewer confirmation badge]
+  ProofChirho -->|no| AttentionChirho[Machine, anonymous or unattributed remains unverified]
   TextChirho --> SelectChirho[Select reading inline]
   ScanChirho[Source page on left] --> SelectChirho
   SelectChirho --> CropChirho[Linked highlight and padded magnifier]
@@ -25,7 +30,7 @@ flowchart TD
   HoldChirho --> DiscardChirho[Discard draft and restore source box]
   DraftChirho --> ConfirmChirho[Explicit Confirm and next or Ctrl/Cmd Enter]
   ConfirmChirho --> GateChirho{Image loaded; original box; no repair draft; no write in flight}
-  GateChirho --> AuthChirho{Signed in; complete event tail; source still matches}
+  GateChirho --> AuthChirho{Signed in; raw source and observed cursor still match}
   AuthChirho -->|yes| BatchChirho[Atomic event insert and projection with SQL rollback assertion]
   AuthChirho -->|no| RetainChirho[Retain draft; report unconfirmed save]
   BatchChirho -->|acknowledged success| RefreshChirho[Reload authoritative state and advance]
@@ -37,14 +42,14 @@ flowchart TD
 
 - `app-chirho/src/lib/page-reader-chirho/`: reading model, scan/crop/geometry component, page controller, explicit confirmation transport, extracted legacy component/styles. No new dependency.
 - `app-chirho/src/lib/server-chirho/page-lines-chirho.ts`: shared bounded page query for the page reader and scanline route. Includes lines without segments. No per-line SQL calls.
-- Fresh segment rows remain the non-French phrase layer; snapshot words supply individual editable targets elsewhere. The established overlapping phrase precedence remains; this is not a reconciliation of word and segment storage.
-- A missing snapshot uses current segment rows, including French text. A line with no segments keeps its stored line text. No coordinates are invented for missing boxes.
+- Fresh segment rows remain the non-French phrase layer; current D1 words supply individual editable targets elsewhere. The established overlapping phrase precedence remains; this is not a reconciliation of word and segment storage. Only the advanced legacy tools read snapshots/event tails.
+- Missing current words fall back to segment rows, including French text. A line with no segments keeps its stored line text. No coordinates are invented for missing boxes.
 - Tab/Shift-Tab traverse without submitting. The Move through selector chooses all readings, needs-attention readings, or a language; Next and Tab honor it without hiding any French context. Ctrl/Cmd-Enter explicitly confirms and advances. Plain Enter edits the field. In-flight confirmation blocks duplicate writes and selection changes.
 - Geometry edits only affect tab-local drafts. Export retains record identity, original/proposed box and text, and `approved_chirho: false`. This export is **not** an approved repair proposal and is **not yet wired into the canonical repair intake**. A separate download includes all text/box drafts, including conflicts or records no longer available in the page.
 - `drafts-chirho/session-store-chirho.ts` backs up each page in sessionStorage under one application-owned key. Text and box changes share the source record captured when editing began. Refresh/revisit restores selection and proposed values, never a confirmation. Changes to record identity, scanline, text, script, geometry, or image key hold recovered drafts; the reader must export/discard/review rather than overwrite changed source.
 - Limits: eight unfinished pages, 200 draft entries per page, 8,192 UTF-16 code units per source/proposed text and 262,144 code units for the entire serialized shelf. Limits, quota denial, silently dropped writes, unsupported versions and malformed backups cause a visible warning; no automatic eviction or overwrite of unreadable state. Clearing one page preserves other pages. Edits remain in memory when backup fails, and navigation is cancellable in that case. Successful tab backup permits page navigation/revisit without a discard prompt.
 - Tab storage is a convenience, not durable archival, account isolation, or an authorization boundary. Download before closing the tab or clearing browser data. Same-key replacement of an image is not detected cryptographically; image revision/provenance is still outside this UI proof.
-- Human-confirmed color comes from the explicit human status/event, not dictionary validity, model confidence, or canonical-match confidence. It does not certify the page, publication, or source box.
+- Human-confirmed color requires the raw flag and a source-matching shared-reviewer receipt, not merely a historical flag, dictionary validity, model confidence, or canonical match. It does not certify the page, publication, independent witness, or source image identity.
 
 ## Reference and fidelity boundary
 
@@ -120,3 +125,21 @@ Andrew's hands-on acceptance is open. Box-repair exports remain unsubmitted draf
 Post-release audit 23634 identified two prod segments with unattributed legacy `human-confirmed-chirho` status and no event: 9782 and 9793. Treat these readings as unverified; their actor/date and exact origin are unknown. Hosted tests did not target them and made no signed-in legacy PATCH calls. Their status was rechecked read-only, not reset. Event-count/max-sequence comparisons cover only event-producing paths: legacy segment/scanline/snippet/known-word PATCH writes cannot be excluded by that ledger alone. Hosted refusal evidence and request scope are recorded separately in the release tasklist/report.
 
 The prior hosted version `6644c9ec-517b-4bdd-aeb5-411c95e690d2` permits anonymous writes and is **not a safe automatic rollback target**. Prefer a scoped fix-forward or an authenticated prior-reader presentation. If emergency rollback is needed, first retain an authenticated mutation gate or explicitly disable mutation routes; do not silently reopen anonymous writes. Deployment version and read-only/refused-write hosted smoke evidence are recorded in the release tasklist after deployment.
+
+## Current-row confirmation evidence, 2026-09-19 afternoon
+
+The new reader no longer derives save preconditions from event replay. Audit 23643 identified 225 machine `word-text-corrected` events replayed as human-confirmed while their D1 flags remained zero, making every save conflict. All 234 machine events (225 reconciliation, 9 vision) remain readable but unverified and eligible for attention. Anonymous historical events and unattributed flags also remain unverified. Stored statuses are not migrated or reset.
+
+`review-chirho/reading-evidence-chirho.ts` classifies the current source and latest receipt in the same SQL read. A recorded badge requires the current raw flag, page/line/record identity, allowed confirmation type, fixed shared actor, server-minted source/scope, new text, script, and raw x/y/width/height; words also require the row's last-event pointer. Open script flags remain attention items. Unknown/malformed/mismatching evidence fails conservatively. The raw flag still goes to CAS, including true legacy flags, so a fresh legitimate confirmation can replace uncertainty without falsifying preconditions.
+
+The loader observes the page event cursor before reading current rows; concurrent updates may cause a conservative 409, not authorization from a newer cursor over older data. Receipt queries seek by record identity with one result per current row, independent of snapshot sequence or historical tail size. The JSON segment expression uses an affinity-free correlated ID (unary plus) so SQLite selects the expression index instead of walking page history. Responses carry a state label, not receipt payloads. Costs scale with current page rows, not the corpus or accumulated event history; no per-record network round trips.
+
+**Schema prerequisite:** apply only `app-chirho/src/lib/server-chirho/review-chirho/reading-evidence-index-chirho.sql` to D1 before this release. It creates `events_segment_receipt_chirho`; it changes no content/status. The paired DDL lives beside its query because the inherited flat migration directory already has 15 entries and production was seeded outside migration tracking. Do not replay the historical migration set on production. Fresh local database setup must apply this paired index after the words/events schema. Missing index remains functionally compatible but falls back to page-history scanning; verify the actual query plan before claiming indexed performance.
+
+The legacy events POST preserves its historical nine event types and three aggregates, validates that allowlist at runtime, overwrites payload source to `legacy-editor-chirho`, and removes receipt scope/expected-source/attempt fields. It cannot mint or shadow segment receipts. Both forged word-confirmation payloads were exercised through actual HTTP on disposable data. Legacy writes still have their older non-CAS/sequential projection behavior and cannot earn a recorded-reader badge. D1-admin writes remain trusted infrastructure, not an app-auth boundary. Never sync a test copy back to production.
+
+Proof: 24 model/session/security tests, seven atomic D1 tests, six current-row/evidence D1 tests, and 131 browser assertions (29 interaction, 22 recovery, 31 release/auth, 12 coordinates, 29 provenance, eight legacy refusal). The D1 evidence fixture advances snapshot sequence beyond receipts and adds 2,100 unrelated events, then checks the actual generated query plans. The browser re-confirms a machine word with raw false and a legacy segment with raw true, checks stale-tab refusal and full-reload proof, then attempts forged legacy receipts; only the disposable copy is modified. A missing-current-word folio fixture removes copied word 4978 to expose the clipped segment fallback; absent R2 snapshots no longer drive that behavior. Desktop/mobile screenshots were visually inspected. Local witness logical fingerprint remains `2584f94848864b77ab75d9cbd4743474d5f861c835ec87140df65c7e1cca53cb` (46/11938/67).
+
+New proof runners live under `spec-chirho/page-reader-checks-chirho/proof-chirho/`. Bundle `evidence-d1-chirho.ts` with Bun (`--target=node --packages=external`) into `app-chirho/.svelte-kit/`, then run `node --test` from the repo root. Browser functions use a disposable reader on port 5182 with synthetic fixture credentials; seed PNGs 1:148, 3:151, 5:148 and 2:151, and copy the two legacy segment statuses only into that fixture. Stop its server before replacing/resetting the copied database. The legacy refusal runner is repeatable without content writes; the provenance/release runners require a fresh fixture.
+
+Remaining product work: Andrew's hands-on acceptance and a lossless station deep link. Do not adapt free 2D reader boxes into contiguous 1D Pass-C tilings: that would invent neighbour boundaries and drop y/height. Repair drafts remain local exports, not approved proposals. OCR/gold/training/prod-suggestion provenance remain separate owner decisions.

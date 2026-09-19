@@ -3,7 +3,7 @@
   import { beforeNavigate, invalidateAll } from '$app/navigation';
   import { onMount, tick } from 'svelte';
   import PageScanChirho from './PageScanChirho.svelte';
-  import { readingLinesChirho, isRtlChirho, sameBoxChirho, scriptLabelChirho, type BoxChirho, type ReadingTokenChirho } from './model-chirho';
+  import { readingLinesChirho, isRtlChirho, isReviewConfirmedChirho, needsAttentionChirho, reviewLabelChirho, sameBoxChirho, scriptLabelChirho, type BoxChirho, type ReadingTokenChirho } from './model-chirho';
   import { saveReadingChirho } from './save-reading-chirho';
   import { readPageDraftsChirho, writePageDraftsChirho, draftMatchesSourceChirho, editDraftChirho, type ReadingDraftChirho } from './drafts-chirho/session-store-chirho';
   import type { PageData } from '../../routes/volumes-chirho/[vol_chirho]/pages-chirho/[page_chirho]/$types';
@@ -19,9 +19,9 @@
   let statusChirho = $state(''), errorChirho = $state('');
   let editorChirho = $state<HTMLTextAreaElement>();
   let transcriptChirho: HTMLDivElement;
-  const linesChirho = $derived(readingLinesChirho(data.readerLinesChirho, data.snapshotChirho?.underlayJsonChirho ?? null, data.eventTailChirho));
+  const linesChirho = $derived(readingLinesChirho(data.readerLinesChirho, data.readerWordsChirho));
   const tokensChirho = $derived(linesChirho.flatMap((lineChirho) => lineChirho.tokensChirho));
-  const confirmationHeldChirho = $derived(!data.signedInChirho || !data.eventTailCompleteChirho || refreshFailedChirho);
+  const confirmationHeldChirho = $derived(!data.signedInChirho || refreshFailedChirho);
   const accessUrlChirho = $derived(`/reviewer-chirho?return-chirho=${encodeURIComponent(`/volumes-chirho/${data.volumeNumberChirho}/pages-chirho/${data.pageNumberChirho}`)}`);
   const tokenMapChirho = $derived(new Map(tokensChirho.map((tokenChirho) => [tokenChirho.keyChirho, tokenChirho])));
   const selectedChirho = $derived(selectedKeyChirho ? tokenMapChirho.get(selectedKeyChirho) ?? null : null);
@@ -34,9 +34,9 @@
   const selectedConflictChirho = $derived(imageChangedChirho || !!selectedDraftChirho && !draftMatchesSourceChirho(selectedDraftChirho, selectedChirho ?? undefined));
   const repairCountChirho = $derived(Object.values(draftsChirho).filter((draftChirho) => !sameBoxChirho(draftChirho.boxChirho, draftChirho.sourceChirho.boxChirho)).length);
   const imageUrlChirho = $derived(`/api-chirho/images-chirho?key-chirho=${encodeURIComponent(data.fullPageR2KeyChirho)}`);
-  const confirmedCountChirho = $derived(tokensChirho.filter((tokenChirho) => tokenChirho.confirmedChirho).length);
+  const confirmedCountChirho = $derived(tokensChirho.filter(isReviewConfirmedChirho).length);
   const reviewTokensChirho = $derived(tokensChirho.filter((tokenChirho) => reviewScopeChirho === 'all-chirho' ||
-    reviewScopeChirho === 'attention-chirho' && (tokenChirho.flaggedChirho || !tokenChirho.confirmedChirho && !['french-chirho', 'latin-chirho'].includes(tokenChirho.scriptChirho)) || tokenChirho.scriptChirho === reviewScopeChirho));
+    reviewScopeChirho === 'attention-chirho' && needsAttentionChirho(tokenChirho) || tokenChirho.scriptChirho === reviewScopeChirho));
 
   onMount(() => {
     backupImageKeyChirho = data.fullPageR2KeyChirho;
@@ -196,7 +196,6 @@
   </nav>
   <div class="reader-intro-chirho"><p>Read the page. Correct the text in place.</p><span>{confirmedCountChirho} / {tokensChirho.length} readings confirmed · not page certification</span>
     <a href={accessUrlChirho}>{data.signedInChirho ? 'Reviewer access · signed in' : 'Sign in to confirm · drafts stay here'}</a></div>
-  {#if !data.eventTailCompleteChirho}<p role="alert">This page has more recent changes than can be safely loaded. Confirmation is held until its snapshot is refreshed.</p>{/if}
   <div class="reader-workspace-chirho">
     <PageScanChirho volumeChirho={data.volumeNumberChirho} {imageUrlChirho} {tokensChirho} {selectedChirho} boxChirho={selectedBoxChirho} repairChirho={repairChirho && !savingChirho && !selectedConflictChirho}
       onselectChirho={(tokenChirho) => { void selectChirho(tokenChirho); }} onboxChirho={changeBoxChirho} onreadyChirho={(readyChirho) => { imageReadyChirho = readyChirho; }} />
@@ -225,11 +224,11 @@
                     style:width={`${Math.min(48, Math.max(7, (draftsChirho[tokenChirho.keyChirho]?.textChirho ?? tokenChirho.textChirho).length + 2))}ch`}
                     oninput={(eventChirho) => changeTextChirho(eventChirho.currentTarget.value)} onkeydown={keyChirho}></textarea>
                 {:else}
-                  <button type="button" class="reading-token-chirho" class:confirmed-chirho={tokenChirho.confirmedChirho}
-                    class:review-chirho={tokenChirho.flaggedChirho || !['french-chirho', 'latin-chirho'].includes(tokenChirho.scriptChirho)}
+                  <button type="button" class="reading-token-chirho" class:confirmed-chirho={isReviewConfirmedChirho(tokenChirho)}
+                    class:review-chirho={needsAttentionChirho(tokenChirho)}
                     class:draft-chirho={draftsChirho[tokenChirho.keyChirho] !== undefined}
                     dir={isRtlChirho(tokenChirho) ? 'rtl' : 'ltr'} disabled={!backupReadyChirho || savingChirho}
-                    title={`${scriptLabelChirho(tokenChirho.scriptChirho)} · ${tokenChirho.confirmedChirho ? 'Human-confirmed' : 'Not human-confirmed'} · line ${tokenChirho.lineIndexChirho}`}
+                    title={`${scriptLabelChirho(tokenChirho.scriptChirho)} · ${reviewLabelChirho(tokenChirho)} · line ${tokenChirho.lineIndexChirho}`}
                     onclick={() => selectChirho(tokenChirho)}>{(draftsChirho[tokenChirho.keyChirho]?.textChirho ?? tokenChirho.textChirho) || '∅'}</button>
                 {/if}{' '}
               {:else}<span class="unlinked-text-chirho">{lineChirho.textChirho || '(No transcription for this line)'}</span>{/each}
@@ -242,6 +241,7 @@
           <div class="selection-label-chirho"><strong>Line {selectedChirho.lineIndexChirho} · {scriptLabelChirho(selectedChirho.scriptChirho)}</strong>
             <span>{draftCountChirho ? `${draftCountChirho} unsubmitted draft${draftCountChirho === 1 ? '' : 's'}` : 'No unsaved changes'}</span></div>
           <p>Compare the highlighted print. Confirm only if the box and text match.</p>
+          <p class="review-evidence-chirho">{reviewLabelChirho(selectedChirho)}. {isReviewConfirmedChirho(selectedChirho) ? 'The recorded event matches this reading and its box; it is not independent source certification.' : 'A fresh confirmation records your review without changing the source box.'}</p>
           <div class="reading-actions-chirho">
             <button type="button" disabled={confirmationHeldChirho || savingChirho || selectedConflictChirho || !imageReadyChirho || !selectedBoxChirho || boxChangedChirho || repairChirho} class="confirm-reading-chirho" onclick={() => confirmChirho(true)}>{savingChirho ? 'Saving…' : 'Confirm & next →'}</button>
             <button type="button" disabled={savingChirho || selectedConflictChirho || !selectedBoxChirho || !imageReadyChirho} aria-pressed={repairChirho} onclick={() => { repairChirho = !repairChirho; }}>Adjust box</button>
@@ -305,6 +305,7 @@
   button:disabled{opacity:.45;cursor:not-allowed;} button:focus-visible,a:focus-visible{outline:3px solid #3061b5;outline-offset:2px;}
   .keyboard-hint-chirho{color:#697466;font-size:.69rem;margin-top:8px;} kbd{font:inherit;font-weight:600;}
   .repair-hint-chirho{color:#864823;margin:6px 0;} .reading-error-chirho{padding:8px;margin-top:8px;color:#8b2920;background:#ffe9e2;border-radius:4px;}
+  .review-evidence-chirho{color:#586459;font-size:.72rem;margin:5px 0;}
   .reading-status-chirho{color:#426859;margin-top:5px;}.reading-status-chirho:empty{display:none;}
   .reader-footnote-chirho{font-size:.7rem;color:#717567;margin-top:10px;} .reader-empty-chirho{white-space:pre-wrap;}
   @media(max-width:1000px){.reader-chirho{padding:12px;}.reader-workspace-chirho{gap:10px;}.legend-chirho{font-size:.62rem;}.reading-controls-chirho{padding:10px;}}

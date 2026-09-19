@@ -6,10 +6,9 @@
  *   1. INSERT the row into events_chirho (append-only audit log).
  *   2. UPDATE the projection on words_chirho (the editor's fast-read columns).
  *
- * Both happen on D1 sequentially in the same handler. SQLite/D1 inside a
- * single Worker request is effectively serialised, so projection drift is
- * bounded — and replay logic (sync-from-d1) is the authoritative recovery
- * path if a write ever crashes between the two statements.
+ * Legacy writes remain sequential and can drift if the projection fails;
+ * they are not source-checked reviewer receipts. The page reader uses the
+ * separate transactional reading-confirmations endpoint with raw-source CAS.
  */
 
 import { json, error } from "@sveltejs/kit";
@@ -26,21 +25,18 @@ import {
 } from "$lib/server-chirho/schema-d1-chirho";
 import { eq, and, gt } from "drizzle-orm";
 
+const LEGACY_AGGREGATES_CHIRHO = ['word-chirho', 'scanline-chirho', 'page-chirho'] as const;
+const LEGACY_EVENT_TYPES_CHIRHO = [
+  'word-text-corrected-chirho', 'word-script-flagged-chirho', 'word-script-set-chirho', 'word-verified-chirho', 'word-vision-applied-chirho',
+  'scanline-needs-ai-review-chirho', 'scanline-needs-ai-review-resolved-chirho', 'scanline-verified-chirho', 'page-completed-chirho',
+] as const;
+
 interface EventBodyChirho {
   pageIdChirho: number;
   scanlineIdChirho?: number | null;
   wordIdChirho?: number | null;
-  aggregateTypeChirho: "word-chirho" | "scanline-chirho" | "page-chirho";
-  eventTypeChirho:
-    | "word-text-corrected-chirho"
-    | "word-script-flagged-chirho"
-    | "word-script-set-chirho"
-    | "word-verified-chirho"
-    | "word-vision-applied-chirho"
-    | "scanline-needs-ai-review-chirho"
-    | "scanline-needs-ai-review-resolved-chirho"
-    | "scanline-verified-chirho"
-    | "page-completed-chirho";
+  aggregateTypeChirho: typeof LEGACY_AGGREGATES_CHIRHO[number];
+  eventTypeChirho: typeof LEGACY_EVENT_TYPES_CHIRHO[number];
   payloadChirho: Record<string, unknown>;
   reviewerChirho?: string | null;
 }
@@ -50,11 +46,19 @@ export const POST: RequestHandler = async ({ request, platform, locals }) => {
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
   const bodyChirho = (await request.json()) as EventBodyChirho;
 
-  if (!bodyChirho.pageIdChirho || !bodyChirho.aggregateTypeChirho || !bodyChirho.eventTypeChirho) {
-    error(400, "missing required fields: pageIdChirho, aggregateTypeChirho, eventTypeChirho");
+  if (!bodyChirho || !Number.isSafeInteger(bodyChirho.pageIdChirho) || bodyChirho.pageIdChirho <= 0 ||
+      !LEGACY_AGGREGATES_CHIRHO.includes(bodyChirho.aggregateTypeChirho) || !LEGACY_EVENT_TYPES_CHIRHO.includes(bodyChirho.eventTypeChirho)) {
+    error(400, 'Invalid page or unsupported legacy event. Reading receipts require source-checked confirmation.');
   }
 
   const reviewerChirho = locals.reviewerChirho!;
+  if (bodyChirho.payloadChirho != null && (typeof bodyChirho.payloadChirho !== 'object' || Array.isArray(bodyChirho.payloadChirho))) error(400, 'Event payload must be an object.');
+  // Workflow: page-reading-workflow-chirho.md. Only confirm-reading may mint
+  // source-matched receipts; a signed-in legacy caller cannot claim that lane.
+  const payloadChirho: Record<string, unknown> = { ...bodyChirho.payloadChirho, sourceChirho: 'legacy-editor-chirho' };
+  delete payloadChirho.reviewerScopeChirho;
+  delete payloadChirho.expectedSourceChirho;
+  delete payloadChirho.attemptChirho;
 
   // 1. INSERT the event
   const insertedChirho = await dbChirho
@@ -65,7 +69,7 @@ export const POST: RequestHandler = async ({ request, platform, locals }) => {
       wordIdChirho: bodyChirho.wordIdChirho ?? null,
       aggregateTypeChirho: bodyChirho.aggregateTypeChirho,
       eventTypeChirho: bodyChirho.eventTypeChirho,
-      payloadJsonChirho: JSON.stringify(bodyChirho.payloadChirho ?? {}),
+      payloadJsonChirho: JSON.stringify(payloadChirho),
       reviewerChirho,
     })
     .returning();
@@ -75,7 +79,6 @@ export const POST: RequestHandler = async ({ request, platform, locals }) => {
 
   // 2. PROJECT into words_chirho where applicable
   if (bodyChirho.wordIdChirho != null) {
-    const payloadChirho = bodyChirho.payloadChirho ?? {};
     switch (bodyChirho.eventTypeChirho) {
       case "word-text-corrected-chirho": {
         const newTextChirho = typeof payloadChirho.newTextChirho === "string"

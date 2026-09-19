@@ -4,12 +4,14 @@
 /**
  * Full-page reading workspace plus optional advanced word/language tools.
  * One indexed scanline/segment JOIN includes French context and empty lines;
- * the snapshot/event tail augments the reader with individual word targets.
+ * current word rows carry raw CAS state and matching review evidence. Only
+ * advanced legacy tools consume the snapshot/event tail.
  */
 
 import type { PageServerLoad } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
 import { loadPageLinesChirho } from "$lib/server-chirho/page-lines-chirho";
+import { loadPageWordsChirho } from "$lib/server-chirho/review-chirho/reading-evidence-chirho";
 import { parseRequiredPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
 import {
   pagesChirho,
@@ -38,7 +40,7 @@ export interface NonFrenchSegmentChirho {
   scanlineHeightChirho: number | null;
 }
 
-export const load: PageServerLoad = async ({ params, platform, locals }) => {
+export const load: PageServerLoad = async ({ params, platform, locals, url }) => {
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
   const volumeNumChirho = parseRequiredPositiveIntParamChirho(params.vol_chirho, "vol_chirho");
   const pageNumChirho = parseRequiredPositiveIntParamChirho(params.page_chirho, "page_chirho");
@@ -56,9 +58,15 @@ export const load: PageServerLoad = async ({ params, platform, locals }) => {
   if (pageRowsChirho.length === 0) error(404, "Page not found");
   const pageDataChirho = pageRowsChirho[0]!;
 
+  // Capture the cursor BEFORE current records. Concurrent changes can then
+  // conservatively reject a save, never authorize a stale read via a newer tail.
+  const cursorRowsChirho = await dbChirho.select({ seqChirho: sql<number>`coalesce(max(${eventsChirho.seqChirho}), 0)` }).from(eventsChirho).where(eq(eventsChirho.pageIdChirho, pageDataChirho.idChirho));
+  const observedEventSeqChirho = cursorRowsChirho[0]?.seqChirho ?? 0;
+
   // Include French context and lines without segments. Keep the legacy
   // non-French projection for the advanced tools without another query.
   const readerLinesChirho = await loadPageLinesChirho(dbChirho, pageDataChirho.idChirho);
+  const readerWordsChirho = await loadPageWordsChirho(dbChirho, pageDataChirho.idChirho);
   const nonFrenchRowsChirho: NonFrenchSegmentChirho[] = readerLinesChirho.flatMap(({ scanlineChirho, segmentsChirho }) =>
     segmentsChirho.filter((segmentChirho) => segmentChirho.scriptTypeChirho !== "french-chirho").map((segmentChirho) => ({
       ...segmentChirho,
@@ -99,7 +107,8 @@ export const load: PageServerLoad = async ({ params, platform, locals }) => {
   // segment + canonical reference, so the editor doesn't pay for N×words D1
   // row-reads per page render. Snapshot BODY lives on R2 (D1 statement-size
   // limit forbids the multi-hundred-KB JSON); D1 stores only the key.
-  const snapshotMetaRowsChirho = await dbChirho
+  const legacyToolsChirho = volumeNumChirho !== 5 && url.searchParams.get('view-chirho') === 'tools-chirho';
+  const snapshotMetaRowsChirho = legacyToolsChirho ? await dbChirho
     .select({
       idChirho: pageSnapshotsChirho.idChirho,
       snapshotSeqChirho: pageSnapshotsChirho.snapshotSeqChirho,
@@ -108,7 +117,7 @@ export const load: PageServerLoad = async ({ params, platform, locals }) => {
     })
     .from(pageSnapshotsChirho)
     .where(eq(pageSnapshotsChirho.pageIdChirho, pageDataChirho.idChirho))
-    .limit(1);
+    .limit(1) : [];
   const snapshotMetaChirho = snapshotMetaRowsChirho[0] ?? null;
   let snapshotChirho: { snapshotSeqChirho: number; underlayJsonChirho: string } | null = null;
   if (snapshotMetaChirho) {
@@ -127,7 +136,7 @@ export const load: PageServerLoad = async ({ params, platform, locals }) => {
   }
   const snapshotSeqChirho = snapshotChirho?.snapshotSeqChirho ?? 0;
 
-  const eventTailChirho = await dbChirho
+  const eventTailChirho = legacyToolsChirho ? await dbChirho
     .select()
     .from(eventsChirho)
     .where(
@@ -137,13 +146,14 @@ export const load: PageServerLoad = async ({ params, platform, locals }) => {
       ),
     )
     .orderBy(eventsChirho.seqChirho)
-    .limit(2001);
+    .limit(2001) : [];
 
   return {
     volumeNumberChirho: volumeNumChirho,
     pageNumberChirho: pageNumChirho,
     pageDataChirho,
     readerLinesChirho,
+    readerWordsChirho,
     nonFrenchSegmentsChirho: nonFrenchRowsChirho,
     fullPageR2KeyChirho,
     prevPageChirho: navRowsChirho[0]?.prevChirho ?? null,
@@ -152,7 +162,7 @@ export const load: PageServerLoad = async ({ params, platform, locals }) => {
     snapshotChirho,
     eventTailChirho: eventTailChirho.slice(0, 2000),
     eventTailCompleteChirho: eventTailChirho.length <= 2000,
-    observedEventSeqChirho: eventTailChirho.at(-1)?.seqChirho ?? snapshotSeqChirho,
+    observedEventSeqChirho,
     signedInChirho: !!locals.reviewerChirho,
   };
 };
