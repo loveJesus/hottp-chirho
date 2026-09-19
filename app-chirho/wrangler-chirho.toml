@@ -28,3 +28,8 @@ migrations_dir = "migrations-chirho"
 [[r2_buckets]]
 binding = "R2_CHIRHO"
 bucket_name = "hottp-chirho"
+
+[[ratelimits]]
+name = "REVIEW_LOGIN_LIMITER_CHIRHO"
+namespace_id = "91920261"
+simple = { limit = 10, period = 60 }

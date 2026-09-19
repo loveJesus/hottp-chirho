@@ -45,7 +45,8 @@ interface EventBodyChirho {
   reviewerChirho?: string | null;
 }
 
-export const POST: RequestHandler = async ({ request, platform }) => {
+export const POST: RequestHandler = async ({ request, platform, locals }) => {
+  if (!locals.reviewerChirho) error(401, 'Reviewer sign-in required.');
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
   const bodyChirho = (await request.json()) as EventBodyChirho;
 
@@ -53,7 +54,7 @@ export const POST: RequestHandler = async ({ request, platform }) => {
     error(400, "missing required fields: pageIdChirho, aggregateTypeChirho, eventTypeChirho");
   }
 
-  const reviewerChirho = bodyChirho.reviewerChirho ?? "anon-chirho";
+  const reviewerChirho = locals.reviewerChirho!;
 
   // 1. INSERT the event
   const insertedChirho = await dbChirho

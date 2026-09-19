@@ -11,14 +11,15 @@
  * (idx_known_words_word_vol_chirho), so single-row touches.
  */
 
-import { json } from "@sveltejs/kit";
+import { error, json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
 import { parseRequiredPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
 import { knownWordsChirho } from "$lib/server-chirho/schema-d1-chirho";
 import { and, eq } from "drizzle-orm";
 
-export const POST: RequestHandler = async ({ request, platform }) => {
+export const POST: RequestHandler = async ({ request, platform, locals }) => {
+  if (!locals.reviewerChirho) error(401, 'Reviewer sign-in required.');
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
   const bodyChirho = (await request.json()) as {
     wordChirho?: string;
@@ -55,14 +56,15 @@ export const POST: RequestHandler = async ({ request, platform }) => {
       categoryChirho: bodyChirho.categoryChirho ?? "unknown-chirho",
       volumeNumberChirho: volChirho,
       statusChirho: bodyChirho.statusChirho ?? "agent-pending-chirho",
-      addedByChirho: bodyChirho.addedByChirho ?? "ui-chirho",
+      addedByChirho: locals.reviewerChirho,
       notesChirho: bodyChirho.notesChirho ?? null,
     })
     .returning();
   return json({ idChirho: insertResultChirho[0]!.idChirho, createdChirho: true });
 };
 
-export const PATCH: RequestHandler = async ({ request, platform }) => {
+export const PATCH: RequestHandler = async ({ request, platform, locals }) => {
+  if (!locals.reviewerChirho) error(401, 'Reviewer sign-in required.');
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
   const bodyChirho = (await request.json()) as {
     idChirho?: number;
@@ -81,7 +83,7 @@ export const PATCH: RequestHandler = async ({ request, platform }) => {
   if (bodyChirho.notesChirho !== undefined) updateChirho.notesChirho = bodyChirho.notesChirho;
   if (bodyChirho.statusChirho === "human-confirmed-chirho") {
     updateChirho.confirmedAtChirho = new Date().toISOString();
-    updateChirho.confirmedByChirho = bodyChirho.confirmedByChirho ?? "ui-chirho";
+    updateChirho.confirmedByChirho = locals.reviewerChirho;
   }
 
   if (Object.keys(updateChirho).length === 0) {
@@ -95,7 +97,8 @@ export const PATCH: RequestHandler = async ({ request, platform }) => {
   return json({ successChirho: true });
 };
 
-export const DELETE: RequestHandler = async ({ url, platform }) => {
+export const DELETE: RequestHandler = async ({ url, platform, locals }) => {
+  if (!locals.reviewerChirho) error(401, 'Reviewer sign-in required.');
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
   const idStrChirho = url.searchParams.get("id-chirho");
   if (!idStrChirho) {

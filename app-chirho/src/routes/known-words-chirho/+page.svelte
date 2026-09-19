@@ -7,17 +7,20 @@
   let { data } = $props();
 
   let busyIdChirho = $state<number | null>(null);
+  let errorChirho = $state('');
 
   async function setStatusChirho(idChirho: number, statusChirho: string): Promise<void> {
     busyIdChirho = idChirho;
     try {
-      await fetch("/api-chirho/known-words-chirho", {
+      errorChirho = '';
+      const responseChirho = await fetch("/api-chirho/known-words-chirho", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idChirho, statusChirho }),
       });
+      if (!responseChirho.ok) throw new Error(`Update refused (HTTP ${responseChirho.status}). Sign in if needed; nothing was confirmed here.`);
       await invalidateAll();
-    } finally {
+    } catch (caughtChirho) { errorChirho = caughtChirho instanceof Error ? caughtChirho.message : 'Update unconfirmed.'; } finally {
       busyIdChirho = null;
     }
   }
@@ -26,11 +29,14 @@
     if (!confirm("Delete this entry permanently?")) return;
     busyIdChirho = idChirho;
     try {
-      await fetch(`/api-chirho/known-words-chirho?id-chirho=${idChirho}`, {
+      errorChirho = '';
+      const responseChirho = await fetch(`/api-chirho/known-words-chirho?id-chirho=${idChirho}`, {
         method: "DELETE",
+        headers: { 'Content-Type': 'application/json' },
       });
+      if (!responseChirho.ok) throw new Error(`Delete refused (HTTP ${responseChirho.status}). Sign in if needed.`);
       await invalidateAll();
-    } finally {
+    } catch (caughtChirho) { errorChirho = caughtChirho instanceof Error ? caughtChirho.message : 'Delete unconfirmed.'; } finally {
       busyIdChirho = null;
     }
   }
@@ -44,6 +50,7 @@
 
 <div class="kw-chirho">
   <h1>Known Words ({data.totalChirho})</h1>
+  {#if errorChirho}<p role="alert">{errorChirho}</p>{/if}
 
   <div class="status-chips-chirho">
     <a class:selected-chirho={data.filterStatusChirho === ""} href="/known-words-chirho">all</a>

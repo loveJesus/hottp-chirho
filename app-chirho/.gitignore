@@ -13,6 +13,8 @@ node_modules
 Thumbs.db
 
 # Env
+.dev.vars
+.dev.vars.*
 .env
 .env.*
 !.env.example

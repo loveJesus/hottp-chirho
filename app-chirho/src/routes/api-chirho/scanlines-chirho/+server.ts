@@ -1,7 +1,7 @@
 // For God so loved the world that he gave his only begotten Son,
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
-import { json } from "@sveltejs/kit";
+import { error, json } from "@sveltejs/kit";
 import type { RequestHandler } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
 import { parseRequiredPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
@@ -28,7 +28,8 @@ export const GET: RequestHandler = async ({ url, platform }) => {
 };
 
 /** Update a scanline (accept reconstructed text) */
-export const PATCH: RequestHandler = async ({ request, platform }) => {
+export const PATCH: RequestHandler = async ({ request, platform, locals }) => {
+  if (!locals.reviewerChirho) error(401, 'Reviewer sign-in required.');
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
   const bodyChirho = (await request.json()) as {
     scanlineIdChirho?: number;

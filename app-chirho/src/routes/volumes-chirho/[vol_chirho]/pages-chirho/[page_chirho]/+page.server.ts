@@ -2,22 +2,21 @@
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
 /**
- * Page-level overview: full page image + list of non-French segments grouped
- * by line. Single JOIN of scanlines × segments, filtered to non-French; we
- * group results in app code, no N+1 loop.
+ * Full-page reading workspace plus optional advanced word/language tools.
+ * One indexed scanline/segment JOIN includes French context and empty lines;
+ * the snapshot/event tail augments the reader with individual word targets.
  */
 
 import type { PageServerLoad } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
+import { loadPageLinesChirho } from "$lib/server-chirho/page-lines-chirho";
 import { parseRequiredPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
 import {
   pagesChirho,
-  scanlinesChirho,
-  segmentsChirho,
   pageSnapshotsChirho,
   eventsChirho,
 } from "$lib/server-chirho/schema-d1-chirho";
-import { eq, and, ne, gt, sql } from "drizzle-orm";
+import { eq, and, gt, sql } from "drizzle-orm";
 import { error } from "@sveltejs/kit";
 
 export interface NonFrenchSegmentChirho {
@@ -39,7 +38,7 @@ export interface NonFrenchSegmentChirho {
   scanlineHeightChirho: number | null;
 }
 
-export const load: PageServerLoad = async ({ params, platform }) => {
+export const load: PageServerLoad = async ({ params, platform, locals }) => {
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
   const volumeNumChirho = parseRequiredPositiveIntParamChirho(params.vol_chirho, "vol_chirho");
   const pageNumChirho = parseRequiredPositiveIntParamChirho(params.page_chirho, "page_chirho");
@@ -57,43 +56,20 @@ export const load: PageServerLoad = async ({ params, platform }) => {
   if (pageRowsChirho.length === 0) error(404, "Page not found");
   const pageDataChirho = pageRowsChirho[0]!;
 
-  // ONE JOIN — pulls every non-French segment + its parent scanline metadata.
-  // Indexed via idx_scanlines_page_chirho + idx_segments_scanline_chirho.
-  const nonFrenchRowsChirho: NonFrenchSegmentChirho[] = await dbChirho
-    .select({
-      segmentIdChirho: segmentsChirho.idChirho,
-      scanlineIdChirho: segmentsChirho.scanlineIdChirho,
-      lineIndexChirho: scanlinesChirho.lineIndexChirho,
-      segmentIndexChirho: segmentsChirho.segmentIndexChirho,
-      scriptTypeChirho: segmentsChirho.scriptTypeChirho,
-      acceptedTextChirho: segmentsChirho.acceptedTextChirho,
-      ocrTextChirho: segmentsChirho.ocrTextChirho,
-      xMinPxChirho: segmentsChirho.xMinPxChirho,
-      widthPxChirho: segmentsChirho.widthPxChirho,
-      statusChirho: segmentsChirho.statusChirho,
-      imageR2KeyChirho: segmentsChirho.imageR2KeyChirho,
-      canonicalSourceChirho: segmentsChirho.canonicalSourceChirho,
-      canonicalConfidenceChirho: segmentsChirho.canonicalConfidenceChirho,
-      canonicalReferenceChirho: segmentsChirho.canonicalReferenceChirho,
-      canonicalDistanceChirho: segmentsChirho.canonicalDistanceChirho,
-      scanlineImageR2KeyChirho: scanlinesChirho.imageR2KeyChirho,
-      scanlineXMinChirho: scanlinesChirho.xMinChirho,
-      scanlineWidthChirho: scanlinesChirho.widthChirho,
-      scanlineYMinChirho: scanlinesChirho.yMinChirho,
-      scanlineHeightChirho: scanlinesChirho.heightChirho,
-    })
-    .from(segmentsChirho)
-    .innerJoin(
-      scanlinesChirho,
-      eq(scanlinesChirho.idChirho, segmentsChirho.scanlineIdChirho)
-    )
-    .where(
-      and(
-        eq(scanlinesChirho.pageIdChirho, pageDataChirho.idChirho),
-        ne(segmentsChirho.scriptTypeChirho, "french-chirho")
-      )
-    )
-    .orderBy(scanlinesChirho.lineIndexChirho, segmentsChirho.segmentIndexChirho);
+  // Include French context and lines without segments. Keep the legacy
+  // non-French projection for the advanced tools without another query.
+  const readerLinesChirho = await loadPageLinesChirho(dbChirho, pageDataChirho.idChirho);
+  const nonFrenchRowsChirho: NonFrenchSegmentChirho[] = readerLinesChirho.flatMap(({ scanlineChirho, segmentsChirho }) =>
+    segmentsChirho.filter((segmentChirho) => segmentChirho.scriptTypeChirho !== "french-chirho").map((segmentChirho) => ({
+      ...segmentChirho,
+      segmentIdChirho: segmentChirho.idChirho,
+      lineIndexChirho: scanlineChirho.lineIndexChirho,
+      scanlineImageR2KeyChirho: scanlineChirho.imageR2KeyChirho,
+      scanlineXMinChirho: scanlineChirho.xMinChirho,
+      scanlineWidthChirho: scanlineChirho.widthChirho,
+      scanlineYMinChirho: scanlineChirho.yMinChirho,
+      scanlineHeightChirho: scanlineChirho.heightChirho,
+    })));
 
   // Cheap nav lookup — two index seeks via idx_pages_volume_chirho.
   const navRowsChirho = await dbChirho
@@ -161,18 +137,22 @@ export const load: PageServerLoad = async ({ params, platform }) => {
       ),
     )
     .orderBy(eventsChirho.seqChirho)
-    .limit(2000);
+    .limit(2001);
 
   return {
     volumeNumberChirho: volumeNumChirho,
     pageNumberChirho: pageNumChirho,
     pageDataChirho,
+    readerLinesChirho,
     nonFrenchSegmentsChirho: nonFrenchRowsChirho,
     fullPageR2KeyChirho,
     prevPageChirho: navRowsChirho[0]?.prevChirho ?? null,
     nextPageChirho: navRowsChirho[0]?.nextChirho ?? null,
     reconstructedTextChirho: pageDataChirho.reconstructedTextChirho ?? "",
     snapshotChirho,
-    eventTailChirho,
+    eventTailChirho: eventTailChirho.slice(0, 2000),
+    eventTailCompleteChirho: eventTailChirho.length <= 2000,
+    observedEventSeqChirho: eventTailChirho.at(-1)?.seqChirho ?? snapshotSeqChirho,
+    signedInChirho: !!locals.reviewerChirho,
   };
 };

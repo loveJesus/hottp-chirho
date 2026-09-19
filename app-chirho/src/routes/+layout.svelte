@@ -20,6 +20,7 @@
     <nav class="nav-chirho">
       <a href="/" class="logo-chirho">HOTTP Barthélemy</a>
       <span class="subtitle-chirho">Critique textuelle de l'Ancien Testament</span>
+      <a href="/reviewer-chirho" class="reviewer-link-chirho">Reviewer sign-in</a>
     </nav>
   </header>
 
@@ -59,6 +60,7 @@
 
   .nav-chirho {
     display: flex;
+    flex-wrap: wrap;
     align-items: baseline;
     gap: 1rem;
     max-width: 1400px;
@@ -81,6 +83,7 @@
     color: #888;
     font-style: italic;
   }
+  .reviewer-link-chirho { color: #d3c6a1; font-size: .8rem; margin-left: auto; }
 
   .main-chirho {
     flex: 1;

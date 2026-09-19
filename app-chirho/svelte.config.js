@@ -16,7 +16,8 @@ const configChirho = {
 			// editor renders against a local clone of prod instead of empty bindings.
 			platformProxy: {
 				configPath: 'wrangler-chirho.toml',
-				persist: true
+				// Tests use a copied store, never the certification witness.
+				persist: process.env.HOTTP_LOCAL_PERSIST_CHIRHO ? { path: process.env.HOTTP_LOCAL_PERSIST_CHIRHO } : true
 			}
 		})
 	}

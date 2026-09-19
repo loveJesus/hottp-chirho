@@ -12,22 +12,21 @@
 
 import type { PageServerLoad } from "./$types";
 import { getDbChirho } from "$lib/server-chirho/db-chirho";
+import { loadPageLinesChirho, type SegmentRowChirho } from "$lib/server-chirho/page-lines-chirho";
 import { parseRequiredPositiveIntParamChirho } from "$lib/server-chirho/query-params-chirho";
 import {
   pagesChirho,
-  scanlinesChirho,
-  segmentsChirho,
 } from "$lib/server-chirho/schema-d1-chirho";
 import { eq, and, sql } from "drizzle-orm";
-import { error } from "@sveltejs/kit";
-
-type SegmentRowChirho = typeof segmentsChirho.$inferSelect;
-type ScanlineRowChirho = typeof scanlinesChirho.$inferSelect;
+import { error, redirect } from "@sveltejs/kit";
 
 export const load: PageServerLoad = async ({ params, platform }) => {
   const dbChirho = getDbChirho(platform!.env.DB_CHIRHO);
   const volumeNumChirho = parseRequiredPositiveIntParamChirho(params.vol_chirho, "vol_chirho");
   const pageNumChirho = parseRequiredPositiveIntParamChirho(params.page_chirho, "page_chirho");
+  // Workflow: page-reading-workflow-chirho.md. Existing vol-5 line PNGs use
+  // uncalibrated cuts. Do not present them as witnesses; full-page reading is safe.
+  if (volumeNumChirho === 5) redirect(303, `/volumes-chirho/5/pages-chirho/${pageNumChirho}`);
 
   // Page lookup. Indexed by UNIQUE(volume_number_chirho, page_number_chirho).
   const pageRowsChirho = await dbChirho
@@ -43,37 +42,10 @@ export const load: PageServerLoad = async ({ params, platform }) => {
   if (pageRowsChirho.length === 0) error(404, "Page not found");
   const pageDataChirho = pageRowsChirho[0]!;
 
-  // ONE JOIN to fetch all scanlines + all segments in a single round-trip.
-  // Indexed by idx_scanlines_page_chirho + idx_segments_scanline_chirho.
-  const joinedRowsChirho = await dbChirho
-    .select({
-      scanlineChirho: scanlinesChirho,
-      segmentChirho: segmentsChirho,
-    })
-    .from(scanlinesChirho)
-    .leftJoin(
-      segmentsChirho,
-      eq(segmentsChirho.scanlineIdChirho, scanlinesChirho.idChirho)
-    )
-    .where(eq(scanlinesChirho.pageIdChirho, pageDataChirho.idChirho))
-    .orderBy(scanlinesChirho.lineIndexChirho, segmentsChirho.segmentIndexChirho);
-
-  // Group in app code (free) instead of issuing N queries (expensive).
-  const scanlinesResultChirho: ScanlineRowChirho[] = [];
+  const linesChirho = await loadPageLinesChirho(dbChirho, pageDataChirho.idChirho);
+  const scanlinesResultChirho = linesChirho.map((lineChirho) => lineChirho.scanlineChirho);
   const segmentsByLineChirho: Record<number, SegmentRowChirho[]> = {};
-  const seenScanlineIdsChirho = new Set<number>();
-
-  for (const rowChirho of joinedRowsChirho) {
-    const sChirho = rowChirho.scanlineChirho;
-    if (!seenScanlineIdsChirho.has(sChirho.idChirho)) {
-      seenScanlineIdsChirho.add(sChirho.idChirho);
-      scanlinesResultChirho.push(sChirho);
-      segmentsByLineChirho[sChirho.idChirho] = [];
-    }
-    if (rowChirho.segmentChirho) {
-      segmentsByLineChirho[sChirho.idChirho]!.push(rowChirho.segmentChirho);
-    }
-  }
+  for (const lineChirho of linesChirho) segmentsByLineChirho[lineChirho.scanlineChirho.idChirho] = lineChirho.segmentsChirho;
 
   // Prev / next page nav — only 2 page numbers needed (cheap), via indexed scan.
   const navRowsChirho = await dbChirho
