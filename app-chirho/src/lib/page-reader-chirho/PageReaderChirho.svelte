@@ -309,5 +309,7 @@
   .reading-status-chirho{color:#426859;margin-top:5px;}.reading-status-chirho:empty{display:none;}
   .reader-footnote-chirho{font-size:.7rem;color:#717567;margin-top:10px;} .reader-empty-chirho{white-space:pre-wrap;}
   @media(max-width:1000px){.reader-chirho{padding:12px;}.reader-workspace-chirho{gap:10px;}.legend-chirho{font-size:.62rem;}.reading-controls-chirho{padding:10px;}}
-  @media(max-width:700px){.reader-workspace-chirho{grid-template-columns:minmax(0,1fr);height:auto;min-height:0;}.reader-workspace-chirho :global(.scan-pane-chirho){height:42dvh;min-height:260px;position:sticky;top:58px;z-index:5;}.transcript-pane-chirho{height:65dvh;min-height:440px;}.reader-nav-chirho{gap:8px;}.reader-intro-chirho{font-size:.85rem;}.reader-chirho{padding:8px;}.reader-nav-chirho a{font-size:.75rem;}.reading-text-chirho{font-size:16px;}.reader-lines-chirho{padding:10px 5px;}}
+  /* Workflow: page-reading-workflow-chirho.md. On stacked mobile layouts the
+     scan stays in document flow, so it cannot cover the active reading. */
+  @media(max-width:700px){.reader-workspace-chirho{grid-template-columns:minmax(0,1fr);height:auto;min-height:0;}.reader-workspace-chirho :global(.scan-pane-chirho){height:42dvh;min-height:260px;}.transcript-pane-chirho{height:65dvh;min-height:440px;}.reader-nav-chirho{gap:8px;}.reader-intro-chirho{font-size:.85rem;}.reader-chirho{padding:8px;}.reader-nav-chirho a{font-size:.75rem;}.reading-text-chirho{font-size:16px;}.reader-lines-chirho{padding:10px 5px;}}
 </style>
