@@ -1,0 +1,36 @@
+{
+  "source_commit_chirho": "9a55a22",
+  "worker_version_chirho": "7ef3d75d-1393-4d16-ab9b-ecadc3829cd2",
+  "verified_chirho": "2026-09-19",
+  "method_chirho": "Paginated SELECT * ordered by primary key, SHA256 of JSON.stringify(row) plus newline; before index/first deploy and after hosted read/refusal tests on both the provenance and mobile follow-up releases. Same hash for all seven tables. Index schema change excluded from content hashes.",
+  "tables_chirho": {
+    "pages_chirho": {
+      "count_chirho": 46,
+      "sha256_chirho": "32d074645e1a6f9223cf5d2e0737d0a0ee4391d3a69549ea68676717b4009dad"
+    },
+    "scanlines_chirho": {
+      "count_chirho": 1076,
+      "sha256_chirho": "4461289419368d0ac0c4f8cc9ce9582c192136ae1d879d78d15732f7390251dd"
+    },
+    "words_chirho": {
+      "count_chirho": 11938,
+      "sha256_chirho": "895d05337f98e3633049abdbd286f3e5e76bd113cee19d9187fc7474c1da8fd1"
+    },
+    "segments_chirho": {
+      "count_chirho": 1925,
+      "sha256_chirho": "654416ec2e1654ca845ea01508ee9793901142b1fed03020755f46db39bf9f50"
+    },
+    "snippets_chirho": {
+      "count_chirho": 0,
+      "sha256_chirho": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "known_words_chirho": {
+      "count_chirho": 275,
+      "sha256_chirho": "8747064ddcc6e8e667d3a5d7e1bbf73382d18c7fca32fc101e25cc10d72d28df"
+    },
+    "events_chirho": {
+      "count_chirho": 237,
+      "sha256_chirho": "63af1296570965599a2541b2043cfce8715baa652d78caeaef157e2967b8e2bd"
+    }
+  }
+}
