@@ -12,7 +12,7 @@ Placement: pure matching/link helpers plus a small navigator component in `app-c
 - [x] Implement find/line/link navigation without saving or including draft text in URLs; preserve context and drafts.
 - [x] Test multilingual matching, exact/missing/malformed links, clipboard refusal, selection restoration, keyboard behavior and mobile layout using disposable local data.
 - [x] Run reader regression checks and Svelte check/build, review changed scope and record evidence.
-- [ ] Commit owned paths and fast-forward into main without staging the raw-station lane.
+- [x] Commit owned paths and fast-forward into main without staging the raw-station lane. Source commit `4369d4c`; 29 tests / 140 assertions pass again from main after landing.
 
 Acceptance: meaningful navigation in a real rendered reader; navigation performs zero content mutation requests, retained drafts survive links/search/reload, no invented replacement for a missing record, URLs contain only origin/page/record identity plus a stored-source digest, and auth/confirmation behavior remains unchanged. This is not Andrew's hands-on acceptance or hosted release evidence.
 
@@ -27,3 +27,5 @@ Acceptance: meaningful navigation in a real rendered reader; navigation performs
 - Canonical witness byte hash remains `3c9ab06d0305035305b9f525307b600e22ea9f07554e959cb8aa2acca3827d40`, matching the pre-work cleanup check. No canonical DB opening/test writes, production content/schema changes or deployment in this pass. Current deployed artifact remains retained in the main app.
 
 Recovery: revert these scoped code changes; retain authenticated mutation gates and provenance fixes from the earlier release. Source-bound links are not a repair-station bridge and cannot certify a reading. The skill-guided implementation stayed isolated and reversible; live publication is a separate landing step.
+
+Test server stopped after verification. Removed only the isolated navigation worktree's inactive `app-chirho/node_modules` and copied `app-chirho/.wrangler` after empty open-file checks, keeping its committed source and build artifact. Reinstall dependencies and make a fresh test-state copy before rerunning the local browser harness; never default a test run to the canonical witness. Main dependencies and deployed artifact were not removed. No hosted release or push is claimed by this development receipt.
