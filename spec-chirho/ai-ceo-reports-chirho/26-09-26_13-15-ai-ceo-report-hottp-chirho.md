@@ -2,7 +2,7 @@
 
 # HOTTP reader navigation release Chirho
 
-L.J.'s direct "develop what is needed and commit, push, deploy" authorizes this release. The existing reader at https://hottp-chirho.bible.systems now has page-local multilingual search, previous/next matches, line jumps and copyable source-bound reading links. Shared links preserve the exact reading through sign-in; changed source refuses a guessed substitute. Drafts stay in the originating tab and are never put in a shared URL. No new hostname, Worker, runtime dependency or schema migration.
+L.J.'s direct "develop what is needed and commit, push, deploy" in the Codex thread authorizes this release. Separately, Claude attests L.J.'s "5 ok" for navigation deployment in his September 25 pane (#24901), and "things yes should be pushed" on September 26 (#24906). The existing reader at https://hottp-chirho.bible.systems now has page-local multilingual search, previous/next matches, line jumps and copyable source-bound reading links. Shared links preserve the exact reading through sign-in; changed source refuses a guessed substitute. Drafts stay in the originating tab and are never put in a shared URL. No new hostname, Worker, runtime dependency or schema migration.
 
 Navigation source `4369d4c` is pushed. Validated app tree `595d8ee` matches release preparation `e2416a3`; the app was clean when built and published. Active Worker `3c04b05c-0ac0-42d8-993a-b2cc23d00aea` serves 100%, created `2026-09-26T17:11:38.91838Z`. Asset version `1790442342542`; adapter SHA256 `7bc6c4794ddc38db6c2bb66a6c409f67dc2922f8edf43ee2a44093fa7fc13e34` over 41 files. Existing auth, source-match confirmation and provenance classification are retained.
 
@@ -16,4 +16,4 @@ Coordination: Codex's previously blocked raw-review lane landed/pushed in `81c11
 
 Evidence: `spec-chirho/tasklists-chirho/reader-chirho/26-09-26_13-10-tasklist-reader_navigation_release-chirho.md` and `spec-chirho/page-reader-checks-chirho/navigation-chirho/release-2026-09-26-chirho.json`. Recovery prefers fix-forward; pre-release authenticated/provenance-aware version `7ef3d75d-1393-4d16-ab9b-ecadc3829cd2` is available. Never roll back to the anonymous-write May Worker.
 
-Local consensus: pending Claude's read-only factual review. Not yet notified to AICEO.
+Local consensus: Claude #24916 independently confirms the active deployment/time, production counts/max sequence, zero shared-reviewer events, unchanged legacy segments 9782/9793, both witness hashes and the 147-file/six-field credential scan. His authority-line amendment is incorporated above, distinguishing the direct Codex-thread quote from his own attested relay. Full-row hashes and browser runs are this seat's evidence; his narrower check is not represented as a rerun. Ready for AICEO notification. No station outcome is inferred from this reader consensus.

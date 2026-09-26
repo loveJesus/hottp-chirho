@@ -2,7 +2,7 @@
 
 # Reader navigation release Chirho
 
-Owner approval reference: L.J.'s direct "develop what is needed and commit, push, deploy", with subsequent "continue". Claude's #24906 and #24912 coordinate ownership, not new authority. Existing Worker `hottp-chirho`, existing custom domain and workers.dev alias. No new service, migration, source-data repair, training change or reviewer certification.
+Owner approval reference: L.J.'s direct "develop what is needed and commit, push, deploy" in this Codex thread, with subsequent "continue". Claude separately attests L.J.'s "5 ok" for navigation deployment on September 25 (#24901) and "things yes should be pushed" on September 26 (#24906). Claude's #24906 and #24912 coordinate ownership, not new authority. Existing Worker `hottp-chirho`, existing custom domain and workers.dev alias. No new service, migration, source-data repair, training change or reviewer certification.
 
 Placement: ship the already-committed navigation (`4369d4c`, ledger `7ef5f42`); retain the current authentication, source-match confirmation and provenance boundaries. Keep hosted navigation proof beside its existing local harness. No new runtime dependency. Raw-review source landed separately as `81c1168` plus `595d8ee`; Claude owns station redeployment under his lease. His local sync snapshot window is released in #24912.
 
@@ -12,6 +12,7 @@ Placement: ship the already-committed navigation (`4369d4c`, ledger `7ef5f42`); 
 - [x] Publish the unchanged validated build to the existing Worker; record version, asset hash and commit provenance.
 - [x] Exercise hosted navigation, public/encoded mutation refusals and real sign-in without submitting a valid production reading; recheck all seven content hashes and the protected local witness.
 - [x] Close progress row 2944 and request local consensus (#24915); land the four owned evidence paths in this receipt commit. Station sync waits for its pushed SHA and zero-byte ledger WAL.
+- [x] Push hosted receipt `c79803c`, release the clean station-sync window (#24917), and receive it back (#24919). Record Claude's independent consensus (#24916) and its authority attribution amendment.
 
 Build provenance before publication: clean app at `595d8eebf3505eb698f28739d37a43826b809433`; later station-only `013fd55` does not change the app. Adapter 41 files, SHA256 `7bc6c4794ddc38db6c2bb66a6c409f67dc2922f8edf43ee2a44093fa7fc13e34` (sorted relative path followed by file bytes), asset version `1790442342542`. No source rebuild is needed for evidence-only changes. Local Vite state was copied to `/private/tmp/hottp-reader-release-20260926-chirho-Vkix3E/v3`; the test server is stopped. Never sync that fixture to production or certification storage.
 
@@ -30,3 +31,7 @@ Progress row 2944. Published with the locked Wrangler already used by this proje
 - Local witness logical fingerprint remains `2584f94848864b77ab75d9cbd4743474d5f861c835ec87140df65c7e1cca53cb` (46/11938/67), and byte SHA256 remains `3c9ab06d0305035305b9f525307b600e22ea9f07554e959cb8aa2acca3827d40`.
 
 Durable machine receipt: `spec-chirho/page-reader-checks-chirho/navigation-chirho/release-2026-09-26-chirho.json`. New desktop and mobile viewport screenshots were visually inspected under `workspace-chirho/reviewer-ui-chirho/26-09-26-navigation-release-chirho/`; the September 19 evidence was not overwritten. The raw/station deployment is not claimed by this receipt; Claude owns and verifies it separately.
+
+Claude's independent #24916 review confirms deployment/time, counts/sequence, zero shared-reviewer events, unchanged legacy segments, witness hashes and the build credential scan. He did not claim to rerun the browser tests or seven full-row hashes; those remain this seat's evidence. The final authority amendment records the direct instruction in this thread alongside his attested owner reply. No scope expansion or new production action accompanies it.
+
+Cleanup: after the preview stopped and an open-file check found no consumers, removed only the owned 8008 KiB `/private/tmp/hottp-reader-release-20260926-chirho-Vkix3E` directory. Its database was verified to be a separate inode from the protected witness. This disposable fixture can be recreated from the preserved original; tracked scripts/receipts and new screenshots remain. No source, dependency installation, production asset or canonical witness was removed.
