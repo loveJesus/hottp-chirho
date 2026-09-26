@@ -25,6 +25,7 @@ import {
   canonicalReviewBasicAuthHeaderChirho,
   canonicalReviewCredentialEnvNamesChirho,
   canonicalReviewCredentialValueChirho,
+  canonicalReviewFetchTargetChirho,
   parseCanonicalReviewStationsChirho,
   readCanonicalReviewStationsChirho,
 } from "./canonical-review-stations-chirho.ts";
@@ -206,6 +207,58 @@ function checkSyncCarriesD1AuditDbChirho(): void {
   );
 }
 
+function throwsChirho(labelChirho: string, actionChirho: () => unknown, expectedFragmentChirho: string): void {
+  try {
+    actionChirho();
+    failuresChirho.push(`${labelChirho}: did not throw`);
+  } catch (errorChirho) {
+    const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
+    if (!messageChirho.includes(expectedFragmentChirho)) {
+      failuresChirho.push(`${labelChirho}: threw "${messageChirho}", expected to mention "${expectedFragmentChirho}"`);
+    }
+  }
+}
+
+/**
+ * Report links stay localhost-shaped; checks that fetch them must follow the
+ * canonical record. Pin the mapping: same path and query, the deployed host,
+ * the right credential set, and loud failures instead of unauthenticated or
+ * wrong-host fetches.
+ */
+function checkFetchTargetChirho(): void {
+  const vpsChirho = parseCanonicalReviewStationsChirho(validRecordChirho());
+  const localChirho = parseCanonicalReviewStationsChirho({ ...validRecordChirho(), canonical_location_chirho: "local-chirho", stations_chirho: [] });
+  const envChirho = {
+    HOTTP_REVIEW_BASIC_AUTH_USER_CHIRHO: "reviewer-chirho",
+    HOTTP_REVIEW_BASIC_AUTH_PASSWORD_CHIRHO: "review-password-chirho",
+    HOTTP_APPROVAL_USER_CHIRHO: "approver-chirho",
+    HOTTP_APPROVAL_PASSWORD_CHIRHO: "approval-password-chirho",
+  };
+  const rawLinkChirho = new URL("http://localhost:8766/?validation-status-chirho=unvalidated-chirho&item-chirho=3%3A151%3A36%3A2");
+
+  const localTargetChirho = canonicalReviewFetchTargetChirho(rawLinkChirho, localChirho, envChirho);
+  checkChirho("local record fetches the link unchanged", localTargetChirho.urlChirho === rawLinkChirho.href);
+  checkChirho("local record sends no credentials", Object.keys(localTargetChirho.headersChirho).length === 0);
+
+  const rawTargetChirho = canonicalReviewFetchTargetChirho(rawLinkChirho, vpsChirho, envChirho);
+  checkChirho(
+    "deployed record keeps the path and query on the deployed host",
+    rawTargetChirho.urlChirho === "https://raw-hebrew-chirho.example/?validation-status-chirho=unvalidated-chirho&item-chirho=3%3A151%3A36%3A2"
+  );
+  checkChirho(
+    "deployed review station uses the review credential",
+    rawTargetChirho.headersChirho.Authorization === canonicalReviewBasicAuthHeaderChirho({ userChirho: "reviewer-chirho", passwordChirho: "review-password-chirho" })
+  );
+  const approvalTargetChirho = canonicalReviewFetchTargetChirho(new URL("http://localhost:8772/"), vpsChirho, envChirho);
+  checkChirho(
+    "deployed approval station uses the approval credential",
+    approvalTargetChirho.urlChirho === "https://segment-repair-approval-chirho.example/" &&
+      approvalTargetChirho.headersChirho.Authorization === canonicalReviewBasicAuthHeaderChirho({ userChirho: "approver-chirho", passwordChirho: "approval-password-chirho" })
+  );
+  throwsChirho("an unknown local port fails loudly", () => canonicalReviewFetchTargetChirho(new URL("http://localhost:9999/"), vpsChirho, envChirho), "no canonical deployed station serves local port 9999");
+  throwsChirho("missing credentials fail instead of fetching unauthenticated", () => canonicalReviewFetchTargetChirho(rawLinkChirho, vpsChirho, {}), "HOTTP_REVIEW_BASIC_AUTH_USER_CHIRHO");
+}
+
 function sidecarsOfChirho(dbPathChirho: string): string[] {
   return ["-wal", "-shm", "-journal"].filter((suffixChirho) => existsSync(`${dbPathChirho}${suffixChirho}`));
 }
@@ -287,12 +340,13 @@ function mainChirho(): void {
   checkCommittedRecordChirho();
   checkSyncCarriesD1AuditDbChirho();
   checkShippedWitnessReadableChirho();
+  checkFetchTargetChirho();
   if (failuresChirho.length > 0) {
     console.error(`[${MODULE_CHIRHO}] ${failuresChirho.length} failure(s):`);
     for (const failureChirho of failuresChirho) console.error(`- ${failureChirho}`);
     process.exit(1);
   }
-  console.log(`[${MODULE_CHIRHO}] canonical review station, sync-inclusion and witness-readability guards passed`);
+  console.log(`[${MODULE_CHIRHO}] canonical review station, fetch-target, sync-inclusion and witness-readability guards passed`);
 }
 
 mainChirho();

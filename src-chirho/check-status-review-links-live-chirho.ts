@@ -13,6 +13,7 @@
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
+import { canonicalReviewFetchTargetChirho } from "./canonical-review-stations-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { assertGeneratedCheckChirho } from "./generated-output-hygiene-chirho.ts";
 
@@ -319,12 +320,22 @@ interface StateResponseChirho<TItemChirho> {
   itemsChirho?: TItemChirho[];
 }
 
+/**
+ * Fetch a report link from wherever the stations canonically live. The report
+ * keeps localhost-shaped links (validated above as such); while the deployed
+ * fleet is canonical, the same path and query are fetched from it instead.
+ */
 async function fetchTextChirho(urlChirho: string): Promise<string> {
+  const targetChirho = canonicalReviewFetchTargetChirho(new URL(urlChirho));
+  const shownChirho = targetChirho.urlChirho === urlChirho ? urlChirho : `${urlChirho} (served at ${targetChirho.urlChirho})`;
   const abortControllerChirho = new AbortController();
   const timeoutChirho = setTimeout(() => abortControllerChirho.abort(), FETCH_TIMEOUT_MS_CHIRHO);
   try {
-    const responseChirho = await fetch(urlChirho, { signal: abortControllerChirho.signal });
-    assertGeneratedCheckChirho(responseChirho.ok, `${urlChirho} returned HTTP ${responseChirho.status}`);
+    const responseChirho = await fetch(targetChirho.urlChirho, {
+      headers: targetChirho.headersChirho,
+      signal: abortControllerChirho.signal,
+    });
+    assertGeneratedCheckChirho(responseChirho.ok, `${shownChirho} returned HTTP ${responseChirho.status}`);
     return await responseChirho.text();
   } finally {
     clearTimeout(timeoutChirho);

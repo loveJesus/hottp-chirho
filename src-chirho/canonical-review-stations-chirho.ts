@@ -248,3 +248,50 @@ export function canonicalReviewCredentialValueChirho(
 export function canonicalReviewBasicAuthHeaderChirho(valueChirho: CanonicalReviewCredentialValueChirho): string {
   return `Basic ${Buffer.from(`${valueChirho.userChirho}:${valueChirho.passwordChirho}`, "utf8").toString("base64")}`;
 }
+
+/** The port each station listens on when the workstation runs the fleet. */
+export const LOCAL_REVIEW_STATION_PORTS_CHIRHO: Readonly<Record<ReviewServerKeyChirho, number>> = {
+  "raw-hebrew-chirho": 8766,
+  "latin-symbol-chirho": 8770,
+  "expert-non-latin-chirho": 8771,
+  "segment-repair-approval-chirho": 8772,
+};
+
+export interface CanonicalReviewFetchTargetChirho {
+  urlChirho: string;
+  headersChirho: Record<string, string>;
+}
+
+/**
+ * Where a localhost review URL is actually served right now. Generated reports
+ * keep localhost-shaped links; while a deployed fleet is canonical, the same
+ * path and query are served by the deployed station behind basic auth, so a
+ * check that fetches report links must follow the record rather than assume
+ * the workstation is running the stations.
+ */
+export function canonicalReviewFetchTargetChirho(
+  localUrlChirho: URL,
+  recordChirho: CanonicalReviewStationsChirho = readCanonicalReviewStationsChirho(),
+  envChirho: Record<string, string | undefined> = process.env
+): CanonicalReviewFetchTargetChirho {
+  if (recordChirho.canonicalLocationChirho === "local-chirho") {
+    return { urlChirho: localUrlChirho.href, headersChirho: {} };
+  }
+  const portChirho = Number(localUrlChirho.port);
+  const keyChirho = (Object.keys(LOCAL_REVIEW_STATION_PORTS_CHIRHO) as ReviewServerKeyChirho[]).find(
+    (candidateChirho) => LOCAL_REVIEW_STATION_PORTS_CHIRHO[candidateChirho] === portChirho
+  );
+  const stationChirho = recordChirho.stationsChirho.find((candidateChirho) => candidateChirho.keyChirho === keyChirho);
+  if (keyChirho === undefined || stationChirho === undefined) {
+    throw new Error(`no canonical deployed station serves local port ${localUrlChirho.port} (${localUrlChirho.href})`);
+  }
+  const credentialChirho = canonicalReviewCredentialValueChirho(stationChirho.credentialChirho, envChirho);
+  if (credentialChirho === null) {
+    const namesChirho = canonicalReviewCredentialEnvNamesChirho(stationChirho.credentialChirho);
+    throw new Error(`${stationChirho.labelChirho} needs ${namesChirho.userEnvChirho} and ${namesChirho.passwordEnvChirho} in .env`);
+  }
+  return {
+    urlChirho: new URL(`${localUrlChirho.pathname}${localUrlChirho.search}`, stationChirho.urlChirho).href,
+    headersChirho: { Authorization: canonicalReviewBasicAuthHeaderChirho(credentialChirho) },
+  };
+}
