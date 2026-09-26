@@ -3,7 +3,7 @@
 
 import { existsSync, readFileSync, readdirSync, statSync } from "fs";
 import { connect } from "net";
-import { join, resolve, sep } from "path";
+import { dirname, join, resolve, sep } from "path";
 
 import { assertBunVersionsMatchPinChirho } from "./check-bun-version-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
@@ -378,6 +378,43 @@ function assertRemoteWriteServicesStoppedForApplyChirho(argsChirho: string[], ho
   }
 }
 
+/**
+ * The shell script that proves the host presents the workstation's project
+ * root as an alias of the deployed tree.
+ */
+export function workstationPathAliasScriptChirho(workstationRootChirho: string, remoteRootChirho: string): string {
+  return [
+    "set -eu",
+    `alias_target_chirho=$(readlink -f -- ${shellQuoteChirho(workstationRootChirho)} 2>/dev/null || true)`,
+    `remote_target_chirho=$(readlink -f -- ${shellQuoteChirho(remoteRootChirho)})`,
+    '[ -n "$alias_target_chirho" ] && [ "$alias_target_chirho" = "$remote_target_chirho" ]',
+  ].join("\n");
+}
+
+/**
+ * Review packet manifests store the absolute paths of the workstation that
+ * generated them, and the expert lane's records keep those paths as strings.
+ * The review host therefore has to present this workstation's project root as
+ * an alias of the deployed tree. Without it, the Latin/symbol and expert
+ * stations find no images and answer 500. Refuse to sync onto a host where the
+ * alias is missing or points elsewhere.
+ */
+function assertWorkstationPathAliasForApplyChirho(argsChirho: string[], hostChirho: string): void {
+  if (!argsChirho.includes("--apply-chirho")) return;
+  const remoteRootChirho = remotePathChirho(parseArgValueChirho(argsChirho, "remote-path-chirho") ?? DEFAULT_REMOTE_PATH_CHIRHO);
+  const resultChirho = Bun.spawnSync(["ssh", `${remoteUserChirho(argsChirho)}@${hostChirho}`, "bash", "-s"], {
+    stdin: new TextEncoder().encode(workstationPathAliasScriptChirho(PROJECT_ROOT_CHIRHO, remoteRootChirho)),
+    stdout: "inherit",
+    stderr: "inherit",
+  });
+  if (resultChirho.exitCode !== 0) {
+    failChirho(
+      `the review host must alias ${PROJECT_ROOT_CHIRHO} to ${remoteRootChirho} so packet manifest paths resolve; ` +
+        `create it with: sudo mkdir -p ${shellQuoteChirho(dirname(PROJECT_ROOT_CHIRHO))} && sudo ln -s ${shellQuoteChirho(remoteRootChirho.replace(/\/$/, ""))} ${shellQuoteChirho(PROJECT_ROOT_CHIRHO)}`
+    );
+  }
+}
+
 async function mainChirho(): Promise<void> {
   const argsChirho = process.argv.slice(2);
   const printOnlyChirho = argsChirho.includes("--print-command-chirho");
@@ -391,6 +428,7 @@ async function mainChirho(): Promise<void> {
   if (!printOnlyChirho) await assertLocalWritePortsStoppedForApplyChirho(argsChirho);
   if (!printOnlyChirho) assertRemoteWriteServicesStoppedForApplyChirho(argsChirho, hostChirho);
   if (!printOnlyChirho) assertBunPinForApplyChirho(argsChirho, hostChirho);
+  if (!printOnlyChirho) assertWorkstationPathAliasForApplyChirho(argsChirho, hostChirho);
   const rsyncArgsValueChirho = rsyncArgsChirho(argsChirho);
   console.log(
     `[${MODULE_CHIRHO}] ${["rsync", ...rsyncArgsValueChirho].map(shellQuoteChirho).join(" ")}`

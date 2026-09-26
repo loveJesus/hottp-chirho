@@ -101,6 +101,29 @@ sync-out window and then expires. Two things read it:
   than merely documented. `--local-writer-anyway-chirho` overrides it once
   ownership has genuinely come back to the workstation.
 
+## Workstation Path Alias Rule Chirho
+
+Review packet manifests store the absolute paths of the workstation that
+generated them (for example
+`/Users/hallelujah/dev-chirho/friends-chirho/andrewbeth-chirho/hottp-chirho/workspace-chirho/...`),
+and the expert lane's records keep those paths as strings. The review host
+therefore presents that workstation project root as a symlink to the deployed
+tree:
+
+```bash
+sudo mkdir -p /Users/hallelujah/dev-chirho/friends-chirho/andrewbeth-chirho
+sudo ln -s /srv/hottp-review-chirho/current \
+  /Users/hallelujah/dev-chirho/friends-chirho/andrewbeth-chirho/hottp-chirho
+```
+
+Without it the Latin/symbol and expert stations find no packet images and
+answer HTTP 500. Sync-out refuses to apply onto a host where the alias is
+missing or points elsewhere, and the packet containment check compares real
+paths, so an alias path counts as inside the deployed packet directory.
+Created 2026-09-26. The durable fix is project-relative packet paths. That
+means migrating the absolute path strings stored in certification records,
+so it is an owner decision, not a deploy step.
+
 ## D1 Audit Database Sync Rule Chirho
 
 The Latin/symbol and expert stations derive part of their review queue from the

@@ -2,7 +2,7 @@
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
 import { createHash } from "crypto";
-import { existsSync, readFileSync } from "fs";
+import { existsSync, readFileSync, realpathSync } from "fs";
 import { relative, resolve, sep } from "path";
 
 export interface PacketImageHashFieldsChirho {
@@ -123,9 +123,25 @@ export function packetImageHashDriftsChirho(itemsChirho: PacketImageHashItemChir
   return driftsChirho;
 }
 
+/**
+ * Resolve through symlinks when the path exists. Packet manifests store the
+ * absolute paths of the workstation that generated them; the review host
+ * serves the same tree under another root, reached through an alias of the
+ * workstation path. Comparing real paths keeps the containment check honest
+ * on both machines, and a missing file falls back to the lexical path, so a
+ * genuinely absent image still reports as drift.
+ */
+function realOrResolvedPathChirho(pathChirho: string): string {
+  try {
+    return realpathSync(pathChirho);
+  } catch {
+    return resolve(pathChirho);
+  }
+}
+
 function normalizedRelativePathChirho(baseDirChirho: string, absolutePathChirho: string): string | null {
-  const baseChirho = resolve(baseDirChirho);
-  const resolvedPathChirho = resolve(absolutePathChirho);
+  const baseChirho = realOrResolvedPathChirho(baseDirChirho);
+  const resolvedPathChirho = realOrResolvedPathChirho(absolutePathChirho);
   if (resolvedPathChirho !== baseChirho && !resolvedPathChirho.startsWith(`${baseChirho}${sep}`)) return null;
   return relative(baseChirho, resolvedPathChirho).split(sep).join("/");
 }
