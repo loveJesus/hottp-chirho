@@ -288,4 +288,3 @@ export const REVIEW_STATE_FILTER_OPTIONS_CHIRHO = [
   { valueChirho: "attribution-blocked-chirho", labelChirho: "Attribution blocked" },
   { valueChirho: "attribution-rereview-chirho", labelChirho: "Attribution re-review" },
 ] as const;
-
