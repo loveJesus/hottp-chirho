@@ -1,0 +1,23 @@
+{
+  "observed_at_chirho": "2026-09-26T17:05:00.486Z",
+  "build_source_commit_chirho": "595d8eebf3505eb698f28739d37a43826b809433",
+  "previous_worker_version_chirho": "7ef3d75d-1393-4d16-ab9b-ecadc3829cd2",
+  "adapter_sha256_chirho": "7bc6c4794ddc38db6c2bb66a6c409f67dc2922f8edf43ee2a44093fa7fc13e34",
+  "adapter_files_chirho": 41,
+  "asset_version_chirho": "1790442342542",
+  "credential_scan_files_chirho": 147,
+  "credential_scan_fields_chirho": 6,
+  "credential_scan_hits_chirho": 0,
+  "witness_sha256_chirho": "2584f94848864b77ab75d9cbd4743474d5f861c835ec87140df65c7e1cca53cb",
+  "witness_file_sha256_chirho": "3c9ab06d0305035305b9f525307b600e22ea9f07554e959cb8aa2acca3827d40",
+  "tables_chirho": {
+    "pages_chirho": { "count_chirho": 46, "sha256_chirho": "a11531ad1645e15fa3e1bd7c3c37588329a671819eab5bc2798977f2f41fa117" },
+    "scanlines_chirho": { "count_chirho": 1076, "sha256_chirho": "e30960b0fe87892a4b55eebf00f91556a5fa557760484e4263ae5819fa5e6add" },
+    "words_chirho": { "count_chirho": 11938, "sha256_chirho": "e270a3e32b35c0c6add22397f796d6d2837c54016c5be49d36604539ee233099" },
+    "segments_chirho": { "count_chirho": 1925, "sha256_chirho": "c32def70f36a296dd2faa4e3a53da65f5eb7c3cf7bd0c9779cd11285ca5f72b9" },
+    "snippets_chirho": { "count_chirho": 0, "sha256_chirho": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945" },
+    "known_words_chirho": { "count_chirho": 275, "sha256_chirho": "6a8530f9a0f10c6569e6a76b844330be0f15c32ff2c8e4d9be6d180fbbd52fec" },
+    "events_chirho": { "count_chirho": 237, "sha256_chirho": "625f6d101832e514cda8fa39f0c7a60325abe2af58e98c57e0a8560c39b8699a" }
+  },
+  "table_hash_algorithm_chirho": "SHA256 of JSON.stringify of the D1 REST SELECT * results array, ordered by id_chirho or events.seq_chirho. Seven explicit tables only; every query reported rows_written=0."
+}
