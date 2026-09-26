@@ -1,7 +1,7 @@
 // For God so loved the world that he gave his only begotten Son,
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
-import { Database } from "bun:sqlite";
+import { Database, constants } from "bun:sqlite";
 import { createHash, type Hash } from "crypto";
 import { existsSync, readdirSync, statSync } from "fs";
 import { join } from "path";
@@ -63,12 +63,18 @@ function immutableSqliteUriChirho(dbPathChirho: string): string {
  * commit is already in the main file, so an immutable open reads exactly the
  * committed state without creating anything. While a sidecar exists, some
  * process (usually `vite dev`) has the file open, so normal WAL locking applies.
+ *
+ * The immutable open passes SQLITE_OPEN_URI explicitly. macOS Bun uses the
+ * system SQLite, which interprets `file:` URIs by default, but Bun on Linux
+ * bundles a SQLite built without that default, where `{ readonly: true }`
+ * treats the URI as a literal file name and fails, which is what kept the
+ * review host's stations down after the first redeploy.
  */
 export function openLocalD1ReadonlyChirho(dbPathChirho: string): Database {
   if (existsSync(`${dbPathChirho}-wal`) || existsSync(`${dbPathChirho}-shm`)) {
     return new Database(dbPathChirho, { readonly: true });
   }
-  return new Database(immutableSqliteUriChirho(dbPathChirho), { readonly: true });
+  return new Database(immutableSqliteUriChirho(dbPathChirho), constants.SQLITE_OPEN_READONLY | constants.SQLITE_OPEN_URI);
 }
 
 function hashRowsChirho(hashChirho: Hash, sectionChirho: string, rowsChirho: unknown[][]): void {
