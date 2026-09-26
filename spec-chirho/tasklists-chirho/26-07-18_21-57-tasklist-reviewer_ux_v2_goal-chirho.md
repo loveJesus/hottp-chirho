@@ -270,14 +270,44 @@ VPS.
       it with two named failures. All 51 Markdown outputs stayed byte-identical,
       the D1 audit fingerprint is unchanged at 2584f948, the witness file was
       never modified, and the status generator reproduces the same counts.)
-- [ ] Redeploy so the two broken stations serve again, then confirm the
-      liveness gate goes green. L.J. authorized it on 2026-09-25 ("3 ok").
-      Pre-sync inspection found nothing on the host to lose: the only file
-      changed there since the 2026-08-26 deploy is SQLite's transient -shm
-      index, and there is no backups-chirho directory. WAITING on the row 2914
-      raw-station lane. Sync-out needs a clean tree, the lane owner agrees it
-      should ship, its server logic prints identically to HEAD, and its
-      workflow doc must restore two phrases the spec-doc hygiene gate requires.
+- [x] Redeploy so the two broken stations serve again, then confirm the
+      liveness gate goes green. (2026-09-26, L.J. "3 ok", lease
+      2026-09-26-cx33. Three applies, each preceded by a host inspection that
+      found nothing to lose, all four stations stopped, and an itemized dry
+      run. The first run's 38,395 deletions were all the deleted kraken venv.
+      The applies were 595d8ee+ca1938f (carrying GPT's row-2914 raw workspace,
+      81c1168), 013fd55 and c79803c. Each apply exposed the next hidden layer
+      behind the one before, and each was fixed with a controlled
+      before/after proof on the host:
+      1. Bun on Linux bundles SQLite 3.53.2 without default URI support, so
+         the immutable open needed an explicit SQLITE_OPEN_URI (013fd55).
+      2. The packet manifests store the workstation's absolute paths, so the
+         Latin/symbol and expert stations could never have worked on the host.
+         Fixed with a host alias (/Users/hallelujah/.../hottp-chirho ->
+         /srv/hottp-review-chirho/current), a realpath-aware containment check
+         (host drifts 1134/645 -> 0/0), and a sync-out guard that refuses a
+         host without the alias (e2f0f37).
+      3. The live-links check pinned the raw page's old title; it now
+         identifies each page by the station's own source fingerprint.
+      Verified:
+      - the liveness gate shows all four stations ok at current source (raw
+        f822afc96506, latin b97d30ae1609, expert f44e0a4fd13a, approval
+        aa5847524d5e);
+      - the Latin state API serves 567 items and expert serves 645;
+      - the live-links check passed on 57 JSON, 105 Markdown and 531
+        repeat-cluster URLs;
+      - a tunnel browser smoke showed Latin "item 1 of 563", expert "item 1
+        of 645" and the new raw UI "item 1 of 90", with every image loaded and
+        zero console errors;
+      - the host opener read a sidecar-less WAL fixture and the witness
+        (2584f948, 46/11938/67) without creating sidecars;
+      - the 12 raw validations are intact.
+      Screenshots are in
+      workspace-chirho/reviewer-ui-chirho/26-09-26-station-redeploy-chirho/.)
+- [ ] Store packet image paths project-relative instead of workstation-absolute,
+      so the host alias can retire. OWNER DECISION: the expert lane's stored
+      certification records hold the absolute path strings and the status
+      generator compares them, so this migrates certification data.
 
 
 - [x] Review-server guard scripts pass for raw Hebrew, Latin/symbol, and

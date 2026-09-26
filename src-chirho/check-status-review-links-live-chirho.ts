@@ -13,9 +13,10 @@
 import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 
-import { canonicalReviewFetchTargetChirho } from "./canonical-review-stations-chirho.ts";
+import { canonicalReviewFetchTargetChirho, LOCAL_REVIEW_STATION_PORTS_CHIRHO } from "./canonical-review-stations-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
 import { assertGeneratedCheckChirho } from "./generated-output-hygiene-chirho.ts";
+import { reviewServerSourceFingerprintChirho, type ReviewServerKeyChirho } from "./review-server-health-chirho.ts";
 
 const MODULE_CHIRHO = "check-status-review-links-live-chirho";
 const STATUS_JSON_PATH_CHIRHO = join(
@@ -452,16 +453,31 @@ function assertReviewQueryValuesChirho(urlChirho: URL, keyChirho: string): void 
   }
 }
 
+const PAGE_STATION_KEYS_CHIRHO: readonly ReviewServerKeyChirho[] = ["raw-hebrew-chirho", "latin-symbol-chirho", "expert-non-latin-chirho"];
+const expectedPageFingerprintsChirho = new Map<ReviewServerKeyChirho, string>();
+
+/**
+ * Identify a reviewer page by the station's own source fingerprint, which every
+ * station page renders, not by its title. Page wording is reviewer-facing and
+ * changes (the raw station's title did), while the fingerprint names the exact
+ * station and proves it serves the current source.
+ */
 function assertReviewPageHtmlChirho(keyChirho: string, urlChirho: URL, htmlChirho: string): void {
-  if (urlChirho.port === "8766") {
-    assertGeneratedCheckChirho(htmlChirho.includes("Pass C Hebrew Validation Chirho"), `${keyChirho} did not load the raw Hebrew reviewer page`);
-  } else if (urlChirho.port === "8770") {
-    assertGeneratedCheckChirho(htmlChirho.includes("Latin/Symbol Vision Review Chirho"), `${keyChirho} did not load the Latin/symbol reviewer page`);
-  } else if (urlChirho.port === "8771") {
-    assertGeneratedCheckChirho(htmlChirho.includes("Expert Non-Latin Review Chirho"), `${keyChirho} did not load the expert reviewer page`);
-  } else {
+  const stationKeyChirho = PAGE_STATION_KEYS_CHIRHO.find(
+    (candidateChirho) => String(LOCAL_REVIEW_STATION_PORTS_CHIRHO[candidateChirho]) === urlChirho.port
+  );
+  if (stationKeyChirho === undefined) {
     throw new Error(`${keyChirho} targets unsupported review port ${urlChirho.port}`);
   }
+  let expectedChirho = expectedPageFingerprintsChirho.get(stationKeyChirho);
+  if (expectedChirho === undefined) {
+    expectedChirho = reviewServerSourceFingerprintChirho(stationKeyChirho).sourceFingerprintChirho.slice(0, 12);
+    expectedPageFingerprintsChirho.set(stationKeyChirho, expectedChirho);
+  }
+  assertGeneratedCheckChirho(
+    htmlChirho.includes(expectedChirho),
+    `${keyChirho} did not load the ${stationKeyChirho} reviewer page at current source ${expectedChirho}`
+  );
 }
 
 function numberFieldChirho(valueChirho: unknown, pathChirho: string): number {
