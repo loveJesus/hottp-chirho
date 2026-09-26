@@ -1,0 +1,16 @@
+{
+  "schema_version_chirho": 1,
+  "completed_chirho": true,
+  "lease_id_chirho": "2026-09-26-cx33-human-review-write-lease-chirho",
+  "recorded_at_chirho": "2026-09-26T17:10:00Z",
+  "recorded_by_chirho": "claude-opus5-5-chirho",
+  "owner_approval_reference_chirho": "chat-2026-07-03-user-said-do-cx33-chirho-and-chat-2026-07-04-user-said-attach-domain-too-chirho",
+  "writer_host_chirho": "195.201.101.25",
+  "canonical_writer_chirho": "vps-human-review-chirho",
+  "local_writes_paused_chirho": true,
+  "remote_review_servers_stopped_chirho": true,
+  "sqlite_checkpoint_or_stop_chirho": "stopped-review-servers-chirho",
+  "pull_strategy_chirho": "json-replay-with-quarantined-sqlite-chirho",
+  "expires_at_chirho": "2026-09-28T17:10:00Z",
+  "notes_chirho": "Redeploy on L.J.'s direct approval ('3 ok', 2026-09-25) to restore the Latin/symbol and expert stations, which have answered HTTP 500 on their state API because the host never had the local D1 audit database. This sync carries that database (b677e17 include rules) and the fix that lets read-only stations open it without WAL sidecars (7e46ed8), plus the row-2914 raw-station workspace simplification committed by its owner. Pre-sync inspection on 2026-09-25 found nothing to lose: the only file changed on the host since the 2026-08-26 deploy is SQLite's transient -shm index; the progress DB main file still carries the 2026-08-25 sync mtime with a 0-byte WAL; there is no backups-chirho directory. Nothing to pull, so the sanctioned pull strategy is recorded with no replay needed. All four write-capable remote services are stopped before rsync; local write ports 8766, 8770, 8771 and 8772 are closed. No new billable resources and no DNS changes."
+}
