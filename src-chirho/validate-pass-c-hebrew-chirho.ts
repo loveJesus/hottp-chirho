@@ -25,18 +25,17 @@
  *   workspace-chirho/pass-c-hebrew-validation-chirho/pass-c-hebrew-validation-chirho.md
  */
 
-import { Database } from "bun:sqlite";
 import {
   existsSync,
   mkdirSync,
   readFileSync,
   readdirSync,
-  statSync,
 } from "fs";
 import { basename, join } from "path";
 
 import { writeJsonAtomicChirho, writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { latestLocalD1PathChirho, openLocalD1ReadonlyChirho } from "./d1-audit-fingerprint-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 
 const MODULE_CHIRHO = "validate-pass-c-hebrew-chirho";
@@ -48,15 +47,6 @@ const DEFAULT_OUT_DIR_CHIRHO = join(
   "pass-c-hebrew-validation-chirho"
 );
 const DEFAULT_TRIAGE_DIR_CHIRHO = join(DEFAULT_OUT_DIR_CHIRHO, "ocr-triage-chirho");
-const LOCAL_D1_DIR_CHIRHO = join(
-  PROJECT_ROOT_CHIRHO,
-  "app-chirho",
-  ".wrangler",
-  "state",
-  "v3",
-  "d1",
-  "miniflare-D1DatabaseObject"
-);
 const PAGE_DIR_RE_CHIRHO = /^page-(\d+)-chirho$/;
 const VOL_DIR_RE_CHIRHO = /^vol-(\d+)-chirho$/;
 const LINE_FILE_RE_CHIRHO = /^line-(\d+)-chirho\.json$/;
@@ -240,15 +230,6 @@ function parseVolumeListChirho(valueChirho: string | undefined): number[] {
     .filter((volumeChirho): volumeChirho is number => volumeChirho !== undefined);
 }
 
-function latestLocalD1PathChirho(): string | undefined {
-  if (!existsSync(LOCAL_D1_DIR_CHIRHO)) return undefined;
-  const sqliteFilesChirho = readdirSync(LOCAL_D1_DIR_CHIRHO)
-    .filter((fileChirho) => fileChirho.endsWith(".sqlite"))
-    .map((fileChirho) => join(LOCAL_D1_DIR_CHIRHO, fileChirho))
-    .sort((aChirho, bChirho) => statSync(bChirho).mtimeMs - statSync(aChirho).mtimeMs);
-  return sqliteFilesChirho[0];
-}
-
 function parseCliOptionsChirho(argsChirho: string[]): CliOptionsChirho {
   const allChirho = argsChirho.includes("--all");
   const volumeChirho = parsePositiveIntChirho(parseArgValueChirho(argsChirho, "vol"), "vol");
@@ -256,7 +237,7 @@ function parseCliOptionsChirho(argsChirho: string[]): CliOptionsChirho {
   const pageChirho = parsePositiveIntChirho(parseArgValueChirho(argsChirho, "page"), "page");
   const outDirChirho = parseArgValueChirho(argsChirho, "out-dir") ?? DEFAULT_OUT_DIR_CHIRHO;
   const triageDirChirho = parseArgValueChirho(argsChirho, "triage-dir") ?? DEFAULT_TRIAGE_DIR_CHIRHO;
-  const dbPathChirho = parseArgValueChirho(argsChirho, "db") ?? latestLocalD1PathChirho();
+  const dbPathChirho = parseArgValueChirho(argsChirho, "db") ?? latestLocalD1PathChirho() ?? undefined;
   const directConfChirho = parseNumberChirho(parseArgValueChirho(argsChirho, "direct-conf"), 0.9, "direct-conf");
   const sourceFilterChirho = parseSourceFilterChirho(parseArgValueChirho(argsChirho, "source"));
 
@@ -481,7 +462,7 @@ function readD1SuggestionWitnessesChirho(
   const witnessesBySkeletonChirho = new Map<string, OcrWitnessChirho[]>();
   if (dbPathChirho === undefined) return witnessesBySkeletonChirho;
   const targetKeysChirho = new Set(targetsChirho.map(targetKeyChirho));
-  const dbChirho = new Database(dbPathChirho, { readonly: true });
+  const dbChirho = openLocalD1ReadonlyChirho(dbPathChirho);
   try {
     const rowsChirho = dbChirho
       .query(
@@ -532,7 +513,7 @@ function readD1TextSourcesChirho(
   const sourcesByTargetChirho = new Map<string, D1TextSourcesChirho>();
   if (dbPathChirho === undefined) return sourcesByTargetChirho;
   const targetKeysChirho = new Set(targetsChirho.map(targetKeyChirho));
-  const dbChirho = new Database(dbPathChirho, { readonly: true });
+  const dbChirho = openLocalD1ReadonlyChirho(dbPathChirho);
   try {
     const rowsChirho = dbChirho
       .query(

@@ -253,9 +253,31 @@ VPS.
       the host: exactly one new file, the D1 `.sqlite`, plus its five parent
       directories; zero deletions; no `-wal`/`-shm` carried. The guard was
       mutation-tested - removing the include turns it red.)
+- [x] Make the shipped audit database readable. (2026-09-25. The sync fix
+      above was incomplete: it proved the file transfers, not that a station
+      can read it. The file is WAL-mode, and its -wal/-shm sidecars have been
+      gone since Miniflare's 2026-09-19 00:18 shutdown checkpoint. A read-only
+      SQLite connection may not create them, so all six read-only opens across
+      five files failed with "unable to open database file". Locally that
+      broke check-certification-status-gate-guards, and on the host it would
+      have left Latin/symbol and expert down after the redeploy, with a
+      different error. Five private copies of the locator collapsed into one
+      shared latestLocalD1PathChirho plus openLocalD1ReadonlyChirho in
+      d1-audit-fingerprint-chirho.ts. The opener uses an immutable open only
+      when no sidecar exists, and normal WAL locking otherwise. The regression
+      test in check-canonical-review-stations-chirho closes a fixture into
+      exactly that state, and is mutation-tested: a plain read-only open fails
+      it with two named failures. All 51 Markdown outputs stayed byte-identical,
+      the D1 audit fingerprint is unchanged at 2584f948, the witness file was
+      never modified, and the status generator reproduces the same counts.)
 - [ ] Redeploy so the two broken stations serve again, then confirm the
-      liveness gate goes green. BLOCKED: needs L.J.'s authorization and a fresh
-      write lease; the 2026-08-25 lease expired 2026-08-27.
+      liveness gate goes green. L.J. authorized it on 2026-09-25 ("3 ok").
+      Pre-sync inspection found nothing on the host to lose: the only file
+      changed there since the 2026-08-26 deploy is SQLite's transient -shm
+      index, and there is no backups-chirho directory. WAITING on the row 2914
+      raw-station lane. Sync-out needs a clean tree, the lane owner agrees it
+      should ship, its server logic prints identically to HEAD, and its
+      workflow doc must restore two phrases the spec-doc hygiene gate requires.
 
 
 - [x] Review-server guard scripts pass for raw Hebrew, Latin/symbol, and

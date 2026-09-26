@@ -1,26 +1,17 @@
 // For God so loved the world that he gave his only begotten Son,
 // that whoever believes in him should not perish but have eternal life. John 3:16
 
-import { Database } from "bun:sqlite";
-import { existsSync, readFileSync, readdirSync, statSync } from "fs";
+import { existsSync, readFileSync, readdirSync } from "fs";
 import { join } from "path";
 
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
+import { latestLocalD1PathChirho, openLocalD1ReadonlyChirho } from "./d1-audit-fingerprint-chirho.ts";
 import { renderSpanLineTextChirho } from "./span-line-text-chirho.ts";
 import { hashTextChirho, normalizeTextForStorageChirho } from "./text-normalization-chirho.ts";
 
 export { hashTextChirho } from "./text-normalization-chirho.ts";
 
 const SPANS_ROOT_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
-const LOCAL_D1_DIR_CHIRHO = join(
-  PROJECT_ROOT_CHIRHO,
-  "app-chirho",
-  ".wrangler",
-  "state",
-  "v3",
-  "d1",
-  "miniflare-D1DatabaseObject"
-);
 const VOL_DIR_RE_CHIRHO = /^vol-(\d+)-chirho$/;
 const PAGE_DIR_RE_CHIRHO = /^page-(\d+)-chirho$/;
 const LINE_FILE_RE_CHIRHO = /^line-(\d+)-chirho\.json$/;
@@ -222,19 +213,10 @@ function explicitSpanItemsChirho(): LatinSymbolVisionLiveItemChirho[] {
   return itemsChirho;
 }
 
-function latestLocalD1PathChirho(): string | null {
-  if (!existsSync(LOCAL_D1_DIR_CHIRHO)) return null;
-  const sqliteFilesChirho = readdirSync(LOCAL_D1_DIR_CHIRHO)
-    .filter((fileChirho) => fileChirho.endsWith(".sqlite"))
-    .map((fileChirho) => join(LOCAL_D1_DIR_CHIRHO, fileChirho))
-    .sort((aChirho, bChirho) => statSync(bChirho).mtimeMs - statSync(aChirho).mtimeMs);
-  return sqliteFilesChirho[0] ?? null;
-}
-
 function d1VisionWordRowsChirho(): D1VisionWordRowChirho[] {
   const dbPathChirho = latestLocalD1PathChirho();
   if (dbPathChirho === null) return [];
-  const dbChirho = new Database(dbPathChirho, { readonly: true });
+  const dbChirho = openLocalD1ReadonlyChirho(dbPathChirho);
   try {
     return dbChirho
       .query(`

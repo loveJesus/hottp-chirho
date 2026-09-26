@@ -27,6 +27,12 @@ export interface D1AuditFingerprintChirho {
   sha256Chirho: string;
 }
 
+/**
+ * The single locator for the local D1 audit database. The Latin/symbol and
+ * expert live queues, the Markdown export, the Pass-C Hebrew validator and the
+ * certification status all read the same file, so they share this rather than
+ * each keeping a private copy.
+ */
 export function latestLocalD1PathChirho(): string | null {
   if (!existsSync(LOCAL_D1_DIR_CHIRHO)) return null;
   const sqliteFilesChirho = readdirSync(LOCAL_D1_DIR_CHIRHO)
@@ -34,6 +40,35 @@ export function latestLocalD1PathChirho(): string | null {
     .map((fileChirho) => join(LOCAL_D1_DIR_CHIRHO, fileChirho))
     .sort((aChirho, bChirho) => statSync(bChirho).mtimeMs - statSync(aChirho).mtimeMs);
   return sqliteFilesChirho[0] ?? null;
+}
+
+function immutableSqliteUriChirho(dbPathChirho: string): string {
+  const escapedPathChirho = dbPathChirho.replace(
+    /[%?#]/g,
+    (characterChirho) => `%${characterChirho.charCodeAt(0).toString(16).padStart(2, "0")}`
+  );
+  return `file:${escapedPathChirho}?immutable=1`;
+}
+
+/**
+ * Open a local D1 database for reading, including the WAL-mode audit database
+ * after Miniflare has closed it.
+ *
+ * Miniflare leaves the file in WAL mode and removes its -wal and -shm sidecars
+ * on the final checkpoint. A read-only connection may not create those
+ * sidecars, so a plain read-only open then fails with "unable to open database
+ * file", which broke the certification gates locally and would break the
+ * Latin/symbol and expert stations on the review host, where sync-out ships the
+ * bare file. With no sidecar present, nothing holds the database and every
+ * commit is already in the main file, so an immutable open reads exactly the
+ * committed state without creating anything. While a sidecar exists, some
+ * process (usually `vite dev`) has the file open, so normal WAL locking applies.
+ */
+export function openLocalD1ReadonlyChirho(dbPathChirho: string): Database {
+  if (existsSync(`${dbPathChirho}-wal`) || existsSync(`${dbPathChirho}-shm`)) {
+    return new Database(dbPathChirho, { readonly: true });
+  }
+  return new Database(immutableSqliteUriChirho(dbPathChirho), { readonly: true });
 }
 
 function hashRowsChirho(hashChirho: Hash, sectionChirho: string, rowsChirho: unknown[][]): void {
@@ -49,7 +84,7 @@ function hashRowsChirho(hashChirho: Hash, sectionChirho: string, rowsChirho: unk
 
 export function d1AuditFingerprintForDbPathChirho(dbPathChirho: string | null | undefined): D1AuditFingerprintChirho | null {
   if (dbPathChirho === null || dbPathChirho === undefined || !existsSync(dbPathChirho)) return null;
-  const dbChirho = new Database(dbPathChirho, { readonly: true });
+  const dbChirho = openLocalD1ReadonlyChirho(dbPathChirho);
   try {
     const pageRowsChirho = (
       dbChirho

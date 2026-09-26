@@ -21,20 +21,22 @@
  *   bun src-chirho/export-markdown-chirho.ts --all --no-d1-audit
  */
 
-import { Database } from "bun:sqlite";
 import { createHash } from "crypto";
 import {
   existsSync,
   mkdirSync,
   readFileSync,
   readdirSync,
-  statSync,
 } from "fs";
 import { join } from "path";
 
 import { writeJsonAtomicChirho, writeTextAtomicChirho } from "./atomic-json-chirho.ts";
 import { PROJECT_ROOT_CHIRHO, VOLUMES_CHIRHO } from "./config-chirho.ts";
-import { d1AuditFingerprintForDbPathChirho } from "./d1-audit-fingerprint-chirho.ts";
+import {
+  d1AuditFingerprintForDbPathChirho,
+  latestLocalD1PathChirho,
+  openLocalD1ReadonlyChirho,
+} from "./d1-audit-fingerprint-chirho.ts";
 import { exportMarkdownSourceFingerprintChirho } from "./export-markdown-source-fingerprint-chirho.ts";
 import { spanSourceFingerprintForTargetsChirho } from "./source-fingerprint-chirho.ts";
 import {
@@ -47,15 +49,6 @@ const MODULE_CHIRHO = "export-markdown-chirho";
 const SPANS_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "spans-chirho");
 const CONTEXT_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "pass-c-context-chirho");
 const DEFAULT_MARKDOWN_DIR_CHIRHO = join(PROJECT_ROOT_CHIRHO, "workspace-chirho", "markdown-chirho");
-const LOCAL_D1_DIR_CHIRHO = join(
-  PROJECT_ROOT_CHIRHO,
-  "app-chirho",
-  ".wrangler",
-  "state",
-  "v3",
-  "d1",
-  "miniflare-D1DatabaseObject"
-);
 const JOHN_COMMENT_CHIRHO = [
   "<!--",
   "For God so loved the world that he gave his only begotten Son,",
@@ -323,15 +316,6 @@ function parsePositiveIntChirho(valueChirho: string | undefined, labelChirho: st
   return parsedChirho;
 }
 
-function latestLocalD1PathChirho(): string | undefined {
-  if (!existsSync(LOCAL_D1_DIR_CHIRHO)) return undefined;
-  const sqliteFilesChirho = readdirSync(LOCAL_D1_DIR_CHIRHO)
-    .filter((fileChirho) => fileChirho.endsWith(".sqlite"))
-    .map((fileChirho) => join(LOCAL_D1_DIR_CHIRHO, fileChirho))
-    .sort((aChirho, bChirho) => statSync(bChirho).mtimeMs - statSync(aChirho).mtimeMs);
-  return sqliteFilesChirho[0];
-}
-
 function parseCliOptionsChirho(argsChirho: string[]): CliOptionsChirho {
   const volumeChirho = parsePositiveIntChirho(parseArgValueChirho(argsChirho, "vol"), "vol");
   const pageChirho = parsePositiveIntChirho(parseArgValueChirho(argsChirho, "page"), "page");
@@ -340,7 +324,7 @@ function parseCliOptionsChirho(argsChirho: string[]): CliOptionsChirho {
   const strictChirho = argsChirho.includes("--strict");
   const d1AuditChirho = !argsChirho.includes("--no-d1-audit");
   const explicitDbPathChirho = parseArgValueChirho(argsChirho, "db");
-  const dbPathChirho = explicitDbPathChirho ?? (d1AuditChirho ? latestLocalD1PathChirho() : undefined);
+  const dbPathChirho = explicitDbPathChirho ?? (d1AuditChirho ? latestLocalD1PathChirho() ?? undefined : undefined);
   const spanCommentsChirho = !argsChirho.includes("--no-span-comments");
 
   if (!allChirho && volumeChirho === undefined) {
@@ -503,7 +487,7 @@ function mergeCountsChirho(targetChirho: Record<string, number>, sourceChirho: R
 }
 
 function readD1AuditChirho(dbPathChirho: string, spanTargetsChirho: TargetPageChirho[]): D1AuditChirho {
-  const dbChirho = new Database(dbPathChirho, { readonly: true });
+  const dbChirho = openLocalD1ReadonlyChirho(dbPathChirho);
   const spanTargetKeysChirho = new Set(spanTargetsChirho.map(targetKeyChirho));
   const pageRowsChirho = dbChirho
     .query(

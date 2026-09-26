@@ -14,7 +14,10 @@
  *      ("packet is stale") for every request when it is missing.
  */
 
-import { readFileSync } from "fs";
+import { Database } from "bun:sqlite";
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync } from "fs";
+import { tmpdir } from "os";
+import { join } from "path";
 
 import {
   CANONICAL_REVIEW_STATIONS_PATH_CHIRHO,
@@ -26,7 +29,11 @@ import {
   readCanonicalReviewStationsChirho,
 } from "./canonical-review-stations-chirho.ts";
 import { PROJECT_ROOT_CHIRHO } from "./config-chirho.ts";
-import { LOCAL_D1_AUDIT_RELATIVE_DIR_CHIRHO } from "./d1-audit-fingerprint-chirho.ts";
+import {
+  LOCAL_D1_AUDIT_RELATIVE_DIR_CHIRHO,
+  latestLocalD1PathChirho,
+  openLocalD1ReadonlyChirho,
+} from "./d1-audit-fingerprint-chirho.ts";
 
 const MODULE_CHIRHO = "check-canonical-review-stations-chirho";
 
@@ -199,16 +206,93 @@ function checkSyncCarriesD1AuditDbChirho(): void {
   );
 }
 
+function sidecarsOfChirho(dbPathChirho: string): string[] {
+  return ["-wal", "-shm", "-journal"].filter((suffixChirho) => existsSync(`${dbPathChirho}${suffixChirho}`));
+}
+
+/**
+ * Sync-out ships the audit database as a bare WAL-mode file, which is also the
+ * state Miniflare leaves it in locally. A plain read-only open cannot read that
+ * state, so prove the shared opener does, first on a disposable database closed
+ * into exactly that state and then on the real witness, without creating any
+ * sidecar on either.
+ */
+function checkShippedWitnessReadableChirho(): void {
+  const tempDirChirho = mkdtempSync(join(tmpdir(), "witness-open-guard-chirho-"));
+  try {
+    const fixturePathChirho = join(tempDirChirho, "wal-without-sidecars-chirho.sqlite");
+    const writerChirho = new Database(fixturePathChirho);
+    writerChirho.exec("PRAGMA journal_mode = WAL");
+    writerChirho.exec("CREATE TABLE pages_chirho (id_chirho INTEGER PRIMARY KEY, label_chirho TEXT NOT NULL)");
+    writerChirho.exec("INSERT INTO pages_chirho (label_chirho) VALUES ('first-chirho'), ('second-chirho')");
+    writerChirho.exec("PRAGMA wal_checkpoint(TRUNCATE)");
+    writerChirho.close();
+    // Bun keeps a checkpointed, empty -wal and the -shm after close; Miniflare
+    // deletes them. Remove them only once the WAL is proven empty, so the
+    // fixture holds every commit in the main file exactly as the witness does.
+    const walPathChirho = `${fixturePathChirho}-wal`;
+    checkChirho("fixture WAL is fully checkpointed before its sidecars are removed", !existsSync(walPathChirho) || statSync(walPathChirho).size === 0);
+    rmSync(walPathChirho, { force: true });
+    rmSync(`${fixturePathChirho}-shm`, { force: true });
+    const headerChirho = readFileSync(fixturePathChirho).subarray(18, 20);
+    checkChirho(
+      "fixture is a WAL-mode file with no sidecars",
+      headerChirho[0] === 2 && headerChirho[1] === 2 && sidecarsOfChirho(fixturePathChirho).length === 0
+    );
+    try {
+      const readerChirho = openLocalD1ReadonlyChirho(fixturePathChirho);
+      try {
+        const rowChirho = readerChirho.query("SELECT count(*) AS count_chirho FROM pages_chirho").get() as { count_chirho: number };
+        checkChirho("shared opener reads a WAL-mode database with no sidecars", rowChirho.count_chirho === 2);
+      } finally {
+        readerChirho.close();
+      }
+    } catch (errorChirho) {
+      const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
+      failuresChirho.push(`shared opener cannot read a WAL-mode database with no sidecars: ${messageChirho}`);
+    }
+    checkChirho("shared opener leaves the fixture without sidecars", sidecarsOfChirho(fixturePathChirho).length === 0);
+  } finally {
+    rmSync(tempDirChirho, { recursive: true, force: true });
+  }
+
+  const witnessPathChirho = latestLocalD1PathChirho();
+  if (witnessPathChirho === null) return;
+  const sidecarsBeforeChirho = sidecarsOfChirho(witnessPathChirho).join(",");
+  try {
+    const witnessChirho = openLocalD1ReadonlyChirho(witnessPathChirho);
+    try {
+      const countsChirho = witnessChirho
+        .query(
+          `SELECT (SELECT count(*) FROM pages_chirho) AS pages_chirho,
+                  (SELECT count(*) FROM words_chirho) AS words_chirho`
+        )
+        .get() as { pages_chirho: number; words_chirho: number };
+      checkChirho("the local audit database opens read-only with pages and words", countsChirho.pages_chirho > 0 && countsChirho.words_chirho > 0);
+    } finally {
+      witnessChirho.close();
+    }
+  } catch (errorChirho) {
+    const messageChirho = errorChirho instanceof Error ? errorChirho.message : String(errorChirho);
+    failuresChirho.push(`the local audit database cannot be opened read-only: ${messageChirho}`);
+  }
+  checkChirho(
+    "reading the local audit database changes none of its sidecars",
+    sidecarsOfChirho(witnessPathChirho).join(",") === sidecarsBeforeChirho
+  );
+}
+
 function mainChirho(): void {
   checkParserChirho();
   checkCommittedRecordChirho();
   checkSyncCarriesD1AuditDbChirho();
+  checkShippedWitnessReadableChirho();
   if (failuresChirho.length > 0) {
     console.error(`[${MODULE_CHIRHO}] ${failuresChirho.length} failure(s):`);
     for (const failureChirho of failuresChirho) console.error(`- ${failureChirho}`);
     process.exit(1);
   }
-  console.log(`[${MODULE_CHIRHO}] canonical review station and sync-inclusion guards passed`);
+  console.log(`[${MODULE_CHIRHO}] canonical review station, sync-inclusion and witness-readability guards passed`);
 }
 
 mainChirho();
