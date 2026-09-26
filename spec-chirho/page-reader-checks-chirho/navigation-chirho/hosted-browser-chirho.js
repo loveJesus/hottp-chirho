@@ -61,6 +61,7 @@ async (parentPageChirho) => {
       assertChirho(await pageChirho.getByRole('button', { name: 'Confirm & next', exact: false }).isDisabled(), `public confirmation remains disabled at ${widthChirho}px`);
     }
     await pageChirho.locator('.reader-intro-chirho a').click();
+    await pageChirho.getByLabel('Reviewer username').waitFor();
     assertChirho(await pageChirho.getByLabel('Reviewer username').count() === 1, 'live reading opens the sign-in screen');
     assertChirho(await pageChirho.evaluate((expectedChirho) => new URL(location.href).searchParams.get('return-chirho') === new URL(expectedChirho).pathname + new URL(expectedChirho).hash, linkChirho), 'live sign-in retains the source-bound return link');
     assertChirho(mutationsChirho.length === 0 && errorsChirho.length === 0, 'hosted navigation requested no mutations and had no runtime errors');
