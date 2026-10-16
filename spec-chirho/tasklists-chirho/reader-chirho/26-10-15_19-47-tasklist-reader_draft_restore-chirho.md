@@ -13,7 +13,7 @@ Placement: file parsing/non-destructive merge in `app-chirho/src/lib/page-reader
 - [x] Preserve current drafts, refuse wrong-page/image and malformed imports, and retain stale-source/geometry confirmation holds.
 - [x] Exercise real browser recovery using copied D1/R2 only, with mutation interception, signed-in hold checks, storage failures and mobile layout.
 - [x] Run reader unit tests, Svelte check/build, diff/size and secret checks; record actual results and update the workflow.
-- [ ] Land only owned paths and close the progress row; keep deployment and Andrew's hands-on acceptance separate.
+- [x] Land only owned paths and close the progress row; keep deployment and Andrew's hands-on acceptance separate.
 
 Acceptance: a downloaded draft reopens in a fresh browser context, including raw box changes, with no content mutation. Restore cannot overwrite a draft already on screen, replace a stale baseline with current source, affect confirmation provenance, or silently evict unfinished pages. Input limits and errors are visible. Production and the canonical witness remain unchanged.
 
@@ -29,3 +29,7 @@ Acceptance: a downloaded draft reopens in a fresh browser context, including raw
 - Final shared-state-definition check: 39/184 unit assertions, 48 restore browser assertions, Svelte 0 errors/0 warnings and the Cloudflare build pass after the last code change. The 147 generated build files contain none of the three synthetic fixture credentials. Staged diff whitespace, owned file/directory bounds and the redacted staged gitleaks scan pass. Only nine reader implementation/check/documentation paths are staged; the local fixture configuration, copied state, dependencies and screenshots stay out of Git. The browser harness uses deliberately synthetic login values, never production credentials.
 
 The skill-guided resumption kept this feature in an isolated, reversible HOTTP reader branch. This is local development evidence, not hosted acceptance or Andrew's hands-on approval. Restore cannot accept a 2D repair export as a canonical 1D proposal. A user can still construct a genuine oversized set of known draft fields; it remains visible and exportable in memory with a backup-failure warning rather than evicting other work.
+
+## Local landing
+
+Source `202fa04` was fast-forwarded into clean `main`, after the explicit nine-path scope audit. Unit tests also passed on the committed source. Progress row 2946 closed at `2026-10-16T00:08:49.464Z`. The owned local server was stopped and Playwright closed. The clean merged worktree and copied D1/R2 were then removed after an open-file check and distinct-witness-inode check: 250,704 KiB worktree/build/dependencies plus 8,000 KiB copied state by pre-removal `du -sk`, not a machine free-space claim. Source is retained in Git and can be rebuilt; screenshots remain in the main workspace. No production deployment or data mutation is included in this landing.
