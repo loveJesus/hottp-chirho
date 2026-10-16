@@ -5,10 +5,12 @@
   import { onMount, tick, untrack } from 'svelte';
   import PageScanChirho from './PageScanChirho.svelte';
   import ReadingNavigatorChirho from './ReadingNavigatorChirho.svelte';
+  import DraftBackupChirho from './drafts-chirho/DraftBackupChirho.svelte';
+  import { mergeDraftBackupChirho, pageDraftDownloadChirho } from './drafts-chirho/file-backup-chirho';
   import { linkedReadingChirho, readingLinkChirho } from './navigation-chirho';
   import { readingLinesChirho, isRtlChirho, isReviewConfirmedChirho, needsAttentionChirho, reviewLabelChirho, sameBoxChirho, scriptLabelChirho, type BoxChirho, type ReadingTokenChirho } from './model-chirho';
   import { saveReadingChirho } from './save-reading-chirho';
-  import { readPageDraftsChirho, writePageDraftsChirho, draftMatchesSourceChirho, editDraftChirho, type ReadingDraftChirho } from './drafts-chirho/session-store-chirho';
+  import { readPageDraftsChirho, writePageDraftsChirho, draftMatchesSourceChirho, editDraftChirho, type ReadingDraftChirho, type PageDraftsChirho } from './drafts-chirho/session-store-chirho';
   import type { PageData } from '../../routes/volumes-chirho/[vol_chirho]/pages-chirho/[page_chirho]/$types';
 
   let { data }: { data: PageData } = $props();
@@ -192,9 +194,33 @@
     anchorChirho.click(); setTimeout(() => URL.revokeObjectURL(urlChirho), 1000);
   }
   function exportPageDraftsChirho(): void {
-    downloadChirho({ kind_chirho: 'unsubmitted-reading-backup-chirho', approved_chirho: false,
-      page_id_chirho: data.pageDataChirho.idChirho, image_key_chirho: backupImageKeyChirho, drafts_chirho: Object.values(draftsChirho) },
+    downloadChirho(pageDraftDownloadChirho({ pageIdChirho: data.pageDataChirho.idChirho, imageKeyChirho: backupImageKeyChirho,
+      selectedKeyChirho, draftsChirho: Object.values(draftsChirho) }),
       `vol-${data.volumeNumberChirho}-page-${data.pageNumberChirho}-reading-drafts-chirho.json`);
+  }
+  // Workflow: page-reading-workflow-chirho.md. Imported source never replaces
+  // current tokens, provenance or CAS state. Existing drafts win every overlap.
+  function restoreDraftsChirho(incomingChirho: PageDraftsChirho) {
+    if (!backupReadyChirho || savingChirho) throw new Error('Wait for the current reading to finish before restoring.');
+    if (imageChangedChirho) throw new Error('Drafts already in this tab use an earlier source image. Download and discard those held drafts before restoring this file.');
+    if (incomingChirho.imageKeyChirho !== data.fullPageR2KeyChirho) throw new Error('The source image differs from this backup. Keep the file for comparison; nothing was restored.');
+    const restoredPageChirho = mergeDraftBackupChirho({ pageIdChirho: data.pageDataChirho.idChirho,
+      imageKeyChirho: draftCountChirho ? backupImageKeyChirho : data.fullPageR2KeyChirho,
+      selectedKeyChirho, draftsChirho: Object.values(draftsChirho) }, incomingChirho);
+    let backedUpChirho = !backupErrorChirho;
+    if (restoredPageChirho.addedKeysChirho.length) {
+      draftsChirho = Object.fromEntries(restoredPageChirho.pageChirho.draftsChirho.map((draftChirho) => [draftChirho.sourceChirho.keyChirho, draftChirho]));
+      backupImageKeyChirho = restoredPageChirho.pageChirho.imageKeyChirho;
+      restoredChirho = true; backedUpChirho = backupChirho();
+      if (!selectedChirho) {
+        const keysChirho = restoredPageChirho.addedKeysChirho;
+        const preferredChirho = incomingChirho.selectedKeyChirho;
+        const tokenChirho = (preferredChirho && keysChirho.includes(preferredChirho) ? tokenMapChirho.get(preferredChirho) : undefined) ??
+          keysChirho.map((keyChirho) => tokenMapChirho.get(keyChirho)).find((candidateChirho) => candidateChirho !== undefined);
+        if (tokenChirho) void selectChirho(tokenChirho);
+      }
+    }
+    return { backedUpChirho, messageChirho: `${restoredPageChirho.addedKeysChirho.length} draft(s) restored locally; ${restoredPageChirho.keptCountChirho} existing draft(s) kept. Nothing was submitted. Compare each reading with the print.` };
   }
   function exportDraftsChirho(): void {
     const payloadChirho = { kind_chirho: 'unsubmitted-page-repair-draft-chirho', approved_chirho: false,
@@ -293,16 +319,9 @@
       </div>
     </section>
   </div>
-  {#if draftCountChirho || backupErrorChirho}
-    <aside class="draft-backup-chirho" aria-label="Draft backup">
-      <div><strong>{draftCountChirho} unsubmitted draft{draftCountChirho === 1 ? '' : 's'}</strong>
-        <span>{backupErrorChirho ? 'Not backed up' : restoredChirho ? 'Recovered in this tab' : 'Kept in this tab through refresh'}</span></div>
-      {#if draftCountChirho}<button type="button" onclick={exportPageDraftsChirho}>Download all drafts</button><button type="button" disabled={savingChirho} onclick={discardPageDraftsChirho}>Discard page drafts</button>{/if}
-      {#if conflictingDraftsChirho.length}<p role="alert">{conflictingDraftsChirho.length} recovered draft{conflictingDraftsChirho.length === 1 ? '' : 's'} no longer match the source. They are held, not applied. Download the backup before discarding or redoing them.</p>{/if}
-      {#if backupErrorChirho}<p role="alert">{backupErrorChirho}</p>{/if}
-    </aside>
-  {/if}
-  <p class="reader-footnote-chirho">Color guides attention, not OCR accuracy. Drafts are kept in this browser tab, not submitted. Download drafts before closing the tab. Word &amp; language tools retain the advanced workflow.</p>
+  <DraftBackupChirho {draftCountChirho} {backupErrorChirho} {restoredChirho} conflictingCountChirho={conflictingDraftsChirho.length}
+    disabledChirho={!backupReadyChirho || savingChirho} ondownloadChirho={exportPageDraftsChirho} ondiscardChirho={discardPageDraftsChirho} onrestoreChirho={restoreDraftsChirho} />
+  <p class="reader-footnote-chirho">Color guides attention, not OCR accuracy. Drafts are kept in this browser tab, not submitted. Download before closing the tab; restore the file on this page to resume. Word &amp; language tools retain the advanced workflow.</p>
 </div>
 
 <style>
@@ -310,9 +329,7 @@
   .reader-nav-chirho{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;} .reader-nav-chirho div{display:flex;align-items:center;gap:20px;}
   a{color:#246a61;text-decoration:none;font-size:.85rem;} a:hover{text-decoration:underline;} h1{font-size:1.4rem;font-weight:600;}
   .reader-intro-chirho{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 0 16px;} .reader-intro-chirho span{font-size:.76rem;color:#646e65;}
-  .draft-backup-chirho{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:10px 12px;margin-top:12px;border:1px solid #cfbf98;background:#f7efdf;border-radius:6px;font-size:.76rem;}
-  .draft-backup-chirho div{display:flex;gap:10px;flex-wrap:wrap;margin-right:auto;}.draft-backup-chirho p{width:100%;color:#873c24;}
-  .draft-backup-chirho button,.review-navigation-chirho button,.review-navigation-chirho select{padding:5px 8px;border:1px solid #b6c1b8;border-radius:4px;background:#fffdf6;color:#295c4e;font:inherit;}
+  .review-navigation-chirho button,.review-navigation-chirho select{padding:5px 8px;border:1px solid #b6c1b8;border-radius:4px;background:#fffdf6;color:#295c4e;font:inherit;}
   .review-navigation-chirho{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:8px 12px;border-bottom:1px solid #ddd7cb;font-size:.74rem;}.review-navigation-chirho label{display:flex;align-items:center;gap:6px;}.review-navigation-chirho span{font-size:.68rem;color:#6d736b;}
   .reader-workspace-chirho{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;height:calc(100dvh - 244px);min-height:480px;}
   .transcript-pane-chirho{min-width:0;display:flex;flex-direction:column;border:1px solid #d6d0c5;border-radius:8px;overflow:auto;background:#fffefb;}

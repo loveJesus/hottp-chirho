@@ -43,7 +43,7 @@ function validDraftChirho(valueChirho: unknown): valueChirho is ReadingDraftChir
     typeof sourceChirho.confirmedChirho === 'boolean' && typeof sourceChirho.flaggedChirho === 'boolean' &&
     validBoxChirho(sourceChirho.boxChirho) && textChirho(valueChirho.textChirho) && validBoxChirho(valueChirho.boxChirho);
 }
-function validPageChirho(valueChirho: unknown): valueChirho is PageDraftsChirho {
+export function validPageDraftsChirho(valueChirho: unknown): valueChirho is PageDraftsChirho {
   return recordChirho(valueChirho) && idChirho(valueChirho.pageIdChirho) && textChirho(valueChirho.imageKeyChirho, 2048) &&
     (valueChirho.selectedKeyChirho === null || textChirho(valueChirho.selectedKeyChirho, 100)) &&
     Array.isArray(valueChirho.draftsChirho) && valueChirho.draftsChirho.length <= MAX_PAGE_DRAFTS_CHIRHO && valueChirho.draftsChirho.every(validDraftChirho) &&
@@ -56,7 +56,7 @@ function readShelfChirho(storageChirho: TabStorageChirho): ShelfChirho {
   let parsedChirho: unknown;
   try { parsedChirho = JSON.parse(rawChirho); } catch { throw new Error('Tab backup is unreadable. Existing backup was not overwritten.'); }
   if (!recordChirho(parsedChirho) || parsedChirho.versionChirho !== 1 || !Array.isArray(parsedChirho.pagesChirho) ||
-    parsedChirho.pagesChirho.length > MAX_DRAFT_PAGES_CHIRHO || !parsedChirho.pagesChirho.every(validPageChirho) ||
+    parsedChirho.pagesChirho.length > MAX_DRAFT_PAGES_CHIRHO || !parsedChirho.pagesChirho.every(validPageDraftsChirho) ||
     new Set(parsedChirho.pagesChirho.map((pageChirho) => pageChirho.pageIdChirho)).size !== parsedChirho.pagesChirho.length) {
     throw new Error('Tab backup has an unsupported format. Existing backup was not overwritten.');
   }
@@ -69,7 +69,7 @@ export function readPageDraftsChirho(storageChirho: TabStorageChirho, pageIdChir
 // Workflow: page-reading-workflow-chirho.md. Bounded session-only backup;
 // no eviction, network, canonical write or implicit conflict resolution.
 export function writePageDraftsChirho(storageChirho: TabStorageChirho, pageChirho: PageDraftsChirho): void {
-  if (!validPageChirho(pageChirho)) throw new Error('This page exceeds the draft backup limits. Export your drafts before leaving.');
+  if (!validPageDraftsChirho(pageChirho)) throw new Error('This page exceeds the draft backup limits. Export your drafts before leaving.');
   const shelfChirho = readShelfChirho(storageChirho);
   const pagesChirho = shelfChirho.pagesChirho.filter((storedChirho) => storedChirho.pageIdChirho !== pageChirho.pageIdChirho);
   if (pageChirho.draftsChirho.length) pagesChirho.push(pageChirho);

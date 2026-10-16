@@ -24,6 +24,16 @@ flowchart TD
   CompareChirho -->|yes| ResumeChirho[Recover draft and selected reading, unconfirmed]
   CompareChirho -->|no| StaleChirho[Hold draft; export or explicitly discard]
   BackupChirho -->|storage failure| WarnChirho[Keep edits in memory; warn and guard navigation]
+  DraftChirho --> DownloadChirho[Download all unsubmitted reading drafts]
+  DownloadChirho --> FileChirho[Choose backup on the same page in a fresh tab]
+  FileChirho --> ValidateFileChirho[Bound file size and schema; discard unknown fields]
+  ValidateFileChirho --> PreviewChirho[Preview only; no draft change or upload]
+  PreviewChirho --> RestoreChirho[Explicit Restore drafts]
+  RestoreChirho --> MergeChirho{Page and image match; merged count within limit?}
+  MergeChirho -->|no| RefuseRestoreChirho[Explain refusal; preserve existing work and file]
+  MergeChirho -->|yes| KeepExistingChirho[Keep every existing draft; add missing keys without rebasing]
+  KeepExistingChirho --> CompareChirho
+  KeepExistingChirho --> BackupChirho
   CropChirho --> BoxChirho[Move or resize box locally]
   BoxChirho --> HoldChirho[Hold text confirmation]
   HoldChirho --> ExportChirho[Download unsubmitted repair draft for review]
@@ -49,6 +59,7 @@ flowchart TD
 - `drafts-chirho/session-store-chirho.ts` backs up each page in sessionStorage under one application-owned key. Text and box changes share the source record captured when editing began. Refresh/revisit restores selection and proposed values, never a confirmation. Changes to record identity, scanline, text, script, geometry, or image key hold recovered drafts; the reader must export/discard/review rather than overwrite changed source.
 - Limits: eight unfinished pages, 200 draft entries per page, 8,192 UTF-16 code units per source/proposed text and 262,144 code units for the entire serialized shelf. Limits, quota denial, silently dropped writes, unsupported versions and malformed backups cause a visible warning; no automatic eviction or overwrite of unreadable state. Clearing one page preserves other pages. Edits remain in memory when backup fails, and navigation is cancellable in that case. Successful tab backup permits page navigation/revisit without a discard prompt.
 - Tab storage is a convenience, not durable archival, account isolation, or an authorization boundary. Download before closing the tab or clearing browser data. Same-key replacement of an image is not detected cryptographically; image revision/provenance is still outside this UI proof.
+- Downloaded reading backups can be explicitly restored on their original page. `drafts-chirho/file-backup-chirho.ts` shares the tab validator, discards unknown fields, and merges without replacing existing drafts. `DraftBackupChirho.svelte` owns file preview and feedback; the page controller alone owns draft state, source holds and confirmation. See the dated recovery evidence below.
 - Human-confirmed color requires the raw flag and a source-matching shared-reviewer receipt, not merely a historical flag, dictionary validity, model confidence, or canonical match. It does not certify the page, publication, independent witness, or source image identity.
 
 ## Reference and fidelity boundary
@@ -166,8 +177,20 @@ Explicit valid links take precedence over backed-up selection without replacing 
 
 The mobile transcription now grows with its controls while its text area keeps a bounded scroll viewport. On shorter desktop layouts the transcription panel can scroll rather than clipping controls. The global app header is in normal flow: its previous sticky overlay covered a focused reading after viewport changes. Browser checks now hit-test both the active field and confirmation button, not only horizontal overflow. Mutation authorization, confirmation and source geometry behavior remain unchanged; only the strict sign-in return location gains the validated fragment.
 
-Local development proof is recorded in `spec-chirho/tasklists-chirho/reader-chirho/26-09-19_16-15-tasklist-reader_navigation-chirho.md`. This addition is not yet hosted, and Andrew's hands-on acceptance remains open.
+Local development proof is recorded in `spec-chirho/tasklists-chirho/reader-chirho/26-09-19_16-15-tasklist-reader_navigation-chirho.md`. Navigation subsequently shipped on September 26; its hosted evidence is in `spec-chirho/page-reader-checks-chirho/navigation-chirho/release-2026-09-26-chirho.json`. Andrew's hands-on acceptance remains open.
 
 ### Earlier mobile viewport follow-up (deployed before navigation)
 
 The source scan stays in normal document flow on the stacked mobile layout. Sticky positioning previously overlaid the active textarea even though the page had no horizontal overflow. A real hosted viewport caught it; `proof-chirho/mobile-visibility-chirho.js` fails before the change and passes afterward at 320/390/700px by checking the element actually hit at the editor's center. Inspect the actual scrolled viewport as well as a top-reset full-page screenshot; a screenshot assembled across sticky positions is not proof that the active field is unobstructed. Source `9a55a22` is the final CSS follow-up to provenance source `2bb7d02`.
+
+## Restore a downloaded draft, 2026-10-15 local development
+
+Download all drafts before closing a tab. To resume, open the original page, expand **Restore from a download**, choose that JSON file, inspect the draft count, and press **Restore drafts**. File selection alone changes nothing. Reading backups from the September release still work without a selected-record field. Repair-proposal exports are a different format and cannot be restored as reading backups.
+
+- File bytes never leave the browser. The input is capped at 4,194,304 bytes before reading, with a second UTF-8 size check before JSON parsing; shared per-page/draft/text/box validation still applies. Unknown properties at every draft/source/box level are discarded so a large unrelated property cannot wedge the tab shelf. No new dependency, API, database migration or source write.
+- Restore merges against state at the click, not the earlier preview. Every existing draft wins an overlap; repeats are idempotent. Wrong page/image, malformed entries, duplicate identities or a merge above 200 entries refuse without replacing anything. Earlier-image drafts already in the tab receive their own download/discard guidance rather than an error blaming the incoming file.
+- Original source identity, text, script and raw box stay attached to imported drafts. Stale or missing records remain held and downloadable, never silently rebased or assigned to a replacement token. A box edit retains the existing confirmation hold. Confirmation badges and CAS expectations still come from current server data, never imported flags. Anonymous drafting is supported, but explicit authenticated confirmation remains a separate operation.
+- Tab-storage failure does not throw away imported or pre-existing in-memory edits. The result reports memory-only recovery, keeps the original file available, and preserves the navigation warning. The status updates when storage recovers and clears after drafts are discarded. The live status element remains rendered while empty. Eight-page and total-shelf limits are unchanged; oversized genuine draft sets may remain memory-only, visibly, until reduced or exported.
+- An older asynchronous file read cannot replace a newer file preview; destroying the page invalidates pending reads. The page component remains keyed by page identity. No draft text is added to shared links.
+
+Proof and remaining boundaries are recorded in `spec-chirho/tasklists-chirho/reader-chirho/26-10-15_19-47-tasklist-reader_draft_restore-chirho.md`. Browser checks use copied D1/R2 with synthetic reviewer credentials and intercept every content mutation. This development does not publish the feature or constitute Andrew's acceptance, canonical review, source-image certification or model remediation.

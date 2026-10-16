@@ -4,7 +4,8 @@ import type { PageLineChirho } from '$lib/server-chirho/page-lines-chirho';
 import type { PageWordChirho } from '$lib/server-chirho/review-chirho/reading-evidence-chirho';
 
 export interface BoxChirho { xChirho: number; yChirho: number; widthChirho: number; heightChirho: number }
-export type ReviewStateChirho = 'recorded-chirho' | 'machine-chirho' | 'anonymous-chirho' | 'unattributed-chirho' | 'unreviewed-chirho';
+export const REVIEW_STATES_CHIRHO = ['recorded-chirho', 'machine-chirho', 'anonymous-chirho', 'unattributed-chirho', 'unreviewed-chirho'] as const;
+export type ReviewStateChirho = typeof REVIEW_STATES_CHIRHO[number];
 export interface ReadingTokenChirho {
   keyChirho: string;
   kindChirho: 'word-chirho' | 'segment-chirho';
