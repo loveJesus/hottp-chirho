@@ -1,7 +1,7 @@
 // For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life. — John 3:16 (KJV)
 
 /**
- * Pages the intake must never produce: the certified working set, plus any
+ * Pages the intake must never produce: the certification working set, plus any
  * page the local progress database shows human or pipeline work on
  * (reviewer events, segments or human-confirmed words). The union fails
  * safe: a page in doubt stays out of the intake.

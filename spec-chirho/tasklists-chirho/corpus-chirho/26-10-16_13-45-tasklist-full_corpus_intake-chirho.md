@@ -6,7 +6,7 @@ Direction, L.J. 2026-10-16: "continue dev so we can fully work on the whole hott
 
 Today the reader holds 46 of the 5,335 PDF pages: vols 1-4 pp. 148-152 and vol 5 pp. 50-70 and 148-152. The local progress database also has Pass A lines for vol 1 pp. 148-360. The certification gate, the span corpus, the Markdown export and the four review stations all cover the same 46-page working set.
 
-Goal: every page of all five volumes can be read and worked in the reader, behind a login. Machine text is plainly marked unverified, the certified working set does not change, and no gate is weakened.
+Goal: every page of all five volumes can be read and worked in the reader, behind a login. Machine text is plainly marked unverified, the certification working set does not change, and no gate is weakened.
 
 Non-goals: certification counts do not move; no review-station packet changes; no production write without L.J.'s go-ahead for that step.
 
@@ -38,7 +38,7 @@ The real cost driver is reading the non-French text on 5,335 pages, not hosting.
 ## Decisions at brick 1
 
 1. **Login: Cloudflare Access on the whole Worker.** Scope "all traffic" covers the custom domain and the `workers.dev` hostname. Login is the email one-time PIN. The allow list lives in Cloudflare, never in this public repository. The reader's own reviewer sign-in stays as it is for saving. Hosted smoke tests use an Access service token kept in `.env`. Needs L.J.'s go-ahead and the email list.
-2. **Intake tier, separate from the certified working set (recommended).** New pages are built in their own intake database and artifact tree, then loaded to D1/R2 as machine drafts. The progress database, span corpus, export and certification gate keep the 46-page working set until a page is deliberately promoted. Placement: code in `src-chirho/corpus-intake-chirho/` (`src-chirho/` already has 206 entries and must not grow), artifacts in `workspace-chirho/corpus-intake-chirho/`.
+2. **Intake tier, separate from the certification working set (recommended).** New pages are built in their own intake database and artifact tree, then loaded to D1/R2 as machine drafts. The progress database, span corpus, export and certification gate keep the 46-page working set until a page is deliberately promoted. Placement: code in `src-chirho/corpus-intake-chirho/` (`src-chirho/` already has 206 entries and must not grow), artifacts in `workspace-chirho/corpus-intake-chirho/`.
 3. **Reading non-French text at scale: measure first.** Candidates: vol 5 straight from its born-digital text layer; the CRNN for vol 1-2 Hebrew; agent verdicts for the rest, in an order L.J. sets. Report the measured cost per page before running anything large.
 4. **Bulk load, not per-page wrangler calls.** Generated, idempotent per-volume SQL that never touches a page with reviewer events, plus parallel R2 uploads by key with checksums. `sync-one-page-chirho.ts` makes about 60 wrangler calls a page, which is unworkable at this scale. Each production load needs L.J.'s go-ahead.
 

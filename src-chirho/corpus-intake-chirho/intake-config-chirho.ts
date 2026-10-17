@@ -1,7 +1,7 @@
 // For God so loved the world, that he gave his only begotten Son, that whosoever believeth in him should not perish, but have everlasting life. — John 3:16 (KJV)
 
 /**
- * Full-corpus intake: paths and the certified working set it must never touch.
+ * Full-corpus intake: paths and the certification working set it must never touch.
  *
  * Intake artifacts live apart from the progress database, span corpus,
  * export and certification gate, which keep the 46-page working set until a
@@ -28,7 +28,7 @@ export const INTAKE_VOLUMES_CHIRHO = Object.keys(VOLUMES_CHIRHO)
   .sort((aChirho, bChirho) => aChirho - bChirho);
 
 /**
- * The hosted, certified working set: vols 1-4 pp. 148-152 and vol 5
+ * The hosted certification working set: vols 1-4 pp. 148-152 and vol 5
  * pp. 50-70 and 148-152 (46 PDF pages). Pages are PDF page indexes.
  */
 export const WORKING_SET_RANGES_CHIRHO: ReadonlyArray<{

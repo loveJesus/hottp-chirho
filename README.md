@@ -64,7 +64,7 @@ flowchart TD
 1. **Reader (`hottp-chirho.bible.systems`)**:
    - Built with **SvelteKit 2** + `@sveltejs/adapter-cloudflare`, deployed as the Cloudflare Worker `hottp-chirho` (`app-chirho/wrangler-chirho.toml`).
    - Backed by **Cloudflare D1** (`hottp-d1-chirho`) for pages, lines, segments and review events, and **Cloudflare R2** (`hottp-chirho`) for page facsimiles.
-   - Reading is open today; saving a reading requires reviewer sign-in. It holds the 46-page certified working set; the full-corpus intake (`src-chirho/corpus-intake-chirho/`) prepares the other pages locally.
+   - Reading is open today; saving a reading requires reviewer sign-in. It holds the 46-page certification working set; the full-corpus intake (`src-chirho/corpus-intake-chirho/`) prepares the other pages locally.
 
 2. **Authoring & Human Review Stations**:
    - Powered by lightweight, ultra-fast **Bun** HTTP servers bound strictly to `127.0.0.1`.
