@@ -182,9 +182,17 @@ describe("page geometry helpers", () => {
       `</span>`,
       `<span class='ocr_line' id='line_1_2' title="bbox 12 70 280 110; baseline 0 -5">`,
       `<span class='ocrx_word' id='word_1_3' title='bbox 12 72 280 108; x_wconf 88'>texte</span>`,
+      `</span>`,
+      `<span class='ocr_header' id='line_1_3' title="bbox 400 5 600 40; baseline 0 -5">`,
+      `<span class='ocrx_word' id='word_1_4' title='bbox 400 6 600 39; x_wconf 90'>Titre</span>`,
+      `</span>`,
+      `<span class='ocr_textfloat' id='line_1_4' title="bbox 20 120 60 150; baseline 0 -5">`,
+      `<span class='ocrx_word' id='word_1_5' title='bbox 20 121 60 149; x_wconf 90'>40</span>`,
     ].join("\n");
     const linesChirho = parseHocrLinesChirho(hocrChirho);
-    expect(linesChirho.map((lChirho) => lChirho.textChirho)).toEqual(["l'autre R&D", "texte"]);
+    // Header and text-float lines are lines of their own, not words of the line before.
+    expect(linesChirho.map((lChirho) => lChirho.textChirho)).toEqual(["l'autre R&D", "texte", "Titre", "40"]);
+    expect(linesChirho[2]).toMatchObject({ xMinChirho: 400, yMinChirho: 5, xMaxChirho: 600, yMaxChirho: 40 });
     expect(linesChirho[0]).toMatchObject({ xMinChirho: 10, yMinChirho: 20, xMaxChirho: 300, yMaxChirho: 60 });
     expect(linesChirho[0]!.wordsChirho[1]).toMatchObject({ textChirho: "R&D", xMinChirho: 100, xMaxChirho: 300 });
   });

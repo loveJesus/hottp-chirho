@@ -25,8 +25,9 @@ export const SCANNED_VOLS_CHIRHO = new Set<number>([1, 2, 3, 4]);
 /**
  * Bump when line-box output changes, so the intake redoes pages made by
  * earlier code. 2: vol 5 boxes in true render pixels (were 1.5x too large).
+ * 3: hOCR header, caption and text-float lines kept as lines (were merged).
  */
-export const GEOMETRY_VERSION_CHIRHO = 2;
+export const GEOMETRY_VERSION_CHIRHO = 3;
 
 /**
  * Per-line vertical padding (px at 300 DPI), asymmetric:
@@ -181,9 +182,11 @@ export async function tesseractLineBboxesChirho(
 
 /**
  * Parse hOCR into a flat list of lines with bbox + aggregated text.
- * Tesseract emits each ocr_line span on its own line of XML, and nested ocrx_word
- * spans on their own lines too — so a scan that keeps track of "am I inside an
- * ocr_line and which one" is enough.
+ * Tesseract emits each line-level span on its own line of XML, and nested ocrx_word
+ * spans on their own lines too — so a scan that keeps track of "am I inside a
+ * line and which one" is enough. Line-level classes are ocr_line, ocr_header,
+ * ocr_caption and ocr_textfloat; matching only ocr_line once dropped 45 of 55
+ * lines on vol 3 p1061 and merged their words into a neighbor.
  */
 export function parseHocrLinesChirho(hocrChirho: string): LineBboxChirho[] {
   const linesChirho: LineBboxChirho[] = [];
@@ -192,7 +195,7 @@ export function parseHocrLinesChirho(hocrChirho: string): LineBboxChirho[] {
   let currentChirho: LineBboxChirho | null = null;
 
   const lineStartRegexChirho =
-    /<span class=['"]ocr_line['"][^>]*title=['"]bbox (\d+) (\d+) (\d+) (\d+)[^'"]*['"]/;
+    /<span class=['"](?:ocr_line|ocr_header|ocr_caption|ocr_textfloat)['"][^>]*title=['"]bbox (\d+) (\d+) (\d+) (\d+)[^'"]*['"]/;
   // Capture both bbox (groups 1-4) and word text (group 5)
   const wordRegexChirho =
     /<span class=['"]ocrx_word['"][^>]*title=['"]bbox (\d+) (\d+) (\d+) (\d+)[^'"]*['"][^>]*>([^<]*)<\/span>/;
