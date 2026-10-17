@@ -43,12 +43,8 @@
             <span class="stat-label-chirho">pages</span>
           </div>
           <div class="stat-chirho">
-            <span class="stat-value-chirho">{volChirho.totalSegmentsChirho}</span>
-            <span class="stat-label-chirho">segments</span>
-          </div>
-          <div class="stat-chirho">
-            <span class="stat-value-chirho">{volChirho.nonFrenchSegmentsChirho}</span>
-            <span class="stat-label-chirho">non-french</span>
+            <span class="stat-value-chirho">{volChirho.approvedPagesChirho}</span>
+            <span class="stat-label-chirho">lines approved</span>
           </div>
         </div>
         <div class="progress-bar-chirho">

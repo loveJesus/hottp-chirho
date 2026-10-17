@@ -8,6 +8,7 @@ import * as schemaChirho from '../../../../app-chirho/src/lib/server-chirho/sche
 import type { DbChirho } from '../../../../app-chirho/src/lib/server-chirho/db-chirho';
 import { loadVolumeWindowChirho } from '../../../../app-chirho/src/lib/server-chirho/catalog-chirho/volume-chirho';
 import { exportPageRangeChirho } from '../../../../app-chirho/src/lib/server-chirho/catalog-chirho/export-chirho';
+import { loadVolumeSummariesChirho } from '../../../../app-chirho/src/lib/server-chirho/catalog-chirho/home-chirho';
 import { EXPORT_BYTES_CHIRHO, EXPORT_FIELD_BYTES_CHIRHO, PAGE_WINDOW_CHIRHO } from '../../../../app-chirho/src/lib/server-chirho/catalog-chirho/request-chirho';
 
 // Bundle with Bun --target=node --packages=external into app-chirho/.svelte-kit/,
@@ -27,7 +28,8 @@ describe('bounded catalog on real local D1 at full-volume scale', () => {
   before(async () => {
     d1Chirho = await runtimeChirho.getD1Database('DB_CHIRHO') as unknown as D1Database;
     dbChirho = drizzle(d1Chirho, { schema: schemaChirho, logger: { logQuery(queryChirho, paramsChirho) { queriesChirho.push({ sqlChirho: queryChirho, paramsChirho }); } } });
-    for (const pathChirho of ['app-chirho/migrations-chirho/0001-init-chirho.sql', 'app-chirho/migrations-chirho/0001-scanlines-chirho.sql']) {
+    for (const pathChirho of ['app-chirho/migrations-chirho/0001-init-chirho.sql', 'app-chirho/migrations-chirho/0001-scanlines-chirho.sql',
+      'app-chirho/migrations-chirho/0002-pass1-chirho.sql']) {
       const sourceChirho = (await readFileChirho(pathChirho, 'utf8')).replace(/--[^\n]*/g, '');
       for (const statementChirho of sourceChirho.split(';').filter((partChirho) => partChirho.trim())) await sqlChirho(statementChirho);
     }
@@ -74,6 +76,24 @@ describe('bounded catalog on real local D1 at full-volume scale', () => {
     assertChirho.ok(evidenceChirho.every((itemChirho) => itemChirho.rowsReadChirho > 0), 'runtime must report measured row reads for this performance proof');
     assertChirho.ok(evidenceChirho.reduce((sumChirho, itemChirho) => sumChirho + itemChirho.rowsReadChirho, 0) < unboundedChirho.meta.rows_read / 10);
     console.log(JSON.stringify({ boundedQueriesChirho: evidenceChirho, negativeControlRowsReadChirho: unboundedChirho.meta.rows_read }));
+  });
+
+  it('home summaries read only page rows, never lines or segments', async () => {
+    await sqlChirho("update pages_chirho set lines_approved_at_chirho='2026-10-17' where volume_number_chirho=6 and page_number_chirho<=9");
+    queriesChirho.length = 0;
+    const summariesChirho = await loadVolumeSummariesChirho(dbChirho);
+    assertChirho.deepEqual(summariesChirho.map((sChirho) => [sChirho.volumeNumberChirho, sChirho.totalPagesChirho, sChirho.approvedPagesChirho]), [[3, 1418, 0], [6, 53, 3]]);
+    assertChirho.equal(queriesChirho.length, 1);
+    const queryChirho = queriesChirho[0]!;
+    const planChirho = (await d1Chirho.prepare('explain query plan ' + queryChirho.sqlChirho).bind(...queryChirho.paramsChirho).all<{ detail: string }>())
+      .results.map((rowChirho) => rowChirho.detail).join('\n');
+    assertChirho.doesNotMatch(planChirho, /scanlines_chirho|segments_chirho/);
+    const rerunChirho = await d1Chirho.prepare(queryChirho.sqlChirho).bind(...queryChirho.paramsChirho).all();
+    const pageCountChirho = Number(await d1Chirho.prepare('select count(*) as n_chirho from pages_chirho').first('n_chirho'));
+    assertChirho.ok(rerunChirho.meta.rows_read > 0 && rerunChirho.meta.rows_read <= pageCountChirho + 2,
+      `home summary read ${rerunChirho.meta.rows_read} rows for ${pageCountChirho} pages`);
+    console.log(JSON.stringify({ homePlanChirho: planChirho, homeRowsReadChirho: rerunChirho.meta.rows_read, pagesChirho: pageCountChirho }));
+    await sqlChirho('update pages_chirho set lines_approved_at_chirho=null where volume_number_chirho=6');
   });
 
   it('walks all 1418 pages with bounded windows and an exact last partial window', async () => {
