@@ -194,3 +194,33 @@ Download all drafts before closing a tab. To resume, open the original page, exp
 - An older asynchronous file read cannot replace a newer file preview; destroying the page invalidates pending reads. The page component remains keyed by page identity. No draft text is added to shared links.
 
 Proof and remaining boundaries are recorded in `spec-chirho/tasklists-chirho/reader-chirho/26-10-15_19-47-tasklist-reader_draft_restore-chirho.md`. Browser checks use copied D1/R2 with synthetic reviewer credentials and intercept every content mutation. This development does not publish the feature or constitute Andrew's acceptance, canonical review, source-image certification or model remediation.
+
+## Bounded volume browsing and legacy export, 2026-10-17 local development
+
+```mermaid
+flowchart TD
+  VolumeChirho[Open volume or jump to PDF page number] --> CursorChirho[Validate one forward or backward cursor]
+  CursorChirho --> WindowChirho[Composite index seek: 24 pages plus one overfetch]
+  WindowChirho --> CountsChirho[One indexed count over visible page IDs only]
+  WindowChirho --> OppositeChirho[One opposite-direction page seek]
+  CountsChirho --> CardsChirho[Page cards with detected segment counts]
+  OppositeChirho --> CardsChirho
+  CardsChirho --> ReadChirho[Open one page in the existing reading workspace]
+  CardsChirho --> RangeChirho[Request displayed PDF page range as legacy Markdown]
+  RangeChirho --> BoundChirho[Require explicit volume and bounds; cap rows and SQL fields]
+  BoundChirho -->|missing, invalid or oversized| RefuseChirho[Explain refusal; emit no partial download]
+  BoundChirho --> TextChirho[Use reconstructed text or mark French fallback as needs review]
+  TextChirho --> BytesChirho{UTF-8 output at most 1 MiB?}
+  BytesChirho -->|no| RefuseChirho
+  BytesChirho -->|yes| DownloadChirho[Range-named unverified download; private no-store]
+```
+
+`server-chirho/catalog-chirho/` separates strict request parsing, window queries and range export. The volume route selects only identity, page number and status; no French/reconstructed text crosses that listing boundary. A single scanline/segment join is restricted to at most 24 visible page IDs, using existing indexes. No volume total or schema migration is required. Forward cursors are inclusive (`from-chirho`); backward cursors are exclusive (`before-chirho`), descending during selection and ascending on screen. Gaps skip to the next loaded PDF page. Empty windows offer a first-page reset and no download. Browsing does not change readings or review provenance.
+
+The web Markdown endpoint now requires `volume-chirho`, `from-chirho` and `to-chirho`, each a single positive safe decimal integer. It refuses more than 24 loaded pages, suppresses text fields over 64 KiB inside SQL and refuses if a required text field exceeds that bound. A large unused French field does not reject a valid small reconstructed reading. Final UTF-8 output is capped at 1 MiB; failures never return truncated Markdown. Volume-only legacy URLs receive a 400 before DB access; the volume UI supplies its displayed bounds. Existing offline/certification full-volume exports are unchanged.
+
+Every successful web download labels itself a range, unverified legacy stored text and potentially behind current reader edits; its filename includes the range. NULL/blank reconstructed text retains the existing French fallback plus needs-review marker. Volume-5 fallback can still contain legacy PDF font codes. Counts/status/downloads are not evidence of human confirmation, transcription accuracy or certification. This endpoint remains public pending the separate Access decision; bounding a response is not access control or a global scraping/rate limit.
+
+Local proof: 42 unit tests / 208 assertions; seven real local D1 scale/export tests; 34 actual browser/HTTP/download checks with zero content mutations or page runtime errors. On a synthetic 1,418-page / 184,340-segment volume, the measured three-query window reads 5,114 rows versus 300,616 for one whole-volume count. Complete traversal and sparse backward navigation pass. See `spec-chirho/tasklists-chirho/reader-chirho/26-10-17_16-05-tasklist-reader_scale-chirho.md` for commands, screenshots and scope. This is not production performance evidence or a deployment.
+
+Before deploying, verify production's actual composite page index and query plans read-only; production was seeded outside migration tracking. The home-page summary still aggregates across the corpus and is a separate scale follow-up. Neither this two-route slice nor the synthetic fixture certifies readiness to load the whole corpus.
