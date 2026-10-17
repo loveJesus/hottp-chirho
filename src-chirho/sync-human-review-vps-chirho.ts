@@ -60,6 +60,8 @@ const EXCLUDES_CHIRHO = [
   "node_modules/",
   "app-chirho/.svelte-kit/",
   "backups-chirho/",
+  // Full-corpus intake: gigabytes of machine-draft page images the stations never read.
+  "workspace-chirho/corpus-intake-chirho/",
   "hottp-chirho.sqlite",
   "app-chirho/spec-chirho/*.sqlite",
   "workspace-chirho/spec-chirho/*.sqlite",
