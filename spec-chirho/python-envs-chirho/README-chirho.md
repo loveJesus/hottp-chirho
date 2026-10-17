@@ -11,6 +11,7 @@ repository keeps their exact package pins here instead. Every pin is a plain
 |---|---|---|---|
 | `workspace-chirho/classifier-venv-chirho` | 3.14 | `classifier-requirements-chirho.txt` (37, torch 2.12.0) | In use; keep |
 | `workspace-chirho/kraken-venv-chirho` | 3.13 | `kraken-requirements-chirho.txt` (73, kraken 7.0.2, torch 2.10.0) | Deleted 2026-09-25 |
+| `workspace-chirho/pdf-fonts-venv-chirho` | 3.14 | `pdf-fonts-requirements-chirho.txt` (10, pikepdf 10.16.0, fonttools 4.66.1) | In use; keep |
 
 ## classifier-venv-chirho
 
@@ -34,6 +35,10 @@ toolkits on 2026-09-25, so it was removed to free 1.0 GB. The only models
 inside it were the defaults that ship with the packages (Kraken's `blla`
 segmenter and torchmetrics' LPIPS weights), which a reinstall restores.
 
+## pdf-fonts-venv-chirho
+
+This runs the vol 5 font decoder in `src-chirho/corpus-intake-chirho/vol5_fonts_chirho/`, which reads glyph positions from the PDF's text operators (pikepdf) and the embedded font subsets' glyph metrics (fonttools), and its tests (pytest). It was created on 2026-10-17. Releases newer than a week were stepped back when it was pinned: pillow 13.0.0 to 12.3.0 and pluggy 1.7.0 to 1.6.0, both transitive.
+
 ## Rebuilding
 
 Both pin files were checked on 2026-09-25 with a dry-run install against the
@@ -43,6 +48,10 @@ Homebrew interpreters: every pin resolved, with zero errors.
 # classifier (Python 3.14)
 /opt/homebrew/opt/python@3.14/bin/python3.14 -m venv workspace-chirho/classifier-venv-chirho
 workspace-chirho/classifier-venv-chirho/bin/python -m pip install -r spec-chirho/python-envs-chirho/classifier-requirements-chirho.txt
+
+# pdf-fonts (Python 3.14)
+/opt/homebrew/opt/python@3.14/bin/python3.14 -m venv workspace-chirho/pdf-fonts-venv-chirho
+workspace-chirho/pdf-fonts-venv-chirho/bin/python -m pip install -r spec-chirho/python-envs-chirho/pdf-fonts-requirements-chirho.txt
 
 # kraken (Python 3.13), only if the Kraken witness is revived
 /opt/homebrew/opt/python@3.13/bin/python3.13 -m venv workspace-chirho/kraken-venv-chirho

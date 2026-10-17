@@ -30,7 +30,10 @@ flowchart TD
   TileChirho[draft-segments-chirho.ts: words sorted left to right, same-script runs tiled across the line; gaps over 80px become unknown tiles; vol 5 font hints keep Hebrew, Greek, Syriac; Hebrew-letter runs read right to left]
   DraftStoreChirho[(recordPageDraftsChirho: segments and the page's draft marker in one transaction)]
   RecallChirho[draft-recall-chirho.ts: flag recall against reviewed spans and words on the working set]
-  ReadChirho[planned: measured machine reading, L.J. picks reader and order]
+  Vol5GlyphsChirho[vol5_fonts_chirho/pdf_glyphs_chirho.py: every glyph's code, font subset and position from the page's text operators]
+  Vol5DecodeChirho[decode_hebrew_chirho.py: per-subset code tables; marks attach to the next letter in drawing order; runs reversed into reading order; NFC]
+  Vol5MeasureChirho[measure_vol5_hebrew_chirho.py: per line against the reviewed spans; WLC arbitrates pointing]
+  ReadChirho[planned: feed decoded vol 5 text into drafts; other readers measured, L.J. picks reader and order]
   LoadChirho[planned: per-volume D1 SQL and R2 upload, each load on L.J.'s go-ahead]
 
   StartChirho --> ProtectChirho --> PlanChirho --> DryChirho
@@ -46,6 +49,8 @@ flowchart TD
   RunEndChirho --> InventoryChirho --> MontageChirho
   MontageChirho --> DraftRunChirho --> DraftPagesChirho --> ClassifyChirho --> TileChirho --> DraftStoreChirho
   RecallChirho -. sets the gap threshold .-> TileChirho
+  Vol5GlyphsChirho --> Vol5DecodeChirho --> Vol5MeasureChirho
+  Vol5DecodeChirho -. planned .-> ReadChirho
   DraftStoreChirho -. later phases .-> ReadChirho -.-> LoadChirho
   DoneChirho -. re-extraction drops the page's drafts .-> DraftPagesChirho
 ```
