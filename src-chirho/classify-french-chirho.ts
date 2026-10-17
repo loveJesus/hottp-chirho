@@ -23,13 +23,13 @@
  * Designed to run once per page: takes ALL words from ALL lines as input,
  * does a single hunspell batch (including hyphenation joins), returns a Set
  * of word-instances flagged as candidates.
+ *
+ * Database-free: callers load the known-word set from whichever connection
+ * they hold (the progress database, or a read-only one for the corpus intake).
  */
 
+import type { Database } from "bun:sqlite";
 import { spawn } from "child_process";
-
-import { dbChirho } from "./db-chirho.ts";
-import { knownWordsChirho } from "./schema-db-chirho.ts";
-import { eq, or } from "drizzle-orm";
 
 /** Word entry as stored in scanlines_chirho.words_json_chirho. */
 export interface WordWithBboxChirho {
@@ -222,28 +222,24 @@ function findHyphenationPairsChirho(
 }
 
 /**
- * Load the dynamic known-words dict for a given volume (and globals).
- * Returns a Set of normalized (lowercased) word strings for fast lookup.
+ * Load the dynamic known-words dict for a given volume (and globals,
+ * volume_number_chirho = 0) from any connection holding known_words_chirho.
+ * Words are matched exactly as stored.
  */
-async function loadKnownWordsChirho(volumeNumberChirho: number): Promise<Set<string>> {
-  const rowsChirho = await dbChirho
-    .select({ wordChirho: knownWordsChirho.wordChirho })
-    .from(knownWordsChirho)
-    .where(
-      or(
-        eq(knownWordsChirho.volumeNumberChirho, 0),
-        eq(knownWordsChirho.volumeNumberChirho, volumeNumberChirho)
-      )
-    );
-  return new Set(rowsChirho.map((rChirho) => rChirho.wordChirho));
+export function loadKnownWordsFromChirho(dbChirho: Database, volumeNumberChirho: number): Set<string> {
+  const rowsChirho = dbChirho
+    .query(`SELECT word_chirho FROM known_words_chirho WHERE volume_number_chirho IN (0, ?)`)
+    .all(volumeNumberChirho) as Array<{ word_chirho: string }>;
+  return new Set(rowsChirho.map((rChirho) => rChirho.word_chirho));
 }
 
 /**
  * Classify every word in every line of a page. Returns one entry per word.
+ * `knownWordsSetChirho` comes from loadKnownWordsFromChirho for the page's volume.
  */
 export async function classifyPageChirho(
-  volumeNumberChirho: number,
-  linesChirho: LineForClassifyChirho[]
+  linesChirho: LineForClassifyChirho[],
+  knownWordsSetChirho: ReadonlySet<string>
 ): Promise<WordClassChirho[]> {
   // Collect all words + all hyphenation-join candidates for ONE batched
   // hunspell call.
@@ -282,8 +278,6 @@ export async function classifyPageChirho(
     linesChirho,
     hunspellAcceptedChirho
   );
-
-  const knownWordsSetChirho = await loadKnownWordsChirho(volumeNumberChirho);
 
   const resultChirho: WordClassChirho[] = [];
   for (const lineChirho of linesChirho) {

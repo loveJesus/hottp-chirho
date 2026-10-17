@@ -22,10 +22,11 @@ import { join } from "path";
 import { eq, and } from "drizzle-orm";
 
 import { PROJECT_ROOT_CHIRHO, SCANLINES_DIR_CHIRHO } from "./config-chirho.ts";
-import { dbChirho, initDbChirho } from "./db-chirho.ts";
+import { dbChirho, initDbChirho, sqliteChirho } from "./db-chirho.ts";
 import { pagesChirho, scanlinesChirho } from "./schema-db-chirho.ts";
 import {
   classifyPageChirho,
+  loadKnownWordsFromChirho,
   type LineForClassifyChirho,
   type WordWithBboxChirho,
   type WordClassChirho,
@@ -121,7 +122,10 @@ if (import.meta.main) {
     })
   );
 
-  const verdictsChirho = await classifyPageChirho(volChirho, linesForClassifyChirho);
+  const verdictsChirho = await classifyPageChirho(
+    linesForClassifyChirho,
+    loadKnownWordsFromChirho(sqliteChirho, volChirho)
+  );
 
   // Index verdicts by (line, word) for fast lookup while building per-line context.
   const verdictByKeyChirho = new Map<string, WordClassChirho>();

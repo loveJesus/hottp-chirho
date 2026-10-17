@@ -8,6 +8,7 @@ import { mkdtempSync, rmSync } from "fs";
 import { tmpdir } from "os";
 import { join } from "path";
 
+import { classifyPageChirho, loadKnownWordsFromChirho } from "../classify-french-chirho.ts";
 import { pageKeyChirho, workingSetKeysChirho } from "./intake-config-chirho.ts";
 import {
   donePagesChirho,
@@ -201,5 +202,23 @@ describe("page geometry helpers", () => {
     ]);
     expect(pngSizeChirho(headerChirho)).toEqual({ widthChirho: 2550, heightChirho: 3300 });
     expect(() => pngSizeChirho(new TextEncoder().encode("GIF89a and then some bytes"))).toThrow(/not a PNG/);
+  });
+});
+
+describe("classifier input", () => {
+  test("known words come from the page's volume and the globals only", () => {
+    const dbChirho = new Database(join(tempDirChirho(), "known-chirho.sqlite"), { create: true });
+    dbChirho.exec(`
+      CREATE TABLE known_words_chirho (word_chirho TEXT, volume_number_chirho INTEGER);
+      INSERT INTO known_words_chirho VALUES ('Partout', 0), ('Duhm', 2), ('Rudolph', 3);
+    `);
+    expect([...loadKnownWordsFromChirho(dbChirho, 2)].sort()).toEqual(["Duhm", "Partout"]);
+    dbChirho.close();
+  });
+
+  test("an injected known word is auto-accepted; without it the word stays a candidate", async () => {
+    const linesChirho = [{ lineIndexChirho: 0, wordsChirho: [{ textChirho: "Zqxwvk", xMinChirho: 0, yMinChirho: 0, xMaxChirho: 9, yMaxChirho: 9 }] }];
+    expect((await classifyPageChirho(linesChirho, new Set(["Zqxwvk"])))[0]!.reasonChirho).toBe("known-words-chirho");
+    expect((await classifyPageChirho(linesChirho, new Set()))[0]!.reasonChirho).toBe("candidate-chirho");
   });
 });

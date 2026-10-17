@@ -13,10 +13,11 @@
 
 import { eq, and } from "drizzle-orm";
 
-import { dbChirho, initDbChirho } from "./db-chirho.ts";
+import { dbChirho, initDbChirho, sqliteChirho } from "./db-chirho.ts";
 import { pagesChirho, scanlinesChirho } from "./schema-db-chirho.ts";
 import {
   classifyPageChirho,
+  loadKnownWordsFromChirho,
   type LineForClassifyChirho,
   type WordWithBboxChirho,
   type ClassifyReasonChirho,
@@ -66,8 +67,8 @@ if (import.meta.main) {
   );
 
   const classificationsChirho = await classifyPageChirho(
-    volChirho,
-    linesForClassifyChirho
+    linesForClassifyChirho,
+    loadKnownWordsFromChirho(sqliteChirho, volChirho)
   );
 
   // Index words by (line, word_idx) so we can fetch x/width when printing

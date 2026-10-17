@@ -63,6 +63,7 @@ The real cost driver is reading the non-French text on 5,335 pages, not hosting.
 
 ## Phase 2 — Draft segments
 
+- [x] First step: `classify-french-chirho.ts` reads `known_words_chirho` through `db-chirho.ts`, which opens the progress database for writing on import. Pass the known-word set in instead (loaded read-only), keeping the Pass C callers' behavior identical, so the intake can classify without touching that database. Done 2026-10-17 (row 2950): `classifyPageChirho(lines, knownWords)` plus `loadKnownWordsFromChirho(db, volume)` for any connection; both callers updated. Verdicts on 69 progress-database pages (32,415 words, 512 of them decided by known words) are byte-identical before and after.
 - [ ] Run the deterministic French classifier on every line. Unresolved candidate words become "needs reading" segments, with the machine text kept as an unverified hint and never as accepted text.
 - [ ] Vol 5: script hints and Unicode from the born-digital text layer, visually checked on a sample.
 
