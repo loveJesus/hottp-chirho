@@ -260,6 +260,25 @@ describe("draft segments", () => {
     expect(tilesChirho[1]).toMatchObject({ scriptChirho: "hebrew-chirho", machineTextChirho: "ב א" });
   });
 
+  test("words listed right to left still tile without zero-width tiles", () => {
+    // Vol 4 p6 line 12 as tesseract listed it: the Hebrew words come right to left.
+    const lineChirho = { xMinChirho: 202, widthChirho: 1118, wordsChirho: [
+      wordChirho("À.", 202, 240), wordChirho("Divisés", 255, 387), wordChirho("ou", 401, 447), wordChirho("א", 974, 1089),
+      wordChirho("אד", 531, 707), wordChirho("ה", 490, 510), wordChirho("ה\u200e", 453, 472), wordChirho("XXV", 1247, 1320)] };
+    const reasonsChirho = ["citation-chirho", "hunspell-chirho", "hunspell-chirho", "candidate-chirho", "candidate-chirho",
+      "candidate-chirho", "candidate-chirho", "citation-chirho"] as const;
+    const tilesChirho = draftLineSegmentsChirho(lineChirho, [...reasonsChirho], 80);
+    let atChirho = 0;
+    for (const tileChirho of tilesChirho) {
+      expect(tileChirho.xMinPxChirho).toBe(atChirho);
+      expect(tileChirho.widthPxChirho).toBeGreaterThan(0);
+      atChirho += tileChirho.widthPxChirho;
+    }
+    expect(atChirho).toBe(1118);
+    expect(tilesChirho.find((tChirho) => tChirho.machineTextChirho.startsWith("אד"))).toMatchObject({
+      xMinPxChirho: 251, machineTextChirho: "אד ה ה", wordStartIndexChirho: 4, wordEndIndexChirho: 6 });
+  });
+
   test("an empty line is one unknown tile, and verdicts must match words", () => {
     expect(draftLineSegmentsChirho({ xMinChirho: 0, widthChirho: 300, wordsChirho: [] }, [], 80))
       .toEqual([expect.objectContaining({ xMinPxChirho: 0, widthPxChirho: 300, scriptChirho: "unknown-chirho" })]);

@@ -13,7 +13,7 @@
 import type { ClassifyReasonChirho, WordWithBboxChirho } from "../classify-french-chirho.ts";
 
 /** Bump when draft output changes, so drafted pages are redone. */
-export const DRAFTS_VERSION_CHIRHO = 1;
+export const DRAFTS_VERSION_CHIRHO = 2; // 2: words tiled in left-to-right order
 
 /**
  * Gaps wider than this (render pixels) become unknown tiles. Measured
@@ -34,12 +34,14 @@ export function isLatinScriptChirho(scriptChirho: string): boolean {
 
 const HINTED_SCRIPTS_CHIRHO = new Set(["hebrew-chirho", "greek-chirho", "syriac-chirho", "arabic-chirho", "symbol-chirho"]);
 const RTL_SCRIPTS_CHIRHO = new Set(["hebrew-chirho", "syriac-chirho", "arabic-chirho"]);
+const RTL_LETTERS_CHIRHO = /[\u0590-\u08FF]/u;
+const BIDI_CONTROLS_CHIRHO = /[\u200E\u200F\u202A-\u202E\u2066-\u2069]/gu;
 
 export type DraftReasonChirho = "classifier-chirho" | "gap-chirho";
 
 export interface DraftSegmentChirho {
   segmentIndexChirho: number;
-  /** Inclusive word range into the line's words; null for a gap tile. */
+  /** Lowest and highest index of the tile's words in the line's word list; null for a gap tile. */
   wordStartIndexChirho: number | null;
   wordEndIndexChirho: number | null;
   /** Line-local pixels; tiles cover [0, line width] without gaps or overlaps. */
@@ -68,14 +70,16 @@ interface RunChirho {
   rightEdgeChirho: number;
   scriptChirho: string;
   reasonChirho: DraftReasonChirho;
-  wordStartChirho: number | null;
-  wordEndChirho: number | null;
+  /** The run's words, left to right, with their indexes in the line's word list. */
+  wordsChirho: Array<{ textChirho: string; indexChirho: number }>;
 }
 
 /**
  * Tile one line. `reasonsChirho[i]` is the classifier verdict for word i.
  * A gap wider than `gapThresholdPxChirho` between words, or between a line
  * edge and its first or last word, becomes an unknown tile of its own.
+ * Words are tiled in left-to-right order: tesseract lists a Hebrew run's
+ * words right to left, which once produced zero-width tiles.
  */
 export function draftLineSegmentsChirho(
   lineChirho: DraftLineChirho,
@@ -90,33 +94,38 @@ export function draftLineSegmentsChirho(
     return [{ segmentIndexChirho: 0, wordStartIndexChirho: null, wordEndIndexChirho: null, xMinPxChirho: 0,
       widthPxChirho: widthChirho, scriptChirho: UNKNOWN_SCRIPT_CHIRHO, machineTextChirho: "", reasonChirho: "gap-chirho" }];
   }
+  const orderedChirho = wordsChirho
+    .map((wChirho, iChirho) => ({ wChirho, iChirho }))
+    .sort((aChirho, bChirho) => aChirho.wChirho.xMinChirho - bChirho.wChirho.xMinChirho || aChirho.iChirho - bChirho.iChirho);
 
   const runsChirho: RunChirho[] = [];
   const pushGapChirho = (leftChirho: number, rightChirho: number) => {
     if (rightChirho - leftChirho > gapThresholdPxChirho) {
       runsChirho.push({ leftEdgeChirho: leftChirho, rightEdgeChirho: rightChirho,
-        scriptChirho: UNKNOWN_SCRIPT_CHIRHO, reasonChirho: "gap-chirho", wordStartChirho: null, wordEndChirho: null });
+        scriptChirho: UNKNOWN_SCRIPT_CHIRHO, reasonChirho: "gap-chirho", wordsChirho: [] });
     }
   };
-  pushGapChirho(0, localChirho(wordsChirho[0]!.xMinChirho));
-  wordsChirho.forEach((wChirho, iChirho) => {
+  pushGapChirho(0, localChirho(orderedChirho[0]!.wChirho.xMinChirho));
+  let reachChirho = 0;
+  orderedChirho.forEach(({ wChirho, iChirho }, kChirho) => {
     const scriptChirho = wordScriptChirho(reasonsChirho[iChirho]!, wChirho.scriptHintChirho);
     const leftChirho = localChirho(wChirho.xMinChirho);
     const rightChirho = Math.max(leftChirho, localChirho(wChirho.xMaxChirho));
+    reachChirho = Math.max(reachChirho, rightChirho);
     const lastChirho = runsChirho[runsChirho.length - 1];
     if (lastChirho && lastChirho.reasonChirho === "classifier-chirho" && lastChirho.scriptChirho === scriptChirho) {
-      lastChirho.wordEndChirho = iChirho;
+      lastChirho.wordsChirho.push({ textChirho: wChirho.textChirho, indexChirho: iChirho });
       lastChirho.rightEdgeChirho = Math.max(lastChirho.rightEdgeChirho, rightChirho);
     } else {
-      runsChirho.push({ leftEdgeChirho: leftChirho, rightEdgeChirho: rightChirho,
-        scriptChirho, reasonChirho: "classifier-chirho", wordStartChirho: iChirho, wordEndChirho: iChirho });
+      runsChirho.push({ leftEdgeChirho: leftChirho, rightEdgeChirho: rightChirho, scriptChirho,
+        reasonChirho: "classifier-chirho", wordsChirho: [{ textChirho: wChirho.textChirho, indexChirho: iChirho }] });
     }
-    const nextChirho = wordsChirho[iChirho + 1];
-    if (nextChirho) pushGapChirho(rightChirho, localChirho(nextChirho.xMinChirho));
+    const nextChirho = orderedChirho[kChirho + 1];
+    if (nextChirho) pushGapChirho(reachChirho, localChirho(nextChirho.wChirho.xMinChirho));
   });
-  pushGapChirho(localChirho(wordsChirho[wordsChirho.length - 1]!.xMaxChirho), widthChirho);
+  pushGapChirho(reachChirho, widthChirho);
 
-  // Contiguous tiling: each run reaches the next run's left edge (the Pass C
+// Contiguous tiling: each run reaches the next run's left edge (the Pass C
   // convention), so gap tiles keep exactly the empty stretch they cover.
   // Boundaries never move left, even if words overlap.
   const boundsChirho = [0];
@@ -127,15 +136,15 @@ export function draftLineSegmentsChirho(
   return runsChirho.map((rChirho, kChirho) => {
     const startChirho = boundsChirho[kChirho]!;
     const endChirho = boundsChirho[kChirho + 1]!;
-    let textsChirho = rChirho.wordStartChirho === null
-      ? []
-      : wordsChirho.slice(rChirho.wordStartChirho, rChirho.wordEndChirho! + 1).map((wChirho) => wChirho.textChirho);
-    // Words come left to right; RTL runs read right to left.
-    if (RTL_SCRIPTS_CHIRHO.has(rChirho.scriptChirho)) textsChirho = [...textsChirho].reverse();
+    // Tesseract's invisible direction marks carry no text.
+    let textsChirho = rChirho.wordsChirho.map((wChirho) => wChirho.textChirho.replace(BIDI_CONTROLS_CHIRHO, ""));
+    // Words are left to right; RTL runs, or runs of Hebrew, Syriac or Arabic letters, read right to left.
+    if (RTL_SCRIPTS_CHIRHO.has(rChirho.scriptChirho) || RTL_LETTERS_CHIRHO.test(textsChirho.join(""))) textsChirho = [...textsChirho].reverse();
+    const indexesChirho = rChirho.wordsChirho.map((wChirho) => wChirho.indexChirho);
     return {
       segmentIndexChirho: kChirho,
-      wordStartIndexChirho: rChirho.wordStartChirho,
-      wordEndIndexChirho: rChirho.wordEndChirho,
+      wordStartIndexChirho: indexesChirho.length ? Math.min(...indexesChirho) : null,
+      wordEndIndexChirho: indexesChirho.length ? Math.max(...indexesChirho) : null,
       xMinPxChirho: startChirho,
       widthPxChirho: endChirho - startChirho,
       scriptChirho: rChirho.scriptChirho,

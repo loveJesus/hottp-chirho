@@ -27,7 +27,7 @@ flowchart TD
   DraftRunChirho([intake-drafts-chirho.ts --all])
   DraftPagesChirho[pagesNeedingDraftsChirho: extracted pages without drafts from the current DRAFTS_VERSION_CHIRHO]
   ClassifyChirho[classifyPageChirho: hunspell fr, citations, hyphenation, known words read-only from the progress database]
-  TileChirho[draft-segments-chirho.ts: same-script word runs tiled across the line; gaps over 80px become unknown tiles; vol 5 font hints keep Hebrew, Greek, Syriac]
+  TileChirho[draft-segments-chirho.ts: words sorted left to right, same-script runs tiled across the line; gaps over 80px become unknown tiles; vol 5 font hints keep Hebrew, Greek, Syriac; Hebrew-letter runs read right to left]
   DraftStoreChirho[(recordPageDraftsChirho: segments and the page's draft marker in one transaction)]
   RecallChirho[draft-recall-chirho.ts: flag recall against reviewed spans and words on the working set]
   ReadChirho[planned: measured machine reading, L.J. picks reader and order]
