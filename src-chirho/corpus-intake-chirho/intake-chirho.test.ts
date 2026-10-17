@@ -9,11 +9,14 @@ import { tmpdir } from "os";
 import { join } from "path";
 
 import { classifyPageChirho, loadKnownWordsFromChirho } from "../classify-french-chirho.ts";
+import { draftLineSegmentsChirho } from "./draft-segments-chirho.ts";
 import { pageKeyChirho, workingSetKeysChirho } from "./intake-config-chirho.ts";
 import {
   donePagesChirho,
   failedPageKeysChirho,
   openIntakeDbChirho,
+  pagesNeedingDraftsChirho,
+  recordPageDraftsChirho,
   recordPageDoneChirho,
   recordPageFailedChirho,
   startRunChirho,
@@ -220,5 +223,54 @@ describe("classifier input", () => {
     const linesChirho = [{ lineIndexChirho: 0, wordsChirho: [{ textChirho: "Zqxwvk", xMinChirho: 0, yMinChirho: 0, xMaxChirho: 9, yMaxChirho: 9 }] }];
     expect((await classifyPageChirho(linesChirho, new Set(["Zqxwvk"])))[0]!.reasonChirho).toBe("known-words-chirho");
     expect((await classifyPageChirho(linesChirho, new Set()))[0]!.reasonChirho).toBe("candidate-chirho");
+  });
+});
+
+describe("draft segments", () => {
+  const wordChirho = (textChirho: string, xMinChirho: number, xMaxChirho: number, scriptHintChirho?: string) =>
+    ({ textChirho, xMinChirho, yMinChirho: 0, xMaxChirho, yMaxChirho: 40, scriptHintChirho });
+
+  test("tiles the whole line by script and flags a wide gap as unknown", () => {
+    const lineChirho = { xMinChirho: 100, widthChirho: 1000, wordsChirho: [
+      wordChirho("Selon", 110, 200), wordChirho("le", 215, 250), wordChirho("XYZ", 300, 420), wordChirho("et", 440, 470)] };
+    const tilesChirho = draftLineSegmentsChirho(lineChirho, ["hunspell-chirho", "hunspell-chirho", "candidate-chirho", "hunspell-chirho"], 80);
+    expect(tilesChirho.map((tChirho) => [tChirho.xMinPxChirho, tChirho.widthPxChirho, tChirho.scriptChirho, tChirho.machineTextChirho, tChirho.reasonChirho]))
+      .toEqual([
+        [0, 200, "french-chirho", "Selon le", "classifier-chirho"],
+        [200, 140, "unknown-chirho", "XYZ", "classifier-chirho"],
+        [340, 30, "french-chirho", "et", "classifier-chirho"],
+        [370, 630, "unknown-chirho", "", "gap-chirho"],
+      ]);
+    expect(tilesChirho.reduce((nChirho, tChirho) => nChirho + tChirho.widthPxChirho, 0)).toBe(1000);
+    expect(tilesChirho[1]).toMatchObject({ wordStartIndexChirho: 2, wordEndIndexChirho: 2 });
+  });
+
+  test("font-hinted runs keep their script and read right to left", () => {
+    const lineChirho = { xMinChirho: 0, widthChirho: 500, wordsChirho: [
+      wordChirho("voir", 0, 60), wordChirho("א", 80, 120, "hebrew-chirho"), wordChirho("ב", 130, 170, "hebrew-chirho")] };
+    const tilesChirho = draftLineSegmentsChirho(lineChirho, ["hunspell-chirho", "candidate-chirho", "candidate-chirho"], 80);
+    expect(tilesChirho[1]).toMatchObject({ scriptChirho: "hebrew-chirho", machineTextChirho: "ב א" });
+  });
+
+  test("an empty line is one unknown tile, and verdicts must match words", () => {
+    expect(draftLineSegmentsChirho({ xMinChirho: 0, widthChirho: 300, wordsChirho: [] }, [], 80))
+      .toEqual([expect.objectContaining({ xMinPxChirho: 0, widthPxChirho: 300, scriptChirho: "unknown-chirho" })]);
+    expect(() => draftLineSegmentsChirho({ xMinChirho: 0, widthChirho: 300, wordsChirho: [wordChirho("a", 0, 9)] }, [], 80)).toThrow(/one classifier verdict/);
+  });
+
+  test("re-extracting a page discards its drafts", () => {
+    const dbChirho = openIntakeDbChirho(join(tempDirChirho(), "intake-chirho.sqlite"));
+    const runChirho = startRunChirho(dbChirho, {}, 1, {});
+    recordPageDoneChirho(dbChirho, runChirho, resultChirho(9, [lineChirho(10, "un"), lineChirho(60, "deux")]));
+    const tileChirho = draftLineSegmentsChirho({ xMinChirho: 100, widthChirho: 800, wordsChirho: [] }, [], 80)[0]!;
+    const countsChirho = recordPageDraftsChirho(dbChirho, 2, 9, 1, [{ lineIndexChirho: 0, segmentsChirho: [tileChirho] }, { lineIndexChirho: 1, segmentsChirho: [tileChirho] }]);
+    expect(countsChirho).toEqual({ segmentCountChirho: 2, flaggedCountChirho: 2 });
+    expect(pagesNeedingDraftsChirho(dbChirho, 1, [2])).toEqual([]);
+    expect(pagesNeedingDraftsChirho(dbChirho, 2, [2])).toEqual([{ volumeNumberChirho: 2, pageNumberChirho: 9 }]);
+
+    recordPageDoneChirho(dbChirho, runChirho, resultChirho(9, [lineChirho(10, "trois")]));
+    expect(dbChirho.query(`SELECT COUNT(*) AS n_chirho FROM intake_segments_chirho`).get()).toEqual({ n_chirho: 0 });
+    expect(pagesNeedingDraftsChirho(dbChirho, 1, [2])).toEqual([{ volumeNumberChirho: 2, pageNumberChirho: 9 }]);
+    dbChirho.close();
   });
 });

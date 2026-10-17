@@ -24,7 +24,12 @@ flowchart TD
   RunEndChirho[(finishRunChirho: run counts, tool versions)]
   InventoryChirho[intake-inventory-chirho.ts: per-volume counts, zero-line pages, errors, disk use]
   MontageChirho[intake-montage-chirho.ts: line boxes drawn on sampled pages for an eyeball check]
-  DraftsChirho[planned: draft segments from the French classifier; vol 5 Unicode from its text layer]
+  DraftRunChirho([intake-drafts-chirho.ts --all])
+  DraftPagesChirho[pagesNeedingDraftsChirho: extracted pages without drafts from the current DRAFTS_VERSION_CHIRHO]
+  ClassifyChirho[classifyPageChirho: hunspell fr, citations, hyphenation, known words read-only from the progress database]
+  TileChirho[draft-segments-chirho.ts: same-script word runs tiled across the line; gaps over 80px become unknown tiles; vol 5 font hints keep Hebrew, Greek, Syriac]
+  DraftStoreChirho[(recordPageDraftsChirho: segments and the page's draft marker in one transaction)]
+  RecallChirho[draft-recall-chirho.ts: flag recall against reviewed spans and words on the working set]
   ReadChirho[planned: measured machine reading, L.J. picks reader and order]
   LoadChirho[planned: per-volume D1 SQL and R2 upload, each load on L.J.'s go-ahead]
 
@@ -39,7 +44,12 @@ flowchart TD
   StopChirho -- no, more pages --> PoolChirho
   StopChirho -- yes or queue empty --> RunEndChirho
   RunEndChirho --> InventoryChirho --> MontageChirho
-  MontageChirho -. later phases .-> DraftsChirho -.-> ReadChirho -.-> LoadChirho
+  MontageChirho --> DraftRunChirho --> DraftPagesChirho --> ClassifyChirho --> TileChirho --> DraftStoreChirho
+  RecallChirho -. sets the gap threshold .-> TileChirho
+  DraftStoreChirho -. later phases .-> ReadChirho -.-> LoadChirho
+  DoneChirho -. re-extraction drops the page's drafts .-> DraftPagesChirho
 ```
 
-Re-running is safe: an extracted page with its image on disk is skipped, a failed page is retried unless `--skip-failed` is given, and a page whose image went missing is redone from scratch.
+Re-running is safe: an extracted page with its image on disk is skipped, a failed page is retried unless `--skip-failed` is given, and a page whose image went missing is redone from scratch. Re-extracting a page deletes its draft segments (they cascade with its lines) and its draft marker, so drafts are always made from the page's current lines.
+
+Drafts are machine hints. A draft segment's text is the unverified machine text; "french" and "latin-non-french" tiles are what the classifier accepted, and every other tile is flagged for reading. Measured on the 46 working-set pages (known words empty, 80px gaps): Greek 220/220, Syriac 30/30 and Hebrew 577/582 reviewed spans flagged; the Hebrew misses are vol 1 words tesseract turned into Latin-looking tokens.

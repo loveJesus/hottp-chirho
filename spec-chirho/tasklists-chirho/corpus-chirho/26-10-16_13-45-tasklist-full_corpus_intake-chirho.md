@@ -65,6 +65,11 @@ The real cost driver is reading the non-French text on 5,335 pages, not hosting.
 ## Phase 2 — Draft segments
 
 - [x] First step: `classify-french-chirho.ts` reads `known_words_chirho` through `db-chirho.ts`, which opens the progress database for writing on import. Pass the known-word set in instead (loaded read-only), keeping the Pass C callers' behavior identical, so the intake can classify without touching that database. Done 2026-10-17 (row 2950): `classifyPageChirho(lines, knownWords)` plus `loadKnownWordsFromChirho(db, volume)` for any connection; both callers updated. Verdicts on 69 progress-database pages (32,415 words, 512 of them decided by known words) are byte-identical before and after.
+- [x] Draft segmenter and its measurement (row 2951). `draft-segments-chirho.ts` tiles each line by classifier verdict the way Pass C tiles spans, with an unknown tile over any gap wider than 80px (tesseract sometimes drops Hebrew entirely) and vol 5's font hints keeping Hebrew, Greek and Syriac. `draft-recall-chirho.ts` measures it on the 46 working-set pages against reviewed spans (vols 2-5) and reviewed word scripts (vol 1), with the known-word set empty because it was partly harvested from those pages:
+  - Greek 220/220, Syriac 30/30, Hebrew 577/582 reviewed spans flagged for reading; vols 2-4 flag 100% of their non-Latin spans even without the gap rule.
+  - The 5 Hebrew misses are vol 1 words tesseract turned into Latin-looking tokens (`man`, `17`, `72`, `ATANA.`, `OM`). Symbols 114/146: most misses are vol 1 word labels that are really verse references, brackets or punctuation. Unknown 52/63: the misses are English and German quotations on vol 5 p149 that the reference marked unknown; the PDF layer reads them correctly.
+  - Flag precision is 28-57% on the scanned volumes, so readers will see many false "needs reading" flags; that is the safe direction for machine drafts.
+  - A second witness in Phase 3 (the v8 Hebrew CNN gate reached 97.5% recall on word crops) could catch the Latin-looking Hebrew misses.
 - [ ] Run the deterministic French classifier on every line. Unresolved candidate words become "needs reading" segments, with the machine text kept as an unverified hint and never as accepted text.
 - [ ] Vol 5: script hints and Unicode from the born-digital text layer, visually checked on a sample.
 

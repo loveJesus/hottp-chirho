@@ -11,7 +11,9 @@
 import { Database } from "bun:sqlite";
 import { dirname } from "path";
 
+import type { WordWithBboxChirho } from "../classify-french-chirho.ts";
 import { ensureDirChirho } from "../utils-chirho.ts";
+import { isLatinScriptChirho, type DraftSegmentChirho } from "./draft-segments-chirho.ts";
 import { pageKeyChirho } from "./intake-config-chirho.ts";
 import type { LineBboxChirho } from "./page-geometry-chirho.ts";
 
@@ -44,6 +46,8 @@ export function openIntakeDbChirho(pathChirho: string): Database {
   const dbChirho = new Database(pathChirho, { create: true });
   dbChirho.run("PRAGMA journal_mode = WAL");
   dbChirho.run("PRAGMA foreign_keys = ON");
+  // A second writer (drafts beside a running intake) waits instead of failing.
+  dbChirho.run("PRAGMA busy_timeout = 10000");
   dbChirho.run(`
     CREATE TABLE IF NOT EXISTS intake_runs_chirho (
       id_chirho INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -94,6 +98,41 @@ export function openIntakeDbChirho(pathChirho: string): Database {
       pdftotext_chirho TEXT NOT NULL,
       words_json_chirho TEXT NOT NULL,
       PRIMARY KEY (volume_number_chirho, page_number_chirho, line_index_chirho),
+      FOREIGN KEY (volume_number_chirho, page_number_chirho)
+        REFERENCES intake_pages_chirho(volume_number_chirho, page_number_chirho)
+        ON DELETE CASCADE
+    ) WITHOUT ROWID
+  `);
+  // Draft segments mirror D1 segments_chirho; pdftotext_chirho is the
+  // unverified machine text. They go when their line goes (re-extraction).
+  dbChirho.run(`
+    CREATE TABLE IF NOT EXISTS intake_segments_chirho (
+      volume_number_chirho INTEGER NOT NULL,
+      page_number_chirho INTEGER NOT NULL,
+      line_index_chirho INTEGER NOT NULL,
+      segment_index_chirho INTEGER NOT NULL,
+      word_start_index_chirho INTEGER,
+      word_end_index_chirho INTEGER,
+      x_min_px_chirho INTEGER NOT NULL,
+      width_px_chirho INTEGER NOT NULL,
+      script_type_chirho TEXT NOT NULL,
+      pdftotext_chirho TEXT NOT NULL,
+      draft_reason_chirho TEXT NOT NULL,
+      PRIMARY KEY (volume_number_chirho, page_number_chirho, line_index_chirho, segment_index_chirho),
+      FOREIGN KEY (volume_number_chirho, page_number_chirho, line_index_chirho)
+        REFERENCES intake_lines_chirho(volume_number_chirho, page_number_chirho, line_index_chirho)
+        ON DELETE CASCADE
+    ) WITHOUT ROWID
+  `);
+  dbChirho.run(`
+    CREATE TABLE IF NOT EXISTS intake_page_drafts_chirho (
+      volume_number_chirho INTEGER NOT NULL,
+      page_number_chirho INTEGER NOT NULL,
+      drafts_version_chirho INTEGER NOT NULL,
+      segment_count_chirho INTEGER NOT NULL,
+      flagged_count_chirho INTEGER NOT NULL,
+      drafted_at_chirho TEXT NOT NULL,
+      PRIMARY KEY (volume_number_chirho, page_number_chirho),
       FOREIGN KEY (volume_number_chirho, page_number_chirho)
         REFERENCES intake_pages_chirho(volume_number_chirho, page_number_chirho)
         ON DELETE CASCADE
@@ -174,6 +213,10 @@ const UPSERT_PAGE_SQL_CHIRHO = `
 
 const DELETE_LINES_SQL_CHIRHO = `
   DELETE FROM intake_lines_chirho WHERE volume_number_chirho = ? AND page_number_chirho = ?`;
+// Lines cascade to their draft segments; the page's draft marker goes too, so
+// drafts are redone against the new lines.
+const DELETE_DRAFT_MARKER_SQL_CHIRHO = `
+  DELETE FROM intake_page_drafts_chirho WHERE volume_number_chirho = ? AND page_number_chirho = ?`;
 
 /** Replace a page's row and lines in one transaction. */
 export function recordPageDoneChirho(
@@ -189,6 +232,7 @@ export function recordPageDoneChirho(
   );
   dbChirho.transaction(() => {
     dbChirho.run(DELETE_LINES_SQL_CHIRHO, [rChirho.volumeNumberChirho, rChirho.pageNumberChirho]);
+    dbChirho.run(DELETE_DRAFT_MARKER_SQL_CHIRHO, [rChirho.volumeNumberChirho, rChirho.pageNumberChirho]);
     dbChirho.run(UPSERT_PAGE_SQL_CHIRHO, [
       rChirho.volumeNumberChirho,
       rChirho.pageNumberChirho,
@@ -234,6 +278,7 @@ export function recordPageFailedChirho(
 ): void {
   dbChirho.transaction(() => {
     dbChirho.run(DELETE_LINES_SQL_CHIRHO, [volumeNumberChirho, pageNumberChirho]);
+    dbChirho.run(DELETE_DRAFT_MARKER_SQL_CHIRHO, [volumeNumberChirho, pageNumberChirho]);
     dbChirho.run(UPSERT_PAGE_SQL_CHIRHO, [
       volumeNumberChirho,
       pageNumberChirho,
@@ -290,4 +335,100 @@ export function failedPageKeysChirho(dbChirho: Database): Set<string> {
     )
     .all(PAGE_FAILED_STATUS_CHIRHO) as Array<{ volume_number_chirho: number; page_number_chirho: number }>;
   return new Set(rowsChirho.map((rChirho) => pageKeyChirho(rChirho.volume_number_chirho, rChirho.page_number_chirho)));
+}
+
+export interface DraftPageLineChirho {
+  lineIndexChirho: number;
+  xMinChirho: number;
+  widthChirho: number;
+  wordsChirho: WordWithBboxChirho[];
+}
+
+/** Extracted pages without drafts from the current drafting code. */
+export function pagesNeedingDraftsChirho(
+  dbChirho: Database,
+  draftsVersionChirho: number,
+  volumesChirho: number[]
+): Array<{ volumeNumberChirho: number; pageNumberChirho: number }> {
+  const rowsChirho = dbChirho
+    .query(
+      `SELECT p.volume_number_chirho, p.page_number_chirho
+         FROM intake_pages_chirho p
+         LEFT JOIN intake_page_drafts_chirho d
+           ON d.volume_number_chirho = p.volume_number_chirho AND d.page_number_chirho = p.page_number_chirho
+        WHERE p.status_chirho = ? AND (d.drafts_version_chirho IS NULL OR d.drafts_version_chirho != ?)
+        ORDER BY 1, 2`
+    )
+    .all(PAGE_DONE_STATUS_CHIRHO, draftsVersionChirho) as Array<{ volume_number_chirho: number; page_number_chirho: number }>;
+  return rowsChirho
+    .filter((rChirho) => volumesChirho.includes(rChirho.volume_number_chirho))
+    .map((rChirho) => ({ volumeNumberChirho: rChirho.volume_number_chirho, pageNumberChirho: rChirho.page_number_chirho }));
+}
+
+export function pageLinesForDraftsChirho(
+  dbChirho: Database,
+  volumeNumberChirho: number,
+  pageNumberChirho: number
+): DraftPageLineChirho[] {
+  const rowsChirho = dbChirho
+    .query(
+      `SELECT line_index_chirho, x_min_chirho, width_chirho, words_json_chirho FROM intake_lines_chirho
+        WHERE volume_number_chirho = ? AND page_number_chirho = ? ORDER BY line_index_chirho`
+    )
+    .all(volumeNumberChirho, pageNumberChirho) as Array<{
+    line_index_chirho: number;
+    x_min_chirho: number;
+    width_chirho: number;
+    words_json_chirho: string;
+  }>;
+  return rowsChirho.map((rChirho) => ({
+    lineIndexChirho: rChirho.line_index_chirho,
+    xMinChirho: rChirho.x_min_chirho,
+    widthChirho: rChirho.width_chirho,
+    wordsChirho: JSON.parse(rChirho.words_json_chirho) as WordWithBboxChirho[],
+  }));
+}
+
+/** Replace a page's draft segments and mark it drafted, in one transaction. */
+export function recordPageDraftsChirho(
+  dbChirho: Database,
+  volumeNumberChirho: number,
+  pageNumberChirho: number,
+  draftsVersionChirho: number,
+  linesChirho: Array<{ lineIndexChirho: number; segmentsChirho: DraftSegmentChirho[] }>
+): { segmentCountChirho: number; flaggedCountChirho: number } {
+  const insertChirho = dbChirho.prepare(
+    `INSERT INTO intake_segments_chirho
+       (volume_number_chirho, page_number_chirho, line_index_chirho, segment_index_chirho,
+        word_start_index_chirho, word_end_index_chirho, x_min_px_chirho, width_px_chirho,
+        script_type_chirho, pdftotext_chirho, draft_reason_chirho)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+  );
+  let segmentCountChirho = 0;
+  let flaggedCountChirho = 0;
+  dbChirho.transaction(() => {
+    dbChirho.run(
+      `DELETE FROM intake_segments_chirho WHERE volume_number_chirho = ? AND page_number_chirho = ?`,
+      [volumeNumberChirho, pageNumberChirho]
+    );
+    for (const lChirho of linesChirho) {
+      for (const gChirho of lChirho.segmentsChirho) {
+        insertChirho.run(
+          volumeNumberChirho, pageNumberChirho, lChirho.lineIndexChirho, gChirho.segmentIndexChirho,
+          gChirho.wordStartIndexChirho, gChirho.wordEndIndexChirho, gChirho.xMinPxChirho, gChirho.widthPxChirho,
+          gChirho.scriptChirho, gChirho.machineTextChirho, gChirho.reasonChirho
+        );
+        segmentCountChirho++;
+        if (!isLatinScriptChirho(gChirho.scriptChirho)) flaggedCountChirho++;
+      }
+    }
+    dbChirho.run(
+      `INSERT OR REPLACE INTO intake_page_drafts_chirho
+         (volume_number_chirho, page_number_chirho, drafts_version_chirho, segment_count_chirho,
+          flagged_count_chirho, drafted_at_chirho)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [volumeNumberChirho, pageNumberChirho, draftsVersionChirho, segmentCountChirho, flaggedCountChirho, new Date().toISOString()]
+    );
+  })();
+  return { segmentCountChirho, flaggedCountChirho };
 }
