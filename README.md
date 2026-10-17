@@ -61,10 +61,10 @@ flowchart TD
     VPS / Local -- "Static Export & Sync" --> Cloudflare Edge
 ```
 
-1. **Public Reader (`hottp-chirho.bible.systems`)**:
-   - Built with **SvelteKit 2** + `@sveltejs/adapter-cloudflare`.
-   - Served via Cloudflare Pages, backed by **Cloudflare D1** (`hottp-d1-chirho`) for index-served metadata and **Cloudflare R2** (`hottp-chirho`) for page facsimile and segment crop images.
-   - Read-only, highly cached, low-latency reader interface for end users.
+1. **Reader (`hottp-chirho.bible.systems`)**:
+   - Built with **SvelteKit 2** + `@sveltejs/adapter-cloudflare`, deployed as the Cloudflare Worker `hottp-chirho` (`app-chirho/wrangler-chirho.toml`).
+   - Backed by **Cloudflare D1** (`hottp-d1-chirho`) for pages, lines, segments and review events, and **Cloudflare R2** (`hottp-chirho`) for page facsimiles.
+   - Reading is open today; saving a reading requires reviewer sign-in. It holds the 46-page certified working set; the full-corpus intake (`src-chirho/corpus-intake-chirho/`) prepares the other pages locally.
 
 2. **Authoring & Human Review Stations**:
    - Powered by lightweight, ultra-fast **Bun** HTTP servers bound strictly to `127.0.0.1`.
@@ -104,9 +104,8 @@ The authoring environment provides dedicated browser stations for distinct revie
 
 ### Prerequisites
 
-* **Bun** (`>= 1.1.0`)
-* **Node.js** (`>= 20`) & `npm`
-* System utilities: `rsync`, `pdftotext`, `pdftoppm` (poppler-utils)
+* **Bun**, the exact version in `.bun-version` (checked by `bun run check-bun-version-chirho`). No Node.js or npm.
+* System utilities: `rsync`; poppler (`pdftotext`, `pdftoppm`, `pdftohtml`, `pdfinfo`); `tesseract` with the tessdata-best models in `workspace-chirho/tessdata-best-chirho/`; ImageMagick 7 (`magick`); `hunspell` with the `fr`, `en_US`, `en_GB`, `de_DE` and `la` dictionaries
 
 ### Installation
 
@@ -116,11 +115,11 @@ git clone https://github.com/loveJesus/hottp-chirho.git
 cd hottp-chirho
 
 # Install dependencies for the pipeline & authoring tools
-bun install
+bun install --frozen-lockfile
 
 # Install dependencies for the SvelteKit Cloudflare reader app
 cd app-chirho
-npm install
+bun install --frozen-lockfile
 cd ..
 ```
 
@@ -174,16 +173,30 @@ bun run crop-chirho
 bun run export-markdown-chirho
 ```
 
+### Full-Corpus Intake (local only)
+
+```bash
+# Plan without writing anything
+bun src-chirho/corpus-intake-chirho/intake-runner-chirho.ts --all --dry-run
+
+# Render and line-box every page outside the working set (resumable)
+bun src-chirho/corpus-intake-chirho/intake-runner-chirho.ts --all
+
+# Per-volume inventory and a line-box contact sheet
+bun src-chirho/corpus-intake-chirho/intake-inventory-chirho.ts
+bun src-chirho/corpus-intake-chirho/intake-montage-chirho.ts --vol=2
+```
+
 ### Reader Web App (`app-chirho`)
 
 ```bash
 cd app-chirho
 
 # Start local SvelteKit dev server
-npm run dev
+bun run dev
 
-# Build production bundle for Cloudflare Pages / Workers
-npm run build
+# Build the Cloudflare Worker bundle
+bun run build
 ```
 
 ---
@@ -194,10 +207,10 @@ npm run build
 hottp-chirho/
 ├── AGENTS.md / CLAUDE.md       # Agent operational guidance and style rules
 ├── package.json                # Pipeline and guard scripts
-├── tsconfig-certification.json # TypeScript configuration for certification modules
+├── tsconfig-certification-chirho.json # TypeScript configuration for certification modules
 ├── app-chirho/                 # SvelteKit 2 Cloudflare reader web application
 │   ├── src/                    # Components, routes, and D1 database integration
-│   └── wrangler.json           # Cloudflare Pages / D1 / R2 configuration
+│   └── wrangler-chirho.toml    # Worker, D1, R2 and rate-limit bindings
 ├── backups-chirho/             # Local backup snapshots & quarantined VPS database pulls
 ├── spec-chirho/                # Project specifications, tasklists, & database
 │   ├── progress-chirho.sqlite  # Local SQLite database (tracking, validation, spans)
@@ -205,6 +218,7 @@ hottp-chirho/
 │   ├── workflows-chirho/       # Mermaid process workflow diagrams
 │   └── reviewer-deployment-chirho/ # VPS deployment templates, Caddyfiles, and runbooks
 ├── src-chirho/                 # Core Bun/TypeScript pipeline, servers, & guard scripts
+│   ├── corpus-intake-chirho/                      # Full-corpus intake: Pass A for every page, locally
 │   ├── pass-c-human-validate-server-chirho.ts     # Port 8766 Raw Hebrew server
 │   ├── latin-symbol-vision-review-server-chirho.ts# Port 8770 Latin/Symbol server
 │   ├── vision-tier-expert-review-server-chirho.ts # Port 8771 Expert server
@@ -226,4 +240,4 @@ All source files in this repository carry the John 3:16 header and `chirho` iden
 
 ## 📜 License
 
-Private repository. All rights reserved.
+All rights reserved. The repository is public, but no license is granted.
