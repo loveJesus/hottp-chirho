@@ -51,7 +51,13 @@ The real cost driver is reading the non-French text on 5,335 pages, not hosting.
 
 ## Phase 1 — Pass A for every page, locally
 
-- [ ] Intake runner: resumable, bounded parallelism, idempotent per page. It refuses to touch the 46 working-set pages or any page with reviewer events.
+- [x] Intake runner: resumable, bounded parallelism, idempotent per page. It refuses to touch the 46 working-set pages or any page with reviewer events. Built 2026-10-17 (row 2949) in `src-chirho/corpus-intake-chirho/`; workflow in `spec-chirho/workflows-chirho/corpus-chirho/corpus-intake-workflow-chirho.md`.
+  - Protection is the 46-page working set plus any page the progress database shows events, segments or human-confirmed words on, read-only; a missing progress database fails closed. Dry run: 5,335 PDF pages, 46 protected, no extra protected pages, 5,289 targets.
+  - The intake writes only its own SQLite (`workspace-chirho/corpus-intake-chirho/intake-chirho.sqlite`) and page images (`pages-chirho/vol-N-chirho/0100-chirho/page-0123-chirho.png`). Each page's row and lines are replaced in one transaction; a page whose boxes fall off its image is refused; pages from older geometry code (`GEOMETRY_VERSION_CHIRHO`) are redone.
+  - Pass A geometry moved out of `pass1-extract-lines-chirho.ts` into `corpus-intake-chirho/page-geometry-chirho.ts`, so the working-set tool and the intake share one copy.
+  - 11 tests / 84 assertions (`bun test src-chirho/corpus-intake-chirho/`); typecheck `bunx tsc --noEmit --project src-chirho/corpus-intake-chirho/tsconfig-chirho.json` clean, pass1 included.
+  - Trial, 9 workers: vol 2 pp. 200-217 in 11.9 s (1.5 pages/s, about 5.4 CPU-seconds a page); vol 5 pp. 200-217 at 14 pages/s.
+- [x] Found by the montage check and fixed: vol 5 line boxes came out 1.5 times too large. pdftohtml's XML units are points times its default zoom of 1.5 (confirmed byte-identical to `-zoom 1.5`), but Pass A scaled them by 300/72 as if they were points. The scale is now 300/(72 x 1.5), with the zoom passed explicitly. The working set's vol 5 rows keep the old scale; the reader (`coordinate-space-chirho.ts`) and `read_volume_page_chirho.py` already rescale only boxes that overflow the image, so correct boxes display as they are.
 - [ ] Inventory report per volume: pages, lines, blank or plate pages, failures, wall time and disk use.
 - [ ] Eyeball a montage of every volume's line boxes: front matter, body, indexes.
 

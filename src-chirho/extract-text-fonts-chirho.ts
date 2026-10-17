@@ -79,6 +79,13 @@ interface RawTextBlockChirho {
   textChirho: string;
 }
 
+/**
+ * pdftohtml's XML units are PDF points times this zoom. 1.5 is Poppler's
+ * default (an A4 page comes out 892x1263); passing it explicitly keeps the
+ * unit contract from drifting with a Poppler upgrade.
+ */
+export const PDFTOHTML_ZOOM_CHIRHO = 1.5;
+
 /** Run pdftohtml -xml -fontfullname for one page; return XML string. */
 async function pdftohtmlXmlChirho(
   volumeNumberChirho: number,
@@ -94,6 +101,7 @@ async function pdftohtmlXmlChirho(
       "-l", String(pageNumberChirho),
       "-xml",
       "-fontfullname",
+      "-zoom", String(PDFTOHTML_ZOOM_CHIRHO),
       "-i",
       "-q",
       pdfChirho,
@@ -149,8 +157,10 @@ function parsePdftohtmlXmlChirho(xmlChirho: string): {
  *   - Non-Latin blocks remain as opaque runs (merge with adjacent same-script
  *     neighbours within ~30 px gap).
  *
- * `dpiScaleChirho` converts pdftohtml's units (pixels at 72 DPI) to the
- * render-DPI pixel space of our line crops.
+ * `dpiScaleChirho` converts pdftohtml's units (PDF points times
+ * PDFTOHTML_ZOOM_CHIRHO) to the render-DPI pixel space of our line crops.
+ * Line grouping works in raw pdftohtml units, so the scale changes output
+ * coordinates only.
  */
 export function blocksToLinesChirho(
   blocksChirho: RawTextBlockChirho[],
