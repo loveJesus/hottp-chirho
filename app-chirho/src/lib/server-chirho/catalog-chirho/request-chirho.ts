@@ -13,7 +13,7 @@ function pageNumberChirho(valueChirho: string | null, nameChirho: string): numbe
   }
   return Number(valueChirho);
 }
-function singleParamChirho(paramsChirho: URLSearchParams, nameChirho: string): string | null {
+export function singleParamChirho(paramsChirho: URLSearchParams, nameChirho: string): string | null {
   if (paramsChirho.getAll(nameChirho).length > 1) error(400, `Use ${nameChirho} only once.`);
   return paramsChirho.get(nameChirho);
 }

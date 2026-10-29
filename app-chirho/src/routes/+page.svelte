@@ -19,6 +19,17 @@
     Pilot review of non-French apparatus (Hebrew · Greek · Syriac · Latin) extracted across the 5-volume series.
   </p>
 
+  <!-- Workflow: page-reading-workflow-chirho.md. GET navigation never changes readings. -->
+  <form class="find-form-chirho" method="GET" action="/find-chirho">
+    <label for="home-find-chirho">Find a reading</label>
+    <div class="find-fields-chirho">
+      <input id="home-find-chirho" name="q-chirho" type="text" maxlength="80" required
+        placeholder="Isaiah 8:12 · Ps 22 · 3:151" aria-describedby="home-find-help-chirho" />
+      <button type="submit">Find</button>
+    </div>
+    <small id="home-find-help-chirho">Biblical reference, or volume:PDF page.</small>
+  </form>
+
   <div class="volumes-grid-chirho">
     {#each data.volumesChirho as volChirho}
       {@const progressChirho = volChirho.totalPagesChirho > 0
@@ -82,6 +93,55 @@
   .intro-chirho {
     color: #999;
     margin-bottom: 2rem;
+  }
+
+  .find-form-chirho {
+    display: grid;
+    gap: 0.4rem;
+    margin-bottom: 2rem;
+  }
+
+  .find-form-chirho label {
+    font-size: 0.85rem;
+    color: #e0e0e0;
+  }
+
+  .find-fields-chirho {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .find-form-chirho input,
+  .find-form-chirho button {
+    font: inherit;
+    border: 1px solid #666680;
+    border-radius: 5px;
+    padding: 0.45rem 0.65rem;
+    background: #1a1a2e;
+    color: #e0e0e0;
+  }
+
+  .find-form-chirho input {
+    width: 18rem;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .find-form-chirho button {
+    cursor: pointer;
+    color: #e3c875;
+  }
+
+  .find-form-chirho small {
+    font-size: 0.75rem;
+    color: #b8b8c5;
+  }
+
+  .find-form-chirho input:focus-visible,
+  .find-form-chirho button:focus-visible {
+    outline: 3px solid #e3c875;
+    outline-offset: 3px;
   }
 
   .volumes-grid-chirho {
