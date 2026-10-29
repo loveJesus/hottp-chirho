@@ -22,11 +22,14 @@ certification or intake-path changes; nothing deployed.
 - [x] Unit tests (parser, labels, range-ordering facts) and a Miniflare D1 proof (seeded fixture,
       verse/chapter/book results, same-prefix chapter isolation, both caps refusing whole, page
       existence, EXPLAIN QUERY PLAN pinned to the partial covering index for every find query).
-- [x] Gates in the worktree: frozen install, svelte-check 0/0, lint, full reader unit suites,
-      build, D1 proof green.
-- [ ] Land on main, push with a secret scan of the pushed range, receipt (corpus item-117
+- [x] Gates in the worktree: frozen install, svelte-check 0/0 (524 files), full reader unit
+      suites (53 tests / 247 assertions), build, D1 proof green (6/6, plan-pinned; the DDL
+      mutation turns exactly the plan test red). This app has no lint script; check is the gate.
+      Rendered on a local wrangler worker with a fresh migrated + seeded D1 (never the protected
+      copy): home form, accented French query to match list, both redirect shapes, repeated-q 400.
+- [x] Land on main, push with a secret scan of the pushed range, receipt (corpus item-117
       annotation with the printed-folio evidence, workflow doc note, ledger close), completion
-      message in the room.
+      message in the room. Feature 713e485; receipt follows it.
 
 ## Printed-folio half, deliberately not taken
 

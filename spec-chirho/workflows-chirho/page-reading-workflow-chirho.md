@@ -179,6 +179,23 @@ The mobile transcription now grows with its controls while its text area keeps a
 
 Local development proof is recorded in `spec-chirho/tasklists-chirho/reader-chirho/26-09-19_16-15-tasklist-reader_navigation-chirho.md`. Navigation subsequently shipped on September 26; its hosted evidence is in `spec-chirho/page-reader-checks-chirho/navigation-chirho/release-2026-09-26-chirho.json`. Andrew's hands-on acceptance remains open.
 
+## Find a reading across the corpus, 2026-10-29 development
+
+`/find-chirho` (claude2, 713e485, row 2955) is a server-rendered GET page: a biblical reference
+(verse, chapter or book) lists the loaded pages whose canonically matched segments cite it, with
+per-page counts; `volume:page` redirects to that PDF page when loaded, otherwise to the volume
+window starting there. Book names normalize to the WLC loader's stored spellings ("2 Sam. 7,4"
+and "Psaumes 22,17" both resolve to II Samuel / Psalms; 'ez' is deliberately unmapped rather than
+guessing Ezekiel vs Ezra). The search reads `segments_chirho.canonical_reference_chirho` only —
+matched spans, not full text — and refuses whole past 600 segments or 48 pages, never truncating.
+Chapter ranges use the ["Book C:", "Book C;") ordering trick, so "Isaiah 81" never bleeds into
+"Isaiah 8". The paired partial covering index `catalog-chirho/reference-index-chirho.sql` is not
+applied to production; it belongs to the corpus plan's pre-deploy EXPLAIN gate, and
+`spec-chirho/page-reader-checks-chirho/find-chirho/find-d1-chirho.ts` pins every find query's
+local plan to it. Printed-folio jumping is NOT included: printed and PDF numbering differ (vol 3
+PDF p151 prints folio cxxvi), and the mapping is intake-side data work. GET navigation still
+changes no readings; this addition is not yet hosted.
+
 ### Earlier mobile viewport follow-up (deployed before navigation)
 
 The source scan stays in normal document flow on the stacked mobile layout. Sticky positioning previously overlaid the active textarea even though the page had no horizontal overflow. A real hosted viewport caught it; `proof-chirho/mobile-visibility-chirho.js` fails before the change and passes afterward at 320/390/700px by checking the element actually hit at the editor's center. Inspect the actual scrolled viewport as well as a top-reset full-page screenshot; a screenshot assembled across sticky positions is not proof that the active field is unobstructed. Source `9a55a22` is the final CSS follow-up to provenance source `2bb7d02`.
