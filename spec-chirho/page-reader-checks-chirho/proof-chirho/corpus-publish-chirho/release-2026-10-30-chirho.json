@@ -1,0 +1,456 @@
+{
+  "release_chirho": "full-corpus-2026-10-30-chirho",
+  "authority_chirho": "L.J. directly requested uploading the rest of the content, 2026-10-30.",
+  "urls_chirho": [
+    "https://hottp-chirho.bible.systems",
+    "https://hottp-chirho.lovejesus.workers.dev"
+  ],
+  "production_chirho": {
+    "verified_at_chirho": "2026-10-30T13:37:07.911Z",
+    "source_commit_chirho": "c371006",
+    "manifest_sha256_chirho": "9097abac406213122f21f0efc3d54e943e86758a75a211b4e8c7b34674b9493a",
+    "counts_chirho": [
+      {
+        "volume_number_chirho": 1,
+        "pages_chirho": 812,
+        "lines_chirho": 34605,
+        "segments_chirho": 108208
+      },
+      {
+        "volume_number_chirho": 2,
+        "pages_chirho": 1106,
+        "lines_chirho": 46823,
+        "segments_chirho": 127106
+      },
+      {
+        "volume_number_chirho": 3,
+        "pages_chirho": 1418,
+        "lines_chirho": 82610,
+        "segments_chirho": 238393
+      },
+      {
+        "volume_number_chirho": 4,
+        "pages_chirho": 990,
+        "lines_chirho": 37315,
+        "segments_chirho": 106192
+      },
+      {
+        "volume_number_chirho": 5,
+        "pages_chirho": 1009,
+        "lines_chirho": 32367,
+        "segments_chirho": 115556
+      }
+    ],
+    "new_corpus_chirho": [
+      {
+        "pages_chirho": 5289,
+        "promoted_chirho": 0
+      },
+      {
+        "lines_chirho": 232644,
+        "promoted_chirho": 0
+      },
+      {
+        "segments_chirho": 693530,
+        "zero_width_chirho": 186,
+        "promoted_chirho": 0
+      }
+    ],
+    "images_chirho": [
+      {
+        "volume_chirho": 1,
+        "images_chirho": 812,
+        "bytes_chirho": 386321237
+      },
+      {
+        "volume_chirho": 2,
+        "images_chirho": 1106,
+        "bytes_chirho": 441582739
+      },
+      {
+        "volume_chirho": 3,
+        "images_chirho": 1418,
+        "bytes_chirho": 710368376
+      },
+      {
+        "volume_chirho": 4,
+        "images_chirho": 990,
+        "bytes_chirho": 355681524
+      },
+      {
+        "volume_chirho": 5,
+        "images_chirho": 1009,
+        "bytes_chirho": 488810213
+      }
+    ],
+    "protected_tables_chirho": [
+      {
+        "table_chirho": "d1_migrations",
+        "rows_chirho": 14,
+        "sha256_chirho": "97a43fff31b70b1f15898ee5fb6990904a244d166ea5645d2a98e497c0743044"
+      },
+      {
+        "table_chirho": "events_chirho",
+        "rows_chirho": 237,
+        "sha256_chirho": "625f6d101832e514cda8fa39f0c7a60325abe2af58e98c57e0a8560c39b8699a"
+      },
+      {
+        "table_chirho": "known_words_chirho",
+        "rows_chirho": 275,
+        "sha256_chirho": "6a8530f9a0f10c6569e6a76b844330be0f15c32ff2c8e4d9be6d180fbbd52fec"
+      },
+      {
+        "table_chirho": "ocr_suggestions_chirho",
+        "rows_chirho": 67,
+        "sha256_chirho": "c7914564447a997cf621e597f884add650c523b8950601b01eade15c8348baa2"
+      },
+      {
+        "table_chirho": "page_snapshots_chirho",
+        "rows_chirho": 25,
+        "sha256_chirho": "5d3861128caa3637796bdd34c1507742049aabc619f622539a786cf1ebb4c1ef"
+      },
+      {
+        "table_chirho": "pages_chirho",
+        "rows_chirho": 46,
+        "sha256_chirho": "a11531ad1645e15fa3e1bd7c3c37588329a671819eab5bc2798977f2f41fa117"
+      },
+      {
+        "table_chirho": "reviews_chirho",
+        "rows_chirho": 0,
+        "sha256_chirho": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table_chirho": "scanlines_chirho",
+        "rows_chirho": 1076,
+        "sha256_chirho": "e30960b0fe87892a4b55eebf00f91556a5fa557760484e4263ae5819fa5e6add"
+      },
+      {
+        "table_chirho": "segments_chirho",
+        "rows_chirho": 1925,
+        "sha256_chirho": "c32def70f36a296dd2faa4e3a53da65f5eb7c3cf7bd0c9779cd11285ca5f72b9"
+      },
+      {
+        "table_chirho": "snippets_chirho",
+        "rows_chirho": 0,
+        "sha256_chirho": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table_chirho": "volume_profiles_chirho",
+        "rows_chirho": 0,
+        "sha256_chirho": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table_chirho": "words_chirho",
+        "rows_chirho": 11938,
+        "sha256_chirho": "e270a3e32b35c0c6add22397f796d6d2837c54016c5be49d36604539ee233099"
+      }
+    ],
+    "unrelated_table_counts_unchanged_chirho": true,
+    "witness_sha256_chirho": "3c9ab06d0305035305b9f525307b600e22ea9f07554e959cb8aa2acca3827d40",
+    "d1_file_bytes_chirho": 141012992,
+    "active_deployment_chirho": "4854cb25-4ca5-4563-9573-9649cd767990",
+    "active_versions_chirho": [
+      {
+        "version_id": "2ed6b14d-df2d-46fa-9dfa-c382a08491dc",
+        "percentage": 100
+      }
+    ],
+    "scope_chirho": "Complete page scans; new text remains machine drafts. No certification, model, reviewer-event or station changes.",
+    "limitations_chirho": [
+      "OCR is unverified, including vol-5 legacy-font text.",
+      "186 zero-width draft fragments have no confirmable box.",
+      "21 pre-existing vol-5 pilot pages (50-70) have scans and stored French text but no reader scanlines; preserved unchanged.",
+      "Biblical-reference coverage and printed-folio mapping are not completed by uploading scans."
+    ]
+  },
+  "remote_transaction_chirho": {
+    "verified_at_chirho": "2026-10-30T13:19:15.305Z",
+    "database_chirho": "96d4178e-f7b0-471a-bcc8-a67438494d6c",
+    "deleted_disposable_database_chirho": true,
+    "copied_production_ddl_chirho": true,
+    "rollback_chirho": {
+      "pages_chirho": 0,
+      "lines_chirho": 0,
+      "segments_chirho": 0
+    },
+    "duplicate_refused_chirho": true,
+    "clean_retry_chirho": {
+      "pages_chirho": 1,
+      "lines_chirho": 1,
+      "segments_chirho": 1,
+      "trusted_chirho": 0
+    }
+  },
+  "r2_conditional_chirho": {
+    "key_chirho": "vol-1-chirho/page-0001-chirho/full-page-chirho.png",
+    "repeated_upload_reconciles_chirho": true,
+    "different_content_refused_chirho": true,
+    "etag_chirho": "\"dac18dbdbc8b0ae19d7e0776c32a4eeb\"",
+    "last_modified_unchanged_chirho": "2026-10-30T13:22:28.000Z",
+    "verified_at_chirho": "2026-10-30T13:28:52.702Z"
+  },
+  "volumes_chirho": [
+    {
+      "volume_chirho": 1,
+      "completed_at_chirho": "2026-10-30T13:24:14.503Z",
+      "inserted_pages_chirho": 807,
+      "payloads_verified_chirho": 807,
+      "image_hashes_verified_chirho": 807
+    },
+    {
+      "volume_chirho": 2,
+      "completed_at_chirho": "2026-10-30T13:27:01.996Z",
+      "inserted_pages_chirho": 1101,
+      "payloads_verified_chirho": 1101,
+      "image_hashes_verified_chirho": 1101
+    },
+    {
+      "volume_chirho": 3,
+      "completed_at_chirho": "2026-10-30T13:30:57.665Z",
+      "inserted_pages_chirho": 1413,
+      "payloads_verified_chirho": 1413,
+      "image_hashes_verified_chirho": 1413
+    },
+    {
+      "volume_chirho": 4,
+      "completed_at_chirho": "2026-10-30T13:34:01.144Z",
+      "inserted_pages_chirho": 985,
+      "payloads_verified_chirho": 985,
+      "image_hashes_verified_chirho": 985
+    },
+    {
+      "volume_chirho": 5,
+      "completed_at_chirho": "2026-10-30T13:36:32.832Z",
+      "inserted_pages_chirho": 983,
+      "payloads_verified_chirho": 983,
+      "image_hashes_verified_chirho": 983
+    }
+  ],
+  "browser_chirho": {
+    "verified_at_chirho": "2026-10-30T13:37:06.146Z",
+    "assertions_chirho": 68,
+    "checks_chirho": [
+      "New corpus images require the password",
+      "Dashboard shows all 5335 pages in five volumes",
+      "Page 1:1 loads privately",
+      "Scan 1:1 decoded",
+      "New page 1:1 is not human-confirmed",
+      "Selection 1:1 remains unverified",
+      "Page 1:400 loads privately",
+      "Scan 1:400 decoded",
+      "New page 1:400 is not human-confirmed",
+      "Selection 1:400 remains unverified",
+      "Page 1:812 loads privately",
+      "Scan 1:812 decoded",
+      "New page 1:812 is not human-confirmed",
+      "Selection 1:812 remains unverified",
+      "Page 2:1 loads privately",
+      "Scan 2:1 decoded",
+      "New page 2:1 is not human-confirmed",
+      "Selection 2:1 remains unverified",
+      "Page 2:600 loads privately",
+      "Scan 2:600 decoded",
+      "New page 2:600 is not human-confirmed",
+      "Selection 2:600 remains unverified",
+      "Page 2:1106 loads privately",
+      "Scan 2:1106 decoded",
+      "New page 2:1106 is not human-confirmed",
+      "Selection 2:1106 remains unverified",
+      "Page 3:1 loads privately",
+      "Scan 3:1 decoded",
+      "New page 3:1 is not human-confirmed",
+      "Selection 3:1 remains unverified",
+      "Page 3:1061 loads privately",
+      "Scan 3:1061 decoded",
+      "New page 3:1061 is not human-confirmed",
+      "Selection 3:1061 remains unverified",
+      "Page 3:1418 loads privately",
+      "Scan 3:1418 decoded",
+      "New page 3:1418 is not human-confirmed",
+      "Selection 3:1418 remains unverified",
+      "Page 4:1 loads privately",
+      "Scan 4:1 decoded",
+      "New page 4:1 is not human-confirmed",
+      "Selection 4:1 remains unverified",
+      "Page 4:500 loads privately",
+      "Scan 4:500 decoded",
+      "New page 4:500 is not human-confirmed",
+      "Selection 4:500 remains unverified",
+      "Page 4:990 loads privately",
+      "Scan 4:990 decoded",
+      "New page 4:990 is not human-confirmed",
+      "Selection 4:990 remains unverified",
+      "Page 5:1 loads privately",
+      "Scan 5:1 decoded",
+      "New page 5:1 is not human-confirmed",
+      "Selection 5:1 remains unverified",
+      "Page 5:500 loads privately",
+      "Scan 5:500 decoded",
+      "New page 5:500 is not human-confirmed",
+      "Selection 5:500 remains unverified",
+      "Page 5:1009 loads privately",
+      "Scan 5:1009 decoded",
+      "New page 5:1009 is not human-confirmed",
+      "Selection 5:1009 remains unverified",
+      "Loaded vol-5 page fits mobile viewport",
+      "PDF-page jump resolves a newly loaded page",
+      "Deep catalog window loads after full corpus ingestion",
+      "New page exports only as a scoped unverified reading",
+      "workers.dev does not bypass the password",
+      "Zero browser runtime errors"
+    ],
+    "pages_chirho": [
+      {
+        "volume_chirho": 1,
+        "page_chirho": 1,
+        "lines_chirho": 18,
+        "width_chirho": 1893,
+        "height_chirho": 3032
+      },
+      {
+        "volume_chirho": 1,
+        "page_chirho": 400,
+        "lines_chirho": 41,
+        "width_chirho": 1443,
+        "height_chirho": 2417
+      },
+      {
+        "volume_chirho": 1,
+        "page_chirho": 812,
+        "lines_chirho": 22,
+        "width_chirho": 1539,
+        "height_chirho": 2563
+      },
+      {
+        "volume_chirho": 2,
+        "page_chirho": 1,
+        "lines_chirho": 18,
+        "width_chirho": 1893,
+        "height_chirho": 3032
+      },
+      {
+        "volume_chirho": 2,
+        "page_chirho": 600,
+        "lines_chirho": 40,
+        "width_chirho": 1546,
+        "height_chirho": 2518
+      },
+      {
+        "volume_chirho": 2,
+        "page_chirho": 1106,
+        "lines_chirho": 14,
+        "width_chirho": 1433,
+        "height_chirho": 2339
+      },
+      {
+        "volume_chirho": 3,
+        "page_chirho": 1,
+        "lines_chirho": 18,
+        "width_chirho": 1893,
+        "height_chirho": 3032
+      },
+      {
+        "volume_chirho": 3,
+        "page_chirho": 1061,
+        "lines_chirho": 55,
+        "width_chirho": 1665,
+        "height_chirho": 2552
+      },
+      {
+        "volume_chirho": 3,
+        "page_chirho": 1418,
+        "lines_chirho": 30,
+        "width_chirho": 1548,
+        "height_chirho": 2488
+      },
+      {
+        "volume_chirho": 4,
+        "page_chirho": 1,
+        "lines_chirho": 17,
+        "width_chirho": 1893,
+        "height_chirho": 3032
+      },
+      {
+        "volume_chirho": 4,
+        "page_chirho": 500,
+        "lines_chirho": 39,
+        "width_chirho": 1446,
+        "height_chirho": 2571
+      },
+      {
+        "volume_chirho": 4,
+        "page_chirho": 990,
+        "lines_chirho": 24,
+        "width_chirho": 1432,
+        "height_chirho": 2499
+      },
+      {
+        "volume_chirho": 5,
+        "page_chirho": 1,
+        "lines_chirho": 17,
+        "width_chirho": 2481,
+        "height_chirho": 3508
+      },
+      {
+        "volume_chirho": 5,
+        "page_chirho": 500,
+        "lines_chirho": 34,
+        "width_chirho": 2480,
+        "height_chirho": 3509
+      },
+      {
+        "volume_chirho": 5,
+        "page_chirho": 1009,
+        "lines_chirho": 18,
+        "width_chirho": 1831,
+        "height_chirho": 2717
+      }
+    ],
+    "errors_chirho": [],
+    "successful_content_writes_chirho": 0
+  },
+  "tests_chirho": {
+    "unit_tests_passed_chirho": 79,
+    "unit_assertions_chirho": 402,
+    "intake_typescript_chirho": "pass",
+    "svelte_errors_chirho": 0,
+    "svelte_warnings_chirho": 0,
+    "source_secret_scan_chirho": "c371006 range: no leaks",
+    "visual_samples_inspected_chirho": [
+      {
+        "volume_chirho": 1,
+        "page_chirho": 400
+      },
+      {
+        "volume_chirho": 2,
+        "page_chirho": 600
+      },
+      {
+        "volume_chirho": 3,
+        "page_chirho": 1061
+      },
+      {
+        "volume_chirho": 4,
+        "page_chirho": 500
+      },
+      {
+        "volume_chirho": 5,
+        "page_chirho": 500
+      }
+    ]
+  },
+  "hosting_chirho": {
+    "new_plan_or_service_chirho": false,
+    "added_image_bytes_chirho": 2361659706,
+    "added_book_rows_chirho": 931463,
+    "ai_api_calls_chirho": 0,
+    "notes_chirho": "Existing Worker/D1/R2 only; no change to hosting subscriptions. Shared-account usage allowances and the final bill were not measured here."
+  },
+  "recovery_chirho": {
+    "volume_one_repeat_verified_pages_chirho": 807,
+    "volume_one_repeat_inserted_pages_chirho": 0,
+    "private_recovery_dir_chirho": "workspace-chirho/corpus-intake-chirho/publish-chirho/2026-10-30-chirho/",
+    "schema_changed_chirho": false,
+    "worker_code_redeployed_chirho": false
+  }
+}

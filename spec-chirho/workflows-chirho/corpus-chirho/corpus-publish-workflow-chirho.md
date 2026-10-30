@@ -23,7 +23,7 @@ flowchart TD
   ReconcileChirho -->|Different or reviewed page| StopChirho
 ```
 
-Entry point: `bun src-chirho/corpus-intake-chirho/publish-chirho/run-chirho.ts prepare-chirho`, then `apply-chirho 1` through `apply-chirho 5`; `verify-chirho N` performs no book writes. Run from the project root so Bun reads the ignored credential store. Production database and bucket identities are fixed in the Cloudflare adapter. No credentials appear in manifests or public receipts.
+Entry point: `bun src-chirho/corpus-intake-chirho/publish-chirho/run-chirho.ts prepare-chirho`, then `apply-chirho 1` through `apply-chirho 5`; `verify-chirho N` performs no book writes. `bun src-chirho/corpus-intake-chirho/publish-chirho/final-proof-chirho.ts` independently repeats the full-corpus counts, trust checks, original full-row hashes, unrelated-table counts and complete image inventory after all volumes finish. Run from the project root so Bun reads the ignored credential store. Production database and bucket identities are fixed in the Cloudflare adapter. No credentials appear in manifests or public receipts.
 
 Each upload batch holds at most eight complete pages and 2 MiB of request JSON. Page, line and segment INSERTs must stay in one atomic REST batch. A duplicate page fails the entire batch through the existing unique volume/page index. No UPDATE, REPLACE, DELETE, copied local IDs, accepted text, word confirmations, snapshots, events, OCR suggestions or canonical references enter production. The remote proof deliberately fails late in a batch and checks that even its page INSERT rolled back. Unknown responses require remote reconciliation, not blind retries.
 
