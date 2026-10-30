@@ -2,5 +2,5 @@
 // Typecheck: bunx tsc --noEmit --project src-chirho/corpus-intake-chirho/tsconfig-chirho.json
 {
   "extends": "../../tsconfig.json",
-  "include": ["./*.ts", "../pass1-extract-lines-chirho.ts"]
+  "include": ["./*.ts", "./publish-chirho/*.ts", "../pass1-extract-lines-chirho.ts"]
 }
