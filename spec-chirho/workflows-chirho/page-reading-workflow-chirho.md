@@ -2,6 +2,30 @@
 
 # Side-by-side page reading Chirho
 
+## Current entrance, 2026-10-30
+
+L.J. chose one shared password to dissuade bots, replacing the proposed email-code entrance. Open the reader, enter the password, and work; the same eight-hour session allows reading, local drafting and ordinary shared-reviewer saves. The password and session signing key are server secrets. Changing either revokes existing cookies. Station credentials and approval tools remain separate.
+
+```mermaid
+flowchart TD
+  OpenChirho[Open a page or shared reading link] --> SessionChirho{Valid signed reader session?}
+  SessionChirho -->|no| PasswordChirho[One password field]
+  PasswordChirho --> LimitChirho[Bound request and limit attempts]
+  LimitChirho --> MatchChirho{Password matches server secret?}
+  MatchChirho -->|no| RetryChirho[Keep sign-in form; no session]
+  MatchChirho -->|yes| CookieChirho[HttpOnly Secure Strict cookie; eight hours]
+  CookieChirho --> ReturnChirho[Return to validated page, search and reading fragment]
+  SessionChirho -->|yes| ReaderChirho[Reader and existing source-match saves]
+  ReturnChirho --> ReaderChirho
+  ReaderChirho --> ActorChirho[Record shared-reviewer-chirho; no individual certification]
+```
+
+The decoded-route hook protects pages, Svelte page-data requests, R2 images, downloads and APIs on both hostnames. Browser page requests go to the password form; unauthenticated API requests return 401. Missing configuration fails closed. All reader responses use private/no-store and noindex headers; robots.txt disallows crawling. Older local browser scripts that assume anonymous reading or a username field describe the earlier releases; the password browser harness below supersedes that entrance.
+
+The sole external event-sync consumer sends HOTTP_SITE_PASSWORD_CHIRHO as a bearer for GET/HEAD of events-chirho only. That read path does not set a reviewer identity and cannot save or read other APIs. It continues to update only user-data-chirho.sqlite, outside canonical certification/training data.
+
+Proof: 56 unit tests / 271 assertions, 14 local D1 catalog/export/find tests, and 36 actual browser/HTTP checks, including a successful source-matching save in copied D1 and a rejected stale repeat. The password form is visually checked at desktop/mobile widths. Twelve actual catalog queries have passing read-only production EXPLAIN plans after the paired search index was installed (237 index rows written). Hosted publication and exact receipt live in `spec-chirho/tasklists-chirho/reader-chirho/26-10-30_08-00-tasklist-simple_password-chirho.md`.
+
 The default Svelte page route is the reading workspace. `?view-chirho=tools-chirho` retains the previous word/language tools for volumes 1-4, including their existing write contracts behind the common reviewer gate. Volume 5 stays in the full-page reader because its old line-image crops are incorrect. The raw Pass-C station is separate; its approval and certification gates are not replaced by this interface.
 
 ```mermaid

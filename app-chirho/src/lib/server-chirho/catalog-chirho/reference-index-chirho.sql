@@ -10,9 +10,9 @@
 -- state canonical_reference_chirho IS NOT NULL so SQLite accepts the partial
 -- index; scanline_id_chirho makes the segment side covering.
 --
--- NOT applied to production in this slice. Apply it with the Phase-5 pre-deploy
--- gate (corpus tasklist): confirm on production, read-only, that EXPLAIN QUERY
--- PLAN matches the local proof in
+-- Applied in the subsequent 2026-10-30 reader-password release. The Phase-5
+-- pre-deploy gate confirms on production, read-only, that EXPLAIN QUERY PLAN
+-- matches the local proof in
 -- spec-chirho/page-reader-checks-chirho/find-chirho/find-d1-chirho.ts before
 -- any full-corpus load. Without the index the queries stay correct but scan.
 CREATE INDEX IF NOT EXISTS idx_segments_canonical_reference_chirho

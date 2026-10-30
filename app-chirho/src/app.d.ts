@@ -8,8 +8,7 @@ declare global {
 			env: {
 				DB_CHIRHO: D1Database;
 				R2_CHIRHO: R2Bucket;
-				HOTTP_REVIEW_BASIC_AUTH_USER_CHIRHO?: string;
-				HOTTP_REVIEW_BASIC_AUTH_PASSWORD_CHIRHO?: string;
+				HOTTP_SITE_PASSWORD_CHIRHO?: string;
 				HOTTP_REVIEW_SESSION_SECRET_CHIRHO?: string;
 				REVIEW_LOGIN_LIMITER_CHIRHO?: { limit(optionsChirho: { key: string }): Promise<{ success: boolean }> };
 			};

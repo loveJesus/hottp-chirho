@@ -12,12 +12,12 @@ export const load: PageServerLoad = ({ locals, platform, url }) => ({
 export const actions: Actions = {
   loginChirho: async ({ request, platform, cookies, url }) => {
     const envChirho = platform?.env;
-    if (!configuredChirho(envChirho) || !envChirho.REVIEW_LOGIN_LIMITER_CHIRHO) return fail(503, { errorChirho: 'Reviewer sign-in is unavailable. Drafting remains available.' });
+    if (!configuredChirho(envChirho) || !envChirho.REVIEW_LOGIN_LIMITER_CHIRHO) return fail(503, { errorChirho: 'Reader access is temporarily unavailable.' });
     const allowedChirho = await envChirho.REVIEW_LOGIN_LIMITER_CHIRHO.limit({ key: request.headers.get('cf-connecting-ip') ?? 'local-chirho' });
     if (!allowedChirho.success) return fail(429, { errorChirho: 'Too many sign-in attempts. Wait a minute and try again.' });
     if (!request.headers.get('content-type')?.startsWith('application/x-www-form-urlencoded')) return fail(400, { errorChirho: 'Invalid sign-in form.' });
     const fieldsChirho = new URLSearchParams(await boundedTextChirho(request, 4096));
-    if (!await credentialsMatchChirho(fieldsChirho.get('user_chirho') ?? '', fieldsChirho.get('password_chirho') ?? '', envChirho)) return fail(401, { errorChirho: 'Sign-in details were not recognized.' });
+    if (fieldsChirho.getAll('password_chirho').length !== 1 || !await credentialsMatchChirho(fieldsChirho.get('password_chirho') ?? '', envChirho)) return fail(401, { errorChirho: 'That password was not recognized. Please try again.' });
     cookies.set(REVIEW_COOKIE_CHIRHO, await createSessionChirho(envChirho), {
       path: '/', httpOnly: true, sameSite: 'strict', secure: url.protocol === 'https:', maxAge: SESSION_SECONDS_CHIRHO,
     });

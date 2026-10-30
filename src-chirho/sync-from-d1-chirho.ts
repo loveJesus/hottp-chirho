@@ -77,10 +77,14 @@ function setCursorChirho(dbChirho: BunDbChirho, valueChirho: number): void {
 }
 
 async function fetchEventsChirho(sinceSeqChirho: number): Promise<RemoteEventChirho[]> {
+  // Workflow: page-reading-workflow-chirho.md. This bearer grants only event
+  // reads at the reader entrance; it never creates a reviewer write session.
+  const passwordChirho = process.env.HOTTP_SITE_PASSWORD_CHIRHO;
+  if (!passwordChirho) throw new Error("HOTTP_SITE_PASSWORD_CHIRHO is required for reader event sync.");
   const urlChirho = new URL("/api-chirho/events-chirho", APP_BASE_URL_CHIRHO);
   urlChirho.searchParams.set("since-seq-chirho", sinceSeqChirho.toString());
   urlChirho.searchParams.set("limit-chirho", BATCH_LIMIT_CHIRHO.toString());
-  const respChirho = await fetch(urlChirho.toString());
+  const respChirho = await fetch(urlChirho.toString(), { headers: { Authorization: `Bearer ${passwordChirho}` } });
   if (!respChirho.ok) throw new Error(`fetch events failed: ${respChirho.status} ${await respChirho.text()}`);
   const bodyChirho = (await respChirho.json()) as { eventsChirho: RemoteEventChirho[] };
   return bodyChirho.eventsChirho;

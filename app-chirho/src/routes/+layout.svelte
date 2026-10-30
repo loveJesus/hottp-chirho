@@ -20,7 +20,7 @@
     <nav class="nav-chirho">
       <a href="/" class="logo-chirho">HOTTP Barthélemy</a>
       <span class="subtitle-chirho">Critique textuelle de l'Ancien Testament</span>
-      <a href="/reviewer-chirho" class="reviewer-link-chirho">Reviewer sign-in</a>
+      <a href="/reviewer-chirho" class="reviewer-link-chirho">Reader access</a>
     </nav>
   </header>
 
