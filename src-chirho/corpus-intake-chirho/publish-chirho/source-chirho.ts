@@ -85,10 +85,20 @@ export function payloadChirho(dbChirho: Database, pageChirho: SourcePageChirho):
     line_index_chirho: number; x_min_chirho: number; y_min_chirho: number; width_chirho: number; height_chirho: number; pdftotext_chirho: string;
   }, number[]>('SELECT * FROM intake_lines_chirho WHERE volume_number_chirho=? AND page_number_chirho=? ORDER BY line_index_chirho').all(...argsChirho)
     .map(rowChirho => [rowChirho.line_index_chirho, rowChirho.x_min_chirho, rowChirho.y_min_chirho, rowChirho.width_chirho, rowChirho.height_chirho,
-      rowChirho.pdftotext_chirho.normalize('NFC'), countsChirho.get(rowChirho.line_index_chirho) ?? 0] as LineChirho)
-    .map(lineChirho => boundedLineChirho(lineChirho, pageChirho.image_width_chirho, pageChirho.image_height_chirho));
+      rowChirho.pdftotext_chirho.normalize('NFC'), countsChirho.get(rowChirho.line_index_chirho) ?? 0] as LineChirho);
   checkChirho(markerChirho?.drafts_version_chirho === 2 && markerChirho.segment_count_chirho === segmentsChirho.length && pageChirho.line_count_chirho === linesChirho.length, `Incomplete drafts ${pageKeyChirho(pageChirho)}`);
+  return geometryPayloadChirho({page_chirho: [pageChirho.volume_number_chirho, pageChirho.page_number_chirho, pageChirho.french_text_chirho.normalize('NFC'), imageKeyChirho(...argsChirho as [number, number])], lines_chirho: linesChirho, segments_chirho: segmentsChirho}, pageChirho.image_width_chirho, pageChirho.image_height_chirho);
+}
+
+// Shared by new-page intake and the append-only legacy-reader foundation.
+// Return fresh tuples; validating a download must not mutate its baseline.
+export function geometryPayloadChirho(valueChirho: PagePayloadChirho, widthChirho: number, heightChirho: number): PagePayloadChirho {
+  const linesChirho = valueChirho.lines_chirho.map(lineChirho => boundedLineChirho(lineChirho, widthChirho, heightChirho));
+  const segmentsChirho = valueChirho.segments_chirho.map(segmentChirho => [...segmentChirho] as SegmentChirho);
   const lineMapChirho = new Map(linesChirho.map(lineChirho => [lineChirho[0], lineChirho]));
+  checkChirho(lineMapChirho.size === linesChirho.length, 'Duplicate line coordinates');
+  const segmentKeysChirho = new Set<string>();
+  const countsChirho = new Map<number, number>();
   for (const segmentChirho of segmentsChirho) {
     const lineChirho = lineMapChirho.get(segmentChirho[0]);
     // Eighteen PDF font-layer marks have no measurable line width; the draft
@@ -97,9 +107,13 @@ export function payloadChirho(dbChirho: Database, pageChirho: SourcePageChirho):
     // Zero-width OCR runs remain visible as text but cannot be confirmed; do
     // not invent a positive box or silently drop a word to make a check green.
     checkChirho(lineChirho && Number.isInteger(segmentChirho[1]) && segmentChirho[1] >= 0 && Number.isFinite(segmentChirho[4]) && Number.isFinite(segmentChirho[5]) &&
-      segmentChirho[4] >= 0 && segmentChirho[5] >= 0 && segmentChirho[4] + segmentChirho[5] <= lineChirho[3], `Out-of-line segment ${pageKeyChirho(pageChirho)}:${segmentChirho[0]}:${segmentChirho[1]}`);
+      segmentChirho[4] >= 0 && segmentChirho[5] >= 0 && segmentChirho[4] + segmentChirho[5] <= lineChirho[3], `Out-of-line segment ${valueChirho.page_chirho[0]}:${valueChirho.page_chirho[1]}:${segmentChirho[0]}:${segmentChirho[1]}`);
+    const keyChirho = `${segmentChirho[0]}:${segmentChirho[1]}`;
+    checkChirho(!segmentKeysChirho.has(keyChirho), 'Duplicate segment coordinates'); segmentKeysChirho.add(keyChirho);
+    countsChirho.set(segmentChirho[0], (countsChirho.get(segmentChirho[0]) ?? 0) + 1);
   }
-  return { page_chirho: [pageChirho.volume_number_chirho, pageChirho.page_number_chirho, pageChirho.french_text_chirho.normalize('NFC'), imageKeyChirho(...argsChirho as [number, number])], lines_chirho: linesChirho, segments_chirho: segmentsChirho };
+  checkChirho(linesChirho.every(lineChirho => lineChirho[6] === (countsChirho.get(lineChirho[0]) ?? 0)), 'Segment count mismatch');
+  return {page_chirho: [...valueChirho.page_chirho], lines_chirho: linesChirho, segments_chirho: segmentsChirho};
 }
 
 export async function checkedImageChirho(rootChirho: string, pageChirho: SourcePageChirho): Promise<Uint8Array> {

@@ -5,6 +5,9 @@ import { sha256Chirho, type PagePayloadChirho, type LineChirho, type SegmentChir
 
 export interface TableSnapshotChirho { table_chirho: string; key_chirho: string; rows_chirho: Record<string, unknown>[]; sha256_chirho: string }
 export function digestChirho(rowsChirho: unknown): string { return sha256Chirho(JSON.stringify(rowsChirho)); }
+export function sameStoredRowChirho(expectedChirho: Record<string, unknown>, actualChirho: Record<string, unknown>): boolean {
+  return Object.keys(expectedChirho).length === Object.keys(actualChirho).length && Object.keys(expectedChirho).every(keyChirho => expectedChirho[keyChirho] === actualChirho[keyChirho]);
+}
 function identifierChirho(valueChirho: string): string {
   if (!/^[a-z0-9_]+$/.test(valueChirho)) throw new Error('Unsafe SQL identifier');
   return valueChirho;
@@ -58,12 +61,14 @@ function readStatementsChirho(volumeChirho: number, pageChirho: number): Stateme
       WHERE p.volume_number_chirho=? AND p.page_number_chirho=? ORDER BY l.line_index_chirho,s.segment_index_chirho`, params: [volumeChirho, pageChirho]},
   ];
 }
-function projectResultsChirho(volumeChirho: number, pageChirho: number, resultsChirho: ResultChirho[]): PagePayloadChirho | null {
+function projectResultsChirho(volumeChirho: number, pageChirho: number, resultsChirho: ResultChirho[], expectedPageChirho?: Record<string, unknown>): PagePayloadChirho | null {
   const [pageResultChirho, linesResultChirho, segmentsResultChirho] = resultsChirho;
   const pageRowChirho = pageResultChirho!.results[0];
   if (!pageRowChirho) return null;
   const pendingChirho = (rowChirho: Record<string, unknown>): boolean => rowChirho.status_chirho === 'pending-chirho';
-  if (!pendingChirho(pageRowChirho) || pageRowChirho.reconstructed_text_chirho != null || pageRowChirho.lines_approved_at_chirho != null || pageRowChirho.vision_text_chirho != null ||
+  const pageMatchesChirho = expectedPageChirho ? sameStoredRowChirho(expectedPageChirho, pageRowChirho) :
+    pendingChirho(pageRowChirho) && pageRowChirho.reconstructed_text_chirho == null && pageRowChirho.lines_approved_at_chirho == null && pageRowChirho.vision_text_chirho == null;
+  if (!pageMatchesChirho ||
     linesResultChirho!.results.some(rowChirho => !pendingChirho(rowChirho) || rowChirho.reconstructed_text_chirho != null || rowChirho.image_r2_key_chirho != null || rowChirho.words_json_chirho != null) ||
     segmentsResultChirho!.results.some(rowChirho => !pendingChirho(rowChirho) || rowChirho.accepted_text_chirho != null || rowChirho.ocr_text_chirho != null || rowChirho.canonical_source_chirho != null || rowChirho.canonical_reference_chirho != null || rowChirho.image_r2_key_chirho != null)) {
     throw new Error(`Page ${volumeChirho}:${pageChirho} has unexpected/reviewed state; never replace it`);
@@ -72,9 +77,10 @@ function projectResultsChirho(volumeChirho: number, pageChirho: number, resultsC
     lines_chirho: linesResultChirho!.results.map(rowChirho => [rowChirho.line_index_chirho, rowChirho.x_min_chirho, rowChirho.y_min_chirho, rowChirho.width_chirho, rowChirho.height_chirho, rowChirho.pdftotext_chirho, rowChirho.segment_count_chirho] as LineChirho),
     segments_chirho: segmentsResultChirho!.results.map(rowChirho => [rowChirho.line_index_chirho, rowChirho.segment_index_chirho, rowChirho.word_start_index_chirho, rowChirho.word_end_index_chirho, rowChirho.x_min_px_chirho, rowChirho.width_px_chirho, rowChirho.pdftotext_chirho, rowChirho.script_type_chirho] as SegmentChirho)};
 }
-export async function remotePayloadsChirho(volumeChirho: number, pagesChirho: number[]): Promise<Map<number, PagePayloadChirho | null>> {
+export async function remotePayloadsChirho(volumeChirho: number, pagesChirho: number[], expectedPagesChirho?: ReadonlyMap<number, Record<string, unknown>>): Promise<Map<number, PagePayloadChirho | null>> {
   if (pagesChirho.length > 8) throw new Error('Verification window exceeds eight pages');
   if (!pagesChirho.length) return new Map();
   const resultsChirho = await queryChirho(pagesChirho.flatMap(pageChirho => readStatementsChirho(volumeChirho, pageChirho)));
-  return new Map(pagesChirho.map((pageChirho, indexChirho) => [pageChirho, projectResultsChirho(volumeChirho, pageChirho, resultsChirho.slice(indexChirho * 3, indexChirho * 3 + 3))]));
+  if (expectedPagesChirho && pagesChirho.some(pageChirho => !expectedPagesChirho.has(pageChirho))) throw new Error('Missing original page baseline');
+  return new Map(pagesChirho.map((pageChirho, indexChirho) => [pageChirho, projectResultsChirho(volumeChirho, pageChirho, resultsChirho.slice(indexChirho * 3, indexChirho * 3 + 3), expectedPagesChirho?.get(pageChirho))]));
 }
