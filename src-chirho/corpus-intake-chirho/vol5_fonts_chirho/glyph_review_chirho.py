@@ -63,7 +63,9 @@ def main_chirho():
             font_dir_chirho.mkdir(exist_ok=True)
             stem_chirho = font_dir_chirho / f"sheet-{offset_chirho // 24 + 1}-chirho"
             stem_chirho.with_suffix(".svg").write_text("\n".join(parts_chirho), encoding="utf-8")
-            subprocess.run(["magick", str(stem_chirho.with_suffix(".svg")), str(stem_chirho.with_suffix(".png"))], check=True)
+            # These diagnostic SVGs use paths, not browser-only features.
+            # Select the internal renderer rather than launching Inkscape.
+            subprocess.run(["magick", "MSVG:" + str(stem_chirho.with_suffix(".svg")), str(stem_chirho.with_suffix(".png"))], check=True)
             print(stem_chirho.with_suffix(".png"))
 
 
