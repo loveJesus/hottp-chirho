@@ -46,7 +46,7 @@ The real cost driver is reading the non-French text on 5,335 pages, not hosting.
 
 - [x] L.J.'s direct choice of a simple shared password, 2026-10-30; email-code login is superseded.
 - [x] Implement and locally verify one password field, an eight-hour signed session, rate limiting, source-matching reader saves, private cache headers and refusal on direct API/image/export requests.
-- [ ] Publish the password gate on both hostnames and verify the hosted flow. See the linked password-release tasklist for the receipt.
+- [x] Publish the password gate on both hostnames and verify the hosted flow. Version 2ed6b14d at 100% on 2026-10-30; 35 hosted checks pass. See the linked password-release tasklist and its release JSON. Hosted pages remain 46.
 - [x] Authenticated event-sync consumer and local browser harness; no public events exception.
 - [x] `robots.txt` with `Disallow: /` in source, shipping with the password release.
 

@@ -1,0 +1,45 @@
+{
+  "source_commit_chirho": "503a993",
+  "ledger_row_chirho": 2956,
+  "worker_chirho": "hottp-chirho",
+  "version_chirho": "2ed6b14d-df2d-46fa-9dfa-c382a08491dc",
+  "deployment_chirho": "4854cb25-4ca5-4563-9573-9649cd767990",
+  "created_at_chirho": "2026-10-30T12:25:51.260814Z",
+  "percentage_chirho": 100,
+  "hostnames_chirho": ["hottp-chirho.bible.systems", "hottp-chirho.lovejesus.workers.dev"],
+  "access_chirho": "shared-password-chirho",
+  "actor_chirho": "shared-reviewer-chirho",
+  "session_seconds_chirho": 28800,
+  "proof_chirho": {
+    "unit_tests_chirho": 56,
+    "unit_assertions_chirho": 271,
+    "local_d1_tests_chirho": 14,
+    "local_browser_assertions_chirho": 36,
+    "hosted_assertions_chirho": 35,
+    "browser_runtime_errors_chirho": 0,
+    "svelte_errors_chirho": 0,
+    "svelte_warnings_chirho": 0,
+    "build_files_scanned_chirho": 156,
+    "credential_fields_scanned_chirho": 9,
+    "credential_hits_chirho": 0,
+    "production_query_plans_chirho": 12
+  },
+  "production_index_chirho": {
+    "name_chirho": "idx_segments_canonical_reference_chirho",
+    "rows_written_chirho": 237,
+    "content_changes_reported_chirho": 0
+  },
+  "post_smoke_counts_chirho": {
+    "pages_chirho": 46,
+    "scanlines_chirho": 1076,
+    "words_chirho": 11938,
+    "segments_chirho": 1925,
+    "known_words_chirho": 275,
+    "events_chirho": 237,
+    "max_event_seq_chirho": 752
+  },
+  "valid_production_content_test_writes_chirho": 0,
+  "full_row_hashes_checked_chirho": false,
+  "corpus_loaded_chirho": false,
+  "protected_witness_sha256_chirho": "3c9ab06d0305035305b9f525307b600e22ea9f07554e959cb8aa2acca3827d40"
+}

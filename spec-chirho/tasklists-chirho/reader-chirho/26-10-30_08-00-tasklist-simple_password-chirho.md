@@ -13,8 +13,8 @@ Placement: reuse reviewer-chirho and review-chirho/session-chirho.ts; enforce ac
 - [x] Preserve event sync with a read-only authenticated path; add crawler backstop.
 - [x] Verify real HTTP/browser login, refusal, expiry/tamper, rate limiting, deep links, shared save and mobile behavior on disposable state; run focused unit and build checks.
 - [x] Verify live schema/index prerequisites and compatibility before publication; keep production content unchanged.
-- [ ] Store the requested password privately and in the Worker secret store; scan explicit commit range and build artifacts; commit/push owned paths.
-- [ ] Deploy the existing Worker and verify both hostnames using reads/refused writes, then close row 2956 and record the release.
+- [x] Store the requested password privately and in the Worker secret store; scan explicit commit range and build artifacts; commit/push owned paths.
+- [x] Deploy the existing Worker and verify both hostnames using reads/refused writes, then close row 2956 and record the release.
 
 Acceptance: an ordinary reader enters only the shared password and can read, draft and save under the existing shared-reviewer identity. Anonymous page, image and API requests cannot read corpus content. Password/session secrets never enter response data or static assets. Failed login does not create a session; stale source or cross-origin saves still refuse. Event sync retains bounded authenticated reads. Missing configuration refuses access rather than opening the reader.
 
@@ -27,3 +27,17 @@ Production schema action: applied the previously committed paired reference-inde
 Fixture corrections: SvelteKit serializes page-data redirects and JSON action failures with HTTP 200, so the harness now checks the redirect envelope and uses the browser's HTML Accept header for form refusal tests. A plain read-only open of a sidecar-less WAL copy failed; the preflight now reuses openLocalD1ReadonlyChirho. These setup/transport failures are excluded from passing counts.
 
 Final Svelte check: zero errors/warnings. Cloudflare-adapter build passes. Scanned 156 output/adapter files against nine configured/fixture credential fields: zero hits. No dependency/lockfile change. The requested password is stored only in the main checkout's ignored environment file and will be installed as HOTTP_SITE_PASSWORD_CHIRHO in the existing Worker.
+
+## Publication
+
+Source 503a993 was committed after a 16-path scope audit, fast-forwarded to main and pushed. Gitleaks over the exact pushed source range found no leaks. The app was clean when the final artifact was built; the repeated artifact credential scan found zero hits. The existing signing key and station credentials were retained; only the dedicated reader password was added to the Worker secret store.
+
+Published with the locked Wrangler 4.67.0 to the existing Worker and both existing hostnames. Active version 2ed6b14d-df2d-46fa-9dfa-c382a08491dc, deployment 4854cb25-4ca5-4563-9573-9649cd767990, created 2026-10-30T12:25:51.260814Z at 100%. This also publishes the previously committed draft restore, bounded catalog/export/home and reference search. The hosted corpus remains 46 pages; no intake load occurred.
+
+Hosted proof: 35 browser/HTTP assertions across hottp-chirho.bible.systems and hottp-chirho.lovejesus.workers.dev. Anonymous API/image/export/encoded-path requests return 401, page requests reach the single password field, correct sign-in/reload/image/search work, Secure/HttpOnly/Strict cookies are set, deliberately empty saves return 400, cross-origin saves return 403, and logout closes access. No valid production confirmation was submitted; zero browser runtime errors. The retained hosted runner takes the private password as a runtime argument. The browser VM does not permit filesystem imports, so it never reads the environment itself.
+
+After hosted checks, read-only counts remain 46 pages / 1076 scanlines / 11938 words / 1925 segments / 275 known words / 237 events, max seq 752. This is count/cursor evidence, not full-row-hash equivalence. The protected local witness retains SHA-256 3c9ab06d0305035305b9f525307b600e22ea9f07554e959cb8aa2acca3827d40. Row 2956 is closed.
+
+Recovery: prefer correcting the dedicated secret or a scoped fix-forward. Previous authenticated version 3c04b05c remains the pre-release reference but would reopen public reading; never restore the anonymous-write May Worker. Eight-hour sessions and private/no-store responses remain the intended contract. Individual certification, station approval and full-corpus promotion are separate.
+
+Cleanup: closed the owned browser/server, verified no open handles under the temporary root, removed the clean merged worktree through Git and deleted only its regenerable copied D1/R2 state. Source and retained proof runners remain in Git, screenshots in the main workspace, and the protected witness and intake corpus are preserved.
