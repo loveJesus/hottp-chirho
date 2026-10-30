@@ -16,7 +16,7 @@ Placement: a grouped `src-chirho/corpus-intake-chirho/publish-chirho/` module; r
 - [x] Upload and verify volume 4 (985 new / 990 total), completed 13:34:01Z. Every new page payload and image hash matches; browser samples 1, 500 and 990 pass.
 - [x] Upload and verify volume 5 (983 new / 1,009 total), completed 13:36:32Z. Every new page payload and image hash matches.
 - [x] Verify all 5,335 pages, new row contents and image objects, browser spot-checks in all volumes, password protection, unchanged existing data/witness. Final proof 13:37:07Z: 5,335 page rows and full-page images, 233,720 lines, 695,455 segments. All 5,289 new pages / 232,644 lines / 693,530 segments remain pending, with no accepted/canonical text or approval. Original full rows match across all 12 baseline tables; unrelated table counts are also unchanged. The protected witness retains SHA256 3c9ab06d0305035305b9f525307b600e22ea9f07554e959cb8aa2acca3827d40.
-- [ ] Commit/push completion source/docs/receipt paths, close ledger, and hand off the live result and remaining reading-quality work. Uploader source c371006 is already pushed.
+- [x] Commit/push completion source/docs/receipt paths and close ledger. Uploader c371006 and hosted receipt dabc811 are pushed; the exact two-commit range passes redacted gitleaks. Row 2957 is closed. This final ledger/checkbox record is committed separately; the user handoff names the live reader and unverified-text boundary.
 
 Recovery: unknown-outcome writes are reconciled against remote page coordinates and complete expected rows before retry; never replay into an existing page. Failed atomic batches leave no partial page. Already-uploaded immutable R2 objects can remain and be reused. No global database restore or delete is part of this task.
 
