@@ -28,6 +28,7 @@ class GlyphChirho:
     x_chirho: float  # glyph origin in PDF points, origin at the bottom left
     y_chirho: float
     size_chirho: float  # effective font size in points
+    advance_pt_chirho: float = 0.0
 
 
 def _mul_chirho(a_chirho, b_chirho):
@@ -77,7 +78,7 @@ def page_glyphs_chirho(page_chirho: pikepdf.Page) -> list[GlyphChirho]:
             trm_chirho = _mul_chirho([s_chirho["size"] * s_chirho["th"], 0, 0, s_chirho["size"], 0, s_chirho["ts"]],
                                      _mul_chirho(tm_chirho, s_chirho["ctm"]))
             glyphs_chirho.append(GlyphChirho(len(glyphs_chirho), op_index_chirho, s_chirho["base"], code_chirho,
-                                             trm_chirho[4], trm_chirho[5], abs(trm_chirho[3])))
+                                             trm_chirho[4], trm_chirho[5], abs(trm_chirho[3]), s_chirho["width"](code_chirho) / 1000 * abs(trm_chirho[0])))
             w0_chirho = s_chirho["width"](code_chirho) / 1000.0
             tx_chirho = (w0_chirho * s_chirho["size"] + s_chirho["tc"] + (s_chirho["tw"] if code_chirho == 32 else 0.0)) * s_chirho["th"]
             tm_chirho = _mul_chirho([1, 0, 0, 1, tx_chirho, 0], tm_chirho)

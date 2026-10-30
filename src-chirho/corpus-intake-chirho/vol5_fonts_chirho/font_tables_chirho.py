@@ -71,21 +71,26 @@ UNCERTAIN_CODES_CHIRHO: dict[str, frozenset[int]] = {
 SPACE_CODES_CHIRHO: dict[str, frozenset[int]] = {MAIN_SUBSET_CHIRHO: frozenset(), SECOND_SUBSET_CHIRHO: frozenset({0x20})}
 
 
-def subset_metrics_chirho(pdf_chirho: pikepdf.Pdf, base_font_chirho: str) -> dict[int, tuple[float, float, float]]:
+def subset_metrics_chirho(pdf_chirho: pikepdf.Pdf, base_font_chirho: str, include_vertical_chirho=False) -> dict[int, tuple]:
     """(ink x-min, ink x-max, advance) in font units per code, from the embedded subset."""
     for page_chirho in pdf_chirho.pages:
         for font_chirho in page_chirho.Resources.get("/Font", {}).values():
             if str(font_chirho.get("/BaseFont", "")).lstrip("/") != base_font_chirho:
                 continue
             tt_chirho = TTFont(io.BytesIO(font_chirho["/FontDescriptor"]["/FontFile2"].read_bytes()))
+            # These PDF subsets carry unused malformed post-name padding.
+            # Metrics need numeric glyph identities, not those optional names.
+            # Supply GID names before cmap/glyf access; do not mute warnings.
+            tt_chirho.setGlyphOrder([f"glyph{index_chirho:05d}" for index_chirho in range(tt_chirho["maxp"].numGlyphs)])
             cmap_chirho = next(t_chirho for t_chirho in tt_chirho["cmap"].tables if (t_chirho.platformID, t_chirho.platEncID) == (1, 0)).cmap
             metrics_chirho = {}
             for code_chirho, glyph_name_chirho in cmap_chirho.items():
                 glyph_chirho = tt_chirho["glyf"][glyph_name_chirho]
                 advance_chirho = float(tt_chirho["hmtx"][glyph_name_chirho][0])
                 if glyph_chirho.numberOfContours:
-                    metrics_chirho[code_chirho] = (float(glyph_chirho.xMin), float(glyph_chirho.xMax), advance_chirho)
+                    values_chirho = (float(glyph_chirho.xMin), float(glyph_chirho.xMax), advance_chirho, float(glyph_chirho.yMin), float(glyph_chirho.yMax))
                 else:
-                    metrics_chirho[code_chirho] = (0.0, 0.0, advance_chirho)
+                    values_chirho = (0.0, 0.0, advance_chirho, 0.0, 0.0)
+                metrics_chirho[code_chirho] = values_chirho if include_vertical_chirho else values_chirho[:3]
             return metrics_chirho
     raise LookupError(f"font subset {base_font_chirho} is not in this PDF")

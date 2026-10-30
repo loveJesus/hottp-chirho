@@ -51,6 +51,7 @@ class PhraseChirho:
     x0_pt_chirho: float
     x1_pt_chirho: float
     uncertain_codes_chirho: list[int] = field(default_factory=list)
+    glyph_seqs_chirho: list[int] = field(default_factory=list)
 
 
 @dataclass
@@ -69,6 +70,7 @@ class _LetterChirho:
     ink1_chirho: float
     uncertain_chirho: list[int]
     space_chirho: bool = False
+    glyph_seqs_chirho: list[int] = field(default_factory=list)
 
 
 Metrics = dict[str, dict[int, tuple[float, float, float]]]
@@ -93,8 +95,8 @@ def _letters_chirho(group_chirho: list[GlyphChirho], metrics_chirho: Metrics):
     """Letters with their marks, plus x positions of glyphs in other fonts."""
     letters_chirho: list[_LetterChirho] = []
     foreign_chirho: list[float] = []
-    orphans_chirho: list[tuple[str, float, int | None]] = []
-    pending_chirho: list[tuple[str, float, int | None]] = []
+    orphans_chirho: list[tuple[str, float, int | None, int]] = []
+    pending_chirho: list[tuple[str, float, int | None, int]] = []
     for glyph_chirho in sorted(group_chirho, key=lambda g_chirho: g_chirho.seq_chirho):
         font_chirho = glyph_chirho.font_chirho
         if font_chirho not in CODE_TABLES_CHIRHO:
@@ -119,22 +121,24 @@ def _letters_chirho(group_chirho: list[GlyphChirho], metrics_chirho: Metrics):
             continue
         if advance_chirho <= MARK_MAX_ADVANCE_UNITS_CHIRHO:
             center_chirho = glyph_chirho.x_chirho + (ink0_chirho + ink1_chirho) / 2 * scale_chirho
-            pending_chirho.append((text_chirho, center_chirho, uncertain_chirho))
+            pending_chirho.append((text_chirho, center_chirho, uncertain_chirho, glyph_chirho.seq_chirho))
             continue
         letters_chirho.append(_LetterChirho(
-            text_chirho[0], list(text_chirho[1:]) + [t_chirho for t_chirho, _, _ in pending_chirho],
+            text_chirho[0], list(text_chirho[1:]) + [t_chirho for t_chirho, _, _, _ in pending_chirho],
             glyph_chirho.x_chirho, glyph_chirho.x_chirho + advance_chirho * scale_chirho,
             glyph_chirho.x_chirho + ink0_chirho * scale_chirho, glyph_chirho.x_chirho + ink1_chirho * scale_chirho,
-            [u_chirho for _, _, u_chirho in pending_chirho if u_chirho is not None] + ([uncertain_chirho] if uncertain_chirho is not None else [])))
+            [u_chirho for _, _, u_chirho, _ in pending_chirho if u_chirho is not None] + ([uncertain_chirho] if uncertain_chirho is not None else []),
+            glyph_seqs_chirho=[seq_chirho for _, _, _, seq_chirho in pending_chirho] + [glyph_chirho.seq_chirho]))
         pending_chirho = []
     orphans_chirho.extend(pending_chirho)
     real_chirho = [l_chirho for l_chirho in letters_chirho if not l_chirho.space_chirho]
-    for text_chirho, center_chirho, uncertain_chirho in orphans_chirho:
+    for text_chirho, center_chirho, uncertain_chirho, seq_chirho in orphans_chirho:
         if not real_chirho:
             continue
         host_chirho = min(real_chirho, key=lambda l_chirho: 0.0 if l_chirho.ink0_chirho <= center_chirho <= l_chirho.ink1_chirho
                           else min(abs(center_chirho - l_chirho.ink0_chirho), abs(center_chirho - l_chirho.ink1_chirho)))
         host_chirho.marks_chirho.append(text_chirho)
+        host_chirho.glyph_seqs_chirho.append(seq_chirho)
         if uncertain_chirho is not None:
             host_chirho.uncertain_chirho.append(uncertain_chirho)
     letters_chirho.sort(key=lambda l_chirho: l_chirho.x_chirho)
@@ -194,7 +198,8 @@ def decode_group_chirho(group_chirho: list[GlyphChirho], metrics_chirho: Metrics
         out_chirho.append(PhraseChirho(
             _reading_text_chirho(phrase_words_chirho),
             min(l_chirho.x_chirho for l_chirho in flat_chirho), max(l_chirho.end_chirho for l_chirho in flat_chirho),
-            sorted({u_chirho for l_chirho in flat_chirho for u_chirho in l_chirho.uncertain_chirho})))
+            sorted({u_chirho for l_chirho in flat_chirho for u_chirho in l_chirho.uncertain_chirho}),
+            sorted(seq_chirho for l_chirho in flat_chirho for seq_chirho in l_chirho.glyph_seqs_chirho)))
     return out_chirho
 
 

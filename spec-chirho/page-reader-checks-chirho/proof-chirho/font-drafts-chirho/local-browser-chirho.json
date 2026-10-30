@@ -1,0 +1,27 @@
+{
+  "verified_at_chirho": "2026-10-30 21:21:57 UTC",
+  "stage_chirho": {
+    "mode_chirho": "stage-chirho",
+    "checks_chirho": [
+      "Local page starts with the raw font-code baseline",
+      "Pre-update draft is confirmable against its raw source"
+    ]
+  },
+  "recovery_chirho": {
+    "mode_chirho": "stale-chirho",
+    "checks_chirho": [
+      "Stale raw-code tab refuses after the machine draft changes",
+      "409 retains the local draft",
+      "Stale confirmation creates no event",
+      "Recovered stale draft stays held after reload",
+      "Reload preserves the held draft",
+      "Discard reveals the current decoded text, not a rebased draft",
+      "Fresh decoded text can be confirmed on the disposable fixture",
+      "Local confirmation records one shared-account receipt",
+      "Fresh local receipt remains recorded after reload"
+    ],
+    "production_confirmations_chirho": 0
+  },
+  "production_confirmations_chirho": 0,
+  "protected_witness_sha256_chirho": "3c9ab06d0305035305b9f525307b600e22ea9f07554e959cb8aa2acca3827d40"
+}
