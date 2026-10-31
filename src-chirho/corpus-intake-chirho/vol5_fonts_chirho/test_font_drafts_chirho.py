@@ -41,8 +41,8 @@ def test_greek_reads_left_to_right_with_spaces_and_every_semantic_glyph_once():
     assert result_chirho[0].glyph_seqs_chirho == [0, 1, 2, 3, 4, 6]
 
 
-@pytest.mark.parametrize("code_chirho", [0x21, 0x27, 0x66, 0x7F, 0xFE])
-def test_greek_unknown_or_unresolved_breathings_are_never_publishable(code_chirho):
+@pytest.mark.parametrize("code_chirho", [0xFE])
+def test_greek_unknown_codes_are_never_publishable(code_chirho):
     result_chirho = decode_greek_group_chirho(glyphs_chirho([(GREEK_MAIN_CHIRHO, code_chirho, 100)]), greek_metrics_chirho())
     assert result_chirho[0].uncertain_codes_chirho == [code_chirho]
 
@@ -52,7 +52,7 @@ def test_foreign_font_splits_greek_instead_of_disappearing_between_letters():
     assert [phrase_chirho.text_chirho for phrase_chirho in result_chirho] == ["α", "β"]
 
 
-@pytest.mark.parametrize("case_chirho,expected_chirho", [("resolved", None), ("unknown", "uncertain-glyph-chirho"), ("foreign", "mixed-or-clipped-chirho"), ("clipped", "mixed-or-clipped-chirho"), ("duplicate", "incomplete-coverage-chirho"), ("latin", "non-target-letter-chirho")])
+@pytest.mark.parametrize("case_chirho,expected_chirho", [("resolved", None), ("extended", None), ("unknown", "uncertain-glyph-chirho"), ("foreign", "mixed-or-clipped-chirho"), ("clipped", "mixed-or-clipped-chirho"), ("duplicate", "incomplete-coverage-chirho"), ("latin", "non-target-letter-chirho")])
 def test_segment_boundary_holds_unsafe_font_proposals(monkeypatch, case_chirho, expected_chirho):
     import segment_drafts_chirho as drafts_chirho
     class PageChirho:
@@ -61,13 +61,16 @@ def test_segment_boundary_holds_unsafe_font_proposals(monkeypatch, case_chirho, 
             return default_chirho
     value_chirho = GlyphChirho(1, 0, GREEK_MAIN_CHIRHO, 0x25, 2, 80, 10)
     glyph_values_chirho = [value_chirho]
+    if case_chirho == "extended":
+        glyph_values_chirho = [GlyphChirho(1, 0, GREEK_MAIN_CHIRHO, 0x66, 2, 80, 10)]
     if case_chirho == "unknown":
-        glyph_values_chirho = [GlyphChirho(1, 0, GREEK_MAIN_CHIRHO, 0x21, 2, 80, 10)]
+        glyph_values_chirho = [GlyphChirho(1, 0, GREEK_MAIN_CHIRHO, 0xFE, 2, 80, 10)]
     if case_chirho == "foreign":
         glyph_values_chirho.append(GlyphChirho(2, 0, "Latin", 65, 7, 80, 10))
     if case_chirho == "latin":
         glyph_values_chirho.append(GlyphChirho(2, 0, GREEK_SECOND_CHIRHO, 0x61, 7, 80, 10))
     metrics_value_chirho = greek_metrics_chirho()
+    metrics_value_chirho[GREEK_MAIN_CHIRHO][0xFE] = (0, 400, 500)
     metrics_value_chirho[GREEK_SECOND_CHIRHO][0x61] = (0, 400, 500)
     bounds_chirho = {name_chirho: {code_chirho: (*metric_chirho, -200, 700) for code_chirho, metric_chirho in table_chirho.items()} for name_chirho, table_chirho in metrics_value_chirho.items()}
     raw_chirho = drafts_chirho.raw_glyph_text_chirho(glyph_values_chirho)
@@ -83,7 +86,7 @@ def test_segment_boundary_holds_unsafe_font_proposals(monkeypatch, case_chirho, 
         assert len(proposals_chirho) == (1 if case_chirho == "duplicate" else 0)
     else:
         assert len(proposals_chirho) == 1
-        assert proposals_chirho[0]["text_chirho"] == "α"
+        assert proposals_chirho[0]["text_chirho"] == ("ὁ" if case_chirho == "extended" else "α")
 
 
 def test_raw_code_coverage_counts_every_character_but_not_spacing_or_bidi():

@@ -38,6 +38,10 @@ def raw_glyph_text_chirho(glyphs_chirho):
     return "".join(bytes([glyph_chirho.code_chirho]).decode("mac_roman") for glyph_chirho in glyphs_chirho)
 
 
+def target_letter_chirho(char_chirho):
+    return char_chirho in "𝔐𝔙𝔊𝔖𝔗" or "\u05d0" <= char_chirho <= "\u05ea" or (char_chirho.isalpha() and ("\u0370" <= char_chirho <= "\u03ff" or "\u1f00" <= char_chirho <= "\u1fff"))
+
+
 def segment_proposals_chirho(page_chirho, source_chirho, metrics_chirho, bounds_chirho):
     if form_xobjects_with_text_chirho(page_chirho):
         return [], Counter({"form-text-chirho": 1})
@@ -102,9 +106,9 @@ def segment_proposals_chirho(page_chirho, source_chirho, metrics_chirho, bounds_
             else:
                 phrases_chirho.sort(key=lambda phrase_chirho: phrase_chirho.x0_pt_chirho, reverse=script_chirho == "hebrew-chirho")
                 text_chirho = " ".join(phrase_chirho.text_chirho for phrase_chirho in phrases_chirho).strip()
-                if any(char_chirho.isalpha() and not ("\u0590" <= char_chirho <= "\u05ff" or "\u0370" <= char_chirho <= "\u03ff" or "\u1f00" <= char_chirho <= "\u1fff" or char_chirho in "𝔐𝔙𝔊𝔖𝔗") for char_chirho in text_chirho):
+                if any(char_chirho.isalpha() and not target_letter_chirho(char_chirho) for char_chirho in text_chirho):
                     reason_chirho = "non-target-letter-chirho"
-                elif not text_chirho or "�" in text_chirho or text_chirho == segment_chirho[6] or not re.search("[א-תα-ωΑ-Ω𝔐𝔙𝔊𝔖𝔗]", text_chirho):
+                elif not text_chirho or "�" in text_chirho or text_chirho == segment_chirho[6] or not any(target_letter_chirho(char_chirho) for char_chirho in text_chirho):
                     reason_chirho = "empty-or-unchanged-chirho"
                 else:
                     used_chirho.update(coverage_chirho)
