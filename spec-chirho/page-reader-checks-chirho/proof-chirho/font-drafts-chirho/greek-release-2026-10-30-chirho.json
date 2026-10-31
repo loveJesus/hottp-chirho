@@ -1,0 +1,327 @@
+{
+  "kind_chirho": "published-incremental-greek-machine-drafts-chirho",
+  "approved_chirho": false,
+  "source_commit_chirho": "6da919c5da74bb03c4aafb003cd3c10ac7b44f54",
+  "checkpoint_chirho": "reader-greek-20261030-before-chirho",
+  "ledger_row_chirho": 2960,
+  "authority_chirho": "L.J., 2026-10-30: continue dev; existing whole-corpus upload and reader publication scope.",
+  "worker_changed_chirho": false,
+  "worker_version_chirho": "2ed6b14d-df2d-46fa-9dfa-c382a08491dc",
+  "worker_deployment_chirho": "4854cb25-4ca5-4563-9573-9649cd767990",
+  "application_chirho": {
+    "verified_at_chirho": "2026-10-31T00:17:58.480Z",
+    "applied_pages_chirho": 559,
+    "new_greek_drafts_chirho": 2228
+  },
+  "verification_chirho": {
+    "verified_at_chirho": "2026-10-31T00:19:26.548Z",
+    "manifest_sha256_chirho": "513789c6e25407a1a6b03954a6862b40debe6c1f54de51cf19324c3d9d5f72f1",
+    "parent_manifest_sha256_chirho": "7a8d32de05c658ff46c4a74252289dd49b6d7c667e400c37600b1c415437d55a",
+    "pages_verified_chirho": 1004,
+    "applied_pages_chirho": 0,
+    "reconciled_pages_chirho": 559,
+    "untouched_pages_chirho": 445,
+    "new_greek_drafts_chirho": 2228,
+    "earlier_ocr_drafts_preserved_chirho": 17653,
+    "total_decoded_drafts_chirho": 19881,
+    "held_chirho": {
+      "no-font-glyphs-chirho": 406,
+      "mixed-or-clipped-chirho": 896,
+      "non-target-letter-chirho": 14,
+      "uncertain-glyph-chirho": 70,
+      "raw-code-coverage-chirho": 99,
+      "empty-or-unchanged-chirho": 23
+    },
+    "counts_chirho": [
+      {
+        "table_chirho": "pages-chirho",
+        "count_chirho": 5335
+      },
+      {
+        "table_chirho": "lines-chirho",
+        "count_chirho": 234433
+      },
+      {
+        "table_chirho": "segments-chirho",
+        "count_chirho": 698042
+      },
+      {
+        "table_chirho": "events-chirho",
+        "count_chirho": 1715
+      },
+      {
+        "table_chirho": "words-chirho",
+        "count_chirho": 11938
+      },
+      {
+        "table_chirho": "shared-events-chirho",
+        "count_chirho": 0
+      }
+    ],
+    "original_rows_preserved_chirho": [
+      {
+        "table_chirho": "d1_migrations",
+        "rows_chirho": 14,
+        "sha256_chirho": "97a43fff31b70b1f15898ee5fb6990904a244d166ea5645d2a98e497c0743044"
+      },
+      {
+        "table_chirho": "events_chirho",
+        "rows_chirho": 237,
+        "sha256_chirho": "625f6d101832e514cda8fa39f0c7a60325abe2af58e98c57e0a8560c39b8699a"
+      },
+      {
+        "table_chirho": "known_words_chirho",
+        "rows_chirho": 275,
+        "sha256_chirho": "6a8530f9a0f10c6569e6a76b844330be0f15c32ff2c8e4d9be6d180fbbd52fec"
+      },
+      {
+        "table_chirho": "ocr_suggestions_chirho",
+        "rows_chirho": 67,
+        "sha256_chirho": "c7914564447a997cf621e597f884add650c523b8950601b01eade15c8348baa2"
+      },
+      {
+        "table_chirho": "page_snapshots_chirho",
+        "rows_chirho": 25,
+        "sha256_chirho": "5d3861128caa3637796bdd34c1507742049aabc619f622539a786cf1ebb4c1ef"
+      },
+      {
+        "table_chirho": "pages_chirho",
+        "rows_chirho": 46,
+        "sha256_chirho": "a11531ad1645e15fa3e1bd7c3c37588329a671819eab5bc2798977f2f41fa117"
+      },
+      {
+        "table_chirho": "reviews_chirho",
+        "rows_chirho": 0,
+        "sha256_chirho": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table_chirho": "scanlines_chirho",
+        "rows_chirho": 1076,
+        "sha256_chirho": "e30960b0fe87892a4b55eebf00f91556a5fa557760484e4263ae5819fa5e6add"
+      },
+      {
+        "table_chirho": "segments_chirho",
+        "rows_chirho": 1925,
+        "sha256_chirho": "c32def70f36a296dd2faa4e3a53da65f5eb7c3cf7bd0c9779cd11285ca5f72b9"
+      },
+      {
+        "table_chirho": "snippets_chirho",
+        "rows_chirho": 0,
+        "sha256_chirho": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table_chirho": "volume_profiles_chirho",
+        "rows_chirho": 0,
+        "sha256_chirho": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table_chirho": "words_chirho",
+        "rows_chirho": 11938,
+        "sha256_chirho": "e270a3e32b35c0c6add22397f796d6d2837c54016c5be49d36604539ee233099"
+      }
+    ],
+    "witness_sha256_chirho": "3c9ab06d0305035305b9f525307b600e22ea9f07554e959cb8aa2acca3827d40",
+    "r2_writes_chirho": 0,
+    "human_confirmations_chirho": 0,
+    "worker_deploy_chirho": false
+  },
+  "native_1004_page_script_counts_chirho": {
+    "hebrew-chirho": 17295,
+    "greek-chirho": 2586
+  },
+  "events_max_seq_chirho": 2230,
+  "mapping_chirho": {
+    "resolved_main_codes_chirho": 141,
+    "earlier_published_codes_chirho": 68,
+    "earlier_unicode_sha256_chirho": "7c90c185c55188decb65484a82af5d6d57a68a71b9431310740097a28895711c",
+    "independent_source_anchor_messages_chirho": [
+      30873,
+      30875
+    ],
+    "evidence_chirho": "greek-anchor-review-chirho.md",
+    "unknown_codes_remain_held_chirho": true
+  },
+  "tests_chirho": {
+    "bun_tests_chirho": 96,
+    "bun_assertions_chirho": 530,
+    "python_tests_chirho": 40,
+    "typescript_errors_chirho": 0,
+    "svelte_errors_chirho": 0,
+    "svelte_warnings_chirho": 0
+  },
+  "remote_transaction_proof_chirho": {
+    "verified_at_chirho": "2026-10-31T00:07:32.683Z",
+    "manifest_sha256_chirho": "513789c6e25407a1a6b03954a6862b40debe6c1f54de51cf19324c3d9d5f72f1",
+    "checks_chirho": [
+      "actual D1 guard plan stays page-index/primary-key bounded",
+      "ignored update rolls back the entire new patch and audit",
+      "late audit failure preserves all prior OCR/history",
+      "changed earlier OCR refuses the new patch",
+      "changed prior audit refuses the new patch",
+      "successful append preserves old fields/audit and adds only new OCR plus one machine audit",
+      "repeat refuses without replacement or a second new audit"
+    ],
+    "guard_plan_chirho": [
+      "SCAN CONSTANT ROW",
+      "SCALAR SUBQUERY 4",
+      "SEARCH p_chirho USING INTEGER PRIMARY KEY (rowid=?)",
+      "CORRELATED SCALAR SUBQUERY 1",
+      "SEARCH n_chirho USING COVERING INDEX idx_snippets_page_chirho (page_id_chirho=?)",
+      "CORRELATED SCALAR SUBQUERY 2",
+      "SEARCH q_chirho USING COVERING INDEX sqlite_autoindex_page_snapshots_chirho_1 (page_id_chirho=?)",
+      "CORRELATED SCALAR SUBQUERY 3",
+      "SEARCH l_chirho USING COVERING INDEX idx_scanlines_page_chirho (page_id_chirho=?)",
+      "SEARCH w_chirho USING COVERING INDEX words_scanline_chirho (scanline_id_chirho=?)",
+      "SCALAR SUBQUERY 5",
+      "SEARCH scanlines_chirho USING COVERING INDEX idx_scanlines_page_chirho (page_id_chirho=?)",
+      "SCALAR SUBQUERY 6",
+      "SCAN j_chirho VIRTUAL TABLE INDEX 1:",
+      "SEARCH l_chirho USING INTEGER PRIMARY KEY (rowid=?)",
+      "SCALAR SUBQUERY 7",
+      "SEARCH l_chirho USING COVERING INDEX idx_scanlines_page_chirho (page_id_chirho=?)",
+      "SEARCH s_chirho USING COVERING INDEX idx_segments_scanline_chirho (scanline_id_chirho=?)",
+      "SCALAR SUBQUERY 8",
+      "SCAN j_chirho VIRTUAL TABLE INDEX 1:",
+      "SEARCH s_chirho USING INTEGER PRIMARY KEY (rowid=?)",
+      "SCALAR SUBQUERY 9",
+      "SEARCH events_chirho USING COVERING INDEX events_page_seq_chirho (page_id_chirho=?)",
+      "SCALAR SUBQUERY 10",
+      "SCAN j_chirho VIRTUAL TABLE INDEX 1:",
+      "SEARCH e_chirho USING INTEGER PRIMARY KEY (rowid=?)"
+    ],
+    "production_rows_written_chirho": 0
+  },
+  "hosted_cases_chirho": [
+    {
+      "page_chirho": 200,
+      "text_chirho": "ὑετίσαι",
+      "line_index_chirho": 1,
+      "segment_index_chirho": 0,
+      "box_chirho": {
+        "x_chirho": 439,
+        "y_chirho": 502,
+        "width_chirho": 187,
+        "height_chirho": 79
+      }
+    },
+    {
+      "page_chirho": 500,
+      "text_chirho": "ἐνώπιον κυρίου καὶ ἀνθρώπων",
+      "line_index_chirho": 6,
+      "segment_index_chirho": 2,
+      "box_chirho": {
+        "x_chirho": 878,
+        "y_chirho": 905,
+        "width_chirho": 761,
+        "height_chirho": 79
+      }
+    },
+    {
+      "page_chirho": 900,
+      "text_chirho": "καὶ κλείσουσιν θύρας ἐν ἀγορᾷ ἐν ἀσθενείᾳ",
+      "line_index_chirho": 29,
+      "segment_index_chirho": 5,
+      "box_chirho": {
+        "x_chirho": 917,
+        "y_chirho": 2575,
+        "width_chirho": 1039,
+        "height_chirho": 95
+      }
+    },
+    {
+      "page_chirho": 248,
+      "text_chirho": "ὁ",
+      "line_index_chirho": 18,
+      "segment_index_chirho": 5,
+      "box_chirho": {
+        "x_chirho": 1928,
+        "y_chirho": 1777,
+        "width_chirho": 28,
+        "height_chirho": 79
+      }
+    }
+  ],
+  "hosted_chirho": [
+    {
+      "verified_at_chirho": "2026-10-31T00:19:02.822Z",
+      "origin_chirho": "https://hottp-chirho.bible.systems",
+      "checks_chirho": [
+        "Unauthenticated content stays protected: /api-chirho/events-chirho",
+        "Unauthenticated content stays protected: /api-chirho/images-chirho?key-chirho=vol-5-chirho%2Fpage-0056-chirho%2Ffull-page-chirho.png",
+        "5:200 loads privately",
+        "5:200 machine drafts are not human-confirmed",
+        "5:200 renders decoded Unicode",
+        "5:200 decoded Unicode is editable",
+        "5:200 supports normal source-match review",
+        "5:200 keeps the original native-pixel scan box",
+        "5:500 loads privately",
+        "5:500 machine drafts are not human-confirmed",
+        "5:500 renders decoded Unicode",
+        "5:500 decoded Unicode is editable",
+        "5:500 supports normal source-match review",
+        "5:500 keeps the original native-pixel scan box",
+        "5:900 loads privately",
+        "5:900 machine drafts are not human-confirmed",
+        "5:900 renders decoded Unicode",
+        "5:900 decoded Unicode is editable",
+        "5:900 supports normal source-match review",
+        "5:900 keeps the original native-pixel scan box",
+        "5:248 loads privately",
+        "5:248 machine drafts are not human-confirmed",
+        "5:248 renders decoded Unicode",
+        "5:248 decoded Unicode is editable",
+        "5:248 supports normal source-match review",
+        "5:248 keeps the original native-pixel scan box",
+        "Decoded reading fits the mobile viewport",
+        "Zero font-proof browser errors"
+      ],
+      "assertions_chirho": 28,
+      "production_confirmations_chirho": 0
+    },
+    {
+      "verified_at_chirho": "2026-10-31T00:19:24.947Z",
+      "origin_chirho": "https://hottp-chirho.lovejesus.workers.dev",
+      "checks_chirho": [
+        "Unauthenticated content stays protected: /api-chirho/events-chirho",
+        "Unauthenticated content stays protected: /api-chirho/images-chirho?key-chirho=vol-5-chirho%2Fpage-0056-chirho%2Ffull-page-chirho.png",
+        "5:200 loads privately",
+        "5:200 machine drafts are not human-confirmed",
+        "5:200 renders decoded Unicode",
+        "5:200 decoded Unicode is editable",
+        "5:200 supports normal source-match review",
+        "5:200 keeps the original native-pixel scan box",
+        "5:500 loads privately",
+        "5:500 machine drafts are not human-confirmed",
+        "5:500 renders decoded Unicode",
+        "5:500 decoded Unicode is editable",
+        "5:500 supports normal source-match review",
+        "5:500 keeps the original native-pixel scan box",
+        "5:900 loads privately",
+        "5:900 machine drafts are not human-confirmed",
+        "5:900 renders decoded Unicode",
+        "5:900 decoded Unicode is editable",
+        "5:900 supports normal source-match review",
+        "5:900 keeps the original native-pixel scan box",
+        "5:248 loads privately",
+        "5:248 machine drafts are not human-confirmed",
+        "5:248 renders decoded Unicode",
+        "5:248 decoded Unicode is editable",
+        "5:248 supports normal source-match review",
+        "5:248 keeps the original native-pixel scan box",
+        "Decoded reading fits the mobile viewport",
+        "Zero font-proof browser errors"
+      ],
+      "assertions_chirho": 28,
+      "production_confirmations_chirho": 0
+    }
+  ],
+  "boundaries_chirho": [
+    "Machine draft text only, not human confirmation, certification, canonical data or model training.",
+    "Earlier OCR drafts and exact prior machine audit rows were compared across all 1,004 native-coordinate volume-5 pages.",
+    "The 12 original-table row hashes are reverified against the retained baseline; this is not a full-row hash of every newly loaded volume 1-4 record.",
+    "Volume-5 pages 148-152 and their pre-existing OCR are outside this draft release.",
+    "No Worker deployment, R2 writes, credential change, source PDF edit or station packet change.",
+    "Unknown or standalone accent cases, mixed/clipped segments and raw-code mismatches remain held. Syriac is unsupported by this decoder.",
+    "Hosted checks select and inspect drafts but never click Confirm."
+  ]
+}
