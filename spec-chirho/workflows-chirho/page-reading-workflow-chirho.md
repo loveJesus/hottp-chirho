@@ -83,6 +83,8 @@ The pan buttons support keyboard operation without turning a source image into a
 
 Evidence: five geometry cases (23 assertions), the full reader/intake suite, strict proof-fixture types, Svelte diagnostics and real browser checks on native 5:500 / 3:151 and calibrated 5:148. The local browser also forces a missing scan and proves Ctrl-Enter cannot submit. Hosted checks block every API mutation. Independent read-only review #30929 agrees on raw units, focus/recovery and no draft/write interaction; that reviewer reran the five geometry tests but did not independently run the complete browser harness. Task and release evidence live under `reader-chirho/*print_inspector-chirho.md` and `page-reader-checks-chirho/inspection-chirho/`.
 
+Published source f45e8fe on November 1, Worker d5301a2a at 100%. Both hostnames pass 49 hosted checks each; the local harness passes 51, including forced missing print. The full gate is 101 Bun tests / 553 assertions, 40 Python tests, strict proof types and Svelte 0/0, plus the adapter build. Before/after production counts and original 12-table hashes match; the certification witness is byte-unchanged. No content mutation was attempted by hosted tests. See `spec-chirho/page-reader-checks-chirho/inspection-chirho/release-2026-11-01-chirho.json`. Actual Safari/trackpad behavior and Andrew's hands-on acceptance remain unclaimed.
+
 ## Placement and scope
 
 - `app-chirho/src/lib/page-reader-chirho/`: reading model, scan/crop/geometry component, page controller, explicit confirmation transport, extracted legacy component/styles. No new dependency.

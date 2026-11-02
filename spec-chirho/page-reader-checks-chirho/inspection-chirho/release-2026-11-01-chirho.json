@@ -1,0 +1,335 @@
+{
+  "kind_chirho": "reader-print-inspection-release-chirho",
+  "source_commit_chirho": "f45e8fe4f633fadb411cc01a0f0b65c3b40a2fdf",
+  "checkpoint_chirho": "reader-inspector-20261101-before-chirho",
+  "ledger_row_chirho": 2961,
+  "authority_chirho": "L.J., 2026-11-01: continue work. Standing direct commit/push/deploy instruction for the existing HOTTP reader.",
+  "worker_before_chirho": {
+    "deployment_id_chirho": "4854cb25-4ca5-4563-9573-9649cd767990",
+    "created_at_chirho": "2026-10-30T12:25:51.260814Z",
+    "versions_chirho": [
+      {
+        "version_id": "2ed6b14d-df2d-46fa-9dfa-c382a08491dc",
+        "percentage": 100
+      }
+    ]
+  },
+  "worker_after_chirho": {
+    "deployment_id_chirho": "a1008060-cda9-4465-8d21-72ed6bf85be2",
+    "created_at_chirho": "2026-11-02T03:01:00.159536Z",
+    "versions_chirho": [
+      {
+        "version_id": "d5301a2a-31f4-4c6f-8c05-66fa3bdbe2d7",
+        "percentage": 100
+      }
+    ]
+  },
+  "scope_chirho": "Read-only optional source-print view; existing full-page scan, raw geometry and editor/confirmation workflow.",
+  "tests_chirho": {
+    "bun_tests_chirho": 101,
+    "bun_assertions_chirho": 553,
+    "python_tests_chirho": 40,
+    "proof_typescript_errors_chirho": 0,
+    "svelte_errors_chirho": 0,
+    "svelte_warnings_chirho": 0,
+    "adapter_build_passed_chirho": true
+  },
+  "artifact_secret_scan_chirho": {
+    "files_checked_chirho": 156,
+    "credential_values_checked_chirho": 35,
+    "hits_chirho": []
+  },
+  "independent_review_chirho": {
+    "message_id_chirho": 30929,
+    "reviewer_chirho": "HOTTP_CHIRHO/claude2_chirho",
+    "verdict_chirho": "No defects found",
+    "dimensions_chirho": [
+      "raw-unit calibration",
+      "focus and failure recovery",
+      "no draft or write interaction"
+    ],
+    "independently_rerun_chirho": "Five geometry tests / 23 assertions; browser harness reviewed, not independently rerun."
+  },
+  "local_browser_chirho": {
+    "verified_at_chirho": "2026-11-02T02:49:05.566Z",
+    "origin_chirho": "http://127.0.0.1:5194",
+    "assertions_chirho": 51,
+    "checks_chirho": [
+      "Anonymous corpus API remains gated",
+      "Page 5:500 stays private",
+      "Enlarged inspection opens on 5:500",
+      "100 percent is native PNG pixels on 5:500",
+      "Stored coordinate world is preserved on 5:500",
+      "400 percent does not silently fit down",
+      "Full-line context covers the selection and neighbouring print",
+      "Context and zoom retain the exact raw highlight",
+      "Fit view contains the entire context without enlarging it",
+      "Keyboard-operable pan controls move or respect the image edge",
+      "Keyboard focus stays in the inspection dialog",
+      "Escape closes and returns focus to the opener",
+      "Inspection preserves the local draft and original raw box",
+      "Discard still reveals the stored text, not an inspection overlay",
+      "Page 5:148 stays private",
+      "Enlarged inspection opens on 5:148",
+      "100 percent is native PNG pixels on 5:148",
+      "Stored coordinate world is preserved on 5:148",
+      "400 percent does not silently fit down",
+      "Full-line context covers the selection and neighbouring print",
+      "Context and zoom retain the exact raw highlight",
+      "Fit view contains the entire context without enlarging it",
+      "Keyboard-operable pan controls move or respect the image edge",
+      "Keyboard focus stays in the inspection dialog",
+      "Escape closes and returns focus to the opener",
+      "Inspection preserves the local draft and original raw box",
+      "Discard still reveals the stored text, not an inspection overlay",
+      "Page 3:151 stays private",
+      "Enlarged inspection opens on 3:151",
+      "100 percent is native PNG pixels on 3:151",
+      "Stored coordinate world is preserved on 3:151",
+      "400 percent does not silently fit down",
+      "Full-line context covers the selection and neighbouring print",
+      "Context and zoom retain the exact raw highlight",
+      "Fit view contains the entire context without enlarging it",
+      "Keyboard-operable pan controls move or respect the image edge",
+      "Keyboard focus stays in the inspection dialog",
+      "Escape closes and returns focus to the opener",
+      "Inspection preserves the local draft and original raw box",
+      "Discard still reveals the stored text, not an inspection overlay",
+      "Inspection remains inside the viewport at 320px",
+      "Closing inspection leaves the editor unobstructed at 320px",
+      "Inspection remains inside the viewport at 390px",
+      "Closing inspection leaves the editor unobstructed at 390px",
+      "Inspection remains inside the viewport at 700px",
+      "Closing inspection leaves the editor unobstructed at 700px",
+      "Inspection remains inside the viewport at 1024px",
+      "Closing inspection leaves the editor unobstructed at 1024px",
+      "Missing source image holds inspection and confirmation",
+      "Missing-image shortcut cannot submit a reading",
+      "No content mutation attempts or runtime page errors"
+    ],
+    "writes_chirho": [],
+    "errors_chirho": [],
+    "production_confirmations_chirho": 0
+  },
+  "hosted_chirho": [
+    {
+      "verified_at_chirho": "2026-11-02T03:02:35.761Z",
+      "origin_chirho": "https://hottp-chirho.bible.systems",
+      "assertions_chirho": 49,
+      "checks_chirho": [
+        "Anonymous corpus API remains gated",
+        "Page 5:500 stays private",
+        "Enlarged inspection opens on 5:500",
+        "100 percent is native PNG pixels on 5:500",
+        "Stored coordinate world is preserved on 5:500",
+        "400 percent does not silently fit down",
+        "Full-line context covers the selection and neighbouring print",
+        "Context and zoom retain the exact raw highlight",
+        "Fit view contains the entire context without enlarging it",
+        "Keyboard-operable pan controls move or respect the image edge",
+        "Keyboard focus stays in the inspection dialog",
+        "Escape closes and returns focus to the opener",
+        "Inspection preserves the local draft and original raw box",
+        "Discard still reveals the stored text, not an inspection overlay",
+        "Page 5:148 stays private",
+        "Enlarged inspection opens on 5:148",
+        "100 percent is native PNG pixels on 5:148",
+        "Stored coordinate world is preserved on 5:148",
+        "400 percent does not silently fit down",
+        "Full-line context covers the selection and neighbouring print",
+        "Context and zoom retain the exact raw highlight",
+        "Fit view contains the entire context without enlarging it",
+        "Keyboard-operable pan controls move or respect the image edge",
+        "Keyboard focus stays in the inspection dialog",
+        "Escape closes and returns focus to the opener",
+        "Inspection preserves the local draft and original raw box",
+        "Discard still reveals the stored text, not an inspection overlay",
+        "Page 3:151 stays private",
+        "Enlarged inspection opens on 3:151",
+        "100 percent is native PNG pixels on 3:151",
+        "Stored coordinate world is preserved on 3:151",
+        "400 percent does not silently fit down",
+        "Full-line context covers the selection and neighbouring print",
+        "Context and zoom retain the exact raw highlight",
+        "Fit view contains the entire context without enlarging it",
+        "Keyboard-operable pan controls move or respect the image edge",
+        "Keyboard focus stays in the inspection dialog",
+        "Escape closes and returns focus to the opener",
+        "Inspection preserves the local draft and original raw box",
+        "Discard still reveals the stored text, not an inspection overlay",
+        "Inspection remains inside the viewport at 320px",
+        "Closing inspection leaves the editor unobstructed at 320px",
+        "Inspection remains inside the viewport at 390px",
+        "Closing inspection leaves the editor unobstructed at 390px",
+        "Inspection remains inside the viewport at 700px",
+        "Closing inspection leaves the editor unobstructed at 700px",
+        "Inspection remains inside the viewport at 1024px",
+        "Closing inspection leaves the editor unobstructed at 1024px",
+        "No content mutation attempts or runtime page errors"
+      ],
+      "writes_chirho": [],
+      "errors_chirho": [],
+      "production_confirmations_chirho": 0
+    },
+    {
+      "verified_at_chirho": "2026-11-02T03:02:45.199Z",
+      "origin_chirho": "https://hottp-chirho.lovejesus.workers.dev",
+      "assertions_chirho": 49,
+      "checks_chirho": [
+        "Anonymous corpus API remains gated",
+        "Page 5:500 stays private",
+        "Enlarged inspection opens on 5:500",
+        "100 percent is native PNG pixels on 5:500",
+        "Stored coordinate world is preserved on 5:500",
+        "400 percent does not silently fit down",
+        "Full-line context covers the selection and neighbouring print",
+        "Context and zoom retain the exact raw highlight",
+        "Fit view contains the entire context without enlarging it",
+        "Keyboard-operable pan controls move or respect the image edge",
+        "Keyboard focus stays in the inspection dialog",
+        "Escape closes and returns focus to the opener",
+        "Inspection preserves the local draft and original raw box",
+        "Discard still reveals the stored text, not an inspection overlay",
+        "Page 5:148 stays private",
+        "Enlarged inspection opens on 5:148",
+        "100 percent is native PNG pixels on 5:148",
+        "Stored coordinate world is preserved on 5:148",
+        "400 percent does not silently fit down",
+        "Full-line context covers the selection and neighbouring print",
+        "Context and zoom retain the exact raw highlight",
+        "Fit view contains the entire context without enlarging it",
+        "Keyboard-operable pan controls move or respect the image edge",
+        "Keyboard focus stays in the inspection dialog",
+        "Escape closes and returns focus to the opener",
+        "Inspection preserves the local draft and original raw box",
+        "Discard still reveals the stored text, not an inspection overlay",
+        "Page 3:151 stays private",
+        "Enlarged inspection opens on 3:151",
+        "100 percent is native PNG pixels on 3:151",
+        "Stored coordinate world is preserved on 3:151",
+        "400 percent does not silently fit down",
+        "Full-line context covers the selection and neighbouring print",
+        "Context and zoom retain the exact raw highlight",
+        "Fit view contains the entire context without enlarging it",
+        "Keyboard-operable pan controls move or respect the image edge",
+        "Keyboard focus stays in the inspection dialog",
+        "Escape closes and returns focus to the opener",
+        "Inspection preserves the local draft and original raw box",
+        "Discard still reveals the stored text, not an inspection overlay",
+        "Inspection remains inside the viewport at 320px",
+        "Closing inspection leaves the editor unobstructed at 320px",
+        "Inspection remains inside the viewport at 390px",
+        "Closing inspection leaves the editor unobstructed at 390px",
+        "Inspection remains inside the viewport at 700px",
+        "Closing inspection leaves the editor unobstructed at 700px",
+        "Inspection remains inside the viewport at 1024px",
+        "Closing inspection leaves the editor unobstructed at 1024px",
+        "No content mutation attempts or runtime page errors"
+      ],
+      "writes_chirho": [],
+      "errors_chirho": [],
+      "production_confirmations_chirho": 0
+    }
+  ],
+  "post_release_chirho": {
+    "measured_at_chirho": "2026-11-02T03:04:07.377Z",
+    "counts_chirho": [
+      {
+        "table_chirho": "pages-chirho",
+        "count_chirho": 5335
+      },
+      {
+        "table_chirho": "lines-chirho",
+        "count_chirho": 234433
+      },
+      {
+        "table_chirho": "segments-chirho",
+        "count_chirho": 698042
+      },
+      {
+        "table_chirho": "events-chirho",
+        "count_chirho": 1715
+      },
+      {
+        "table_chirho": "words-chirho",
+        "count_chirho": 11938
+      },
+      {
+        "table_chirho": "shared-events-chirho",
+        "count_chirho": 0
+      }
+    ],
+    "original_rows_preserved_chirho": [
+      {
+        "table_chirho": "d1_migrations",
+        "rows_chirho": 14,
+        "sha256_chirho": "97a43fff31b70b1f15898ee5fb6990904a244d166ea5645d2a98e497c0743044"
+      },
+      {
+        "table_chirho": "events_chirho",
+        "rows_chirho": 237,
+        "sha256_chirho": "625f6d101832e514cda8fa39f0c7a60325abe2af58e98c57e0a8560c39b8699a"
+      },
+      {
+        "table_chirho": "known_words_chirho",
+        "rows_chirho": 275,
+        "sha256_chirho": "6a8530f9a0f10c6569e6a76b844330be0f15c32ff2c8e4d9be6d180fbbd52fec"
+      },
+      {
+        "table_chirho": "ocr_suggestions_chirho",
+        "rows_chirho": 67,
+        "sha256_chirho": "c7914564447a997cf621e597f884add650c523b8950601b01eade15c8348baa2"
+      },
+      {
+        "table_chirho": "page_snapshots_chirho",
+        "rows_chirho": 25,
+        "sha256_chirho": "5d3861128caa3637796bdd34c1507742049aabc619f622539a786cf1ebb4c1ef"
+      },
+      {
+        "table_chirho": "pages_chirho",
+        "rows_chirho": 46,
+        "sha256_chirho": "a11531ad1645e15fa3e1bd7c3c37588329a671819eab5bc2798977f2f41fa117"
+      },
+      {
+        "table_chirho": "reviews_chirho",
+        "rows_chirho": 0,
+        "sha256_chirho": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table_chirho": "scanlines_chirho",
+        "rows_chirho": 1076,
+        "sha256_chirho": "e30960b0fe87892a4b55eebf00f91556a5fa557760484e4263ae5819fa5e6add"
+      },
+      {
+        "table_chirho": "segments_chirho",
+        "rows_chirho": 1925,
+        "sha256_chirho": "c32def70f36a296dd2faa4e3a53da65f5eb7c3cf7bd0c9779cd11285ca5f72b9"
+      },
+      {
+        "table_chirho": "snippets_chirho",
+        "rows_chirho": 0,
+        "sha256_chirho": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table_chirho": "volume_profiles_chirho",
+        "rows_chirho": 0,
+        "sha256_chirho": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      {
+        "table_chirho": "words_chirho",
+        "rows_chirho": 11938,
+        "sha256_chirho": "e270a3e32b35c0c6add22397f796d6d2837c54016c5be49d36604539ee233099"
+      }
+    ],
+    "witness_sha256_chirho": "3c9ab06d0305035305b9f525307b600e22ea9f07554e959cb8aa2acca3827d40"
+  },
+  "boundaries_chirho": [
+    "No production confirmation or content mutation attempt in the browser proofs; authentication POSTs only.",
+    "No D1 migration/content write, R2 source rewrite, credential rotation, station change, canonical/certification or model change.",
+    "The counts and original 12-table row hashes were compared before/after; they are not a full-row hash of every newly loaded corpus record.",
+    "100 percent is one CSS pixel per native PNG pixel per axis, not one physical device pixel on HiDPI screens.",
+    "Tests use Chromium desktop/responsive views, not Andrew's hands-on acceptance or actual Safari/trackpad proof.",
+    "Unknown font/mixed/clipped text remains a separate decoding/review task; this view does not certify transcription."
+  ],
+  "recovery_chirho": "Fix-forward or restore the previous password-gated Worker version 2ed6b14d-df2d-46fa-9dfa-c382a08491dc if necessary. No database restore or anonymous-reader rollback."
+}
