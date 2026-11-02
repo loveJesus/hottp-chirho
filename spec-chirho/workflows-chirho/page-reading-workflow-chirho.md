@@ -41,6 +41,9 @@ flowchart TD
   TextChirho --> SelectChirho[Select reading inline]
   ScanChirho[Source page on left] --> SelectChirho
   SelectChirho --> CropChirho[Linked highlight and padded magnifier]
+  CropChirho --> InspectChirho[Optional Inspect print: native-pixel zoom and full-line context]
+  InspectChirho --> InspectCloseChirho[Close or Escape; focus returns and draft stays unchanged]
+  InspectCloseChirho --> DraftChirho
   CropChirho --> DraftChirho[Edit text locally; Tab retains drafts]
   DraftChirho --> BackupChirho[Bounded tab-local session backup]
   BackupChirho --> RevisitChirho[Refresh or revisit page in same tab]
@@ -72,9 +75,18 @@ flowchart TD
   RefreshChirho -->|refresh failure| RefreshHoldChirho[Hold further confirmation until reload]
 ```
 
+## Enlarged print inspection, 2026-11-01
+
+Select a reading, then choose **Inspect print** beside the compact magnifier. The optional read-only dialog offers selection or full-line context, Fit view and 100/200/400/800% zoom. Explicit zoom maps source PNG pixels to CSS pixels, with independent X/Y calibration for legacy volume-5 boxes; it never silently fits a long phrase down. Context padding is defined in native pixels and clipped at the image edge. The orange outline always uses the unchanged raw selected box, including a local box draft.
+
+The pan buttons support keyboard operation without turning a source image into an editor. Changing zoom/context centers the selected print; ordinary panning remains under user control. Escape or Close returns focus to the opener and leaves text, boxes, backup state and confirmation unchanged. Native dialog focus trapping isolates reader shortcuts. Missing print, a held page coordinate space or a clipped selected box disables inspection; loss of readiness closes an open dialog. A secondary enlarged-image failure displays an alert without discarding a draft. Inspection never substitutes for source-matching confirmation.
+
+Evidence: five geometry cases (23 assertions), the full reader/intake suite, strict proof-fixture types, Svelte diagnostics and real browser checks on native 5:500 / 3:151 and calibrated 5:148. The local browser also forces a missing scan and proves Ctrl-Enter cannot submit. Hosted checks block every API mutation. Independent read-only review #30929 agrees on raw units, focus/recovery and no draft/write interaction; that reviewer reran the five geometry tests but did not independently run the complete browser harness. Task and release evidence live under `reader-chirho/*print_inspector-chirho.md` and `page-reader-checks-chirho/inspection-chirho/`.
+
 ## Placement and scope
 
 - `app-chirho/src/lib/page-reader-chirho/`: reading model, scan/crop/geometry component, page controller, explicit confirmation transport, extracted legacy component/styles. No new dependency.
+- `inspection-chirho/` owns the optional read-only print dialog and pure crop/zoom projection. It receives the existing scan URL and raw boxes; it has no editing, draft-storage, API or confirmation callback.
 - `app-chirho/src/lib/server-chirho/page-lines-chirho.ts`: shared bounded page query for the page reader and scanline route. Includes lines without segments. No per-line SQL calls.
 - Fresh segment rows remain the non-French phrase layer; current D1 words supply individual editable targets elsewhere. The established overlapping phrase precedence remains; this is not a reconciliation of word and segment storage. Only the advanced legacy tools read snapshots/event tails.
 - Missing current words fall back to segment rows, including French text. A line with no segments keeps its stored line text. No coordinates are invented for missing boxes.

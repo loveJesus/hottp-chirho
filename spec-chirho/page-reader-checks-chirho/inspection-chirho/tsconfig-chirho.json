@@ -1,0 +1,5 @@
+{
+  "extends": "../../../app-chirho/tsconfig.json",
+  "compilerOptions": { "types": ["bun", "../../../app-chirho/node_modules/@cloudflare/workers-types"] },
+  "include": ["./*.ts", "../../../app-chirho/src/app.d.ts", "../../../app-chirho/.svelte-kit/ambient.d.ts"]
+}

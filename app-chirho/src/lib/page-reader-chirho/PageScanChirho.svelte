@@ -3,6 +3,7 @@
   import { tick } from 'svelte';
   import type { BoxChirho, ReadingTokenChirho } from './model-chirho';
   import { boxFitsSpaceChirho, coordinateSpaceChirho } from './coordinate-space-chirho';
+  import PrintInspectorChirho from './inspection-chirho/PrintInspectorChirho.svelte';
   let { volumeChirho, imageUrlChirho, tokensChirho, selectedChirho, boxChirho, repairChirho, onselectChirho, onboxChirho, onreadyChirho }: {
     volumeChirho: number;
     imageUrlChirho: string; tokensChirho: ReadingTokenChirho[]; selectedChirho: ReadingTokenChirho | null;
@@ -110,7 +111,11 @@
     {#if imageWidthChirho && spaceChirho.validChirho && !selectedFitsChirho}<p role="alert">This reading's box extends past the image edge. Confirmation is held for this reading; the rest of the page is available.</p>{/if}
   </div>
   <div class="focus-crop-chirho">
-    <p>{selectedChirho ? `Selected print · line ${selectedChirho.lineIndexChirho}` : 'Select a word or phrase to inspect its print'}{repairChirho ? ' · box repair draft' : ''}</p>
+    <div class="crop-header-chirho">
+      <p>{selectedChirho ? `Selected print · line ${selectedChirho.lineIndexChirho}` : 'Select a word or phrase to inspect its print'}{repairChirho ? ' · box repair draft' : ''}</p>
+      <PrintInspectorChirho {imageUrlChirho} {imageWidthChirho} {imageHeightChirho} {spaceChirho} {tokensChirho} {selectedChirho} {boxChirho}
+        readyChirho={spaceChirho.validChirho && selectedFitsChirho && !imageFailedChirho} />
+    </div>
     {#if boxChirho && selectedFitsChirho && spaceChirho.validChirho && !imageFailedChirho}
       <svg viewBox={cropChirho} role="img" aria-label="Magnified selected print with surrounding ink" preserveAspectRatio="xMidYMid meet">
         <image href={imageUrlChirho} width={widthChirho} height={heightChirho} preserveAspectRatio="none" />
@@ -134,8 +139,10 @@
   .resize-box-chirho {position:absolute;transform:translate(-50%,-50%);z-index:3;width:24px;height:24px;background:#a74712;border:2px solid white;color:white;cursor:nwse-resize;touch-action:none;}
   .focus-crop-chirho {flex:0 0 156px;background:#f7f4ed;border-top:1px solid #c9c3b8;padding:8px 14px;overflow:hidden;color:#525650;font-size:.76rem;}
   .focus-crop-chirho p {margin-bottom:6px;} .focus-crop-chirho svg {display:block;width:100%;height:110px;background:#fff;}
+  .crop-header-chirho {display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:6px;}
+  .crop-header-chirho p {margin:0;}
   .focus-crop-chirho rect {fill:none;stroke:#ba5619;stroke-width:1;vector-effect:non-scaling-stroke;}
   .crop-empty-chirho {padding-top:28px;text-align:center;color:#71756e;}
   button:focus-visible {outline:3px solid #204eab;outline-offset:2px;}
-  @media(max-width:700px) {.focus-crop-chirho {flex-basis:104px;} .focus-crop-chirho svg{height:66px;} header{padding:6px 10px;}}
+  @media(max-width:700px) {.focus-crop-chirho {flex-basis:132px;} .focus-crop-chirho svg{height:66px;} header{padding:6px 10px;}}
 </style>
