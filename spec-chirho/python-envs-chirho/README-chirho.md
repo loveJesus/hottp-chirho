@@ -19,7 +19,9 @@ This is the runtime of the recognition lane. About forty `src-chirho/*.py`
 scripts name it in their usage lines, including CRNN inference
 (`infer_word_ocr_chirho.py`), the tesseract is-Hebrew gate with the v8 CNN
 second witness (`read_volume_page_chirho.py`), and gold-set minting and
-evaluation. Two local annotation servers spawn it directly:
+evaluation. The printed-script hint dry run (`src-chirho/corpus-intake-chirho/script_hints_chirho/`)
+runs here too; this venv has no pytest, so its tests use the standard library:
+`workspace-chirho/classifier-venv-chirho/bin/python3 -I -m unittest discover -s src-chirho/corpus-intake-chirho/script_hints_chirho -p 'test_*.py'`. Two local annotation servers spawn it directly:
 `font-specimen-server-chirho.ts` and `polygon-annotate-server-chirho.ts`.
 The review stations and the reader app do not use it.
 

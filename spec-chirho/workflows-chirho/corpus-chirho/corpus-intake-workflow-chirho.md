@@ -33,6 +33,9 @@ flowchart TD
   Vol5GlyphsChirho[vol5_fonts_chirho/pdf_glyphs_chirho.py: every glyph's code, font subset and position from the page's text operators]
   Vol5DecodeChirho[decode_hebrew_chirho.py: per-subset code tables; marks attach to the next letter in drawing order; runs reversed into reading order; NFC]
   Vol5MeasureChirho[measure_vol5_hebrew_chirho.py: per line against the reviewed spans; WLC arbitrates pointing]
+  HintScoreChirho[script_hints_chirho/score_shards_chirho.py: the existing v8 word-crop CNN scores every vols 1-4 intake word into sharded, resumable side files; raw OCR stays in the intake database]
+  HintCandidatesChirho[candidates_chirho.py derive: A = unknown run with width-weighted P hebrew at least 0.90; B, exploratory = French-run word with P hebrew at least 0.98; seeded disjoint samples and review sheets]
+  HintReportChirho[candidates_chirho.py report: agent visual verdicts on the scans, Wilson intervals, challenge strata reported apart]
   ReadChirho[planned: feed decoded vol 5 text into drafts; other readers measured, L.J. picks reader and order]
   LoadChirho[planned: per-volume D1 SQL and R2 upload, each load on L.J.'s go-ahead]
 
@@ -51,10 +54,14 @@ flowchart TD
   RecallChirho -. sets the gap threshold .-> TileChirho
   Vol5GlyphsChirho --> Vol5DecodeChirho --> Vol5MeasureChirho
   Vol5DecodeChirho -. planned .-> ReadChirho
+  DraftStoreChirho --> HintScoreChirho --> HintCandidatesChirho --> HintReportChirho
+  HintReportChirho -. dry run only, nothing changes a draft without a later reviewed step .-> ReadChirho
   DraftStoreChirho -. later phases .-> ReadChirho -.-> LoadChirho
   DoneChirho -. re-extraction drops the page's drafts .-> DraftPagesChirho
 ```
 
 Re-running is safe: an extracted page with its image on disk is skipped, a failed page is retried unless `--skip-failed` is given, and a page whose image went missing is redone from scratch. Re-extracting a page deletes its draft segments (they cascade with its lines) and its draft marker, so drafts are always made from the page's current lines.
 
-Drafts are machine hints. A draft segment's text is the unverified machine text; "french" and "latin-non-french" tiles are what the classifier accepted, and every other tile is flagged for reading. Measured on the 46 working-set pages (known words empty, 80px gaps): Greek 220/220, Syriac 30/30 and Hebrew 577/582 reviewed spans flagged; the Hebrew misses are vol 1 words tesseract turned into Latin-looking tokens.
+Drafts are machine hints. A draft segment's text is the unverified machine text; "french" and "latin-non-french" tiles are what the classifier accepted, and every other tile is flagged for reading. Measured on the 46 working-set pages (known words empty, 80px gaps): Greek 220/220, Syriac 30/30 and Hebrew 577/582 reviewed spans flagged; the Hebrew misses are vol 1 words tesseract turned into Latin-looking tokens. That recall is measured against reviewed spans that themselves miss Hebrew, so it overstates candidate recall. On 2026-11-03 (row 2965) the v8 image check showed French-labelled runs hiding Hebrew print across vols 1-4, about 58% of 50 checked among 33,464 runs that carry a high-P(hebrew) word.
+
+Script hints are a dry run. W1, the script of the OCR letters, and W2, the v8 CNN's view of the printed word, are machine instruments, not witnesses. Only W2 may propose a printed script, and nothing it proposes changes a draft, the intake database or the reader without a later reviewed step.

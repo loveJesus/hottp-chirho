@@ -102,6 +102,22 @@ The real cost driver is reading the non-French text on 5,335 pages, not hosting.
   - Two disagreements checked on the page images, both read correctly by the decoder: vol 5 p51 line 9 prints צַמִּים (the span has צָמִים), and p54 line 22 prints unpointed אלא במאמר, אלא באבני ברד, אלא במעשים (the spans add pointing that is not printed). Those spans have provenance `vision-chirho` (2026-05-30) and sit in the expert-confirm pack, so they are unconfirmed machine text, not certified readings. A finished decoder could give the experts exact text, or flag vision errors before they review.
   - Greek is simpler: the main SymbolGreekU subset (BNVNFV, 141 glyphs) has one complete polytonic letter per glyph (ἐ, ῥ, ᾧ, Ὁ ...), and Greek runs left to right, so a code table alone should give exact text; spaces again come from the second subset. Syriac (EstrangeloEdessa, 88 glyphs) is not yet examined.
 - [ ] Measure each candidate reader on a held-out sample per volume, with accuracy and cost per page.
+- [x] Printed-script hints for vols 1-4, dry run. Row 2965; GPT #31101 and #31112 under L.J.'s HOTTP move-forward direction. Local only: nothing was published, and no draft, intake row or reader text changed. Module `src-chirho/corpus-intake-chirho/script_hints_chirho/`; side files in `workspace-chirho/corpus-intake-chirho/script-hints-chirho/` (gitignored).
+  - Instruments: W1 is the script of the letters tesseract emitted. W2 is the existing v8 word-crop ONNX on each word box (model sha256 d0346379..., data 03f2bb71...). Both are machine instruments, not witnesses. Only W2 may propose a printed script.
+  - Scoring: 4,306 pages and 2,118,304 words in 24 shards of 200 pages; 7,694,743 bytes gzipped; 95.4 s of shard time on 4 threads; peak memory 250 MB. Intake database sha256 4cb72bda... A one-shard trial was resumed without rescoring it. Ten unittest cases pass; disabling resume, or dropping the line offset from run geometry, fails exactly the intended ones.
+  - Candidates, seed 31112:
+    - A: 37,605 runs drafted unknown that W2 reads as printed Hebrew (width-weighted P(hebrew) at least 0.90). By W1 letters: Hebrew 22,537, Latin junk 12,703, Greek 2,230, none 135.
+    - B: 33,464 French runs holding 39,545 words with P(hebrew) at least 0.98.
+  - Verdicts: 210 seeded cases judged by eye on the scan sheets. This is agent judgment, not human certification.
+    - A, uniform sample: 98/100 printed Hebrew, 95% Wilson 93.0-99.4%. This is the corpus estimate for A.
+    - Challenge strata, reported apart and not pooled: lines that introduce Syriac or Arabic 26/30 (256 of the A candidates); one-short-word runs 29/30 (5,242 of them).
+    - B: 29/50, 44-71%.
+  - Error classes:
+    - A: clean Latin words that W2 reads as Hebrew (mss twice, small-caps THÉODORET, EPHREM, BHS), one Syriac line, and the Fraktur siglum V.
+    - B false alarms: digits and references (12), Latin words and sigla abbreviations (9).
+  - Gate: A's lower bound (93.0%) is below the 95% set for proposing any publish, so nothing is proposed. Greek and Syriac stay held: v8 recalls 13/119 pilot Greek runs and has no Syriac class.
+  - Safety finding: Hebrew hidden in French runs is real and large. Roughly 19k runs (58% of 33,464; CI 44-71%) read as French in the live reader today. The working-set recall of 577/582 in Phase 2 was measured against reviewed spans that themselves miss Hebrew, so true candidate recall is lower.
+  - Next measured step: keep W2's proposal only when the OCR token is not a clean Latin word, reference or siglum (stoplist plus dictionary), and measure that on a fresh seeded uniform sample, not on these 210 cases.
 - [ ] L.J. picks the reader and the order; run it in bounded batches.
 
 ## Phase 4 — Load to Cloudflare (each load needs L.J.'s go-ahead)
