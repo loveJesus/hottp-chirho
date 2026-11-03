@@ -14,9 +14,12 @@ export const FIND_QUERY_MAX_CHARS_CHIRHO = 80;
 
 // Stored book names are the WLC loader's exact spellings (src-chirho/wlc-load-chirho.ts
 // BOOKS_CHIRHO): Roman-numeral Samuel/Kings/Chronicles, "Psalms", "Song of Songs".
-// Aliases include common English abbreviations and unaccented French names, since
-// the volumes cite in French. Aliases are normalized again at map build, so
-// accented spellings may appear here as typed.
+// Aliases include common English abbreviations, unaccented French names, and the
+// Jerusalem-Bible sigla CTAT itself prints ("2 S 14,19; Mi 6,10 et Pr 18,24"):
+// Jg, 1/2 S, 1/2 R, 1/2 Ch, Esd, Ne, Qo, Ct, Ez, Os, Ab, Mi, Ha, So, Ag, Za, Ml.
+// Within that sigla system Esd names Ezra, which frees Ez for Ezechiel and
+// resolves the earlier deliberate "ez" omission. Aliases are normalized again
+// at map build, so accented spellings may appear here as typed.
 const BOOK_ALIASES_CHIRHO: [string, string[]][] = [
   ['Genesis', ['gen', 'gn', 'genese']],
   ['Exodus', ['exod', 'ex', 'exode']],
@@ -24,39 +27,39 @@ const BOOK_ALIASES_CHIRHO: [string, string[]][] = [
   ['Numbers', ['num', 'nm', 'nb', 'nombres']],
   ['Deuteronomy', ['deut', 'dt', 'deuteronome']],
   ['Joshua', ['josh', 'jos', 'josue']],
-  ['Judges', ['judg', 'jdg', 'jgs', 'juges']],
-  ['I Samuel', ['1 samuel', '1samuel', '1 sam', '1sam', 'i sam']],
-  ['II Samuel', ['2 samuel', '2samuel', '2 sam', '2sam', 'ii sam']],
-  ['I Kings', ['1 kings', '1kings', '1 kgs', '1kgs', 'i kgs', '1 rois']],
-  ['II Kings', ['2 kings', '2kings', '2 kgs', '2kgs', 'ii kgs', '2 rois']],
+  ['Judges', ['judg', 'jdg', 'jgs', 'jg', 'juges']],
+  ['I Samuel', ['1 samuel', '1samuel', '1 sam', '1sam', 'i sam', '1 s', '1s']],
+  ['II Samuel', ['2 samuel', '2samuel', '2 sam', '2sam', 'ii sam', '2 s', '2s']],
+  ['I Kings', ['1 kings', '1kings', '1 kgs', '1kgs', 'i kgs', '1 rois', '1 r', '1r']],
+  ['II Kings', ['2 kings', '2kings', '2 kgs', '2kgs', 'ii kgs', '2 rois', '2 r', '2r']],
   ['Isaiah', ['isa', 'is', 'esaie', 'isaie']],
   ['Jeremiah', ['jer', 'jr', 'jeremie']],
-  ['Ezekiel', ['ezek', 'eze', 'ezechiel']],
-  ['Hosea', ['hos', 'osee']],
+  ['Ezekiel', ['ezek', 'eze', 'ez', 'ezechiel']],
+  ['Hosea', ['hos', 'os', 'osee']],
   ['Joel', ['jl']],
   ['Amos', ['am']],
-  ['Obadiah', ['obad', 'ob', 'abdias']],
+  ['Obadiah', ['obad', 'ob', 'ab', 'abdias']],
   ['Jonah', ['jon', 'jonas']],
-  ['Micah', ['mic', 'michee']],
+  ['Micah', ['mic', 'mi', 'michee']],
   ['Nahum', ['nah', 'na', 'nahoum']],
-  ['Habakkuk', ['hab', 'hb', 'habacuc']],
-  ['Zephaniah', ['zeph', 'zep', 'sophonie']],
-  ['Haggai', ['hag', 'hg', 'aggee']],
-  ['Zechariah', ['zech', 'zec', 'zacharie']],
-  ['Malachi', ['mal', 'malachie']],
+  ['Habakkuk', ['hab', 'hb', 'ha', 'habacuc']],
+  ['Zephaniah', ['zeph', 'zep', 'so', 'sophonie']],
+  ['Haggai', ['hag', 'hg', 'ag', 'aggee']],
+  ['Zechariah', ['zech', 'zec', 'za', 'zacharie']],
+  ['Malachi', ['mal', 'ml', 'malachie']],
   ['Psalms', ['psalm', 'pss', 'psa', 'ps', 'psaumes', 'psaume']],
   ['Proverbs', ['prov', 'prv', 'pr', 'proverbes']],
   ['Job', ['jb']],
-  ['Song of Songs', ['song of solomon', 'song', 'songs', 'sos', 'cant', 'canticles', 'cantique', 'cantiques']],
+  ['Song of Songs', ['song of solomon', 'song', 'songs', 'sos', 'cant', 'canticles', 'ct', 'cantique', 'cantiques']],
   ['Ruth', ['ru', 'rt']],
   ['Lamentations', ['lam', 'lm']],
-  ['Ecclesiastes', ['eccl', 'eccles', 'ecc', 'qoh', 'qohelet', 'qoheleth', 'ecclesiaste']],
+  ['Ecclesiastes', ['eccl', 'eccles', 'ecc', 'qoh', 'qohelet', 'qoheleth', 'qo', 'ecclesiaste']],
   ['Esther', ['esth', 'est']],
   ['Daniel', ['dan', 'dn']],
-  ['Ezra', ['ezr', 'esdras']],
-  ['Nehemiah', ['neh', 'nehemie']],
-  ['I Chronicles', ['1 chronicles', '1chronicles', '1 chr', '1chr', '1 chron', 'i chr', '1 chroniques']],
-  ['II Chronicles', ['2 chronicles', '2chronicles', '2 chr', '2chr', '2 chron', 'ii chr', '2 chroniques']],
+  ['Ezra', ['ezr', 'esd', 'esdras']],
+  ['Nehemiah', ['neh', 'ne', 'nehemie']],
+  ['I Chronicles', ['1 chronicles', '1chronicles', '1 chr', '1chr', '1 chron', 'i chr', '1 ch', '1ch', '1 chroniques']],
+  ['II Chronicles', ['2 chronicles', '2chronicles', '2 chr', '2chr', '2 chron', 'ii chr', '2 ch', '2ch', '2 chroniques']],
 ];
 
 // Lowercase, strip accents, turn digit separators (: , .) into ':', drop

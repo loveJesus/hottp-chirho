@@ -56,8 +56,39 @@ describe('biblical reference parsing against the stored WLC book names', () => {
     expect(parseFindQueryChirho('isaiah 8:12-14')).toBeNull();
     expect(parseFindQueryChirho('isaiah 8 12 14')).toBeNull();
     expect(parseFindQueryChirho('isaiah 0')).toBeNull();
-    // 'ez' is deliberately unmapped: Ezekiel vs Ezra would be a guess.
-    expect(parseFindQueryChirho('ez 5')).toBeNull();
+  });
+});
+
+describe('CTAT Jerusalem-Bible sigla, the abbreviations the volumes print', () => {
+  test("the printed trio parses: '2 S 14,19; Mi 6,10 et Pr 18,24'", () => {
+    expect(parseFindQueryChirho('2 S 14,19')).toEqual({ kindChirho: 'reference-chirho', bookChirho: 'II Samuel', chapterChirho: 14, verseChirho: 19 });
+    expect(parseFindQueryChirho('Mi 6,10')).toEqual({ kindChirho: 'reference-chirho', bookChirho: 'Micah', chapterChirho: 6, verseChirho: 10 });
+    expect(parseFindQueryChirho('Pr 18,24')).toEqual({ kindChirho: 'reference-chirho', bookChirho: 'Proverbs', chapterChirho: 18, verseChirho: 24 });
+  });
+  test('Esd names Ezra within the sigla system, freeing Ez for Ezekiel', () => {
+    expect(parseFindQueryChirho('Esd 3')).toMatchObject({ bookChirho: 'Ezra', chapterChirho: 3 });
+    expect(parseFindQueryChirho('Ez 5')).toMatchObject({ bookChirho: 'Ezekiel', chapterChirho: 5 });
+  });
+  test('every protestant-canon JB siglum resolves to its own stored book', () => {
+    const siglaChirho: [string, string][] = [
+      ['Gn', 'Genesis'], ['Ex', 'Exodus'], ['Lv', 'Leviticus'], ['Nb', 'Numbers'],
+      ['Dt', 'Deuteronomy'], ['Jos', 'Joshua'], ['Jg', 'Judges'], ['Rt', 'Ruth'],
+      ['1 S', 'I Samuel'], ['2 S', 'II Samuel'], ['1 R', 'I Kings'], ['2 R', 'II Kings'],
+      ['1 Ch', 'I Chronicles'], ['2 Ch', 'II Chronicles'], ['Esd', 'Ezra'], ['Ne', 'Nehemiah'],
+      ['Est', 'Esther'], ['Jb', 'Job'], ['Ps', 'Psalms'], ['Pr', 'Proverbs'],
+      ['Qo', 'Ecclesiastes'], ['Ct', 'Song of Songs'], ['Is', 'Isaiah'], ['Jr', 'Jeremiah'],
+      ['Lm', 'Lamentations'], ['Ez', 'Ezekiel'], ['Dn', 'Daniel'], ['Os', 'Hosea'],
+      ['Jl', 'Joel'], ['Am', 'Amos'], ['Ab', 'Obadiah'], ['Jon', 'Jonah'],
+      ['Mi', 'Micah'], ['Na', 'Nahum'], ['Ha', 'Habakkuk'], ['So', 'Zephaniah'],
+      ['Ag', 'Haggai'], ['Za', 'Zechariah'], ['Ml', 'Malachi'],
+    ];
+    expect(siglaChirho.length).toBe(39);
+    expect(new Set(siglaChirho.map(([, bookChirho]) => bookChirho)).size).toBe(39);
+    for (const [siglumChirho, bookChirho] of siglaChirho) {
+      expect(parseFindQueryChirho(siglumChirho)).toEqual({ kindChirho: 'reference-chirho', bookChirho, chapterChirho: null, verseChirho: null });
+    }
+    expect(parseFindQueryChirho('1ch 29')).toMatchObject({ bookChirho: 'I Chronicles', chapterChirho: 29 });
+    expect(parseFindQueryChirho('2s 22:31')).toMatchObject({ bookChirho: 'II Samuel', chapterChirho: 22, verseChirho: 31 });
   });
 });
 
