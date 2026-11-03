@@ -31,6 +31,26 @@ certification or intake-path changes; nothing deployed.
       annotation with the printed-folio evidence, workflow doc note, ledger close), completion
       message in the room. Feature 713e485; receipt follows it.
 
+## 2026-11-03 continuation: CTAT sigla aliases Chirho
+
+Authority: gpt handoff #31100 under L.J.'s Andrew-readiness fleet authorization (#31083);
+ledger row 2964; isolated worktree branch `sigla-aliases-20261103-chirho`; local-only (no
+migration, D1 writes or deploy — the hosted reader gains the sigla at its next release, so the
+Andrew handout's "sigla not understood yet" line stays true for the demo).
+
+- [x] `BOOK_ALIASES_CHIRHO` gains the 20 missing Jerusalem-Bible sigla (plus glued numbered
+      variants); Esd names Ezra inside that system, freeing Ez for Ezekiel and resolving the
+      earlier deliberate 'ez' omission. Query bounds, canonical names and reference coverage
+      unchanged.
+- [x] Tests: the printed trio "2 S 14,19 / Mi 6,10 / Pr 18,24"; the Esd/Ez disambiguation
+      pair; an all-39-sigla bijection onto 39 distinct stored books. Suite now 64 tests /
+      341 assertions.
+- [x] Gates in the worktree: frozen install, svelte-check 0/0 (526 files), build, find D1
+      proof 6/6; mutation (dropping 'ez') turns exactly the two sigla tests red, restored
+      byte-identical and green.
+- [x] Feature 68ae7fc ff-merged to main; receipt updates this tasklist and the workflow doc
+      find section (stale "'ez' unmapped" and "not yet hosted" lines corrected there).
+
 ## Printed-folio half, deliberately not taken
 
 Printed folio ≠ PDF page: vol 3 PDF p151 prints folio **cxxvi** (Roman-numeral front matter), so
