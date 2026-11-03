@@ -227,17 +227,18 @@ and "Psaumes 22,17" both resolve to II Samuel / Psalms). The search reads
 `segments_chirho.canonical_reference_chirho` only —
 matched spans, not full text — and refuses whole past 600 segments or 48 pages, never truncating.
 Chapter ranges use the ["Book C:", "Book C;") ordering trick, so "Isaiah 81" never bleeds into
-"Isaiah 8". The paired partial covering index `catalog-chirho/reference-index-chirho.sql` is not
-applied to production; it belongs to the corpus plan's pre-deploy EXPLAIN gate, and
-`spec-chirho/page-reader-checks-chirho/find-chirho/find-d1-chirho.ts` pins every find query's
-local plan to it. Printed-folio jumping is NOT included: printed and PDF numbering differ (vol 3
+"Isaiah 8". The paired partial covering index `catalog-chirho/reference-index-chirho.sql` has
+been applied to production since the 2026-10-30 release passed the corpus plan's pre-deploy
+EXPLAIN gate; `spec-chirho/page-reader-checks-chirho/find-chirho/find-d1-chirho.ts` pins every
+find query's local plan to it. Printed-folio jumping is NOT included: printed and PDF numbering differ (vol 3
 PDF p151 prints folio cxxvi), and the mapping is intake-side data work. GET navigation still
-changes no readings. The page has been hosted since the 2026-10-30 shared-password release,
-whose gate applied the partial index to production.
+changes no readings. The page has been hosted since the 2026-10-30 shared-password release.
 
 2026-11-03 (claude2, 68ae7fc, row 2964): the Jerusalem-Bible sigla CTAT itself prints — Jg,
 1/2 S, 1/2 R, 1/2 Ch, Esd, Ne, Qo, Ct, Ez, Os, Ab, Mi, Ha, So, Ag, Za, Ml — resolve as
-aliases, so "2 S 14,19; Mi 6,10 et Pr 18,24" parses as printed. Within that sigla system Esd
+aliases, so each reference in the printed "2 S 14,19; Mi 6,10 et Pr 18,24" parses when
+entered on its own; the compound semicolon line itself still returns null, so enter one
+reference at a time. Within that sigla system Esd
 names Ezra, which frees Ez for Ezekiel and resolves the earlier deliberate 'ez' omission; the
 parser tests pin all 39 protestant-canon sigla onto 39 distinct stored books. Aliases only:
 bounds, canonical names and reference coverage (still the pilot pages' canonically matched
